@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>مبانی برنامه‌های وب &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; مبانی برنامه‌های وب</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.01-project-setup-and-creating-a-module.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست مطالب</a> &middot;
+					<a href="02.03-routing-requests.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۲.۲.</div>
+			<h2 id="web-application-basics">مبانی برنامه‌های وب</h2>
+
+<p>حالا که همه چیز به درستی تنظیم شده است، بیایید اولین نسخه برنامه وب خود را بسازیم. ما با سه مورد کاملاً ضروری شروع می‌کنیم:</p>
+
+<ul>
+<li><p>اولین چیزی که نیاز داریم یک <dfn>handler</dfn> است. اگر قبلاً برنامه‌های وب را با الگوی MVC ساخته‌اید، می‌توانید handler ها را کمی شبیه کنترلرها در نظر بگیرید. آنها مسئول اجرای منطق برنامه و نوشتن هدرها و بدنه پاسخ HTTP هستند.</p></li>
+
+<li><p>دومین جزء یک router (یا <dfn>servemux</dfn> در اصطلاح Go) است. این جزء نگاشت بین الگوهای مسیریابی URL برنامه و handler های متناظر را ذخیره می‌کند. معمولاً یک servemux برای برنامه خود دارید که شامل تمام مسیرهای شماست.</p></li>
+
+<li><p>آخرین چیزی که نیاز داریم یک <dfn>سرور وب</dfn> است. یکی از نکات عالی Go این است که می‌توانید یک سرور وب را راه‌اندازی کنید و به عنوان بخشی از برنامه خود به درخواست‌های ورودی گوش دهید. شما نیازی به سرور خارجی شخص ثالث مانند Nginx، Apache یا Caddy ندارید.</p></li>
+</ul>
+
+<p>بیایید این اجزا را در فایل <code>main.go</code> کنار هم قرار دهیم تا یک برنامه کاربردی بسازیم.</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Define a home handler function which writes a byte slice containing
+</span><span class="c1"></span><span class="c1">// &#34;Hello from Snippetbox&#34; as the response body.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello from Snippetbox&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Use the http.NewServeMux() function to initialize a new servemux, then
+</span><span class="c1"></span>    <span class="c1">// register the home function as the handler for the &#34;/&#34; URL pattern.
+</span><span class="c1"></span>    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+
+    <span class="c1">// Print a log message to say that the server is starting.
+</span><span class="c1"></span>    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Use the http.ListenAndServe() function to start a new web server. We pass in
+</span><span class="c1"></span>    <span class="c1">// two parameters: the TCP network address to listen on (in this case &#34;:4000&#34;)
+</span><span class="c1"></span>    <span class="c1">// and the servemux we just created. If http.ListenAndServe() returns an error
+</span><span class="c1"></span>    <span class="c1">// we use the log.Fatal() function to log the error message and exit. Note
+</span><span class="c1"></span>    <span class="c1">// that any error returned by http.ListenAndServe() is always non-nil.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>نکته:</strong> تابع handler <code>home</code> فقط یک تابع معمولی Go با دو پارامتر است. پارامتر <code>http.ResponseWriter</code> متدهایی برای مونتاژ پاسخ HTTP و ارسال آن به کاربر فراهم می‌کند، و پارامتر <code>*http.Request</code> اشاره‌گری به یک ساختار است که اطلاعات درخواست فعلی (مانند متد HTTP و URL درخواستی) را نگه می‌دارد. ما در ادامه کتاب بیشتر در مورد این پارامترها صحبت خواهیم کرد و نحوه استفاده از آنها را نشان خواهیم داد.
+</p></aside>
+
+<p>وقتی این کد را اجرا می‌کنید، یک سرور وب را روی پورت ۴۰۰۰ ماشین محلی شما شروع می‌کند. هر بار که سرور یک درخواست HTTP جدید دریافت می‌کند، آن را به servemux منتقل می‌کند و servemux مسیر URL را بررسی کرده و درخواست را به handler متناظر ارسال می‌کند.</p>
+
+<p>بیایید این را امتحان کنیم. فایل <code>main.go</code> خود را ذخیره کنید و سپس با استفاده از دستور <code>go run</code> آن را از ترمینال اجرا کنید.</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ go run .
+<samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
+</figure>
+
+<p>در حالی که سرور در حال اجراست، یک مرورگر وب باز کنید و سعی کنید به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه‌ای شبیه این را ببینید:</p>
+
+<figure class="img">
+<img src="assets/img/02.02-01.png" alt="02.02-01.png" />
+</figure>
+
+<aside class="important"><p>
+<strong>مهم:</strong> قبل از ادامه، باید توضیح دهم که servemux در Go الگوی مسیر <code>&quot;/&quot;</code> را مانند یک catch-all در نظر می‌گیرد. بنابراین در حال حاضر <em>همه</em> درخواست‌های HTTP به سرور ما توسط تابع <code>home</code> پردازش می‌شوند، صرف نظر از مسیر URL آنها. برای مثال، می‌توانید به یک مسیر URL متفاوت مانند <a href="http://localhost:4000/foo/bar"><code>http://localhost:4000/foo/bar</code></a> بروید و دقیقاً همان پاسخ را دریافت خواهید کرد.
+</p></aside>
+
+<p>اگر به پنجره ترمینال خود برگردید، می‌توانید با فشار دادن <code>Ctrl+C</code> روی صفحه کلید خود سرور را متوقف کنید.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
+
+<h4 id="network-addresses">آدرس‌های شبکه</h4>
+
+<p>آدرس شبکه TCP که به <code>http.ListenAndServe()</code> می‌دهید باید به فرمت <code>&quot;host:port&quot;</code> باشد. اگر host را حذف کنید (مثل ما که <code>&quot;:4000&quot;</code> را استفاده کردیم) سرور روی تمام رابط‌های شبکه موجود در کامپیوتر شما گوش خواهد داد. به طور کلی، فقط زمانی نیاز به مشخص کردن host در آدرس دارید که کامپیوتر شما چندین رابط شبکه داشته باشد و بخواهید فقط روی یکی از آنها گوش دهید.</p>
+
+<p>در پروژه‌ها یا مستندات دیگر Go ممکن است گاهی اوقات آدرس‌های شبکه را با پورت‌های نام‌گذاری شده مانند <code>&quot;:http&quot;</code> یا <code>&quot;:http-alt&quot;</code> به جای عدد ببینید. اگر از یک پورت نام‌گذاری شده استفاده کنید، تابع <code>http.ListenAndServe()</code> سعی می‌کند شماره پورت مربوطه را از فایل <code>/etc/services</code> شما هنگام شروع سرور جستجو کند و در صورت عدم یافتن تطابق، خطا برمی‌گرداند.</p>
+
+<h4 id="using-go-run">استفاده از go run</h4>
+
+<p>در طول توسعه، دستور <code>go run</code> روشی مناسب برای امتحان کد شماست. این اساساً میانبری است که کد شما را کامپایل می‌کند، یک فایل اجرایی باینری در دایرکتوری <code>/tmp</code> شما ایجاد می‌کند و سپس این باینری را در یک مرحله اجرا می‌کند.</p>
+
+<p>این دستور یا لیستی از فایل‌های <code>.go</code> را با فاصله جدا شده، یا مسیر یک پکیج خاص (که کاراکتر <code>.</code> دایرکتوری فعلی شما را نشان می‌دهد)، یا مسیر کامل ماژول را می‌پذیرد. برای برنامه ما در حال حاضر، سه دستور زیر معادل هستند:</p>
+
+<figure class="code bash">
+<pre>$ go run .
+$ go run main.go
+$ go run snippetbox.alexedwards.net</pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.01-project-setup-and-creating-a-module.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست مطالب</a>
+				</div>
+				<div>
+					<a href="02.03-routing-requests.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.01-project-setup-and-creating-a-module.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.03-routing-requests.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
