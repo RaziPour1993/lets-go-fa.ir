@@ -219,7 +219,7 @@ $ go run .
 
 <h4 id="the-default-servemux">سروموکس پیش‌فرض</h4>
 
-<p>اگر مدتی با Go کار کرده‌اید، ممکن است با توابع <code>()http.Handle</code> و <code>()http.HandleFunc</code> آشنا شده باشید. این توابع به شما اجازه می‌دهند مسیرها را بدون اعلام صریح سروموکس ثبت کنید، مانند این:</p>
+<p>اگر مدتی با Go کار کرده‌اید، ممکن است با توابع <code>http.Handle()</code> و <code>http.HandleFunc()</code> آشنا شده باشید. این توابع به شما اجازه می‌دهند مسیرها را بدون اعلام صریح سروموکس ثبت کنید، مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
@@ -236,7 +236,7 @@ $ go run .
 
 <p>در پشت صحنه، این توابع مسیرهای خود را با چیزی به نام <dfn>سروموکس پیش‌فرض</dfn> ثبت می‌کنند. این فقط یک سروموکس معمولی مانند آنچه که ما تاکنون استفاده کرده‌ایم است، اما به طور خودکار توسط Go مقداردهی اولیه می‌شود و در متغیر سراسری <a href="https://pkg.go.dev/net/http#pkg-variables"><code>http.DefaultServeMux</code></a> ذخیره می‌شود.</p>
 
-<p>اگر <code>nil</code> را به عنوان آرگومان دوم به <code>()http.ListenAndServe</code> ارسال کنید، سرور از <code>http.DefaultServeMux</code> برای مسیریابی استفاده می‌کند.</p>
+<p>اگر <code>nil</code> را به عنوان آرگومان دوم به <code>http.ListenAndServe()</code> ارسال کنید، سرور از <code>http.DefaultServeMux</code> برای مسیریابی استفاده می‌کند.</p>
 
 <p>اگرچه این روش می‌تواند کد شما را کمی کوتاه‌تر کند، اما به دو دلیل آن را توصیه نمی‌کنم:</p>
 
