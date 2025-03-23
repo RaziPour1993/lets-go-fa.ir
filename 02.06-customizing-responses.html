@@ -9,7 +9,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body>
+	<body dir="rtl">
 		<header>
 			<div class="wrapper">
 				<div>
@@ -28,7 +28,7 @@
 
 <p>به طور پیش‌فرض، هر پاسخی که هندلرهای شما ارسال می‌کنند دارای <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">کد وضعیت HTTP</a> <code>200 OK</code> است (که به کاربر نشان می‌دهد درخواست او دریافت و با موفقیت پردازش شده است)، به علاوه سه هدر <em>سیستم‌تولید</em> خودکار: یک هدر <code>Date</code>، و <code>Content-Length</code> و <code>Content-Type</code> بدنه پاسخ. برای مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i localhost:4000/
 <samp>HTTP/1.1 200 OK
 Date: Wed, 18 Mar 2024 11:29:23 GMT
@@ -44,7 +44,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>ابتدا، بیایید هندلر <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا به جای <code>200 OK</code> کد وضعیت <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201"><code>201 Created</code></a> ارسال کند. برای انجام این کار، می‌توانید از متد <code>w.WriteHeader()</code> در هندلرهای خود به این صورت استفاده کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -73,7 +73,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>سرور را مجدداً راه‌اندازی کنید، سپس از curl برای ارسال یک درخواست <code>POST</code> به <code>http://localhost:4000/snippet/create</code> استفاده کنید. باید ببینید که پاسخ HTTP اکنون دارای یک کد وضعیت <code>201 Created</code> مشابه این است:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i -d &#34;&#34; http://localhost:4000/snippet/create
 <samp>HTTP/1.1 201 Created
 Date: Wed, 18 Mar 2024 11:29:23 GMT
@@ -89,7 +89,7 @@ Save a new snippet...</samp></pre>
 
 <p>بیایید هندلر <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا از ثابت <code>http.StatusCreated</code> به جای عدد <code>201</code> استفاده کند، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -110,7 +110,7 @@ Save a new snippet...</samp></pre>
 
 <p>برای نشان دادن این موضوع، بیایید یک هدر <code>Server: Go</code> به پاسخی که هندلر <code>home</code> ما ارسال می‌کند اضافه کنیم. اگر در حال دنبال کردن هستید، کد هندلر را به این صورت به‌روزرسانی کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -134,7 +134,7 @@ Save a new snippet...</samp></pre>
 
 <p>بیایید این را امتحان کنیم و با استفاده از curl یک درخواست دیگر به <code>http://localhost:4000/</code> ارسال کنیم. این بار باید ببینید که پاسخ اکنون شامل یک هدر جدید <code>Server: Go</code> است، به این صورت:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i http://localhost:4000
 <samp>HTTP/1.1 200 OK
 Server: Go
@@ -157,7 +157,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>این به این معناست که می‌توانید از توابع کتابخانه استاندارد مانند <a href="https://pkg.go.dev/io#WriteString"><code>io.WriteString()</code></a> و خانواده <a href="https://pkg.go.dev/fmt#Fprint"><code>fmt.Fprint*()</code></a> (همه آن‌ها یک پارامتر <code>io.Writer</code> می‌پذیرند) برای نوشتن بدنه‌های پاسخ متنی ساده نیز استفاده کنید.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="c1">// Instead of this...
 </span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello world&#34;</span><span class="p">)</span><span class="p">)</span>
 
@@ -168,7 +168,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>بیایید از این استفاده کنیم و کد در هندلر <code>snippetView</code> خود را به‌روزرسانی کنیم تا از تابع <code>fmt.Fprintf()</code> استفاده کند. این به ما اجازه می‌دهد تا مقدار <code>id</code> وایلدکارد را در پیام بدنه پاسخ خود جای‌گذاری کنیم <em>و</em> پاسخ را در یک خط بنویسیم، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -197,7 +197,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>تابع <code>http.DetectContentType()</code> به‌طور کلی به خوبی کار می‌کند، اما یک مشکل رایج برای توسعه‌دهندگان وب این است که نمی‌تواند JSON را از متن ساده تشخیص دهد. بنابراین، به‌طور پیش‌فرض، پاسخ‌های JSON با هدر <code>Content-Type: text/plain; charset=utf-8</code> ارسال می‌شوند. می‌توانید با تنظیم دستی هدر صحیح در هندلر خود از این اتفاق جلوگیری کنید، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/json&#34;</span><span class="p">)</span>
 <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`</span><span class="s">{</span><span class="s">&#34;name&#34;:&#34;Alex&#34;}</span><span class="s">`</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
@@ -206,7 +206,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>در این فصل از <code>w.Header().Add()</code> برای افزودن یک هدر جدید به نقشه هدر پاسخ استفاده کردیم. اما همچنین متدهای <code>Set()</code>، <code>Del()</code>، <code>Get()</code> و <code>Values()</code> وجود دارند که می‌توانید برای دستکاری و خواندن از نقشه هدر استفاده کنید.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="c1">// Set a new cache-control header. If an existing &#34;Cache-Control&#34; header exists
 </span><span class="c1"></span><span class="c1">// it will be overwritten.
 </span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">,</span> <span class="s">&#34;public, max-age=31536000&#34;</span><span class="p">)</span>
@@ -232,7 +232,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>اگر نیاز دارید که از این رفتار قانونی‌سازی جلوگیری کنید، می‌توانید نقشه هدر زیرین را به‌طور مستقیم ویرایش کنید. این نقشه در پشت صحنه نوع <code>map[string][]string</code> دارد. برای مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">[</span><span class="s">&#34;X-XSS-Protection&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1; mode=block&#34;</span><span class="p">}</span></pre>
 </figure>
 
