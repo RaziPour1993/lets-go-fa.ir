@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -34,25 +34,26 @@
 
 <p>در فصل‌های قبلی من اصطلاح <dfn>هندلر</dfn> را بدون توضیح دقیق آن به کار برده‌ام. به طور دقیق، منظور ما از هندلر <em>یک شیء است که رابط <a href="https://pkg.go.dev/net/http/#Handler"><code>http.Handler</code></a> را برآورده می‌کند</em>:</p>
 
-<figure class="code go">
-<pre><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
-    <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
-<span class="p">}</span></pre>
-</figure>
+
+<figure class="code go" style="text-align: left; direction: ltr;">
+	<pre><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
+		<span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
+	<span class="p">}</span></pre>
+	</figure>
 
 <p>به زبان ساده، این به این معنی است که برای اینکه یک شیء هندلر باشد <em>باید</em> یک متد <code>ServeHTTP()</code> با امضای دقیق زیر داشته باشد:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span></pre>
 </figure>
 
 <p>بنابراین در ساده‌ترین شکل، یک هندلر ممکن است به این صورت باشد:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="kd">type</span> <span class="nx">home</span> <span class="kd">struct</span> <span class="p">{</span><span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">h</span> <span class="o">*</span><span class="nx">home</span><span class="p">)</span> <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;این صفحه اصلی من است&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;This is my home page&#34;</span><span class="p">)</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
@@ -60,7 +61,7 @@
 
 <p>سپس می‌توانید این را با استفاده از متد <code>Handle</code> به یک servemux ثبت کنید:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">home</span><span class="p">{</span><span class="p">}</span><span class="p">)</span></pre>
 </figure>
@@ -71,9 +72,9 @@
 
 <p>اکنون، ایجاد یک شیء فقط برای اینکه بتوانیم یک متد <code>ServeHTTP()</code> بر روی آن پیاده‌سازی کنیم، طولانی و کمی گیج‌کننده است. به همین دلیل در عمل بسیار رایج‌تر است که هندلرهای خود را به عنوان یک تابع عادی بنویسید (مانند آنچه تاکنون در این کتاب انجام داده‌ایم). برای مثال:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;این صفحه اصلی من است&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;This is my home page&#34;</span><span class="p">)</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
@@ -81,7 +82,7 @@
 
 <p>در عوض می‌توانیم آن را با استفاده از آداپتور <a href="https://pkg.go.dev/net/http/#HandlerFunc"><code>http.HandlerFunc()</code></a> به یک هندلر تبدیل کنیم، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
@@ -90,7 +91,7 @@
 
 <p>در طول این پروژه تاکنون از متد <code>HandleFunc()</code> برای ثبت توابع هندلر خود با servemux استفاده کرده‌ایم. این فقط یک شکر نحوی است که یک تابع را به یک هندلر تبدیل می‌کند و آن را در یک مرحله ثبت می‌کند، به جای اینکه به صورت دستی این کار را انجام دهیم. مثال بلافاصله بالا به صورت عملکردی معادل این است:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span></pre>
 </figure>
@@ -99,7 +100,7 @@
 
 <p>شاید برخی از شما در ابتدای این پروژه متوجه چیزی جالب شده باشید. تابع <a href="https://pkg.go.dev/net/http/#ListenAndServe"><code>http.ListenAndServe()</code></a> یک شیء <code>http.Handler</code> را به عنوان پارامتر دوم می‌گیرد:</p>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left; direction: ltr;">
 <pre><span class="kd">func</span> <span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">addr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">handler</span> <span class="nx">Handler</span><span class="p">)</span> <span class="kt">error</span></pre>
 </figure>
 
