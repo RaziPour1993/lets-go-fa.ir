@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Centralized error handling &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; مدیریت خطای متمرکز</span>
+				</div>
+				<div>
+					&lsaquo; <a href="03.03-dependency-injection.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="03.05-isolating-the-application-routes.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" style="direction: rtl;">
+			<div class="chapter">فصل 3.4.</div>
+			<h2 id="centralized-error-handling">مدیریت خطای متمرکز</h2>
+
+<p>بیایید برنامه خود را با انتقال بخشی از کد مدیریت خطا به متدهای کمکی مرتب کنیم. این کار به <a href="https://deviq.com/separation-of-concerns/">جداسازی نگرانی‌ها</a> کمک می‌کند و از تکرار کد در طول ساخت جلوگیری می‌کند.</p>
+
+<p>یک فایل جدید به نام <code>helpers.go</code> در دایرکتوری <code>cmd/web</code> اضافه کنید:</p>
+
+<figure class="code bash" style="direction: ltr;">
+<pre>$ touch cmd/web/helpers.go</pre>
+</figure>
+
+<p>و کد زیر را اضافه کنید:</p>
+
+<figure class="code go" style="direction: ltr;">
+<figcaption>File:  cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// The serverError helper writes a log entry at Error level (including the request
+</span><span class="c1"></span><span class="c1">// method and URI as attributes), then sends a generic 500 Internal Server Error
+</span><span class="c1"></span><span class="c1">// response to the user.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="p">(</span>
+        <span class="nx">method</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Method</span>
+        <span class="nx">uri</span>    <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nf">RequestURI</span><span class="p">(</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;method&#34;</span><span class="p">,</span> <span class="nx">method</span><span class="p">,</span> <span class="s">&#34;uri&#34;</span><span class="p">,</span> <span class="nx">uri</span><span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StatusText</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// The clientError helper sends a specific status code and corresponding description
+</span><span class="c1"></span><span class="c1">// to the user. We&#39;ll use this later in the book to send responses like 400 &#34;Bad
+</span><span class="c1"></span><span class="c1">// Request&#34; when there&#39;s a problem with the request that the user sent.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">status</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StatusText</span><span class="p">(</span><span class="nx">status</span><span class="p">)</span><span class="p">,</span> <span class="nx">status</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>در این کد، یک چیز جدید دیگر نیز معرفی کرده‌ایم: تابع <a href="https://pkg.go.dev/net/http/#StatusText"><code>http.StatusText()</code></a>. این تابع یک نمایش متنی دوستانه از یک کد وضعیت HTTP مشخص برمی‌گرداند &mdash; برای مثال <code>http.StatusText(400)</code> رشته <code>&quot;Bad Request&quot;</code> را برمی‌گرداند و <code>http.StatusText(500)</code> رشته <code>&quot;Internal Server Error&quot;</code> را برمی‌گرداند.</p>
+
+<p>حالا که این کار انجام شد، به فایل <code>handlers.go</code> خود برگردید و آن را به‌روزرسانی کنید تا از تابع کمکی <code>serverError()</code> استفاده کند:</p>
+
+<figure class="code go" style="direction: ltr;">
+<figcaption>File:  cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    
+    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+        <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/pages/home.tmpl&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span> <span class="c1">// Use the serverError() helper.
+</span><span class="c1"></span>        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span> <span class="c1">// Use the serverError() helper.
+</span><span class="c1"></span>    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>وقتی که به‌روزرسانی شد، برنامه خود را مجدداً راه‌اندازی کنید و یک درخواست به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> در مرورگر خود ارسال کنید.</p>
+
+<p>دوباره، این باید منجر به بروز خطای (عمدی) ما شود و باید ورودی لاگ مربوطه را در ترمینال خود ببینید، شامل روش درخواست و URI به عنوان ویژگی‌ها.</p>
+
+<figure class="code bash" style="direction: ltr;">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
+time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/home.tmpl: no such file or directory&#34; method=GET uri=/</samp></pre>
+</figure>
+
+<h3 id="revert-the-deliberate-error">بازگرداندن خطای عمدی</h3>
+
+<p>در این مرحله دیگر به خطای عمدی نیاز نداریم، بنابراین آن را به این صورت برطرف کنید:</p>
+
+<figure class="code bash" style="direction: ltr;">
+<pre>$ mv ui/html/pages/home.bak ui/html/pages/home.tmpl</pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="stack-traces">ردیابی پشته</h4>
+
+<p>می‌توانید از تابع <a href="https://pkg.go.dev/runtime/debug/#Stack"><code>debug.Stack()</code></a> برای دریافت یک <em>ردیابی پشته</em> که مسیر اجرای برنامه را برای <em>گوروتین فعلی</em> مشخص می‌کند، استفاده کنید. افزودن این به عنوان یک ویژگی در ورودی‌های لاگ می‌تواند برای اشکال‌زدایی خطاها مفید باشد.</p>
+
+<p>اگر می‌خواهید، می‌توانید متد <code>serverError()</code> را به‌روزرسانی کنید تا شامل یک ردیابی پشته در ورودی‌های لاگ باشد به این صورت:</p>
+
+<figure class="code go" style="direction: ltr;">
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;runtime/debug&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="p">(</span>
+        <span class="nx">method</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Method</span>
+        <span class="nx">uri</span>    <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nf">RequestURI</span><span class="p">(</span><span class="p">)</span>
+        <span class="c1">// Use debug.Stack() to get the stack trace. This returns a byte slice, which
+</span><span class="c1"></span>        <span class="c1">// we need to convert to a string so that it&#39;s readable in the log entry.
+</span><span class="c1"></span>        <span class="nx">trace</span>  <span class="p">=</span> <span class="nb">string</span><span class="p">(</span><span class="nx">debug</span><span class="p">.</span><span class="nf">Stack</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1">// Include the trace in the log entry.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;method&#34;</span><span class="p">,</span> <span class="nx">method</span><span class="p">,</span> <span class="s">&#34;uri&#34;</span><span class="p">,</span> <span class="nx">uri</span><span class="p">,</span> <span class="s">&#34;trace&#34;</span><span class="p">,</span> <span class="nx">trace</span><span class="p">)</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StatusText</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>خروجی ورودی لاگ سپس به این صورت خواهد بود (شکست خطوط برای خوانایی اضافه شده است):</p>
+
+<figure class="code bash" style="direction: ltr;">
+<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/home.tmpl:
+   no such file or directory&#34; method=GET uri=/ trace=&#34;goroutine 6 [running]:\nruntime/
+   debug.Stack()\n\t/usr/local/go/src/runtime/debug/stack.go:24 +0x5e\nmain.(*applicat
+   ion).serverError(0xc00006c048, {0x8221b0, 0xc0000f40e0}, 0x3?, {0x820600, 0xc0000ab
+   5c0})\n\t/home/alex/code/snippetbox/cmd/web/helpers.go:14 +0x74\nmain.(*application
+   ).home(0x10?, {0x8221b0?, 0xc0000f40e0}, 0xc0000fe000)\n\t/home/alex/code/snippetbo
+   x/cmd/web/handlers.go:24 +0x16a\nnet/http.HandlerFunc.ServeHTTP(0x4459e0?, {0x8221b
+   0?, 0xc0000f40e0?}, 0x6cc57a?)\n\t/usr/local/go/src/net/http/server.go:2136 +0x29\n
+   net/http.(*ServeMux).ServeHTTP(0xa7fde0?, {0x8221b0, 0xc0000f40e0}, 0xc0000fe000)\n
+   \t/usr/local/go/src/net/http/server.go:2514 +0x142\nnet/http.serverHandler.ServeHTT
+   P({0xc0000aaf00?}, {0x8221b0?, 0xc0000f40e0?}, 0x6?)\n\t/usr/local/go/src/net/http/
+   server.go:2938 +0x8e\nnet/http.(*conn).serve(0xc0000c0120, {0x8229e0, 0xc0000aae10})
+   \n\t/usr/local/go/src/net/http/server.go:2009 +0x5f4\ncreated by net/http.(*Server).
+   Serve in goroutine 1\n\t/usr/local/go/src/net/http/server.go:3086 +0x5cb\n&#34;</samp></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="03.03-dependency-injection.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="03.05-isolating-the-application-routes.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "03.03-dependency-injection.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "03.05-isolating-the-application-routes.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
