@@ -203,44 +203,43 @@ $ go run ./cmd/web
 <p>پس از انجام این کار، مرحله بعدی این است که کد در handler <code>home</code> خود را به‌روزرسانی کنید تا هر دو فایل قالب را تجزیه کند، به این صورت:</p>
 
 <figure class="code go">
-<figcaption>File: cmd/web/handlers.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;fmt&#34;</span>
-    <span class="s">&#34;html/template&#34;</span> <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">&#34;log&#34;</span>           <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
-    <span class="s">&#34;strconv&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
-
-    <span class="c1">// Use the template.ParseFiles() function to read the template file into a
-</span><span class="c1"></span>    <span class="c1">// template set. If there&#39;s an error, we log the detailed error message, use
-</span><span class="c1"></span>    <span class="c1">// the http.Error() function to send an Internal Server Error response to the
-</span><span class="c1"></span>    <span class="c1">// user, and then return from the handler so no subsequent code is executed.
-</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="s">&#34;./ui/html/pages/home.tmpl&#34;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
-        <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Internal Server Error&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
-        <span class="k">return</span>
+    <figcaption>File: cmd/web/handlers.go</figcaption>
+    <pre><span class="kn">package</span> <span class="nx">main</span>
+    
+    <span class="o">...</span>
+    
+    <span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    
+        <span class="c1">// Initialize a slice containing the paths to the two files. It&#39;s important
+    </span><span class="c1"></span>    <span class="c1">// to note that the file containing our base template must be the *first*
+    </span><span class="c1"></span>    <span class="c1">// file in the slice.
+    </span><span class="c1"></span>    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+            <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+            <span class="s">&#34;./ui/html/pages/home.tmpl&#34;</span><span class="p">,</span>
+        <span class="p">}</span>
+    
+        <span class="c1">// Use the template.ParseFiles() function to read the files and store the
+    </span><span class="c1"></span>    <span class="c1">// templates in a template set. Notice that we use ... to pass the contents 
+    </span><span class="c1"></span>    <span class="c1">// of the files slice as variadic arguments.
+    </span><span class="c1"></span>    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Internal Server Error&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+    
+        <span class="c1">// Use the ExecuteTemplate() method to write the content of the &#34;base&#34; 
+    </span><span class="c1"></span>    <span class="c1">// template as the response body.
+    </span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Internal Server Error&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="p">}</span>
     <span class="p">}</span>
-
-    <span class="c1">// Then we use the Execute() method on the template set to write the
-</span><span class="c1"></span>    <span class="c1">// template content as the response body. The last parameter to Execute()
-</span><span class="c1"></span>    <span class="c1">// represents any dynamic data that we want to pass in, which for now we&#39;ll
-</span><span class="c1"></span>    <span class="c1">// leave as nil.
-</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Execute</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
-        <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Internal Server Error&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="o">...</span></pre>
-</figure>
+    
+    <span class="o">...</span></pre>
+    </figure>
 
 <p>بنابراین اکنون، به جای اینکه مستقیماً HTML داشته باشیم، مجموعه قالب ما حاوی 3 قالب نام‌گذاری شده &mdash; <code>base</code>، <code>title</code> و <code>main</code> است. ما از متد <code>ExecuteTemplate()</code> استفاده می‌کنیم تا به Go بگوییم که به طور خاص می‌خواهیم با استفاده از محتوای قالب <code>base</code> پاسخ دهیم (که به نوبه خود قالب‌های <code>title</code> و <code>main</code> ما را فراخوانی می‌کند).</p>
 
@@ -363,7 +362,7 @@ $ touch ui/html/partials/nav.tmpl</pre>
 <p>اما &mdash; اگر بخواهید &mdash; نیازی نیست که هیچ محتوای پیش‌فرضی بین عملیات <code>{{block}}</code> و <code>{{end}}</code> قرار دهید. در این صورت، قالب فراخوانی شده به صورت &lsquo;اختیاری&rsquo; عمل می‌کند. اگر قالب در مجموعه قالب وجود داشته باشد، رندر خواهد شد. اما اگر وجود نداشته باشد، هیچ چیزی نمایش داده نخواهد شد.</p>
 
 		</main>
-		<footer>
+		<footer class="rtl">
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="02.07-project-structure-and-organization.html">قبلی</a>
