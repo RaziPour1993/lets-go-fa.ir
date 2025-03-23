@@ -202,9 +202,9 @@ $ curl https://www.alexedwards.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static
 <ul>
 <li><p>همه مسیرهای درخواست را با عبور از تابع <a href="https://pkg.go.dev/path/#Clean"><code>path.Clean()</code></a> قبل از جستجوی یک فایل پاکسازی می‌کند. این عناصر <code>.</code> و <code>..</code> را از مسیر URL حذف می‌کند، که به جلوگیری از حملات پیمایش دایرکتوری کمک می‌کند. این ویژگی به ویژه مفید است اگر از سرور فایل در کنار یک روتر استفاده می‌کنید که به طور خودکار مسیرهای URL را پاکسازی نمی‌کند.</p></li>
 
-<li><p><a href="https://benramsey.com/blog/2008/05/206-partial-content-and-range-requests">درخواست‌های محدوده</a> به طور کامل پشتیبانی می‌شوند. این عالی است اگر برنامه شما فایل‌های بزرگی را ارائه می‌دهد و می‌خواهید از دانلودهای قابل از سرگیری پشتیبانی کنید. می‌توانید این عملکرد را در عمل ببینید اگر از curl برای درخواست بایت‌های 100-199 از فایل <code>logo.png</code> استفاده کنید، به این صورت:</p>
-
-<figure class="code bash">
+<li><p><a href="https://benramsey.com/blog/2008/05/206-partial-content-and-range-requests">درخواست‌های محدوده</a> به طور کامل پشتیبانی می‌شوند. این عالی است اگر برنامه شما فایل‌های بزرگی را ارائه می‌دهد و می‌خواهید از دانلودهای قابل از سرگیری پشتیبانی کنید. می‌توانید این عملکرد را در عمل ببینید اگر از curl برای درخواست بایت‌های 100-199 از فایل <code>logo.png</code> استفاده کنید، به این صورت:</p></li>
+	
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i -H &#34;Range: bytes=100-199&#34; --output - http://localhost:4000/static/img/logo.png
 <samp>HTTP/1.1 206 Partial Content
 Accept-Ranges: bytes
@@ -215,7 +215,8 @@ Last-Modified: Wed, 18 Mar 2024 11:29:23 GMT
 Date: Wed, 18 Mar 2024 11:29:23 GMT
 [binary data]</samp></pre>
 </figure>
-</li>
+
+
 
 <li><p>هدرهای <code>Last-Modified</code> و <code>If-Modified-Since</code> به طور شفاف پشتیبانی می‌شوند. اگر یک فایل از زمانی که کاربر آخرین بار آن را درخواست کرده تغییر نکرده باشد، <code>http.FileServer</code> یک کد وضعیت <code>304 Not Modified</code> به جای خود فایل ارسال می‌کند. این به کاهش تأخیر و بار پردازشی برای هر دو طرف مشتری و سرور کمک می‌کند.</p></li>
 
