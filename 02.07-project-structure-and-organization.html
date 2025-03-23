@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>ساختار و سازماندهی پروژه &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body {
+				direction: rtl;
+				text-align: right;
+			}
+			pre, code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; ساختار و سازماندهی پروژه</span>
+				</div>
+				<div>
+					&lsaquo; <a href="02.06-customizing-responses.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="02.08-html-templating-and-inheritance.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل 2.7.</div>
+			<h2 id="project-structure-and-organization">ساختار و سازماندهی پروژه</h2>
+
+<p>قبل از اینکه کد بیشتری به فایل <code>main.go</code> اضافه کنیم، زمان خوبی است که به نحوه سازماندهی و ساختاردهی این پروژه فکر کنیم.</p>
+
+<p>مهم است که از ابتدا توضیح دهیم که هیچ روش درست یا حتی توصیه‌شده‌ای برای ساختاردهی برنامه‌های وب در Go وجود ندارد. و این هم خوب است و هم بد. این به این معناست که شما آزادی و انعطاف‌پذیری در نحوه سازماندهی کد خود دارید، اما همچنین به راحتی می‌توانید در یک مسیر نامشخص گیر کنید وقتی که سعی می‌کنید بهترین ساختار را انتخاب کنید.</p>
+
+<p>با کسب تجربه در Go، شما احساس خواهید کرد که کدام الگوها در موقعیت‌های مختلف برای شما خوب کار می‌کنند. اما به عنوان نقطه شروع، بهترین توصیه‌ای که می‌توانم به شما بدهم این است که <em>چیزها را بیش از حد پیچیده نکنید</em>. سعی کنید سخت تلاش کنید تا ساختار و پیچیدگی را فقط زمانی اضافه کنید که به وضوح نیاز باشد.</p>
+
+<p>برای این پروژه، ما یک ساختار کلی را پیاده‌سازی خواهیم کرد که از یک <a href="https://go.dev/doc/modules/layout#server-project">رویکرد محبوب و آزمایش‌شده</a> پیروی می‌کند. این یک نقطه شروع محکم است و شما باید بتوانید ساختار کلی را در طیف وسیعی از پروژه‌ها مجدداً استفاده کنید.</p>
+
+<p>اگر شما هم دنبال می‌کنید، مطمئن شوید که در ریشه مخزن پروژه خود هستید و دستورات زیر را اجرا کنید:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ rm main.go
+$ mkdir -p cmd/web internal ui/html ui/static
+$ touch cmd/web/main.go
+$ touch cmd/web/handlers.go</pre>
+</figure>
+
+<p>ساختار مخزن پروژه شما اکنون باید به این صورت باشد:</p>
+
+<figure class="img">
+<img src="assets/img/02.07-01.png" alt="02.07-01.png" />
+</figure>
+
+<p>بیایید لحظه‌ای وقت بگذاریم تا در مورد اینکه هر یک از این دایرکتوری‌ها برای چه استفاده می‌شوند صحبت کنیم.</p>
+
+<ul>
+<li><p>دایرکتوری <code>cmd</code> شامل کد <em>خاص برنامه</em> برای برنامه‌های اجرایی در پروژه خواهد بود. فعلاً پروژه ما فقط یک برنامه اجرایی خواهد داشت &mdash; برنامه وب &mdash; که در دایرکتوری <code>cmd/web</code> قرار خواهد گرفت.</p></li>
+
+<li><p>دایرکتوری <code>internal</code> شامل کد <em>غیر خاص برنامه</em> کمکی استفاده‌شده در پروژه خواهد بود. ما از آن برای نگهداری کدهای قابل استفاده مجدد مانند کمک‌کننده‌های اعتبارسنجی و مدل‌های پایگاه داده SQL برای پروژه استفاده خواهیم کرد.</p></li>
+
+<li><p>دایرکتوری <code>ui</code> شامل <em>دارایی‌های رابط کاربری</em> استفاده‌شده توسط برنامه وب خواهد بود. به طور خاص، دایرکتوری <code>ui/html</code> شامل قالب‌های HTML خواهد بود و دایرکتوری <code>ui/static</code> شامل فایل‌های استاتیک (مانند CSS و تصاویر) خواهد بود.</p></li>
+</ul>
+
+<p><em>پس چرا از این ساختار استفاده می‌کنیم؟</em></p>
+
+<p>دو مزیت بزرگ وجود دارد:</p>
+
+<ol>
+<li><p>این یک جداسازی تمیز بین دارایی‌های Go و غیر Go ایجاد می‌کند. تمام کد Go که می‌نویسیم به طور انحصاری در دایرکتوری‌های <code>cmd</code> و <code>internal</code> قرار خواهد گرفت و ریشه پروژه را آزاد می‌گذارد تا دارایی‌های غیر Go مانند فایل‌های رابط کاربری، فایل‌های ساخت و تعریف ماژول‌ها (از جمله فایل <code>go.mod</code> ما) را نگه دارد.</p></li>
+
+<li><p>این به خوبی مقیاس‌پذیر است اگر بخواهید یک برنامه اجرایی دیگر به پروژه خود اضافه کنید. به عنوان مثال، ممکن است بخواهید یک CLI (رابط خط فرمان) برای خودکارسازی برخی از وظایف مدیریتی در آینده اضافه کنید. با این ساختار، می‌توانید این برنامه CLI را در زیر <code>cmd/cli</code> ایجاد کنید و قادر خواهید بود تمام کدی که در زیر دایرکتوری <code>internal</code> نوشته‌اید را وارد و مجدداً استفاده کنید.</p></li>
+</ol>
+
+<h3 id="refactoring-your-existing-code">بازسازی کد موجود شما</h3>
+
+<p>بیایید به سرعت کدی که قبلاً نوشته‌ایم را به این ساختار جدید منتقل کنیم.</p>
+
+<figure class="code go">
+<figcaption style="text-align: left;">File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+    
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<figure class="code go">
+<figcaption style="text-align: left;">File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello from Snippetbox&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Display a specific snippet with ID %d...&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">snippetCreate</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Display a form for creating a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusCreated</span><span class="p">)</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Save a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>بنابراین اکنون برنامه وب ما شامل چندین فایل <code>.go</code> در زیر دایرکتوری <code>cmd/web</code> است. برای اجرای این‌ها، می‌توانیم از دستور <code>go run</code> به این صورت استفاده کنیم:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ go run ./cmd/web
+<samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="the-internal-directory">دایرکتوری internal</h4>
+
+<p>مهم است که اشاره کنیم که نام دایرکتوری <code>internal</code> در Go معنای خاص و رفتار خاصی دارد: هر بسته‌ای که در زیر این دایرکتوری قرار دارد فقط می‌تواند توسط کد <em>داخل والد دایرکتوری <code>internal</code></em> وارد شود. در مورد ما، این به این معناست که هر بسته‌ای که در <code>internal</code> قرار دارد فقط می‌تواند توسط کد داخل دایرکتوری پروژه <code>snippetbox</code> وارد شود.</p>
+
+<p>یا، از طرف دیگر، این به این معناست که هر بسته‌ای که در <code>internal</code> قرار دارد <em>نمی‌تواند توسط کد خارج از پروژه ما وارد شود</em>.</p>
+
+<p>این مفید است زیرا از وارد کردن و وابستگی دیگر کدها به بسته‌های (احتمالاً بدون نسخه و پشتیبانی نشده) در دایرکتوری <code>internal</code> جلوگیری می‌کند &mdash; حتی اگر کد پروژه به صورت عمومی در جایی مانند GitHub در دسترس باشد.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.06-customizing-responses.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="02.08-html-templating-and-inheritance.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					case 37:
+						window.location.href = "02.06-customizing-responses.html";
+						break;
+					case 39:
+						window.location.href = "02.08-html-templating-and-inheritance.html";
+						break;
+				}
+			};
+		</script>
+	</body>
+</html>
+

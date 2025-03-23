@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Serving static files &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body dir="rtl">
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; ارائه فایل‌های استاتیک</span>
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.08-html-templating-and-inheritance.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="02.10-the-http-handler-interface.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل 2.9.</div>
+			<h2 id="serving-static-files">ارائه فایل‌های استاتیک</h2>
+
+<p>اکنون بیایید ظاهر و احساس صفحه اصلی را با افزودن برخی فایل‌های استاتیک CSS و تصویر به پروژه خود بهبود دهیم، همراه با کمی جاوااسکریپت برای برجسته کردن آیتم ناوبری فعال.</p>
+
+<p>اگر در حال دنبال کردن هستید، می‌توانید فایل‌های لازم را بگیرید و آن‌ها را در پوشه <code>ui/static</code> که قبلاً ساخته‌ایم با دستورات زیر استخراج کنید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ cd $HOME/code/snippetbox
+$ curl https://www.alexedwards.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</pre>
+</figure>
+
+<p>محتویات دایرکتوری <code>ui/static</code> شما اکنون باید به این شکل باشد:</p>
+
+<figure class="img">
+<img src="assets/img/02.09-01.png" alt="02.09-01.png" />
+</figure>
+
+<h3 id="the-http-fileserver-handler">هندلر http.Fileserver</h3>
+
+<p>بسته <code>net/http</code> گو با یک هندلر <a href="https://pkg.go.dev/net/http/#FileServer"><code>http.FileServer</code></a> داخلی ارائه می‌شود که می‌توانید از آن برای ارائه فایل‌ها از یک دایرکتوری خاص استفاده کنید. بیایید یک مسیر جدید به برنامه خود اضافه کنیم تا همه درخواست‌های <code>GET</code> که با <code>&quot;/static/&quot;</code> شروع می‌شوند با استفاده از این هندلر مدیریت شوند، به این صورت:</p>
+
+<table>
+<thead>
+<tr>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عمل</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /</td>
+<td>خانه</td>
+<td>نمایش صفحه اصلی</td>
+</tr>
+
+<tr>
+<td>GET /snippet/view/{id}</td>
+<td>نمایش قطعه</td>
+<td>نمایش یک قطعه خاص</td>
+</tr>
+
+<tr>
+<td>GET /snippet/create</td>
+<td>ایجاد قطعه</td>
+<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>ایجاد قطعه پست</td>
+<td>ذخیره یک قطعه جدید</td>
+</tr>
+
+<tr>
+<td><strong>GET /static/</strong></td>
+<td><strong>http.FileServer</strong></td>
+<td><strong>ارائه یک فایل استاتیک خاص</strong></td>
+</tr>
+</tbody>
+</table>
+<aside class="hint"><p>
+ <strong>به یاد داشته باشید:</strong> الگوی <code>&quot;GET /static/&quot;</code> یک الگوی مسیر زیرشاخه است، بنابراین به نوعی مانند این است که یک کاراکتر جایگزین در انتها وجود دارد.
+</p></aside>
+
+<p>برای ایجاد یک هندلر <code>http.FileServer</code> جدید، باید از تابع <a href="https://pkg.go.dev/net/http/#FileServer"><code>http.FileServer()</code></a> به این صورت استفاده کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>وقتی این هندلر درخواستی برای یک فایل دریافت می‌کند، اسلش ابتدایی را از مسیر URL درخواست حذف می‌کند و سپس دایرکتوری <code>./ui/static</code> را برای فایل مربوطه جستجو می‌کند تا به کاربر ارسال کند.</p>
+
+<p>بنابراین، برای اینکه این به درستی کار کند، باید پیشوند <code>&quot;/static&quot;</code> را از مسیر URL <em>قبل از</em> ارسال به <code>http.FileServer</code> حذف کنیم. در غیر این صورت، به دنبال فایلی خواهد بود که وجود ندارد و کاربر یک پاسخ <code>404 صفحه یافت نشد</code> دریافت خواهد کرد. خوشبختانه گو شامل یک کمک‌کننده <a href="https://pkg.go.dev/net/http/#StripPrefix"><code>http.StripPrefix()</code></a> به طور خاص برای این کار است.</p>
+
+<p>فایل <code>main.go</code> خود را باز کنید و کد زیر را اضافه کنید، به طوری که فایل به این شکل درآید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File:  cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Create a file server which serves files out of the &#34;./ui/static&#34; directory.
+</span><span class="c1"></span>    <span class="c1">// Note that the path given to the http.Dir function is relative to the project
+</span><span class="c1"></span>    <span class="c1">// directory root.
+</span><span class="c1"></span>    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// Use the mux.Handle() function to register the file server as the handler for
+</span><span class="c1"></span>    <span class="c1">// all URL paths that start with &#34;/static/&#34;. For matching paths, we strip the
+</span><span class="c1"></span>    <span class="c1">// &#34;/static&#34; prefix before the request reaches the file server.
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// Register the other application routes as normal..
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+    
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>پس از اتمام، برنامه را مجدداً راه‌اندازی کنید و <a href="http://localhost:4000/static/"><code>http://localhost:4000/static/</code></a> را در مرورگر خود باز کنید. باید یک فهرست دایرکتوری قابل مرور از پوشه <code>ui/static</code> را ببینید که به این شکل است:</p>
+
+<figure class="img">
+<img src="assets/img/02.09-02.png" alt="02.09-02.png" />
+</figure>
+
+<p>احساس راحتی کنید و در فهرست دایرکتوری بازی کنید و فایل‌های فردی را مشاهده کنید. به عنوان مثال، اگر به <a href="http://localhost:4000/static/css/main.css"><code>http://localhost:4000/static/css/main.css</code></a> بروید، باید فایل CSS را در مرورگر خود به این شکل ببینید:</p>
+
+<figure class="img">
+<img src="assets/img/02.09-03.png" alt="02.09-03.png" />
+</figure>
+
+<h3 id="using-the-static-files">استفاده از فایل‌های استاتیک</h3>
+
+<p>با کارکرد صحیح سرور فایل، اکنون می‌توانیم فایل <code>ui/html/base.tmpl</code> را به‌روزرسانی کنیم تا از فایل‌های استاتیک استفاده کنیم:</p>
+
+<figure class="code html" dir="ltr">
+<figcaption>File:  ui/html/base.tmpl</figcaption>
+<pre>{{define &#34;base&#34;}}
+<span class="cp">&lt;!doctype html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;en&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">head</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">title</span><span class="p"></span><span class="p">&gt;</span>{{template &#34;title&#34; .}} - Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">title</span><span class="p">&gt;</span>
+         <span class="c">&lt;!--</span><span class="c"> Link to the CSS stylesheet and favicon </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/static/css/main.css&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;shortcut icon&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/static/img/favicon.ico&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;image/x-icon&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> Also link to some fonts hosted by Google </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">body</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">header</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">h1</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">h1</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">header</span><span class="p">&gt;</span>
+        {{template &#34;nav&#34; .}}
+        <span class="p">&lt;</span><span class="nt">main</span><span class="p"></span><span class="p">&gt;</span>
+            {{template &#34;main&#34; .}}
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">main</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">footer</span><span class="p"></span><span class="p">&gt;</span>Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">footer</span><span class="p">&gt;</span>
+         <span class="c">&lt;!--</span><span class="c"> And include the JavaScript file </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;/static/js/main.js&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/javascript&#39;</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">html</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>تغییرات را ذخیره کنید، سپس سرور را مجدداً راه‌اندازی کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید. صفحه اصلی شما اکنون باید به این شکل باشد:</p>
+
+<figure class="img">
+<img src="assets/img/02.09-04.png" alt="02.09-04.png" />
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="file-server-features-and-functions">ویژگی‌ها و عملکردهای سرور فایل</h4>
+
+<p>هندلر <code>http.FileServer</code> گو دارای چند ویژگی واقعاً خوب است که ارزش ذکر کردن دارند:</p>
+
+<ul>
+<li><p>همه مسیرهای درخواست را با عبور از تابع <a href="https://pkg.go.dev/path/#Clean"><code>path.Clean()</code></a> قبل از جستجوی یک فایل پاکسازی می‌کند. این عناصر <code>.</code> و <code>..</code> را از مسیر URL حذف می‌کند، که به جلوگیری از حملات پیمایش دایرکتوری کمک می‌کند. این ویژگی به ویژه مفید است اگر از سرور فایل در کنار یک روتر استفاده می‌کنید که به طور خودکار مسیرهای URL را پاکسازی نمی‌کند.</p></li>
+
+<li><p><a href="https://benramsey.com/blog/2008/05/206-partial-content-and-range-requests">درخواست‌های محدوده</a> به طور کامل پشتیبانی می‌شوند. این عالی است اگر برنامه شما فایل‌های بزرگی را ارائه می‌دهد و می‌خواهید از دانلودهای قابل از سرگیری پشتیبانی کنید. می‌توانید این عملکرد را در عمل ببینید اگر از curl برای درخواست بایت‌های 100-199 از فایل <code>logo.png</code> استفاده کنید، به این صورت:</p></li>
+	
+<figure class="code bash" dir="ltr">
+<pre>$ curl -i -H &#34;Range: bytes=100-199&#34; --output - http://localhost:4000/static/img/logo.png
+<samp>HTTP/1.1 206 Partial Content
+Accept-Ranges: bytes
+Content-Length: 100
+Content-Range: bytes 100-199/1075
+Content-Type: image/png
+Last-Modified: Wed, 18 Mar 2024 11:29:23 GMT
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+[binary data]</samp></pre>
+</figure>
+
+
+
+<li><p>هدرهای <code>Last-Modified</code> و <code>If-Modified-Since</code> به طور شفاف پشتیبانی می‌شوند. اگر یک فایل از زمانی که کاربر آخرین بار آن را درخواست کرده تغییر نکرده باشد، <code>http.FileServer</code> یک کد وضعیت <code>304 Not Modified</code> به جای خود فایل ارسال می‌کند. این به کاهش تأخیر و بار پردازشی برای هر دو طرف مشتری و سرور کمک می‌کند.</p></li>
+
+<li><p>نوع محتوا به طور خودکار از پسوند فایل با استفاده از تابع <a href="https://pkg.go.dev/mime/#TypeByExtension"><code>mime.TypeByExtension()</code></a> تنظیم می‌شود. می‌توانید در صورت لزوم پسوندها و نوع‌های محتوای سفارشی خود را با استفاده از تابع <a href="https://pkg.go.dev/mime/#AddExtensionType"><code>mime.AddExtensionType()</code></a> اضافه کنید.</p></li>
+</ul>
+
+<h4 id="performance">عملکرد</h4>
+
+<p>در این فصل سرور فایل را به گونه‌ای تنظیم کردیم که فایل‌ها را از دایرکتوری <code>./ui/static</code> روی دیسک سخت شما ارائه دهد.</p>
+
+<p>اما مهم است که توجه داشته باشید که <code>http.FileServer</code> احتمالاً این فایل‌ها را از دیسک نمی‌خواند وقتی که برنامه در حال اجرا است. هر دو سیستم عامل <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-caching">ویندوز</a> و <a href="https://www.tldp.org/LDP/sag/html/buffer-cache.html">یونیکس</a> فایل‌های اخیراً استفاده شده را در RAM ذخیره می‌کنند، بنابراین (حداقل برای فایل‌هایی که به طور مکرر ارائه می‌شوند) احتمالاً <code>http.FileServer</code> آن‌ها را از RAM ارائه می‌دهد به جای اینکه سفر نسبتاً کند به دیسک سخت شما را انجام دهد.</p>
+
+<h4 id="serving-single-files">ارائه فایل‌های تکی</h4>
+
+<p>گاهی اوقات ممکن است بخواهید یک فایل تکی را از داخل یک هندلر ارائه دهید. برای این کار تابع <a href="https://pkg.go.dev/net/http/#ServeFile"><code>http.ServeFile()</code></a> وجود دارد، که می‌توانید به این صورت از آن استفاده کنید:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="kd">func</span> <span class="nf">downloadHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">ServeFile</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="s">&#34;./ui/static/file.zip&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>هشدار:</strong> <code>http.ServeFile()</code> به طور خودکار مسیر فایل را پاکسازی نمی‌کند. اگر در حال ساختن یک مسیر فایل از ورودی کاربر غیرقابل اعتماد هستید، برای جلوگیری از حملات پیمایش دایرکتوری باید ورودی را با <a href="https://pkg.go.dev/path/filepath/#Clean"><code>filepath.Clean()</code></a> قبل از استفاده از آن پاکسازی کنید.
+</p></aside>
+
+<h4 id="disabling-directory-listings">غیرفعال کردن فهرست‌های دایرکتوری</h4>
+
+<p>اگر می‌خواهید فهرست‌های دایرکتوری را غیرفعال کنید، چند روش مختلف وجود دارد که می‌توانید انجام دهید.</p>
+
+<p>ساده‌ترین راه؟ یک فایل <code>index.html</code> خالی به دایرکتوری خاصی که می‌خواهید فهرست‌ها را برای آن غیرفعال کنید اضافه کنید. این سپس به جای فهرست دایرکتوری ارائه می‌شود و کاربر یک پاسخ <code>200 OK</code> بدون بدنه دریافت خواهد کرد. اگر می‌خواهید این کار را برای همه دایرکتوری‌های زیر <code>./ui/static</code> انجام دهید، می‌توانید از دستور زیر استفاده کنید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ find ./ui/static -type d -exec touch {}/index.html \;</pre>
+</figure>
+
+<p>یک راه حل پیچیده‌تر (اما به طور قابل بحث بهتر) این است که یک پیاده‌سازی سفارشی از <a href="https://pkg.go.dev/net/http/#FileSystem"><code>http.FileSystem</code></a> ایجاد کنید و آن را برای هر دایرکتوری یک خطای <code>os.ErrNotExist</code> برگردانید. یک توضیح کامل و کد نمونه را می‌توانید در <a href="https://www.alexedwards.net/blog/disable-http-fileserver-directory-listings">این پست وبلاگ</a> پیدا کنید.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.08-html-templating-and-inheritance.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="02.10-the-http-handler-interface.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.08-html-templating-and-inheritance.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.10-the-http-handler-interface.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

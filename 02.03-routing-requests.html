@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>مسیریابی درخواست‌ها &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.left-align {
+				text-align: left;
+				direction: ltr;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; مسیریابی درخواست‌ها</span>
+				</div>
+				<div>
+					&lsaquo; <a href="02.02-web-application-basics.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="02.04-wildcard-route-patterns.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۲.۳.</div>
+			<h2 id="routing-requests">مسیریابی درخواست‌ها</h2>
+
+<p>داشتن یک برنامه وب با فقط یک مسیر خیلی هیجان‌انگیز نیست... یا مفید! بیایید چند مسیر دیگر اضافه کنیم تا برنامه به این شکل درآید:</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">عملیات</th>
+<th>هندلر</th>
+<th class="left-align">الگوی مسیر</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: right;">نمایش صفحه اصلی</td>
+<td>home</td>
+<td class="left-align">/</td>
+</tr>
+
+<tr>
+<td style="text-align: right;">نمایش یک اسنیپت خاص</td>
+<td>snippetView</td>
+<td class="left-align">/snippet/view</td>
+</tr>
+
+<tr>
+<td style="text-align: right;">نمایش فرم ایجاد اسنیپت جدید</td>
+<td>snippetCreate</td>
+<td class="left-align">/snippet/create</td>
+</tr>
+</tbody>
+</table>
+
+<p>فایل <code>main.go</code> را باز کنید و آن را به این صورت به‌روزرسانی کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello from Snippetbox&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Add a snippetView handler function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Display a specific snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Add a snippetCreate handler function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">snippetCreate</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Display a form for creating a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Register the two new handler functions and corresponding route patterns with
+</span><span class="c1"></span>    <span class="c1">// the servemux, in exactly the same way that we did before.
+</span><span class="c1"></span>    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/view&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>مطمئن شوید که این تغییرات ذخیره شده‌اند و سپس برنامه وب را مجدداً اجرا کنید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ cd $HOME/code/snippetbox
+$ go run .
+<samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
+</figure>
+
+<p>اگر لینک‌های زیر را در مرورگر وب خود باز کنید، باید پاسخ مناسب برای هر مسیر را دریافت کنید:</p>
+
+<ul>
+<li><a href="http://localhost:4000/snippet/view"><code>http://localhost:4000/snippet/view</code></a></li>
+</ul>
+
+<figure class="img">
+<img src="assets/img/02.03-01.png" alt="02.03-01.png" />
+</figure>
+
+<ul>
+<li><a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a></li>
+</ul>
+
+<figure class="img">
+<img src="assets/img/02.03-02.png" alt="02.03-02.png" />
+</figure>
+
+<h3 id="trailing-slashes-in-route-patterns">اسلش‌های انتهایی در الگوهای مسیر</h3>
+
+<p>حالا که دو مسیر جدید راه‌اندازی شده‌اند، بیایید کمی در مورد تئوری صحبت کنیم.</p>
+
+<p>مهم است بدانید که servemux قوانین تطبیق متفاوتی دارد که بستگی به این دارد که آیا الگوی مسیر به اسلش انتهایی ختم می‌شود یا خیر.</p>
+
+<p>دو الگوی مسیر جدید ما &mdash; <code>&quot;/snippet/view&quot;</code> و <code>&quot;/snippet/create&quot;</code> &mdash; به اسلش انتهایی ختم نمی‌شوند. وقتی یک الگو اسلش انتهایی ندارد، فقط زمانی تطبیق داده می‌شود (و هندلر مربوطه فراخوانی می‌شود) که مسیر URL درخواست دقیقاً با الگو مطابقت داشته باشد.</p>
+
+<p>وقتی یک الگوی مسیر به اسلش انتهایی ختم می‌شود &mdash; مانند <code>&quot;/&quot;</code> یا <code>&quot;/static/&quot;</code> &mdash; به آن الگوی   subtree path می‌گویند. الگوهای   subtree path زمانی تطبیق داده می‌شوند (و هندلر مربوطه فراخوانی می‌شود) که <em>شروع</em> مسیر URL درخواست با   subtree path مطابقت داشته باشد. اگر به درک شما کمک می‌کند، می‌توانید الگوهای زیردرختی را مانند الگوهایی با کاراکترهای جایگزین در انتها در نظر بگیرید، مانند <code>&quot;/**&quot;</code> یا <code>&quot;/static/**&quot;</code>.</p>
+
+<p>این به توضیح اینکه چرا الگوی <code>&quot;/&quot;</code> مانند یک الگوی جامع عمل می‌کند کمک می‌کند.</p>
+
+<h3 id="restricting-subtree-paths">محدود کردن  subtree paths </h3>
+
+<p>برای جلوگیری از اینکه الگوهای   subtree path مانند الگوهایی با کاراکترهای جایگزین در انتها عمل کنند، می‌توانید دنباله کاراکترهای ویژه <code>{$}</code> را به انتهای الگو اضافه کنید &mdash; مانند <code>&quot;/{$}&quot;</code> یا <code>&quot;/static/{$}&quot;</code>.</p>
+
+<p>بنابراین اگر الگوی مسیر <code>&quot;/{$}&quot;</code> را داشته باشید، اساساً به این معنی است که <em>یک اسلش تکی را تطبیق بده، به دنبال آن هیچ چیز دیگری نباشد</em>. فقط درخواست‌هایی را تطبیق می‌دهد که مسیر URL دقیقاً <code>/</code> باشد.</p>
+
+<p>بیایید از این در برنامه خود استفاده کنیم تا از عمل کردن هندلر <code>home</code> به عنوان یک الگوی جامع جلوگیری کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Hello from Snippetbox&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Add a snippetView handler function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Display a specific snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Add a snippetCreate handler function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">snippetCreate</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Display a form for creating a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span> <span class="c1">// Restrict this route to exact matches on / only.
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/view&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span> 
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>نکته:</strong> فقط مجاز به استفاده از <code>{$}</code> در انتهای الگوهای   subtree path هستید (یعنی الگوهایی که به اسلش انتهایی ختم می‌شوند). الگوهای مسیری که اسلش انتهایی ندارند در هر صورت نیاز به تطبیق کامل مسیر درخواست دارند، بنابراین منطقی نیست که <code>{$}</code> را در انتها قرار دهیم و تلاش برای انجام این کار باعث خطای زمان اجرا می‌شود.
+</p></aside>
+
+<p>پس از اعمال این تغییر، سرور را مجدداً راه‌اندازی کنید و درخواستی برای یک مسیر URL ثبت نشده مانند <a href="http://localhost:4000/foo/bar"><code>http://localhost:4000/foo/bar</code></a> ارسال کنید. حالا باید پاسخ <code>404</code> دریافت کنید که شبیه این است:</p>
+
+<figure class="img">
+<img src="assets/img/02.03-03.png" alt="02.03-03.png" />
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
+
+<h4 id="additional-servemux-features">ویژگی‌های اضافی servemux</h4>
+
+<p>چند ویژگی دیگر servemux وجود دارد که ارزش اشاره دارد:</p>
+
+<ul>
+<li><p>مسیرهای URL درخواست به طور خودکار پاکسازی می‌شوند. اگر مسیر درخواست شامل هر عنصر <code>.</code> یا <code>..</code> یا اسلش‌های تکراری باشد، کاربر به طور خودکار به یک URL تمیز معادل هدایت می‌شود. برای مثال، اگر کاربر درخواستی به <code>/foo/bar/..//baz</code> ارسال کند، به طور خودکار یک <code>301 Permanent Redirect</code> به <code>/foo/baz</code> دریافت می‌کند.</p></li>
+
+<li><p>اگر یک   subtree path ثبت شده باشد و درخواستی برای آن   subtree path <em>بدون</em> اسلش انتهایی دریافت شود، کاربر به طور خودکار یک <code>301 Permanent Redirect</code> به   subtree path با اسلش اضافه شده دریافت می‌کند. برای مثال، اگر subtree path<code>/foo/</code> را ثبت کرده باشید، هر درخواستی به <code>/foo</code> به <code>/foo/</code> هدایت می‌شود.</p></li>
+</ul>
+
+<h4 id="host-name-matching">تطبیق نام host</h4>
+
+<p>می‌توانید نام‌های host را در الگوهای مسیر خود قرار دهید. این می‌تواند زمانی مفید باشد که می‌خواهید تمام درخواست‌های HTTP را به یک URL استاندارد هدایت کنید، یا اگر برنامه شما به عنوان پشتیبان چندین سایت یا سرویس عمل می‌کند. برای مثال:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;foo.example.org/&#34;</span><span class="p">,</span> <span class="nx">fooHandler</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;bar.example.org/&#34;</span><span class="p">,</span> <span class="nx">barHandler</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/baz&#34;</span><span class="p">,</span> <span class="nx">bazHandler</span><span class="p">)</span></pre>
+</figure>
+
+<p>وقتی نوبت به تطبیق الگو می‌رسد، هر الگوی خاص host ابتدا بررسی می‌شود و اگر تطبیقی پیدا شود، درخواست به هندلر مربوطه ارسال می‌شود. فقط زمانی که <em>هیچ</em> تطبیق خاص host پیدا نشود، الگوهای غیرخاص host نیز بررسی می‌شوند.</p>
+
+<h4 id="the-default-servemux">servemux پیش‌فرض</h4>
+
+<p>اگر مدتی با Go کار کرده‌اید، ممکن است با توابع <code>http.Handle()</code> و <code>http.HandleFunc()</code> آشنا شده باشید. این توابع به شما اجازه می‌دهند مسیرها را بدون اعلام صریح servemux ثبت کنید، مانند این:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/view&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+    
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>در پشت صحنه، این توابع مسیرهای خود را با چیزی به نام <dfn>servemux پیش‌فرض</dfn> ثبت می‌کنند. این فقط یک servemux معمولی مانند آنچه که ما تاکنون استفاده کرده‌ایم است، اما به طور خودکار توسط Go مقداردهی اولیه می‌شود و در متغیر سراسری <a href="https://pkg.go.dev/net/http#pkg-variables"><code>http.DefaultServeMux</code></a> ذخیره می‌شود.</p>
+
+<p>اگر <code>nil</code> را به عنوان آرگومان دوم به <code>http.ListenAndServe()</code> ارسال کنید، سرور از <code>http.DefaultServeMux</code> برای مسیریابی استفاده می‌کند.</p>
+
+<p>اگرچه این روش می‌تواند کد شما را کمی کوتاه‌تر کند، اما به دو دلیل آن را توصیه نمی‌کنم:</p>
+
+<ul>
+<li><p>کمتر صریح است و احساس "جادویی" بیشتری نسبت به اعلام و استفاده از servemux محلی خودتان دارد.</p></li>
+
+<li><p>از آنجا که <code>http.DefaultServeMux</code> یک متغیر سراسری در کتابخانه استاندارد است، به این معنی است که <em>هر</em> کد Go در پروژه شما می‌تواند به آن دسترسی داشته باشد و به طور بالقوه یک مسیر را ثبت کند. اگر یکی از آن بسته‌های شخص ثالثی که برنامه شما وارد می‌کند</em> می‌تواند مسیرها را با <code>http.DefaultServeMux</code> ثبت کند. اگر یکی از آن بسته‌های شخص ثالث به خطر افتاده باشد، می‌توانند به طور بالقوه از <code>http.DefaultServeMux</code> برای در معرض قرار دادن یک هندلر مخرب در وب استفاده کنند. جلوگیری از این خطر ساده است، فقط از <code>http.DefaultServeMux</code> استفاده نکنید.</p>
+
+<p>بنابراین، برای وضوح، نگهداری و امنیت، به طور کلی ایده خوبی است که از <code>http.DefaultServeMux</code> و توابع کمکی مربوطه اجتناب کنید. در عوض، از servemux محلی خودتان استفاده کنید، همانطور که تاکنون در این پروژه انجام داده‌ایم.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.02-web-application-basics.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="02.04-wildcard-route-patterns.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.02-web-application-basics.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.04-wildcard-route-patterns.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

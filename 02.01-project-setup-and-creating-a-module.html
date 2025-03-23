@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>راه‌اندازی پروژه و ایجاد ماژول &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code {
+				text-align: left;
+				direction: ltr;
+			}
+			.code pre {
+				text-align: left;
+				direction: ltr;
+			}
+			.code figcaption {
+				direction: rtl;
+				text-align: right;
+			}
+			.code.bash pre,
+			.code.go pre,
+			.code.plain pre {
+				direction: ltr;
+				text-align: left;
+				white-space: pre;
+				display: block;
+				width: 100%;
+				overflow-x: auto;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&lsaquo; <a href="02.00-foundations.html">مبانی</a> &lsaquo; راه‌اندازی پروژه و ایجاد ماژول</span>
+				</div>
+				<div>
+					&lsaquo; <a href="02.00-foundations.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="02.02-web-application-basics.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۲.۱.</div>
+			<h2 id="project-setup-and-creating-a-module">راه‌اندازی پروژه و ایجاد ماژول</h2>
+
+<p>قبل از نوشتن هر کدی، باید یک پوشه به نام <code>snippetbox</code> در کامپیوتر خود ایجاد کنید که به عنوان "خانه" اصلی این پروژه عمل کند. تمام کدهای Go که در طول این کتاب می‌نویسیم در اینجا قرار می‌گیرند، به همراه سایر فایل‌های پروژه مانند قالب‌های HTML و فایل‌های CSS.</p>
+
+<p>پس، اگر همراه ما هستید، ترمینال را باز کنید و یک پوشه پروژه جدید به نام <code>snippetbox</code> در هر جایی از کامپیوتر خود ایجاد کنید. من پوشه پروژه خود را در <code>$HOME/code</code> قرار می‌دهم، اما شما می‌توانید مکان دیگری را انتخاب کنید.</p>
+
+<figure class="code bash">
+<pre>$ mkdir -p $HOME/code/snippetbox</pre>
+</figure>
+
+<h3 id="creating-a-module">ایجاد ماژول</h3>
+
+<p>گام بعدی این است که یک <dfn>مسیر ماژول</dfn> برای پروژه خود انتخاب کنید.</p>
+
+<p>اگر با <a href="https://go.dev/wiki/Modules">ماژول‌های Go</a> آشنا نیستید، می‌توانید مسیر ماژول را به عنوان یک نام یا <em>شناسه</em> استاندارد برای پروژه خود در نظر بگیرید.</p>
+
+<p>شما می‌توانید <a href="https://golang.org/ref/mod#go-mod-file-ident">تقریباً هر رشته‌ای</a> را به عنوان مسیر ماژول خود انتخاب کنید، اما نکته مهم تمرکز بر <em>یکتا بودن</em> است. برای جلوگیری از تداخل احتمالی با پروژه‌های دیگر افراد یا کتابخانه استاندارد در آینده، باید مسیر ماژولی را انتخاب کنید که در سطح جهانی یکتا باشد و احتمال استفاده مجدد آن توسط چیز دیگری کم باشد. در جامعه Go، یک قرارداد رایج این است که مسیرهای ماژول خود را بر اساس URL‌ای که مالک آن هستید پایه‌گذاری کنید.</p>
+
+<p>در مورد من، یک مسیر ماژول واضح، مختصر و <em>کم‌احتمال برای استفاده توسط چیز دیگری</em> برای این پروژه می‌تواند <code>snippetbox.alexedwards.net</code> باشد، و من از این در ادامه کتاب استفاده خواهم کرد. اگر ممکن است، بهتر است این را با چیزی که برای شما یکتا است جایگزین کنید.</p>
+
+<p>پس از تصمیم‌گیری در مورد مسیر ماژول یکتا، گام بعدی تبدیل پوشه پروژه شما به یک ماژول است.</p>
+
+<p>مطمئن شوید که در ریشه پوشه پروژه خود هستید و سپس دستور <code>go mod init</code> را اجرا کنید - مسیر ماژول انتخاب شده خود را به عنوان پارامتر به این صورت وارد کنید:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ go mod init snippetbox.alexedwards.net
+<samp>go: creating new go.mod: module snippetbox.alexedwards.net</samp></pre>
+</figure>
+
+<p>در این مرحله، پوشه پروژه شما باید کمی شبیه تصویر زیر باشد. آیا متوجه فایل <code>go.mod</code> که ایجاد شده هستید؟</p>
+
+<figure class="img">
+<img src="assets/img/02.01-01.png" alt="02.01-01.png" />
+</figure>
+
+<p>در حال حاضر چیز زیادی در این فایل وجود ندارد، و اگر آن را در ویرایشگر متن خود باز کنید، باید به این شکل باشد (اما ترجیحاً با مسیر ماژول یکتای خود شما):</p>
+
+<figure class="code plain">
+<figcaption style="direction: ltr; text-align: left;">File: go.mod</figcaption>
+<pre>module snippetbox.alexedwards.net
+
+go 1.23.0</pre>
+</figure>
+
+<p>ما در مورد ماژول‌ها در ادامه کتاب با جزئیات بیشتری صحبت خواهیم کرد، اما برای حالا کافی است بدانید که وقتی یک فایل <code>go.mod</code> معتبر در ریشه پوشه پروژه شما وجود دارد، پروژه شما <em>یک ماژول است</em>. راه‌اندازی پروژه شما به عنوان یک ماژول مزایای متعددی دارد - از جمله مدیریت آسان‌تر وابستگی‌های شخص ثالث، <a href="https://go.dev/blog/supply-chain">اجتناب از حملات زنجیره تأمین</a>، و اطمینان از ساخت‌های قابل تکرار برنامه شما در آینده.</p>
+
+<h3 id="hello-world">سلام دنیا!</h3>
+
+<p>قبل از ادامه، بیایید سریعاً بررسی کنیم که همه چیز درست تنظیم شده است. یک فایل <code>main.go</code> جدید در پوشه پروژه خود ایجاد کنید که شامل کد زیر باشد:</p>
+
+<figure class="code bash">
+<pre>$ touch main.go</pre>
+</figure>
+
+<figure class="code go">
+<figcaption style="direction: ltr; text-align: left;">File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello world!&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>این فایل را ذخیره کنید، سپس از دستور <code>go run .</code> در ترمینال خود برای کامپایل و اجرای کد در دایرکتوری فعلی استفاده کنید. اگر همه چیز درست باشد، خروجی زیر را خواهید دید:</p>
+
+<figure class="code bash">
+<pre>$ go run .
+<samp>Hello world!</samp></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
+
+<h4 id="module-paths-for-downloadable-packages">مسیرهای ماژول برای بسته‌های قابل دانلود</h4>
+
+<p>اگر در حال ایجاد پروژه‌ای هستید که می‌تواند توسط افراد و برنامه‌های دیگر دانلود و استفاده شود، پس خوب است که مسیر ماژول شما برابر با مکانی باشد که کد می‌تواند از آن دانلود شود.</p>
+
+<p>برای مثال، اگر بسته شما در <code>https://github.com/foo/bar</code> میزبانی می‌شود، پس مسیر ماژول پروژه باید <code>github.com/foo/bar</code> باشد.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.00-foundations.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="02.02-web-application-basics.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.00-foundations.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.02-web-application-basics.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

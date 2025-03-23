@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>پیش‌نیازها &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code, pre, samp {
+				direction: ltr;
+				text-align: left;
+				unicode-bidi: embed;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&lsaquo; <a href="01.00-introduction.html">مقدمه</a> &rsaquo; پیش‌نیازها</span>
+				</div>
+				<div>
+					&lsaquo; <a href="01.00-introduction.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="02.00-foundations.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱.۱.</div>
+			<h2 id="prerequisites">پیش‌نیازها</h2>
+
+<h3 id="background-knowledge">دانش پایه</h3>
+
+<p>این کتاب برای افرادی طراحی شده که تازه با Go آشنا شده‌اند، اما اگر درک کلی از نحو Go داشته باشید، احتمالاً از مطالعه آن لذت بیشتری خواهید برد. اگر در درک نحو مشکل دارید، <a href="http://openmymind.net/The-Little-Go-Book/">کتاب کوچک Go</a> نوشته Karl Seguin یک آموزش عالی است، یا اگر چیزی تعاملی‌تر می‌خواهید، پیشنهاد می‌کنم <a href="https://tour.golang.org/welcome/1">تور Go</a> را انجام دهید.</p>
+
+<p>همچنین فرض کرده‌ام که درک (بسیار) پایه‌ای از HTML/CSS و SQL دارید و با استفاده از ترمینال (یا خط فرمان برای کاربران ویندوز) آشنا هستید. اگر قبلاً با هر زبان دیگری وب اپلیکیشن ساخته‌اید &mdash; خواه Ruby، Python، PHP یا C# &mdash; این کتاب برای شما مناسب خواهد بود.</p>
+
+<h3 id="go-1-23">Go 1.23</h3>
+
+<p>اطلاعات این کتاب برای <a href="https://golang.org/doc/devel/release.html">آخرین نسخه اصلی Go</a> (نسخه 1.23) صحیح است و اگر می‌خواهید همراه با ساخت اپلیکیشن کدنویسی کنید، باید این نسخه را نصب کنید.</p>
+
+<p>اگر قبلاً Go را نصب کرده‌اید، می‌توانید شماره نسخه را از ترمینال با استفاده از دستور <code>go version</code> بررسی کنید. خروجی باید شبیه این باشد:</p>
+
+<figure class="code bash">
+<pre>$ go version
+<samp>go version go1.23.0 linux/amd64</samp></pre>
+</figure>
+
+<p>اگر نیاز به ارتقای نسخه Go دارید &mdash; یا می‌خواهید Go را از ابتدا نصب کنید &mdash; لطفاً همین حالا این کار را انجام دهید. دستورالعمل‌های دقیق برای سیستم‌عامل‌های مختلف را می‌توانید در اینجا پیدا کنید:</p>
+
+<ul>
+<li><a href="https://golang.org/doc/manage-install#uninstalling">حذف نسخه قدیمی Go</a></li>
+<li><a href="https://golang.org/doc/install#tarball">نصب Go روی Mac OS X</a></li>
+<li><a href="https://golang.org/doc/install#windows">نصب Go روی Windows</a></li>
+<li><a href="https://golang.org/doc/install#tarball">نصب Go روی Linux</a></li>
+</ul>
+
+<h3 id="other-software">سایر نرم‌افزارها</h3>
+
+<p>چند نرم‌افزار دیگر وجود دارد که اگر می‌خواهید به طور کامل همراهی کنید، باید مطمئن شوید روی کامپیوتر شما نصب هستند:</p>
+
+<ul>
+<li><p>ابزار <a href="https://curl.haxx.se/">curl</a> برای کار با درخواست‌ها و پاسخ‌های HTTP از ترمینال. روی سیستم‌عامل‌های MacOS و Linux معمولاً از پیش نصب شده است یا در مخازن نرم‌افزاری موجود است. در غیر این صورت، می‌توانید آخرین نسخه را <a href="https://curl.haxx.se/download.html">از اینجا</a> دانلود کنید.</p></li>
+
+<li><p>یک مرورگر وب با ابزارهای توسعه‌دهنده خوب. من در این کتاب از <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> استفاده می‌کنم، اما Chromium، Chrome یا Microsoft Edge هم کار خواهند کرد.</p></li>
+
+<li><p>ویرایشگر متن مورد علاقه شما 😊</p></li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="01.00-introduction.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="02.00-foundations.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "01.00-introduction.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.00-foundations.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

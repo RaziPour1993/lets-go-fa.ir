@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Method-based routing &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body {
+				direction: rtl;
+				text-align: right;
+			}
+			.code, .bash {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; مسیریابی مبتنی بر روش</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="02.04-wildcard-route-patterns.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="02.06-customizing-responses.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل 2.5.</div>
+			<h2 id="method-based-routing">مسیریابی مبتنی بر روش</h2>
+
+<p>در ادامه، بیایید با رعایت اصول خوب HTTP، برنامه خود را محدود کنیم تا فقط به درخواست‌هایی با <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">روش HTTP</a> مناسب پاسخ دهد.</p>
+
+<p>همانطور که در ساخت برنامه خود پیش می‌رویم، هندلرهای <code>home</code>، <code>snippetView</code> و <code>snippetCreate</code> فقط اطلاعات را بازیابی کرده و صفحات را به کاربر نمایش می‌دهند، بنابراین منطقی است که این هندلرها را به درخواست‌های <code>GET</code> محدود کنیم.</p>
+
+<p>برای محدود کردن یک مسیر به یک روش HTTP خاص، می‌توانید الگوی مسیر را با روش HTTP مورد نیاز هنگام اعلام آن پیشوند کنید، به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="c1">// Prefix the route patterns with the required HTTP method (for now, we will
+</span><span class="c1"></span>    <span class="c1">// restrict all three routes to acting on GET requests).
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> روش‌های HTTP در الگوهای مسیر حساس به حروف بزرگ و کوچک هستند و باید همیشه با حروف بزرگ نوشته شوند، به دنبال آن حداقل یک کاراکتر فاصله (هم فاصله‌ها و هم تب‌ها مناسب هستند) قرار گیرد. شما فقط می‌توانید یک روش HTTP را در هر الگوی مسیر قرار دهید.
+</p></aside>
+
+<p>همچنین شایان ذکر است که وقتی یک الگوی مسیر را که از روش <code>GET</code> استفاده می‌کند ثبت می‌کنید، هم <code>GET</code> و هم <code>HEAD</code> را مطابقت می‌دهد. همه روش‌های دیگر (مانند <code>POST</code>، <code>PUT</code> و <code>DELETE</code>) نیاز به مطابقت دقیق دارند.</p>
+
+<p>بیایید این تغییر را با استفاده از curl برای ارسال چند درخواست به برنامه خود آزمایش کنیم. اگر شما هم در حال دنبال کردن هستید، با ارسال یک درخواست <code>GET</code> معمولی به <code>http://localhost:4000/</code> شروع کنید، به این صورت:</p>
+
+<figure class="code bash">
+<pre>$ curl -i localhost:4000/
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Hello from Snippetbox</samp></pre>
+</figure>
+
+<p>پاسخ اینجا خوب به نظر می‌رسد. می‌توانیم ببینیم که مسیر ما هنوز کار می‌کند و یک وضعیت <code>200 OK</code> و یک بدنه پاسخ <code>Hello from Snippetbox</code> دریافت می‌کنیم، درست مثل قبل.</p>
+
+<p>همچنین می‌توانید یک درخواست <code>HEAD</code> برای همان URL ارسال کنید. باید ببینید که این نیز به درستی کار می‌کند و فقط هدرهای پاسخ HTTP را برمی‌گرداند و هیچ بدنه پاسخی ندارد.</p>
+
+<figure class="code bash">
+<pre>$ curl --head localhost:4000/
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8</samp></pre>
+</figure>
+
+<p>در مقابل، بیایید یک درخواست <code>POST</code> به <code>http://localhost:4000/</code> ارسال کنیم. روش <code>POST</code> برای این مسیر پشتیبانی نمی‌شود، بنابراین باید یک پاسخ خطا مشابه این دریافت کنید:</p>
+
+<figure class="code bash">
+<pre>$ curl -i -d &#34;&#34; localhost:4000/
+<samp>HTTP/1.1 405 Method Not Allowed
+Allow: GET, HEAD
+Content-Type: text/plain; charset=utf-8
+X-Content-Type-Options: nosniff
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 19
+
+Method Not Allowed</samp>*</pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> پرچم <code>-d</code> در curl برای اعلام هر داده <code>POST</code> HTTP که می‌خواهید در بدنه درخواست قرار دهید استفاده می‌شود. در فرمان بالا از <code>-d &quot;&quot;</code> استفاده می‌کنیم، که به این معنی است که بدنه درخواست خالی خواهد بود، اما درخواست همچنان با روش HTTP <code>POST</code> (به جای روش پیش‌فرض <code>GET</code>) ارسال خواهد شد.
+</p></aside>
+
+<p>بنابراین این خیلی خوب به نظر می‌رسد. می‌توانیم ببینیم که servemux گو به طور خودکار یک پاسخ <code>405 Method Not Allowed</code> برای ما ارسال کرده است، شامل یک هدر <code>Allow</code> که روش‌های HTTP را که برای URL درخواست پشتیبانی می‌شوند، فهرست می‌کند.</p>
+
+<h3 id="adding-a-post-only-route-and-handler">افزودن یک مسیر و هندلر فقط برای POST</h3>
+
+<p>بیایید همچنین یک هندلر جدید <code>snippetCreatePost</code> به کد خود اضافه کنیم، که بعداً برای ایجاد و ذخیره یک قطعه جدید در یک پایگاه داده استفاده خواهیم کرد. از آنجا که ایجاد و ذخیره یک قطعه یک عمل غیرقابل تکرار است که وضعیت سرور ما را تغییر می‌دهد، می‌خواهیم مطمئن شویم که این هندلر فقط به درخواست‌های <code>POST</code> عمل می‌کند.</p>
+
+<p>در مجموع، می‌خواهیم هندلر و مسیر چهارم ما به این صورت باشد:</p>
+
+<table>
+<thead>
+<tr>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عمل</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /{$}</td>
+<td>home</td>
+<td>نمایش صفحه اصلی</td>
+</tr>
+
+<tr>
+<td>GET /snippet/view/{id}</td>
+<td>snippetView</td>
+<td>نمایش یک قطعه خاص</td>
+</tr>
+
+<tr>
+<td>GET /snippet/create</td>
+<td>snippetCreate</td>
+<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+</tr>
+
+<tr>
+<td><strong>POST /snippet/create</strong></td>
+<td><strong>snippetCreatePost</strong></td>
+<td><strong>ذخیره یک قطعه جدید</strong></td>
+</tr>
+</tbody>
+</table>
+<p>بیایید کد لازم را به فایل <code>main.go</code> خود اضافه کنیم، به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Add a snippetCreatePost handler function.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;Save a new snippet...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="c1">// Create the new route, which is restricted to POST requests only.
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+    
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>توجه داشته باشید که اعلام دو (یا بیشتر) مسیر جداگانه که روش‌های HTTP متفاوتی دارند اما الگوی یکسانی دارند، کاملاً مجاز است، مانند آنچه که در اینجا با <code>&quot;GET /snippet/create&quot;</code> و <code>&quot;POST /snippet/create&quot;</code> انجام می‌دهیم.</p>
+
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و سعی کنید با استفاده از مسیر URL <code>/snippet/create</code> درخواست‌هایی ارسال کنید، باید اکنون پاسخ‌های متفاوتی بسته به روش درخواست که استفاده می‌کنید، ببینید.</p>
+
+<figure class="code bash">
+<pre>$ curl -i localhost:4000/snippet/create
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 50
+Content-Type: text/plain; charset=utf-8
+
+Display a form for creating a new snippet...</samp>
+
+$ curl -i -d &#34;&#34; localhost:4000/snippet/create
+<samp>HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 21
+Content-Type: text/plain; charset=utf-8
+
+Save a new snippet...</samp>
+
+$ curl -i -X DELETE localhost:4000/snippet/create
+<samp>HTTP/1.1 405 Method Not Allowed
+Allow: GET, HEAD, POST
+Content-Type: text/plain; charset=utf-8
+X-Content-Type-Options: nosniff
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 19
+
+Method Not Allowed</samp></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="method-precedence">اولویت روش</h4>
+
+<p>قانون <em>الگوی خاص‌تر برنده می‌شود</em> نیز در صورتی که الگوهای مسیر به دلیل یک روش HTTP همپوشانی داشته باشند، اعمال می‌شود.</p>
+
+<p>مهم است که بدانید یک الگوی مسیری که شامل یک روش نیست &mdash; مانند <code>&quot;/article/{id}&quot;</code> &mdash; با درخواست‌های HTTP با <em>هر روشی</em> مطابقت خواهد داشت. در مقابل، مسیری مانند <code>&quot;POST /article/{id}&quot;</code> فقط با درخواست‌هایی که روش <code>POST</code> دارند مطابقت خواهد داشت. بنابراین اگر مسیرهای همپوشانی <code>&quot;/article/{id}&quot;</code> و <code>&quot;POST /article/{id}&quot;</code> را در برنامه خود اعلام کنید، مسیر <code>&quot;POST /article/{id}&quot;</code> اولویت خواهد داشت.</p>
+
+<h4 id="handler-naming">نام‌گذاری هندلر</h4>
+
+<p>همچنین می‌خواهم تأکید کنم که هیچ راه درست یا غلطی برای نام‌گذاری هندلرهای خود در Go وجود ندارد.</p>
+
+<p>در این پروژه، ما از یک قرارداد پیروی می‌کنیم که نام هندلرهایی که با درخواست‌های <code>POST</code> سروکار دارند را با کلمه &lsquo;Post&rsquo; پسوند می‌دهیم. به این صورت:</p>
+
+<table>
+<thead>
+<tr>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عمل</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippet/create</td>
+<td>snippetCreate</td>
+<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>snippetCreate<strong>Post</strong></td>
+<td>ایجاد یک قطعه جدید</td>
+</tr>
+</tbody>
+</table>
+<p>اما در کار خودتان لازم نیست که از این الگو پیروی کنید. به عنوان مثال، می‌توانید نام هندلرها را با کلمات &lsquo;get&rsquo; و &lsquo;post&rsquo; پیشوند کنید، به این صورت:</p>
+
+<table>
+<thead>
+<tr>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عمل</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippet/create</td>
+<td>getSnippetCreate</td>
+<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>postSnippetCreate</td>
+<td>ایجاد یک قطعه جدید</td>
+</tr>
+</tbody>
+</table>
+<p>یا حتی به هندلرها نام‌های کاملاً متفاوتی بدهید. به عنوان مثال:</p>
+
+<table>
+<thead>
+<tr>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عمل</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippet/create</td>
+<td>newSnippetForm</td>
+<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+</tr>
+
+<tr>
+<td>POST /snippet/create</td>
+<td>createSnippet</td>
+<td>ایجاد یک قطعه جدید</td>
+</tr>
+</tbody>
+</table>
+<p>به طور کلی، شما در Go آزادی دارید که یک الگوی نام‌گذاری برای هندلرهای خود انتخاب کنید که برای شما کار کند و با ذهن شما سازگار باشد.</p>
+
+<h4 id="third-party-routers">روترهای شخص ثالث</h4>
+
+<p>عملکرد مسیریابی مبتنی بر کاراکترهای جایگزین و روش که در دو فصل گذشته استفاده کرده‌ایم نسبتاً جدید در Go است &mdash; این ویژگی تنها در نسخه 1.22 به کتابخانه استاندارد اضافه شد. در حالی که این یک افزودنی بسیار خوشایند به زبان و یک بهبود بزرگ است، ممکن است متوجه شوید که هنوز هم مواقعی وجود دارد که عملکرد مسیریابی کتابخانه استاندارد همه چیزهایی که نیاز دارید را فراهم نمی‌کند.</p>
+
+<p>به عنوان مثال، موارد زیر در حال حاضر پشتیبانی نمی‌شوند:</p>
+
+<ul>
+<li>ارسال پاسخ‌های سفارشی <code>404 Not Found</code> و <code>405 Method Not Allowed</code> به کاربر (اگرچه یک <a href="https://github.com/golang/go/issues/65648">پیشنهاد باز</a> در این باره وجود دارد).</li>
+<li>استفاده از عبارات منظم در الگوهای مسیر یا کاراکترهای جایگزین.</li>
+<li>مطابقت با چندین روش HTTP در یک اعلامیه مسیر.</li>
+<li>پشتیبانی خودکار از درخواست‌های <code>OPTIONS</code>.</li>
+<li>مسیریابی درخواست‌ها به هندلرها بر اساس چیزهای غیرمعمول، مانند هدرهای درخواست HTTP.</li>
+</ul>
+
+<p>اگر به این ویژگی‌ها در برنامه خود نیاز دارید، باید از یک بسته روتر شخص ثالث استفاده کنید. آنهایی که من توصیه می‌کنم <a href="https://github.com/julienschmidt/httprouter">httprouter</a>، <a href="https://github.com/go-chi/chi">chi</a>، <a href="https://github.com/alexedwards/flow">flow</a> و <a href="https://github.com/gorilla/mux">gorilla/mux</a> هستند، و می‌توانید مقایسه‌ای از آنها و راهنمایی درباره اینکه کدام یک را استفاده کنید در <a href="https://www.alexedwards.net/blog/which-go-router-should-i-use">این پست وبلاگ</a> پیدا کنید.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="02.04-wildcard-route-patterns.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="02.06-customizing-responses.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "02.04-wildcard-route-patterns.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "02.06-customizing-responses.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
