@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Custom template functions &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Custom template functions</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="05.05-common-dynamic-data.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="06.00-middleware.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 5.6.</div>
+			<h2 id="custom-template-functions">Custom template functions</h2>
+
+<p>In the last part of this section about templating and dynamic data, I&rsquo;d like to explain how to create your own custom functions to use in Go templates.</p>
+
+<p>To illustrate this, let&rsquo;s create a custom <code>humanDate()</code> function which outputs datetimes in a nice &lsquo;humanized&rsquo; format like <code>1 Jan 2024 at 10:47</code> or <code>18 Mar 2024 at 15:04</code> instead of outputting dates in the default format of <code>YYYY-MM-DD HH:MM:SS +0000 UTC</code> like we are currently.</p>
+
+<p>There are two main steps to doing this:</p>
+
+<ol>
+<li><p>We need to create a <a href="https://pkg.go.dev/text/template/#FuncMap"><code>template.FuncMap</code></a> object containing the custom <code>humanDate()</code> function.</p></li>
+
+<li><p>We need to use the <a href="https://pkg.go.dev/html/template/#Template.Funcs"><code>template.Funcs()</code></a> method to register this before parsing the templates.</p></li>
+</ol>
+
+<p>Go ahead and add the following code to your <code>templates.go</code> file:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;path/filepath&#34;</span>
+    <span class="s">&#34;time&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Create a humanDate function which returns a nicely formatted string
+</span><span class="c1"></span><span class="c1">// representation of a time.Time object.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">t</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="s">&#34;02 Jan 2006 at 15:04&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// Initialize a template.FuncMap object and store it in a global variable. This is
+</span><span class="c1"></span><span class="c1">// essentially a string-keyed map which acts as a lookup between the names of our
+</span><span class="c1"></span><span class="c1">// custom template functions and the functions themselves.
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">functions</span> <span class="p">=</span> <span class="nx">template</span><span class="p">.</span><span class="nx">FuncMap</span><span class="p">{</span>
+    <span class="s">&#34;humanDate&#34;</span><span class="p">:</span> <span class="nx">humanDate</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">cache</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">{</span><span class="p">}</span>
+
+    <span class="nx">pages</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Glob</span><span class="p">(</span><span class="s">&#34;./ui/html/pages/*.tmpl&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">page</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">pages</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Base</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+
+        <span class="c1">// The template.FuncMap must be registered with the template set before you
+</span><span class="c1"></span>        <span class="c1">// call the ParseFiles() method. This means we have to use template.New() to
+</span><span class="c1"></span>        <span class="c1">// create an empty template set, use the Funcs() method to register the
+</span><span class="c1"></span>        <span class="c1">// template.FuncMap, and then parse the file as normal.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span><span class="p">.</span><span class="nf">Funcs</span><span class="p">(</span><span class="nx">functions</span><span class="p">)</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseGlob</span><span class="p">(</span><span class="s">&#34;./ui/html/partials/*.tmpl&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">=</span> <span class="nx">ts</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">cache</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Before we continue, I should explain: custom template functions (like our <code>humanDate()</code> function) can accept as many parameters as they need to, but they <em>must</em> return one value only. The only exception to this is if you want to return an error as the second value, in which case that&rsquo;s OK too.</p>
+
+<p>Now we can use our <code>humanDate()</code> function in the same way as the built-in template functions:</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/home.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}Home{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p"></span><span class="p">&gt;</span>Latest Snippets<span class="p">&lt;</span><span class="p">/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    {{if .Snippets}}
+     <span class="p">&lt;</span><span class="nt">table</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">th</span><span class="p"></span><span class="p">&gt;</span>Title<span class="p">&lt;</span><span class="p">/</span><span class="nt">th</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">th</span><span class="p"></span><span class="p">&gt;</span>Created<span class="p">&lt;</span><span class="p">/</span><span class="nt">th</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">th</span><span class="p"></span><span class="p">&gt;</span>ID<span class="p">&lt;</span><span class="p">/</span><span class="nt">th</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        {{range .Snippets}}
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/snippet/view/{{.ID}}&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="c">&lt;!--</span><span class="c"> Use the new template function here </span><span class="c">--&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p"></span><span class="p">&gt;</span>{{humanDate .Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p"></span><span class="p">&gt;</span>#{{.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">td</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">table</span><span class="p">&gt;</span>
+    {{else}}
+        <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>There&#39;s nothing to see here... yet!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
+    {{end}}
+{{end}}
+</pre>
+</figure>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/view.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
+
+{{define &#34;main&#34;}}
+    {{with .Snippet}}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">strong</span><span class="p"></span><span class="p">&gt;</span>{{.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">strong</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>#{{.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">pre</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">code</span><span class="p"></span><span class="p">&gt;</span>{{.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">code</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">pre</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="c">&lt;!--</span><span class="c"> Use the new template function here </span><span class="c">--&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{humanDate .Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Expires: {{humanDate .Expires}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {{end}}
+{{end}}</pre>
+</figure>
+
+<p>Once that&rsquo;s done, restart the application. If you visit <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> and <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> in your browser you should see the new, nicely formatted, dates being used.</p>
+
+<figure class="img">
+<img src="assets/img/05.06-01.png" alt="05.06-01.png" />
+</figure>
+
+<figure class="img">
+<img src="assets/img/05.06-02.png" alt="05.06-02.png" />
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="pipelining">Pipelining</h4>
+
+<p>In the code above, we called our custom template function like this:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{humanDate .Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>An alternative approach is to use the <code>|</code> character to <em>pipeline</em> values to a function. This works a bit like pipelining outputs from one command to another in Unix terminals. We could re-write the above as:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Created | humanDate}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>A nice feature of pipelining is that you can make an arbitrarily long chain of template functions which use the output from one as the input for the next. For example, we could pipeline the output from our <code>humanDate</code> function to the inbuilt <code>printf</code> function like so:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>{{.Created | humanDate | printf &#34;Created: %s&#34;}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.05-common-dynamic-data.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="06.00-middleware.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.05-common-dynamic-data.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "06.00-middleware.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

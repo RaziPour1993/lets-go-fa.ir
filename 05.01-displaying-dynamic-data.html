@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Displaying dynamic data &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Displaying dynamic data</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="05.00-dynamic-html-templates.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="05.02-template-actions-and-functions.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 5.1.</div>
+			<h2 id="displaying-dynamic-data">Displaying dynamic data</h2>
+
+<p>Currently our <code>snippetView</code> handler function fetches a <code>models.Snippet</code> object from the database and then dumps the contents out in a plain-text HTTP response.</p>
+
+<p>In this chapter we&rsquo;ll improve this so that the data is displayed in a proper HTML webpage which looks a bit like this:</p>
+
+<p><img class="sketch" src="assets/img/05.01-01.png" alt="05.01-01.png"></img></p>
+
+<p>Let&rsquo;s start in the <code>snippetView</code> handler and add some code to render a new <code>view.tmpl</code> template file (which we will create in a minute). Hopefully this should look familiar to you from earlier in the book.</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;html/template&#34;</span> <span class="c1">// Uncomment import
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Initialize a slice containing the paths to the view.tmpl file,
+</span><span class="c1"></span>    <span class="c1">// plus the base layout and navigation partial that we made earlier.
+</span><span class="c1"></span>    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+        <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/pages/view.tmpl&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Parse the template files...
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// And then execute them. Notice how we are passing in the snippet
+</span><span class="c1"></span>    <span class="c1">// data (a models.Snippet struct) as the final parameter?
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">snippet</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>Next up we need to create the <code>view.tmpl</code> file containing the HTML markup for the page. But before we do, there&rsquo;s a little theory that I need to explain&hellip;</p>
+
+<p>Any data that you pass as the final parameter to <code>ts.ExecuteTemplate()</code> is represented within your HTML templates by the <code>.</code> character (referred to as <em>dot</em>).</p>
+
+<p>In this specific case, the underlying type of dot will be a <code>models.Snippet</code> struct. When the underlying type of dot is a struct, you can render (or <em>yield</em>) the value of any exported field in your templates by postfixing dot with the field name. So, because our <code>models.Snippet</code> struct has a <code>Title</code> field, we could yield the snippet title by writing <code>{{.Title}}</code> in our templates.</p>
+
+<p>I&rsquo;ll demonstrate. Create a new file at <code>ui/html/pages/view.tmpl</code> and add the following markup:</p>
+
+<figure class="code bash">
+<pre>$ touch ui/html/pages/view.tmpl</pre>
+</figure>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/view.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Snippet #{{.ID}}{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">strong</span><span class="p"></span><span class="p">&gt;</span>{{.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">strong</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>#{{.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">pre</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">code</span><span class="p"></span><span class="p">&gt;</span>{{.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">code</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">pre</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Expires: {{.Expires}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>If you restart the application and visit <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> in your browser, you should find that the relevant snippet is fetched from the database, passed to the template, and the content is rendered correctly.</p>
+
+<figure class="img">
+<img src="assets/img/05.01-02.png" alt="05.01-02.png" />
+</figure>
+
+<h3 id="rendering-multiple-pieces-of-data">Rendering multiple pieces of data</h3>
+
+<p>An important thing to explain is that Go’s <code>html/template</code> package allows you to pass in one &mdash; and only one &mdash; item of dynamic data when rendering a template. But in a real-world application there are often multiple pieces of dynamic data that you want to display in the same page.</p>
+
+<p>A lightweight and type-safe way to achieve this is to wrap your dynamic data in a struct which acts like a single &lsquo;holding structure&rsquo; for your data.</p>
+
+<p>Let&rsquo;s create a new <code>cmd/web/templates.go</code> file, containing a <code>templateData</code> struct to do exactly that.</p>
+
+<figure class="code bash">
+<pre>$ touch cmd/web/templates.go</pre>
+</figure>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+
+<span class="c1">// Define a templateData type to act as the holding structure for
+</span><span class="c1"></span><span class="c1">// any dynamic data that we want to pass to our HTML templates.
+</span><span class="c1"></span><span class="c1">// At the moment it only contains one field, but we&#39;ll add more
+</span><span class="c1"></span><span class="c1">// to it as the build progresses.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Snippet</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>And then let&rsquo;s update the <code>snippetView</code> handler to use this new struct when executing our templates:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+        <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/pages/view.tmpl&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Create an instance of a templateData struct holding the snippet data.
+</span><span class="c1"></span>    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">Snippet</span><span class="p">:</span> <span class="nx">snippet</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Pass in the templateData struct when executing the template.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>So now, our snippet data is contained in a <em><code>models.Snippet</code> struct within a <code>templateData</code> struct</em>. To yield the data, we need to chain the appropriate field names together like so:</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/view.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">strong</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">strong</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>#{{.Snippet.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">pre</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">code</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">code</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">pre</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Snippet.Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Expires: {{.Snippet.Expires}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>Feel free to restart the application and visit <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> again. You should see the same page rendered in your browser as before.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="dynamic-content-escaping">Dynamic content escaping</h4>
+
+<p>The <code>html/template</code> package automatically escapes any data that is yielded between <code>{{ }}</code> tags. This behavior is hugely helpful in avoiding cross-site scripting (XSS) attacks, and is the reason that you should use the <code>html/template</code> package instead of the more generic <code>text/template</code> package that Go also provides.</p>
+
+<p>As an example of escaping, if the dynamic data you wanted to yield was:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{&#34;<span class="p">&lt;</span><span class="nt">script</span><span class="p"></span><span class="p">&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;xss attack&#39;</span><span class="p">)</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>&#34;}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>It would be rendered harmlessly as:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span><span class="ni">&amp;lt;</span>script<span class="ni">&amp;gt;</span>alert(<span class="ni">&amp;#39;</span>xss attack<span class="ni">&amp;#39;</span>)<span class="ni">&amp;lt;</span>/script<span class="ni">&amp;gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>The <code>html/template</code> package is also smart enough to make escaping context-dependent. It will use the appropriate escape sequences depending on whether the data is rendered in a part of the page that contains HTML, CSS, Javascript or a URI.</p>
+
+<h4 id="nested-templates">Nested templates</h4>
+
+<p>It&rsquo;s really important to note that when you&rsquo;re invoking one template from another template, dot needs to be explicitly passed or <em>pipelined</em> to the template being invoked. You do this by including it at the end of each <code>{{template}}</code> or <code>{{block}}</code> action, like so:</p>
+
+<figure class="code html">
+<pre>{{template &#34;main&#34; .}}
+{{block &#34;sidebar&#34; .}}{{end}}</pre>
+</figure>
+
+<p>As a general rule, my advice is to get into the habit of always pipelining dot whenever you invoke a template with the <code>{{template}}</code> or <code>{{block}}</code> actions, unless you have a good reason not to.</p>
+
+<h4 id="calling-methods">Calling methods</h4>
+
+<p>If the type that you&rsquo;re yielding between <code>{{ }}</code> tags has methods defined against it, you can call these methods (so long as they are exported and they return only a single value &mdash; or a single value and an error).</p>
+
+<p>For example, our <code>.Snippet.Created</code> struct field has the underlying type <code>time.Time</code>, meaning that you could render the name of the weekday by calling its <a href="https://pkg.go.dev/time/#Time.Unix"><code>Weekday()</code></a> method like so:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Created.Weekday}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>You can also pass parameters to methods. For example, you could use the <a href="https://pkg.go.dev/time/#Time.AddDate"><code>AddDate()</code></a> method to add six months to a time like so:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Created.AddDate 0 6 0}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>Notice that this is different syntax to calling functions in Go &mdash; the parameters are <em>not</em> surrounded by parentheses and are separated by a single space character, not a comma.</p>
+
+<h4 id="html-comments">HTML comments</h4>
+
+<p>Finally, the <code>html/template</code> package always strips out any HTML comments you include in your templates, including any <a href="https://en.wikipedia.org/wiki/Conditional_comment">conditional comments</a>.</p>
+
+<p>The reason for this is to help avoid XSS attacks when rendering dynamic content. Allowing conditional comments would mean that Go isn&rsquo;t always able to anticipate how a browser will interpret the markup in a page, and therefore it wouldn&rsquo;t necessarily be able to escape everything appropriately. To solve this, Go simply strips out <em>all</em> HTML comments.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.00-dynamic-html-templates.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="05.02-template-actions-and-functions.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.00-dynamic-html-templates.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "05.02-template-actions-and-functions.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

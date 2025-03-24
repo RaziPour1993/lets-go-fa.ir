@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Caching templates &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Caching templates</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="05.02-template-actions-and-functions.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="05.04-catching-runtime-errors.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 5.3.</div>
+			<h2 id="caching-templates">Caching templates</h2>
+
+<p>Before we add any more functionality to our HTML templates, it&rsquo;s a good time to make some optimizations to our codebase. There are two main issues at the moment:</p>
+
+<ol>
+<li><p>Each and every time we render a web page, our application reads and parses the relevant template files using the <code>template.ParseFiles()</code> function. We could avoid this duplicated work by parsing the files once &mdash; when starting the application &mdash; and storing the parsed templates in an in-memory <dfn>cache</dfn>.</p></li>
+
+<li><p>There&rsquo;s duplicated code in the <code>home</code> and <code>snippetView</code> handlers, and we could reduce this duplication by creating a helper function.</p></li>
+</ol>
+
+<p>Let&rsquo;s tackle the first point first, and create an in-memory map with the type <code>map[string]*template.Template</code> to cache the parsed templates. Open your <code>cmd/web/templates.go</code> file and add the following code:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;path/filepath&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Initialize a new map to act as the cache.
+</span><span class="c1"></span>    <span class="nx">cache</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">{</span><span class="p">}</span>
+
+    <span class="c1">// Use the filepath.Glob() function to get a slice of all filepaths that
+</span><span class="c1"></span>    <span class="c1">// match the pattern &#34;./ui/html/pages/*.tmpl&#34;. This will essentially gives
+</span><span class="c1"></span>    <span class="c1">// us a slice of all the filepaths for our application &#39;page&#39; templates
+</span><span class="c1"></span>    <span class="c1">// like: [ui/html/pages/home.tmpl ui/html/pages/view.tmpl]
+</span><span class="c1"></span>    <span class="nx">pages</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Glob</span><span class="p">(</span><span class="s">&#34;./ui/html/pages/*.tmpl&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Loop through the page filepaths one-by-one.
+</span><span class="c1"></span>    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">page</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">pages</span> <span class="p">{</span>
+        <span class="c1">// Extract the file name (like &#39;home.tmpl&#39;) from the full filepath
+</span><span class="c1"></span>        <span class="c1">// and assign it to the name variable.
+</span><span class="c1"></span>        <span class="nx">name</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Base</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+
+        <span class="c1">// Create a slice containing the filepaths for our base template, any
+</span><span class="c1"></span>        <span class="c1">// partials and the page.
+</span><span class="c1"></span>        <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+            <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+            <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+            <span class="nx">page</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Parse the files into a template set.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Add the template set to the map, using the name of the page
+</span><span class="c1"></span>        <span class="c1">// (like &#39;home.tmpl&#39;) as the key.
+</span><span class="c1"></span>        <span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">=</span> <span class="nx">ts</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Return the map.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">cache</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>The next step is to initialize this cache in the <code>main()</code> function and make it available to our handlers as a dependency via the <code>application</code> struct, like this:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;html/template&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+
+    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Add a templateCache field to the application struct.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">logger</span>        <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span>      <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span>
+    <span class="nx">templateCache</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a new template cache...
+</span><span class="c1"></span>    <span class="nx">templateCache</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// And add it to the application dependencies.
+</span><span class="c1"></span>    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>        <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>      <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">templateCache</span><span class="p">:</span> <span class="nx">templateCache</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>So, at this point, we&rsquo;ve got an in-memory cache of the relevant template set for each of our pages, and our handlers have access to this cache via the <code>application</code> struct.</p>
+
+<p>Let&rsquo;s now tackle the second issue of duplicated code, and create a helper method so that we can easily render the templates from the cache.</p>
+
+<p>Open up your <code>cmd/web/helpers.go</code> file and add the following <code>render()</code> method:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">render</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">status</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">page</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">templateData</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Retrieve the appropriate template set from the cache based on the page
+</span><span class="c1"></span>    <span class="c1">// name (like &#39;home.tmpl&#39;). If no entry exists in the cache with the
+</span><span class="c1"></span>    <span class="c1">// provided name, then create a new error and call the serverError() helper
+</span><span class="c1"></span>    <span class="c1">// method that we made earlier and return.
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">templateCache</span><span class="p">[</span><span class="nx">page</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="nx">err</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;the template %s does not exist&#34;</span><span class="p">,</span> <span class="nx">page</span><span class="p">)</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Write out the provided HTTP status code (&#39;200 OK&#39;, &#39;400 Bad Request&#39; etc).
+</span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">status</span><span class="p">)</span>
+
+    <span class="c1">// Execute the template set and write the response body. Again, if there
+</span><span class="c1"></span>    <span class="c1">// is any error we call the serverError() helper.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>With that complete, we now get to see the payoff from these changes and can dramatically simplify the code in our handlers:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    
+    <span class="nx">snippets</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Latest</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the new render helper.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;home.tmpl&#34;</span><span class="p">,</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">Snippets</span><span class="p">:</span> <span class="nx">snippets</span><span class="p">,</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the new render helper.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;view.tmpl&#34;</span><span class="p">,</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">Snippet</span><span class="p">:</span> <span class="nx">snippet</span><span class="p">,</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>If you restart the application and try visiting <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> and <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> again you should see that the pages are rendered in exactly the same way as before.</p>
+
+<figure class="img">
+<img src="assets/img/05.03-01.png" alt="05.03-01.png" />
+</figure>
+
+<figure class="img">
+<img src="assets/img/05.03-02.png" alt="05.03-02.png" />
+</figure>
+
+<h3 id="automatically-parsing-partials">Automatically parsing partials</h3>
+
+<p>Before we move on, let&rsquo;s make our <code>newTemplateCache()</code> function a bit more flexible so that it automatically parses <em>all templates in the <code>ui/html/partials</code> folder</em> &mdash; rather than only our <code>nav.tmpl</code> file.</p>
+
+<p>This will save us time, typing and potential bugs if we want to add additional partials in the future.</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">cache</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">{</span><span class="p">}</span>
+
+    <span class="nx">pages</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Glob</span><span class="p">(</span><span class="s">&#34;./ui/html/pages/*.tmpl&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">page</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">pages</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Base</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+
+        <span class="c1">// Parse the base template file into a template set.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Call ParseGlob() *on this template set* to add any partials.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseGlob</span><span class="p">(</span><span class="s">&#34;./ui/html/partials/*.tmpl&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Call ParseFiles() *on this template set* to add the  page template.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Add the template set to the map as normal...
+</span><span class="c1"></span>        <span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">=</span> <span class="nx">ts</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">cache</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.02-template-actions-and-functions.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="05.04-catching-runtime-errors.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.02-template-actions-and-functions.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "05.04-catching-runtime-errors.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
