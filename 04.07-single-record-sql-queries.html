@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Single-record SQL queries &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code {
+				text-align: left;
+				direction: ltr; /* Ensures the text direction is left-to-right */
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; پرس‌وجوهای SQL تک رکوردی</span>
+				</div>
+				<div>
+					&lsaquo; <a href="04.06-executing-sql-statements.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="04.08-multiple-record-sql-queries.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 4.7.</div>
+			<h2 id="single-record-sql-queries">پرس‌وجوهای SQL تک رکوردی</h2>
+
+<p>الگوی اجرای یک دستور <code>SELECT</code> برای بازیابی یک رکورد واحد از پایگاه داده کمی پیچیده‌تر است. بیایید نحوه انجام این کار را با به‌روزرسانی متد <code>SnippetModel.Get()</code> خود توضیح دهیم تا یک قطعه خاص را بر اساس شناسه آن برگرداند.</p>
+
+<p>برای انجام این کار، باید پرس‌وجوی SQL زیر را در پایگاه داده اجرا کنیم:</p>
+
+<figure class="code sql">
+<pre><span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span> <span class="k">FROM</span> <span class="n">snippets</span>
+<span class="k">WHERE</span> <span class="n">expires</span> <span class="o">&gt;</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span> <span class="k">AND</span> <span class="n">id</span> <span class="o">=</span> <span class="o">?</span></pre>
+</figure>
+
+<p>از آنجا که جدول <code>snippets</code> ما از ستون <code>id</code> به عنوان کلید اصلی خود استفاده می‌کند، این پرس‌وجو همیشه دقیقاً یک سطر پایگاه داده (یا هیچ) را برمی‌گرداند. پرس‌وجو همچنین شامل یک بررسی بر روی زمان انقضا است تا هیچ قطعه‌ای که منقضی شده است را برنگرداند.</p>
+
+<p>همچنین توجه کنید که آیا دوباره از یک پارامتر جایگزین برای مقدار <code>id</code> استفاده می‌کنیم؟</p>
+
+<p>فایل <code>internal/models/snippets.go</code> را باز کنید و کد زیر را اضافه کنید:</p>
+
+<figure class="code go">
+<figcaption>File: internal/models/snippets.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;errors&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;time&#34;</span> 
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Write the SQL statement we want to execute. Again, I&#39;ve split it over two
+</span><span class="c1"></span>    <span class="c1">// lines for readability.
+</span><span class="c1"></span>    <span class="nx">stmt</span> <span class="o">:=</span> <span class="s">`</span><span class="s">SELECT id, title, content, created, expires FROM snippets
+</span><span class="s">    WHERE expires &gt; UTC_TIMESTAMP() AND id = ?</span><span class="s">`</span>
+
+    <span class="c1">// Use the QueryRow() method on the connection pool to execute our
+</span><span class="c1"></span>    <span class="c1">// SQL statement, passing in the untrusted id variable as the value for the
+</span><span class="c1"></span>    <span class="c1">// placeholder parameter. This returns a pointer to a sql.Row object which
+</span><span class="c1"></span>    <span class="c1">// holds the result from the database.
+</span><span class="c1"></span>    <span class="nx">row</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">QueryRow</span><span class="p">(</span><span class="nx">stmt</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a new zeroed Snippet struct.
+</span><span class="c1"></span>    <span class="kd">var</span> <span class="nx">s</span> <span class="nx">Snippet</span>
+
+    <span class="c1">// Use row.Scan() to copy the values from each field in sql.Row to the
+</span><span class="c1"></span>    <span class="c1">// corresponding field in the Snippet struct. Notice that the arguments
+</span><span class="c1"></span>    <span class="c1">// to row.Scan are *pointers* to the place you want to copy the data into,
+</span><span class="c1"></span>    <span class="c1">// and the number of arguments must be exactly the same as the number of
+</span><span class="c1"></span>    <span class="c1">// columns returned by your statement.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">row</span><span class="p">.</span><span class="nf">Scan</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">ID</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Created</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="c1">// If the query returns no rows, then row.Scan() will return a
+</span><span class="c1"></span>        <span class="c1">// sql.ErrNoRows error. We use the errors.Is() function check for that
+</span><span class="c1"></span>        <span class="c1">// error specifically, and return our own ErrNoRecord error
+</span><span class="c1"></span>        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">sql</span><span class="p">.</span><span class="nx">ErrNoRows</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="nx">ErrNoRecord</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// If everything went OK, then return the filled Snippet struct.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">s</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>در پشت صحنه <code>rows.Scan()</code> درایور شما به‌طور خودکار خروجی خام از پایگاه داده SQL را به انواع بومی Go مورد نیاز تبدیل می‌کند. تا زمانی که با انواعی که بین SQL و Go نگاشت می‌کنید معقول باشید، این تبدیل‌ها باید به‌طور کلی به‌خوبی کار کنند. معمولاً:</p>
+
+<ul>
+<li><code>CHAR</code>، <code>VARCHAR</code> و <code>TEXT</code> به <code>string</code> نگاشت می‌شوند.</li>
+<li><code>BOOLEAN</code> به <code>bool</code> نگاشت می‌شود.</li>
+<li><code>INT</code> به <code>int</code> نگاشت می‌شود؛ <code>BIGINT</code> به <code>int64</code> نگاشت می‌شود.</li>
+<li><code>DECIMAL</code> و <code>NUMERIC</code> به <code>float</code> نگاشت می‌شوند.</li>
+<li><code>TIME</code>، <code>DATE</code> و <code>TIMESTAMP</code> به <code>time.Time</code> نگاشت می‌شوند.</li>
+</ul>
+
+<aside class="note"><p>
+<strong>توجه:</strong> یکی از ویژگی‌های درایور MySQL ما این است که باید از پارامتر <code>parseTime=true</code> در DSN خود استفاده کنیم تا آن را مجبور کنیم که فیلدهای <code>TIME</code> و <code>DATE</code> را به <code>time.Time</code> تبدیل کند. در غیر این صورت، این فیلدها را به عنوان اشیاء <code>[]byte</code> برمی‌گرداند. این یکی از بسیاری از <a href="https://github.com/go-sql-driver/mysql#parameters">پارامترهای خاص درایور</a> است که ارائه می‌دهد.
+</p></aside>
+
+<p>اگر در این نقطه سعی کنید برنامه را اجرا کنید، باید یک خطای زمان کامپایل دریافت کنید که می‌گوید مقدار <code>ErrNoRecord</code> تعریف نشده است:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web/
+<samp># snippetbox.alexedwards.net/internal/models
+internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
+</figure>
+
+<p>بیایید اکنون آن را در یک فایل جدید <code>internal/models/errors.go</code> ایجاد کنیم. به این صورت:</p>
+
+<figure class="code bash">
+<pre>$ touch internal/models/errors.go</pre>
+</figure>
+
+<figure class="code go">
+<figcaption>File: internal/models/errors.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="nx">ErrNoRecord</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;models: no matching record found&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>به عنوان یک نکته جانبی، ممکن است بپرسید چرا ما خطای <code>ErrNoRecord</code> را از متد <code>SnippetModel.Get()</code> خود برمی‌گردانیم، به جای <code>sql.ErrNoRows</code> به‌طور مستقیم. دلیل این کار کمک به کپسوله‌سازی کامل مدل است، به‌طوری که هندلرهای ما نگران پایگاه داده زیرین نباشند یا به خطاهای خاص پایگاه داده (مانند <code>sql.ErrNoRows</code>) برای رفتار خود وابسته نباشند.</p>
+
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما</h3>
+
+<p>بسیار خوب، بیایید متد <code>SnippetModel.Get()</code> را به کار بگیریم.</p>
+
+<p>فایل <code>cmd/web/handlers.go</code> خود را باز کنید و هندلر <code>snippetView</code> را به‌روزرسانی کنید تا داده‌های یک رکورد خاص را به عنوان یک پاسخ HTTP برگرداند:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the SnippetModel&#39;s Get() method to retrieve the data for a
+</span><span class="c1"></span>    <span class="c1">// specific record based on its ID. If no matching record is found,
+</span><span class="c1"></span>    <span class="c1">// return a 404 Not Found response.
+</span><span class="c1"></span>    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Write the snippet data as a plain-text HTTP response body.
+</span><span class="c1"></span>    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;%+v&#34;</span><span class="p">,</span> <span class="nx">snippet</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>بیایید این را امتحان کنیم. برنامه را مجدداً راه‌اندازی کنید، سپس مرورگر وب خود را باز کنید و به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بروید. باید یک پاسخ HTTP ببینید که شبیه به این است:</p>
+
+<figure class="img">
+<img src="assets/img/04.07-01.png" alt="04.07-01.png" />
+</figure>
+
+<p>همچنین ممکن است بخواهید برخی درخواست‌ها برای قطعات دیگر که منقضی شده‌اند یا هنوز وجود ندارند (مانند یک مقدار <code>id</code> برابر با <code>99</code>) را امتحان کنید تا تأیید کنید که آنها یک پاسخ <code>404 page not found</code> برمی‌گردانند:</p>
+
+<figure class="img">
+<img src="assets/img/04.07-02.png" alt="04.07-02.png" />
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="checking-for-specific-errors">بررسی خطاهای خاص</h4>
+
+<p>چندین بار در این فصل از تابع <a href="https://tip.golang.org/pkg/errors/#Is"><code>errors.Is()</code></a> برای بررسی اینکه آیا یک خطا با یک مقدار خاص مطابقت دارد استفاده کرده‌ایم. مانند این:</p>
+
+<figure class="code go">
+<pre><span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>در نسخه‌های بسیار قدیمی Go (قبل از 1.13)، روش ایدئال برای مقایسه خطاها استفاده از عملگر برابری <code>==</code> بود، به این صورت:</p>
+
+<figure class="code go">
+<pre><span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span> <span class="p">{</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اما، در حالی که این کد هنوز کامپایل می‌شود، استفاده از تابع <code>errors.Is()</code> ایمن‌تر و بهترین روش است.</p>
+
+<p>این به این دلیل است که Go 1.13 قابلیت افزودن اطلاعات اضافی به خطاها را با <a href="https://go.dev/blog/go1.13-errors#wrapping-errors-with-w"><em>بسته‌بندی آنها</em></a> معرفی کرد. اگر یک خطا به‌طور اتفاقی بسته‌بندی شود، یک مقدار خطای کاملاً جدید ایجاد می‌شود &mdash; که به نوبه خود به این معنی است که بررسی مقدار خطای اصلی زیرین با استفاده از عملگر برابری معمولی <code>==</code> ممکن نیست.</p>
+
+<p>تابع <code>errors.Is()</code> با <em>باز کردن</em> خطاها در صورت لزوم قبل از بررسی برای مطابقت کار می‌کند.</p>
+
+<p>همچنین یک تابع دیگر به نام <a href="https://tip.golang.org/pkg/errors/#As"><code>errors.As()</code></a> وجود دارد که می‌توانید از آن برای بررسی اینکه آیا یک خطا (احتمالاً بسته‌بندی شده) دارای یک <em>نوع</em> خاص است استفاده کنید. ما بعداً در این کتاب از این استفاده خواهیم کرد.</p>
+
+<h4 id="shorthand-single-record-queries">پرس‌وجوهای تک رکوردی کوتاه</h4>
+
+<p>من عمداً کد در <code>SnippetModel.Get()</code> را کمی طولانی کرده‌ام تا به وضوح و تأکید بر آنچه در پشت صحنه کد اتفاق می‌افتد کمک کنم.</p>
+
+<p>در عمل، می‌توانید کد را کمی کوتاه کنید با استفاده از این واقعیت که خطاها از <code>DB.QueryRow()</code> تا زمانی که <code>Scan()</code> فراخوانی شود به تعویق می‌افتند. این هیچ تفاوت عملکردی ندارد، اما اگر بخواهید می‌توانید کد را به این صورت بازنویسی کنید:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">s</span> <span class="nx">Snippet</span>
+    
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">QueryRow</span><span class="p">(</span><span class="s">&#34;SELECT ...&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">.</span><span class="nf">Scan</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">ID</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Created</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">sql</span><span class="p">.</span><span class="nx">ErrNoRows</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="nx">ErrNoRecord</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+             <span class="k">return</span> <span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">s</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.06-executing-sql-statements.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="04.08-multiple-record-sql-queries.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.06-executing-sql-statements.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.08-multiple-record-sql-queries.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
