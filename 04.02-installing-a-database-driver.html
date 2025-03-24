@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>نصب درایور پایگاه داده &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go, .code.html, .code.bash {
+				direction: ltr !important;
+				text-align: left !important;
+				unicode-bidi: embed;
+			}
+			.code.go pre, .code.html pre, .code.bash pre {
+				direction: ltr !important;
+				text-align: left !important;
+				unicode-bidi: embed;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&lsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &lsaquo; نصب درایور پایگاه داده</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.01-setting-up-mysql.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="04.03-modules-and-reproducible-builds.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۴.۲.</div>
+			<h2 id="installing-a-database-driver">نصب درایور پایگاه داده</h2>
+
+<p>برای استفاده از MySQL در برنامه وب Go ما، نیاز به نصب یک <dfn>درایور پایگاه داده</dfn> داریم. این درایور اساساً به عنوان یک واسطه عمل می‌کند و دستورات را بین Go و پایگاه داده MySQL ترجمه می‌کند.</p>
+
+<p>شما می‌توانید لیست جامعی از <a href="https://go.dev/wiki/SQLDrivers">درایورهای موجود</a> را در ویکی Go پیدا کنید، اما برای برنامه ما از درایور محبوب <a href="https://github.com/go-sql-driver/mysql"><code>go-sql-driver/mysql</code></a> استفاده خواهیم کرد.</p>
+
+<p>برای دانلود آن، به دایرکتوری پروژه خود بروید و دستور <code>go get</code> را به این صورت اجرا کنید:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ go get github.com/go-sql-driver/mysql@v1
+<samp>go: added filippo.io/edwards25519 v1.1.0
+go: added github.com/go-sql-driver/mysql v1.8.1</samp></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>نکته:</strong> دستور <code>go get</code> به صورت بازگشتی تمام وابستگی‌های پکیج را دانلود می‌کند. در این مورد، پکیج <code>github.com/go-sql-driver/mysql</code> از پکیج <code>filippo.io/edwards25519</code> استفاده می‌کند، بنابراین این پکیج نیز دانلود خواهد شد.
+</p></aside>
+
+<p>توجه داشته باشید که ما پسوند <code>@v1</code> را به مسیر پکیج اضافه کرده‌ایم تا نشان دهیم که می‌خواهیم <a href="https://github.com/go-sql-driver/mysql/releases">آخرین نسخه موجود</a> از <code>github.com/go-sql-driver/mysql</code> را با <em>شماره نسخه اصلی 1</em> دانلود کنیم.</p>
+
+<p>در زمان نگارش این متن، آخرین نسخه <code>v1.8.1</code> است، اما نسخه‌ای که شما دانلود می‌کنید ممکن است <code>v1.8.2</code>، <code>v1.9.0</code> یا مشابه آن باشد - و این مشکلی ندارد. از آنجایی که پکیج <code>go-sql-driver/mysql</code> از <a href="https://semver.org/">نسخه‌گذاری معنایی</a> برای انتشارات خود استفاده می‌کند، هر نسخه <code>v1.x.x</code> باید با بقیه کدهای این کتاب سازگار باشد.</p>
+
+<p>به عنوان نکته جانبی، اگر می‌خواهید آخرین نسخه را، صرف نظر از شماره نسخه، دانلود کنید، می‌توانید به سادگی پسوند <code>@version</code> را حذف کنید:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/go-sql-driver/mysql</pre>
+</figure>
+
+<p>یا اگر می‌خواهید نسخه خاصی از یک پکیج را دانلود کنید، می‌توانید از شماره نسخه کامل استفاده کنید. برای مثال:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/go-sql-driver/mysql@v1.0.3</pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.01-setting-up-mysql.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="04.03-modules-and-reproducible-builds.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.01-setting-up-mysql.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.03-modules-and-reproducible-builds.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
