@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>اجرای دستورات SQL &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body { direction: rtl; text-align: right; }
+			.code, pre, .code pre { direction: ltr; text-align: left; }
+			header .wrapper div:first-child { text-align: right; }
+			header .wrapper div:last-child { text-align: left; }
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; اجرای دستورات SQL</span>
+				</div>
+				<div>
+					&lsaquo; <a href="04.05-designing-a-database-model.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="04.07-single-record-sql-queries.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۴.۶</div>
+			<h2 id="executing-sql-statements">اجرای دستورات SQL</h2>
+
+<p>حالا بیایید متد <code>SnippetModel.Insert()</code> را که تازه ایجاد کرده‌ایم به‌روزرسانی کنیم تا یک رکورد جدید در جدول <code>snippets</code> ما ایجاد کند و سپس شناسه عددی <code>id</code> برای رکورد جدید را برگرداند.</p>
+
+<p>برای انجام این کار، می‌خواهیم کوئری SQL زیر را در پایگاه داده خود اجرا کنیم:</p>
+
+<figure class="code sql">
+<pre><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">snippets</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span>
+<span class="k">VALUES</span><span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">,</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="n">DATE_ADD</span><span class="p">(</span><span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nb">INTERVAL</span> <span class="o">?</span> <span class="k">DAY</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>توجه کنید که در این کوئری از کاراکتر <code>?</code> برای نشان دادن <em>پارامترهای جایگزین</em> برای داده‌هایی که می‌خواهیم در پایگاه داده وارد کنیم استفاده می‌کنیم؟ از آنجایی که داده‌هایی که استفاده خواهیم کرد در نهایت ورودی غیرقابل اعتماد کاربر از یک فرم خواهد بود، استفاده از پارامترهای جایگزین به جای درج مستقیم داده در کوئری SQL یک روش خوب است.</p>
+
+<h3 id="executing-the-query">اجرای کوئری</h3>
+
+<p>Go سه روش مختلف برای اجرای کوئری‌های پایگاه داده ارائه می‌دهد:</p>
+
+<ul>
+<li><a href="https://pkg.go.dev/database/sql/#DB.Query"><code>DB.Query()</code></a> برای کوئری‌های <code>SELECT</code> که چندین سطر برمی‌گردانند استفاده می‌شود.</li>
+<li><a href="https://pkg.go.dev/database/sql/#DB.QueryRow"><code>DB.QueryRow()</code></a> برای کوئری‌های <code>SELECT</code> که یک سطر برمی‌گردانند استفاده می‌شود.</li>
+<li><a href="https://pkg.go.dev/database/sql/#DB.Exec"><code>DB.Exec()</code></a> برای دستوراتی که سطری برنمی‌گردانند (مانند <code>INSERT</code> و <code>DELETE</code>) استفاده می‌شود.</li>
+</ul>
+
+<p>بنابراین، در مورد ما، مناسب‌ترین ابزار برای این کار <code>DB.Exec()</code> است. بیایید مستقیماً وارد عمل شویم و نحوه استفاده از آن را در متد <code>SnippetModel.Insert()</code> نشان دهیم. جزئیات را بعداً بررسی خواهیم کرد.</p>
+
+<p>فایل <code>internal/models/snippets.go</code> خود را باز کنید و آن را به این صورت به‌روزرسانی کنید:</p>
+
+<figure class="code go">
+<figcaption>File: internal/models/snippets.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="o">...</span>
+
+<span class="kd">type</span> <span class="nx">SnippetModel</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">DB</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">expires</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Write the SQL statement we want to execute. I&#39;ve split it over two lines
+</span><span class="c1"></span>    <span class="c1">// for readability (which is why it&#39;s surrounded with backquotes instead
+</span><span class="c1"></span>    <span class="c1">// of normal double quotes).
+</span><span class="c1"></span>    <span class="nx">stmt</span> <span class="o">:=</span> <span class="s">`</span><span class="s">INSERT INTO snippets (title, content, created, expires)
+</span><span class="s">    VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))</span><span class="s">`</span>
+
+    <span class="c1">// Use the Exec() method on the embedded connection pool to execute the
+</span><span class="c1"></span>    <span class="c1">// statement. The first parameter is the SQL statement, followed by the
+</span><span class="c1"></span>    <span class="c1">// values for the placeholder parameters: title, content and expiry in
+</span><span class="c1"></span>    <span class="c1">// that order. This method returns a sql.Result type, which contains some
+</span><span class="c1"></span>    <span class="c1">// basic information about what happened when the statement was executed.
+</span><span class="c1"></span>    <span class="nx">result</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="nx">stmt</span><span class="p">,</span> <span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the LastInsertId() method on the result to get the ID of our
+</span><span class="c1"></span>    <span class="c1">// newly inserted record in the snippets table.
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">result</span><span class="p">.</span><span class="nf">LastInsertId</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// The ID returned has the type int64, so we convert it to an int type
+</span><span class="c1"></span>    <span class="c1">// before returning.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>بیایید سریعاً درباره نوع <a href="https://pkg.go.dev/database/sql/#Result"><code>sql.Result</code></a> که توسط <code>DB.Exec()</code> برگردانده می‌شود صحبت کنیم. این دو متد را ارائه می‌دهد:</p>
+
+<ul>
+<li><p><code>LastInsertId()</code> - که عدد صحیح (یک <code>int64</code>) تولید شده توسط پایگاه داده در پاسخ به یک دستور را برمی‌گرداند. معمولاً این از یک ستون "افزایش خودکار" هنگام درج یک سطر جدید است، که دقیقاً همان چیزی است که در مورد ما اتفاق می‌افتد.</p></li>
+
+<li><p><code>RowsAffected()</code> - که تعداد سطرهای (به صورت <code>int64</code>) تحت تأثیر دستور را برمی‌گرداند.</p></li>
+</ul>
+
+<aside class="important"><p>
+<strong>مهم:</strong> همچنین، کاملاً قابل قبول (و رایج) است که مقدار برگشتی <code>sql.Result</code> را نادیده بگیرید اگر به آن نیاز ندارید. مانند این:</p></aside>
+
+<figure class="code go">
+<pre><span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;INSERT INTO ...&#34;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span></pre>
+</figure>
+
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما</h3>
+
+<p>بیایید این را به چیزی ملموس‌تر برگردانیم و نشان دهیم چگونه این کد جدید را از هندلرهای خود فراخوانی کنیم. فایل <code>cmd/web/handlers.go</code> خود را باز کنید و هندلر <code>snippetCreatePost</code> را به این صورت به‌روزرسانی کنید:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Create some variables holding dummy data. We&#39;ll remove these later on
+</span><span class="c1"></span>    <span class="c1">// during the build.
+</span><span class="c1"></span>    <span class="nx">title</span> <span class="o">:=</span> <span class="s">&#34;O snail&#34;</span>
+    <span class="nx">content</span> <span class="o">:=</span> <span class="s">&#34;O snail\nClimb Mount Fuji,\nBut slowly, slowly!\n\n– Kobayashi Issa&#34;</span>
+    <span class="nx">expires</span> <span class="o">:=</span> <span class="mi">7</span>
+
+    <span class="c1">// Pass the data to the SnippetModel.Insert() method, receiving the
+</span><span class="c1"></span>    <span class="c1">// ID of the new record back.
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Redirect the user to the relevant page for the snippet.
+</span><span class="c1"></span>    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>برنامه را اجرا کنید، سپس یک پنجره ترمینال دوم باز کنید و از curl برای ارسال یک درخواست <code>POST /snippet/create</code> استفاده کنید، به این صورت (توجه کنید که پرچم <code>-L</code> به curl دستور می‌دهد که به طور خودکار ریدایرکت‌ها را دنبال کند):</p>
+
+<figure class="code bash">
+<pre>$ curl -iL -d &#34;&#34; http://localhost:4000/snippet/create
+<samp>HTTP/1.1 303 See Other
+Location: /snippet/view/4
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 0
+
+HTTP/1.1 200 OK
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 39
+Content-Type: text/plain; charset=utf-8
+
+Display a specific snippet with ID 4...</samp></pre>
+</figure>
+
+<p>پس این به خوبی کار می‌کند. ما یک درخواست HTTP ارسال کردیم که هندلر <code>snippetCreatePost</code> ما را فعال کرد، که به نوبه خود متد <code>SnippetModel.Insert()</code> ما را فراخوانی کرد. این یک رکورد جدید در پایگاه داده درج کرد و شناسه این رکورد جدید را برگرداند. سپس هندلر ما یک ریدایرکت به URL دیگری با شناسه درج شده صادر کرد.</p>
+
+<p>راحت باشید و نگاهی به جدول <code>snippets</code> در پایگاه داده MySQL خود بیندازید. باید رکورد جدید با شناسه <code>4</code> مشابه این را ببینید:</p>
+
+<figure class="code bash">
+<pre>mysql&gt; SELECT id, title, expires FROM snippets;
+<samp>+----+------------------------+---------------------+
+| id | title                  | expires             |
++----+------------------------+---------------------+
+|  1 | An old silent pond     | 2025-03-18 10:00:26 |
+|  2 | Over the wintry forest | 2025-03-18 10:00:26 |
+|  3 | First autumn morning   | 2024-03-25 10:00:26 |
+|  4 | O snail                | 2024-03-25 10:13:04 |
++----+------------------------+---------------------+
+4 rows in set (0.00 sec)</samp></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
+
+<h4 id="placeholder-parameters">پارامترهای جایگزین</h4>
+
+<p>در کد بالا، ما عبارت SQL خود را با استفاده از پارامترهای جایگزین ساختیم، جایی که <code>?</code> به عنوان جایگزینی برای داده‌هایی که می‌خواهیم درج کنیم عمل می‌کرد.</p>
+
+<p>دلیل استفاده از پارامترهای جایگزین برای ساخت کوئری ما (به جای درج مستقیم رشته) کمک به جلوگیری از حملات تزریق SQL از هر ورودی غیرقابل اعتماد کاربر است.</p>
+
+<p>در پشت صحنه، متد <code>DB.Exec()</code> در سه مرحله کار می‌کند:</p>
+
+<ol>
+<li><p>یک <a href="https://en.wikipedia.org/wiki/Prepared_statement">دستور آماده</a> جدید در پایگاه داده با استفاده از عبارت SQL ارائه شده ایجاد می‌کند. پایگاه داده عبارت را تجزیه و کامپایل می‌کند، سپس آن را برای اجرا آماده نگه می‌دارد.</p></li>
+
+<li><p>در یک مرحله جداگانه دوم، <code>DB.Exec()</code> مقادیر پارامتر را به پایگاه داده منتقل می‌کند. پایگاه داده سپس دستور آماده را با استفاده از این پارامترها اجرا می‌کند. از آنجایی که پارامترها بعداً، پس از کامپایل عبارت منتقل می‌شوند، پایگاه داده آنها را به عنوان داده خالص در نظر می‌گیرد. آنها نمی‌توانند <em>قصد</em> عبارت را تغییر دهند. تا زمانی که عبارت اصلی از داده‌های غیرقابل اعتماد مشتق نشده باشد، تزریق نمی‌تواند رخ دهد.</p></li>
+
+<li><p>سپس دستور آماده را در پایگاه داده می‌بندد (یا <em>آزاد می‌کند</em>).</p></li>
+</ol>
+
+<p>نحو پارامتر جایگزین بسته به پایگاه داده شما متفاوت است. MySQL، SQL Server و SQLite از نشانه‌گذاری <code>?</code> استفاده می‌کنند، اما PostgreSQL از نشانه‌گذاری <code>$N</code> استفاده می‌کند. به عنوان مثال، اگر به جای آن از PostgreSQL استفاده می‌کردید، می‌نوشتید:</p>
+
+<figure class="code go">
+<pre><span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;INSERT INTO ... VALUES ($1, $2, $3)&#34;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.05-designing-a-database-model.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="04.07-single-record-sql-queries.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					case 37:
+						window.location.href = "04.05-designing-a-database-model.html";
+						break;
+					case 39:
+						window.location.href = "04.07-single-record-sql-queries.html";
+						break;
+				}
+			};
+		</script>
+	</body>
+</html>
+
