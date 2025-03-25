@@ -11,28 +11,28 @@
 	</head>
 	<body>
 		<header>
-			<div class="wrapper">
-				<div>
+			<div class="wrapper" dir="rtl">
+				<div dir="rtl">
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Catching runtime errors</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; مدیریت خطاهای زمان اجرا</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="05.03-caching-templates.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="05.05-common-dynamic-data.html">Next</a> &rsaquo;
+					&lsaquo; <a href="05.03-caching-templates.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.05-common-dynamic-data.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 5.4.</div>
-			<h2 id="catching-runtime-errors">Catching runtime errors</h2>
+			<div class="chapter" dir="rtl">فصل ۵.۴.</div>
+			<h2 id="catching-runtime-errors" dir="rtl">مدیریت خطاهای زمان اجرا</h2>
 
-<p>As soon as we begin adding dynamic behavior to our HTML templates there&rsquo;s a risk of encountering runtime errors.</p>
+<p dir="rtl">به محض اینکه شروع به اضافه کردن رفتار پویا به قالب‌های HTML می‌کنیم، خطر مواجهه با خطاهای زمان اجرا وجود دارد.</p>
 
-<p>Let&rsquo;s add a deliberate error to the <code>view.tmpl</code> template and see what happens:</p>
+<p dir="rtl">بیایید یک خطای عمدی به قالب <code>view.tmpl</code> اضافه کنیم و ببینیم چه اتفاقی می‌افتد:</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
@@ -56,16 +56,16 @@
 {{end}}</pre>
 </figure>
 
-<p>In this markup above we&rsquo;ve added the line <code>{{len  nil}}</code>, which should generate an error at runtime because in Go the value <code>nil</code> does not have a length.</p>
+<p dir="rtl">در کد بالا، خط <code>{{len  nil}}</code> را اضافه کردیم که باید در زمان اجرا خطا ایجاد کند زیرا در Go مقدار <code>nil</code> طول ندارد.</p>
 
-<p>Try running the application now. You&rsquo;ll find that everything still compiles OK:</p>
+<p dir="rtl">حالا برنامه را اجرا کنید. خواهید دید که همه چیز همچنان به درستی کامپایل می‌شود:</p>
 
 <figure class="code bash">
 <pre>$ go run ./cmd/web
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
 </figure>
 
-<p>But if you use curl to make a request to <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> you&rsquo;ll get a response which looks a bit like this.</p>
+<p dir="rtl">اما اگر با استفاده از curl درخواستی به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> ارسال کنید، پاسخی مشابه این دریافت خواهید کرد:</p>
 
 <figure class="code bash">
 <pre>$ curl -i http://localhost:4000/snippet/view/1
@@ -104,11 +104,11 @@ Content-Type: text/html; charset=utf-8
         Internal Server Error</samp></pre>
 </figure>
 
-<p>This is pretty bad. Our application has thrown an error, but the user has wrongly been sent a <code>200 OK</code> response. And even worse, they&rsquo;ve received a half-complete HTML page.</p>
+<p dir="rtl">این وضعیت بسیار بد است. برنامه ما خطایی ایجاد کرده، اما به کاربر به اشتباه پاسخ <code>200 OK</code> ارسال شده است. حتی بدتر از آن، کاربر یک صفحه HTML ناقص دریافت کرده است.</p>
 
-<p>To fix this we need to make the template render a two-stage process. First, we should make a &lsquo;trial&rsquo; render by writing the template into a buffer. If this fails, we can respond to the user with an error message. But if it works, we can then write the contents of the buffer to our <code>http.ResponseWriter</code>.</p>
+<p dir="rtl">برای رفع این مشکل، باید رندر قالب را به یک فرآیند دو مرحله‌ای تبدیل کنیم. ابتدا باید یک رندر "آزمایشی" با نوشتن قالب در یک بافر انجام دهیم. اگر این کار با خطا مواجه شود، می‌توانیم پیام خطا را به کاربر ارسال کنیم. اما اگر موفقیت‌آمیز باشد، می‌توانیم محتوای بافر را به <code>http.ResponseWriter</code> خود بنویسیم.</p>
 
-<p>Let&rsquo;s update the <code>render()</code> helper to use this approach instead:</p>
+<p dir="rtl">بیایید تابع کمکی <code>render()</code> را به این روش به‌روزرسانی کنیم:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/helpers.go</figcaption>
@@ -153,7 +153,7 @@ Content-Type: text/html; charset=utf-8
 <span class="p">}</span></pre>
 </figure>
 
-<p>Restart the application and try making the same request again. You should now get a proper error message and <code>500 Internal Server Error</code> response.</p>
+<p dir="rtl">برنامه را مجدداً راه‌اندازی کنید و همان درخواست را دوباره امتحان کنید. حالا باید یک پیام خطای مناسب و پاسخ <code>500 Internal Server Error</code> دریافت کنید.</p>
 
 <figure class="code bash">
 <pre>$ curl -i http://localhost:4000/snippet/view/1
@@ -166,9 +166,9 @@ Content-Length: 22
 Internal Server Error</samp></pre>
 </figure>
 
-<p>Great stuff. That&rsquo;s looking much better.</p>
+<p dir="rtl">عالی است. این خیلی بهتر به نظر می‌رسد.</p>
 
-<p>Before we move on to the next chapter, head back to the <code>view.tmpl</code> file and remove the deliberate error:</p>
+<p dir="rtl">قبل از اینکه به فصل بعدی برویم، به فایل <code>view.tmpl</code> برگردید و خطای عمدی را حذف کنید:</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
@@ -193,15 +193,15 @@ Internal Server Error</samp></pre>
 
 		</main>
 		<footer>
-			<div class="wrapper">
+			<div class="wrapper" dir="rtl">
 				<div>
-					&lsaquo; <a href="05.03-caching-templates.html">Previous</a>
+					&lsaquo; <a href="05.03-caching-templates.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="05.05-common-dynamic-data.html">Next</a> &rsaquo;
+					<a href="05.05-common-dynamic-data.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
