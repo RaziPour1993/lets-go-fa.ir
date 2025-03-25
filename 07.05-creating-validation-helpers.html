@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Creating validation helpers &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Creating validation helpers</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="07.06-automatic-form-parsing.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 7.5.</div>
+			<h2 id="creating-validation-helpers">Creating validation helpers</h2>
+
+<p>OK, so we&rsquo;re now in the position where our application is validating the form data according to our business rules and gracefully handling any validation errors. That&rsquo;s great, but it&rsquo;s taken quite a bit of work to get there.</p>
+
+<p>And while the approach we&rsquo;ve taken is fine as a one-off, if your application has <em>many forms</em> then you can end up with quite a lot of repetition in your code and validation rules. Not to mention, writing code for validating forms isn&rsquo;t exactly the most exciting way to spend your time.</p>
+
+<p>So to help us with validation throughout the rest of this project, we&rsquo;ll create our own small <code>internal/validator</code> package to abstract some of this behavior and reduce the boilerplate code in our handlers. We won&rsquo;t actually change how the application works for the user at all; it&rsquo;s really just a refactoring of our codebase.</p>
+
+<h3 id="adding-a-validator-package">Adding a validator package</h3>
+
+<p>If you’re coding-along, please go ahead and create the following directory and file on your machine:</p>
+
+<figure class="code bash">
+<pre>$ mkdir internal/validator
+$ touch internal/validator/validator.go</pre>
+</figure>
+
+<p>Then in this new <code>internal/validator/validator.go</code> file add the following code:</p>
+
+<figure class="code go">
+<figcaption>File: internal/validator/validator.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">validator</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;slices&#34;</span>
+    <span class="s">&#34;strings&#34;</span>
+    <span class="s">&#34;unicode/utf8&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Define a new Validator struct which contains a map of validation error messages 
+</span><span class="c1"></span><span class="c1">// for our form fields.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Validator</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">FieldErrors</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c1">// Valid() returns true if the FieldErrors map doesn&#39;t contain any entries.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="c1">// AddFieldError() adds an error message to the FieldErrors map (so long as no
+</span><span class="c1"></span><span class="c1">// entry already exists for the given key).
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">AddFieldError</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Note: We need to initialize the map first, if it isn&#39;t already
+</span><span class="c1"></span>    <span class="c1">// initialized.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">exists</span> <span class="o">:=</span> <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span><span class="p">;</span> <span class="p">!</span><span class="nx">exists</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">message</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// CheckField() adds an error message to the FieldErrors map only if a
+</span><span class="c1"></span><span class="c1">// validation check is not &#39;ok&#39;.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">CheckField</span><span class="p">(</span><span class="nx">ok</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nf">AddFieldError</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// NotBlank() returns true if a value is not an empty string.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">NotBlank</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span>
+<span class="p">}</span>
+
+<span class="c1">// MaxChars() returns true if a value contains no more than n characters.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">MaxChars</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">utf8</span><span class="p">.</span><span class="nf">RuneCountInString</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nx">n</span>
+<span class="p">}</span>
+
+<span class="c1">// PermittedValue() returns true if a value is in a list of specific permitted
+</span><span class="c1"></span><span class="c1">// values.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nx">PermittedValue</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">value</span> <span class="nx">T</span><span class="p">,</span> <span class="nx">permittedValues</span> <span class="o">...</span><span class="nx">T</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">slices</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">permittedValues</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>To summarize this:</p>
+
+<p>In the code above we’ve defined a <code>Validator</code> struct type which contains a map of error messages. The <code>Validator</code> type provides a <code>CheckField()</code> method for conditionally adding errors to the map,
+and a <code>Valid()</code> method which returns whether the errors map is empty or not. We’ve also added <code>NotBlank()</code> , <code>MaxChars()</code> and <code>PermittedValue()</code> functions to help us perform some specific validation checks</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> the <code>PermittedValue()</code> function is a <em>generic function</em> which will work with values of different types. We&rsquo;ll talk about generics in more detail at the end of this chapter.
+</p></aside>
+
+<p>Conceptually this <code>Validator</code> type is quite basic, but that’s not a bad thing. As we’ll see over the course of this book, it’s surprisingly powerful in practice and gives us a lot of flexibility and control over validation checks and how we perform them.</p>
+
+<h3 id="using-the-helpers">Using the helpers</h3>
+
+<p>Alright, let’s start putting the <code>Validator</code> type to use!</p>
+
+<p>We&rsquo;ll head back to our <code>cmd/web/handlers.go</code> file and update it to <em>embed</em> a <code>Validator</code> struct in our <code>snippetCreateForm</code> struct, and then use this to perform the necessary validation checks on the form data.</p>
+
+<aside class="hint"><p>
+<strong>Tip:</strong> If you&rsquo;re not familiar with the concept of struct embedding in Go, Eli Bendersky has written a <a href="https://eli.thegreenplace.net/2020/embedding-in-go-part-1-structs-in-structs/">good introduction</a> on the topic and I recommend quickly reading it before you continue.
+</p></aside>
+
+<p>Like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/validator&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Remove the explicit FieldErrors struct field and instead embed the Validator
+</span><span class="c1"></span><span class="c1">// struct. Embedding this means that our snippetCreateForm &#34;inherits&#34; all the
+</span><span class="c1"></span><span class="c1">// fields and methods of our Validator struct (including the FieldErrors field).
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">snippetCreateForm</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Title</span>               <span class="kt">string</span> 
+    <span class="nx">Content</span>             <span class="kt">string</span> 
+    <span class="nx">Expires</span>             <span class="kt">int</span>    
+    <span class="nx">validator</span><span class="p">.</span><span class="nx">Validator</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">form</span> <span class="o">:=</span> <span class="nx">snippetCreateForm</span><span class="p">{</span>
+        <span class="nx">Title</span><span class="p">:</span>   <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Content</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Expires</span><span class="p">:</span> <span class="nx">expires</span><span class="p">,</span>
+        <span class="c1">// Remove the FieldErrors assignment from here.
+</span><span class="c1"></span>    <span class="p">}</span>
+
+    <span class="c1">// Because the Validator struct is embedded by the snippetCreateForm struct,
+</span><span class="c1"></span>    <span class="c1">// we can call CheckField() directly on it to execute our validation checks.
+</span><span class="c1"></span>    <span class="c1">// CheckField() will add the provided key and error message to the
+</span><span class="c1"></span>    <span class="c1">// FieldErrors map if the check does not evaluate to true. For example, in
+</span><span class="c1"></span>    <span class="c1">// the first line here we &#34;check that the form.Title field is not blank&#34;. In
+</span><span class="c1"></span>    <span class="c1">// the second, we &#34;check that the form.Title field has a maximum character
+</span><span class="c1"></span>    <span class="c1">// length of 100&#34; and so on.
+</span><span class="c1"></span>    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Use the Valid() method to see if any of the checks failed. If they did,
+</span><span class="c1"></span>    <span class="c1">// then re-render the template passing in the form in the same way as
+</span><span class="c1"></span>    <span class="c1">// before.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>So this is shaping up really nicely.</p>
+
+<p>We&rsquo;ve now got an <code>internal/validator</code> package with validation rules and logic that can be reused across our application, and it can easily be extended to include additional rules in the future. Both form data and errors are neatly encapsulated in a single <code>snippetCreateForm</code> struct &mdash; which we can easily pass to our templates &mdash; and the syntax for displaying error messages and re-populating the data in our templates is simple and consistent.</p>
+
+<p>If you like, go ahead and re-run the application now. All being well, you should find that the form and validation rules are working correctly and in exactly the same manner as before.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="generics">Generics</h4>
+
+<p>Go 1.18 was the first version of the language to support <em>generics</em> &mdash; also known by the more technical name of <em>parametric polymorphism</em>. Very broadly, generics allow you to write code that works with <em>different concrete types</em>.</p>
+
+<p>For example, in older versions of Go, if you wanted to count how many times a particular value appears in a <code>[]string</code> slice and an <code>[]int</code> slice you would need to write two separate functions &mdash; one function for the <code>[]string</code> type and another for the <code>[]int</code>. A bit like this:</p>
+
+<figure class="code go">
+<pre><span class="c1">// Count how many times the value v appears in the slice s.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">countString</span><span class="p">(</span><span class="nx">v</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">count</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">vs</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">vs</span> <span class="p">{</span>
+            <span class="nx">count</span><span class="o">++</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">count</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">countInt</span><span class="p">(</span><span class="nx">v</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">count</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">vs</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">vs</span> <span class="p">{</span>
+            <span class="nx">count</span><span class="o">++</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">count</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Now, with generics, it&rsquo;s possible to write a single <code>count()</code> function that will work for <code>[]string</code>, <code>[]int</code>, or any other slice of a <a href="https://pkg.go.dev/builtin#comparable">comparable type</a>. The code would look like this:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nx">count</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">v</span> <span class="nx">T</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="nx">T</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">count</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">vs</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">vs</span> <span class="p">{</span>
+            <span class="nx">count</span><span class="o">++</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">count</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>If you&rsquo;re not familiar with the syntax for generic code in Go, there&rsquo;s a lot of great information available which explains how generics works and walks you through the syntax for writing generic code.</p>
+
+<p>To get up to speed, I highly recommend reading the <a href="https://go.dev/doc/tutorial/generics">official Go generics tutorial</a>, and also watching the first 15 minutes of <a href="https://www.youtube.com/watch?v=Pa_e9EeCdy8">this video</a> to help consolidate what you&rsquo;ve learnt.</p>
+
+<p>Rather than duplicating that same information here, instead I&rsquo;d like to talk briefly about a less common (but just as important!) topic: <em>when</em> to use generics.</p>
+
+<p>For now at least, you should aim to use generics <em>judiciously and cautiously</em>.</p>
+
+<p>I know that might sound a bit boring, but generics are a relatively new language feature and best-practices around writing generic code are still being established. If you work on a team, or write code in public, it&rsquo;s also worth keeping in mind that not all other Go developers will necessarily be familiar with how generic code works.</p>
+
+<p>You don&rsquo;t <em>need</em> to use generics, and it&rsquo;s OK not to.</p>
+
+<p>But even with those caveats, writing generic code can be really useful in certain scenarios. Very generally speaking, you might want to consider it:</p>
+
+<ul>
+<li>If you find yourself writing repeated boilerplate code for different data types. Examples of this might be common operations on slices, maps or channels &mdash; or helpers for carrying out validation checks or test assertions on different data types.</li>
+<li>When you are writing code and find yourself reaching for the <code>any</code> (empty <code>interface{}</code>) type. An example of this might be when you are creating a data structure (like a queue, cache or linked list) which needs to operate on different types.</li>
+</ul>
+
+<p>In contrast, you probably don&rsquo;t want to use generics:</p>
+
+<ul>
+<li>If it makes your code harder to understand or less clear.</li>
+<li>If all the types that you need to work with have a common set of methods &mdash; in which case it&rsquo;s better to define and use a normal <code>interface</code> type instead.</li>
+<li>Just <em>because you can</em>. Prefer instead write non-generic code by default, and switch to a generic version later <em>only if it is actually needed</em>.</li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="07.06-automatic-form-parsing.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "07.04-displaying-errors-and-repopulating-fields.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "07.06-automatic-form-parsing.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

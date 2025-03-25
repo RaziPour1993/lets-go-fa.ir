@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Displaying errors and repopulating fields &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Displaying errors and repopulating fields</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="07.03-validating-form-data.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="07.05-creating-validation-helpers.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 7.4.</div>
+			<h2 id="displaying-errors-and-repopulating-fields">Displaying errors and repopulating fields</h2>
+
+<p>Now that the <code>snippetCreatePost</code> handler is validating the data, the next stage is to manage these validation errors gracefully.</p>
+
+<p>If there are any validation errors, we want to re-display the HTML form, highlighting the fields which failed validation and automatically re-populating any previously submitted data (so that the user doesn&rsquo;t need to enter it again).</p>
+
+<p>To do this, let&rsquo;s begin by adding a new <code>Form</code> field to our <code>templateData</code> struct:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;path/filepath&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Add a Form field with the type &#34;any&#34;.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">CurrentYear</span> <span class="kt">int</span>
+    <span class="nx">Snippet</span>     <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Snippets</span>    <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Form</span>        <span class="nx">any</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>We&rsquo;ll use this <code>Form</code> field to pass the validation errors and previously submitted data back to the template when we re-display the form.</p>
+
+<p>Next let&rsquo;s head back to our <code>cmd/web/handlers.go</code> file and define a new <code>snippetCreateForm</code> struct to hold the form data and any validation errors, and update our <code>snippetCreatePost</code> handler to use this.</p>
+
+<p>Like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Define a snippetCreateForm struct to represent the form data and validation
+</span><span class="c1"></span><span class="c1">// errors for the form fields. Note that all the struct fields are deliberately
+</span><span class="c1"></span><span class="c1">// exported (i.e. start with a capital letter). This is because struct fields
+</span><span class="c1"></span><span class="c1">// must be exported in order to be read by the html/template package when
+</span><span class="c1"></span><span class="c1">// rendering the template.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">snippetCreateForm</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Title</span>       <span class="kt">string</span>
+    <span class="nx">Content</span>     <span class="kt">string</span>
+    <span class="nx">Expires</span>     <span class="kt">int</span>
+    <span class="nx">FieldErrors</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Get the expires value from the form as normal.
+</span><span class="c1"></span>    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Create an instance of the snippetCreateForm struct containing the values
+</span><span class="c1"></span>    <span class="c1">// from the form and an empty map for any validation errors.
+</span><span class="c1"></span>    <span class="nx">form</span> <span class="o">:=</span> <span class="nx">snippetCreateForm</span><span class="p">{</span>
+        <span class="nx">Title</span><span class="p">:</span>       <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Content</span><span class="p">:</span>     <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Expires</span><span class="p">:</span>     <span class="nx">expires</span><span class="p">,</span>
+        <span class="nx">FieldErrors</span><span class="p">:</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Update the validation checks so that they operate on the snippetCreateForm
+</span><span class="c1"></span>    <span class="c1">// instance.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="s">&#34;title&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be blank&#34;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">utf8</span><span class="p">.</span><span class="nf">RuneCountInString</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">100</span> <span class="p">{</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="s">&#34;title&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="s">&#34;content&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be blank&#34;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span> <span class="o">!=</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span> <span class="o">!=</span> <span class="mi">7</span> <span class="o">&amp;&amp;</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span> <span class="o">!=</span> <span class="mi">365</span> <span class="p">{</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="s">&#34;expires&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// If there are any validation errors, then re-display the create.tmpl template,
+</span><span class="c1"></span>    <span class="c1">// passing in the snippetCreateForm instance as dynamic data in the Form 
+</span><span class="c1"></span>    <span class="c1">// field. Note that we use the HTTP status code 422 Unprocessable Entity 
+</span><span class="c1"></span>    <span class="c1">// when sending the response to indicate that there was a validation error.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// We also need to update this line to pass the data from the
+</span><span class="c1"></span>    <span class="c1">// snippetCreateForm instance to our Insert() method.
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>OK, so now when there are any validation errors we are re-displaying the <code>create.tmpl</code> template, passing in the previous data and validation errors in a <code>snippetCreateForm</code> struct via the template data&rsquo;s <code>Form</code> field.</p>
+
+<p>If you like, you should be able to run the application at this point and the code should compile without any errors.</p>
+
+<h3 id="updating-the-html-template">Updating the HTML template</h3>
+
+<p>The next thing that we need to do is update our <code>create.tmpl</code> template to display the validation errors and re-populate any previous data.</p>
+
+<p>Re-populating the form data is straightforward enough &mdash; we should be able to render this in the templates using tags like <code>{{.Form.Title}}</code> and <code>{{.Form.Content}}</code>, in the same way that we displayed the snippet data earlier in the book.</p>
+
+<p>For the validation errors, the underlying type of our <code>FieldErrors</code> field is a <code>map[string]string</code>, which uses the form field names as keys. For maps, it&rsquo;s possible to access the value for a given key by simply chaining the key name. So, for example, to render a validation error for the <code>title</code> field we can use the tag <code>{{.Form.FieldErrors.title}}</code> in our template.</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> Unlike struct fields, map key names <em>don&rsquo;t</em> have to be capitalized in order to access them from a template.
+</p></aside>
+
+<p>With that in mind, let&rsquo;s update the <code>create.tmpl</code> file to re-populate the data and display the error messages for each field, if they exist.</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/create.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Create a New Snippet{{end}}
+
+{{define &#34;main&#34;}}
+<span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Title:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> Use the `with` action to render the value of .Form.FieldErrors.title
+</span><span class="c">        if it is not empty. </span><span class="c">--&gt;</span>
+        {{with .Form.FieldErrors.title}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="c">&lt;!--</span><span class="c"> Re</span><span class="c">-</span><span class="c">populate the title data by setting the `value` attribute. </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;title&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Title}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Content:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> Likewise render the value of .Form.FieldErrors.content if it is not
+</span><span class="c">        empty. </span><span class="c">--&gt;</span>
+        {{with .Form.FieldErrors.content}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="c">&lt;!--</span><span class="c"> Re</span><span class="c">-</span><span class="c">populate the content data as the inner HTML of the textarea. </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">textarea</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;content&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.Form.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">textarea</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Delete in:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> And render the value of .Form.FieldErrors.expires if it is not empty. </span><span class="c">--&gt;</span>
+        {{with .Form.FieldErrors.expires}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="c">&lt;!--</span><span class="c"> Here we use the `if` action to check if the value of the re</span><span class="c">-</span><span class="c">populated
+</span><span class="c">        expires field equals 365. If it does, then we render the `checked`
+</span><span class="c">        attribute so that the radio input is re</span><span class="c">-</span><span class="c">selected. </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;365&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">365</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Year
+        <span class="c">&lt;!--</span><span class="c"> And we do the same for the other possible values too... </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;7&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">7</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Week
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;1&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">1</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Day
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;submit&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;Publish snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>Hopefully this markup and our use of Go&rsquo;s templating actions is generally clear &mdash; it&rsquo;s just using techniques that we&rsquo;ve already <a href="05.02-template-actions-and-functions.html">seen and discussed</a> earlier in the book.</p>
+
+<p>There&rsquo;s one final thing we need to do. If we tried to run the application now, we would get a <code>500 Internal Server Error</code> when we first visit the form at <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a>. This is because our <code>snippetCreate</code> handler currently doesn&rsquo;t set a value for the <code>templateData.Form</code> field, meaning that when Go tries to evaluate a template tag like <code>{{with .Form.FieldErrors.title}}</code> it would result in an error because <code>Form</code> is <code>nil</code>.</p>
+
+<p>Let&rsquo;s fix that by updating our <code>snippetCreate</code> handler so that it initializes a new <code>snippetCreateForm</code> instance and passes it to the template, like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreate</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a new snippetCreateForm instance and pass it to the template.
+</span><span class="c1"></span>    <span class="c1">// Notice how this is also a great opportunity to set any default or
+</span><span class="c1"></span>    <span class="c1">// &#39;initial&#39; values for the form --- here we set the initial value for the 
+</span><span class="c1"></span>    <span class="c1">// snippet expiry to 365 days.
+</span><span class="c1"></span>    <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">snippetCreateForm</span><span class="p">{</span>
+        <span class="nx">Expires</span><span class="p">:</span> <span class="mi">365</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>Now that&rsquo;s done, please restart the application and visit <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a> in your browser. You should find that the page renders correctly without any errors.</p>
+
+<p>Then try adding some content and changing the default expiry time, but <em>leave the title field blank</em> like so:</p>
+
+<figure class="img">
+<img src="assets/img/07.04-01.png" alt="07.04-01.png" />
+</figure>
+
+<p>After submission you should now see the form re-displayed, with the correctly re-populated snippet content and expiry option, and a &ldquo;This field cannot be blank&rdquo; error message alongside the title field:</p>
+
+<figure class="img">
+<img src="assets/img/07.04-02.png" alt="07.04-02.png" />
+</figure>
+
+<p>Before we continue, feel free to spend some time playing around with the form and validation rules until you&rsquo;re confident that everything is working as you expect it to.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="restful-routing">Restful routing</h4>
+
+<p>If you&rsquo;ve got a background in Ruby-on-Rails, Laravel or similar, you might be wondering why we haven&rsquo;t structured our routes and handlers to be more &lsquo;RESTful&rsquo; and look like this:</p>
+
+<table>
+<thead>
+<tr>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>GET /snippets</td>
+<td>snippetIndex</td>
+<td>Display the home page</td>
+</tr>
+
+<tr>
+<td>GET /snippets/{id}</td>
+<td>snippetView</td>
+<td>Display a specific snippet</td>
+</tr>
+
+<tr>
+<td>GET /snippets/create</td>
+<td>snippetCreate</td>
+<td>Display a form for creating a new snippet</td>
+</tr>
+
+<tr>
+<td>POST /snippets</td>
+<td>snippetCreatePost</td>
+<td>Save a new snippet</td>
+</tr>
+</tbody>
+</table>
+<p>There are a couple of reasons.</p>
+
+<p>The first reason is because of overlapping routes &mdash; a HTTP request to <code>/snippets/create</code> potentially matches both the <code>GET /snippets/{id}</code> and <code>GET /snippets/create</code> routes. In our application, the snippet ID values are always numeric so there will never be a &lsquo;real&rsquo; overlap between these two routes &mdash; but imagine if our snippet ID values were user-generated, or a random 6-character string, and hopefully you can see the potential for a problem. Generally speaking, overlapping routes can be a source of bugs and unexpected behavior in your application, and it&rsquo;s good practice to avoid them if you can &mdash; or use them with care and caution if you can&rsquo;t.</p>
+
+<p>The second reason is that the HTML form presented on <code>/snippets/create</code> would need to post to <code>/snippets</code> when submitted. This means that when we re-render the HTML form to show any validation errors, the URL in the user&rsquo;s browser will also change to <code>/snippets</code>. YMMV on whether you consider this a problem or not &mdash; most users don&rsquo;t look at URLs, but I think it&rsquo;s a bit clunky and confusing in terms of UX&hellip; especially if a <code>GET</code> request to <code>/snippets</code> normally renders something else (like a list of all snippets).</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="07.03-validating-form-data.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="07.05-creating-validation-helpers.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "07.03-validating-form-data.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "07.05-creating-validation-helpers.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

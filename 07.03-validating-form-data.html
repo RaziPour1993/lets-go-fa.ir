@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Validating form data &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Validating form data</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="07.02-parsing-form-data.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="07.04-displaying-errors-and-repopulating-fields.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 7.3.</div>
+			<h2 id="validating-form-data">Validating form data</h2>
+
+<p>Right now there&rsquo;s a glaring problem with our code: we&rsquo;re not validating the (untrusted) user input from the form in any way. We should do this to ensure that the form data is present, of the correct type and meets any business rules that we have.</p>
+
+<p>Specifically for this form we want to:</p>
+
+<ul>
+<li>Check that the <code>title</code> and <code>content</code> fields are not empty.</li>
+<li>Check that the <code>title</code> field is not more than 100 characters long.</li>
+<li>Check that the <code>expires</code> value exactly matches one of our permitted values (<code>1</code>, <code>7</code> or <code>365</code> days).</li>
+</ul>
+
+<p>All of these checks are fairly straightforward to implement using some <code>if</code> statements and various functions in Go&rsquo;s <a href="https://pkg.go.dev/strings/"><code>strings</code></a> and <a href="https://pkg.go.dev/unicode/utf8/"><code>unicode/utf8</code></a> packages.</p>
+
+<p>Open up your <code>handlers.go</code> file and update the <code>snippetCreatePost</code> handler to include the appropriate validation rules like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+    <span class="s">&#34;strings&#34;</span>      <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;unicode/utf8&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span>
+    <span class="nx">content</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span>
+
+    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Initialize a map to hold any validation errors for the form fields.
+</span><span class="c1"></span>    <span class="nx">fieldErrors</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
+
+    <span class="c1">// Check that the title value is not blank and is not more than 100
+</span><span class="c1"></span>    <span class="c1">// characters long. If it fails either of those checks, add a message to the
+</span><span class="c1"></span>    <span class="c1">// errors map using the field name as the key.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">title</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;title&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be blank&#34;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">utf8</span><span class="p">.</span><span class="nf">RuneCountInString</span><span class="p">(</span><span class="nx">title</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">100</span> <span class="p">{</span>
+        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;title&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Check that the Content value isn&#39;t blank.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">content</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;content&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be blank&#34;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Check the expires value matches one of the permitted values (1, 7 or
+</span><span class="c1"></span>    <span class="c1">// 365).
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">expires</span> <span class="o">!=</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nx">expires</span> <span class="o">!=</span> <span class="mi">7</span> <span class="o">&amp;&amp;</span> <span class="nx">expires</span> <span class="o">!=</span> <span class="mi">365</span> <span class="p">{</span>
+        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;expires&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// If there are any errors, dump them in a plain text HTTP response and
+</span><span class="c1"></span>    <span class="c1">// return from the handler.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">fieldErrors</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">fieldErrors</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> When we check the length of the <code>title</code> field, we&rsquo;re using the <a href="https://pkg.go.dev/unicode/utf8/#RuneCountInString"><code>utf8.RuneCountInString()</code></a> function &mdash; not Go&rsquo;s <code>len()</code> function. This will count the number of <em>Unicode code points</em> in the title rather than the number of bytes. To illustrate the difference, the string <code>&quot;Zoë&quot;</code> contains 3 Unicode code points, but 4 bytes because of the umlauted <code>ë</code> character.
+</p></aside>
+
+<p>Alright, let&rsquo;s give this a try! Restart the application and try submitting the form with a too-long snippet title and blank content field, a bit like this&hellip;</p>
+
+<figure class="img">
+<img src="assets/img/07.03-01.png" alt="07.03-01.png" />
+</figure>
+
+<p>And you should see a dump of the appropriate validation failure messages, like so:</p>
+
+<figure class="img">
+<img src="assets/img/07.03-02.png" alt="07.03-02.png" />
+</figure>
+
+<aside class="hint"><p>
+<strong>Tip:</strong> You can find a bunch of code patterns for processing and validating different types of inputs in <a href="https://www.alexedwards.net/blog/validation-snippets-for-go">this blog post</a>.
+</p></aside>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="07.02-parsing-form-data.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="07.04-displaying-errors-and-repopulating-fields.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "07.02-parsing-form-data.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "07.04-displaying-errors-and-repopulating-fields.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
