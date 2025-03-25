@@ -1,40 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<meta name="author" content="Alex Edwards">
 		<meta name="copyright" content="Copyright Alex Edwards 2024">
-		<title>Common dynamic data &mdash; Let's Go</title>
+		<title>داده‌های پویای مشترک &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			/* Right align Persian text */
+			.chapter, h2, p {
+				text-align: right;
+			}
+			/* Keep code blocks left aligned and untranslated */
+			.code, pre, figure, 
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql,
+			.code.go pre, .code.html pre, .code.bash pre, .code.plain pre, .code.sql pre {
+				text-align: left;
+				direction: ltr;
+				unicode-bidi: embed;
+			}
+			/* Header and footer alignment */
+			header .wrapper, footer .wrapper {
+				direction: rtl;
+			}
+			header .wrapper > div:first-child {
+				text-align: right;
+			}
+			header .wrapper > div:last-child {
+				text-align: left;
+			}
+			footer .wrapper > div {
+				text-align: center;
+			}
+		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Common dynamic data</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; داده‌های پویای مشترک</span>
 				</div>
 				<div>
-					&lsaquo; <a href="05.04-catching-runtime-errors.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="05.06-custom-template-functions.html">Next</a> &rsaquo;
+					&lsaquo; <a href="05.04-catching-runtime-errors.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.06-custom-template-functions.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 5.5.</div>
-			<h2 id="common-dynamic-data">Common dynamic data</h2>
+			<div class="chapter">فصل ۵.۵</div>
+			<h2 id="common-dynamic-data">داده‌های پویای مشترک</h2>
 
-<p>In some web applications there may be common dynamic data that you want to include on more than one &mdash; or even every &mdash; webpage. For example, you might want to include the name and profile picture of the current user, or a CSRF token in all pages with forms.</p>
+<p>در برخی از برنامه‌های وب، ممکن است داده‌های پویای مشترکی وجود داشته باشد که می‌خواهید در بیش از یک صفحه وب - یا حتی در تمام صفحات - گنجانده شوند. به عنوان مثال، ممکن است بخواهید نام و تصویر پروفایل کاربر فعلی یا توکن CSRF را در تمام صفحات دارای فرم قرار دهید.</p>
 
-<p>In our case let&rsquo;s begin with something simple, and say that we want to include the current year in the footer on every page.</p>
+<p>در مورد ما، بیایید با چیزی ساده شروع کنیم و بگوییم که می‌خواهیم سال جاری را در فوتر هر صفحه قرار دهیم.</p>
 
-<p>To do this we&rsquo;ll begin by adding a new <code>CurrentYear</code> field to the <code>templateData</code> struct, like so:</p>
+<p>برای این کار، ابتدا یک فیلد جدید <code>CurrentYear</code> به ساختار <code>templateData</code> اضافه می‌کنیم، مانند این:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -52,9 +75,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>The next step is to add a <code>newTemplateData()</code> helper method to our application, which will return a <code>templateData</code> struct initialized with the current year.</p>
+<p>گام بعدی اضافه کردن یک متد کمکی <code>newTemplateData()</code> به برنامه ما است که یک ساختار <code>templateData</code> مقداردهی شده با سال جاری را برمی‌گرداند.</p>
 
-<p>I&rsquo;ll demonstrate:</p>
+<p>من نشان می‌دهم:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/helpers.go</figcaption>
@@ -81,7 +104,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Then let&rsquo;s update our <code>home</code> and <code>snippetView</code> handlers to use the <code>newTemplateData()</code> helper, like so:</p>
+<p>حالا بیایید هندلرهای <code>home</code> و <code>snippetView</code> را به‌روزرسانی کنیم تا از کمکی <code>newTemplateData()</code> استفاده کنند، مانند این:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -135,7 +158,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>And then the final thing we need to do is update the <code>ui/html/base.tmpl</code> file to display the year in the footer, like so:</p>
+<p>و در نهایت، باید فایل <code>ui/html/base.tmpl</code> را به‌روزرسانی کنیم تا سال را در فوتر نمایش دهد، مانند این:</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/base.tmpl</figcaption>
@@ -159,7 +182,7 @@
         <span class="p">&lt;</span><span class="p">/</span><span class="nt">main</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">footer</span><span class="p"></span><span class="p">&gt;</span>
             <span class="c">&lt;!--</span><span class="c"> Update the footer to include the current year </span><span class="c">--&gt;</span>
-            Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span> in {{.CurrentYear}}
+            Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span> در {{.CurrentYear}}
         <span class="p">&lt;</span><span class="p">/</span><span class="nt">footer</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;/static/js/main.js&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/javascript&#39;</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">body</span><span class="p">&gt;</span>
@@ -167,7 +190,7 @@
 {{end}}</pre>
 </figure>
 
-<p>If you restart the application and visit the home page at <a href="http://localhost:4000/"><code>http://localhost:4000</code></a>, you now should see the current year in the footer. Like this:</p>
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و به صفحه اصلی در <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید، اکنون باید سال جاری را در فوتر مشاهده کنید. مانند این:</p>
 
 <figure class="img">
 <img src="assets/img/05.05-01.png" alt="05.05-01.png" />
@@ -177,13 +200,13 @@
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="05.04-catching-runtime-errors.html">Previous</a>
+					&lsaquo; <a href="05.04-catching-runtime-errors.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="05.06-custom-template-functions.html">Next</a> &rsaquo;
+					<a href="05.06-custom-template-functions.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
