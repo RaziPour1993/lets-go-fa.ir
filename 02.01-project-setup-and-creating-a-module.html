@@ -3,12 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
 		<title>راه‌اندازی پروژه و ایجاد ماژول &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 		<style>
 			.code {
 				text-align: left;
@@ -67,7 +65,7 @@
 
 <p>شما می‌توانید <a href="https://golang.org/ref/mod#go-mod-file-ident">تقریباً هر رشته‌ای</a> را به عنوان مسیر ماژول خود انتخاب کنید، اما نکته مهم تمرکز بر <em>یکتا بودن</em> است. برای جلوگیری از تداخل احتمالی با پروژه‌های دیگر افراد یا کتابخانه استاندارد در آینده، باید مسیر ماژولی را انتخاب کنید که در سطح جهانی یکتا باشد و احتمال استفاده مجدد آن توسط چیز دیگری کم باشد. در جامعه Go، یک قرارداد رایج این است که مسیرهای ماژول خود را بر اساس URL‌ای که مالک آن هستید پایه‌گذاری کنید.</p>
 
-<p>در مورد من، یک مسیر ماژول واضح، مختصر و <em>کم‌احتمال برای استفاده توسط چیز دیگری</em> برای این پروژه می‌تواند <code>snippetbox.alexedwards.net</code> باشد، و من از این در ادامه کتاب استفاده خواهم کرد. اگر ممکن است، بهتر است این را با چیزی که برای شما یکتا است جایگزین کنید.</p>
+<p>در مورد من، یک مسیر ماژول واضح، مختصر و <em>کم‌احتمال برای استفاده توسط چیز دیگری</em> برای این پروژه می‌تواند <code>snippetbox.letsgofa.net</code> باشد، و من از این در ادامه کتاب استفاده خواهم کرد. اگر ممکن است، بهتر است این را با چیزی که برای شما یکتا است جایگزین کنید.</p>
 
 <p>پس از تصمیم‌گیری در مورد مسیر ماژول یکتا، گام بعدی تبدیل پوشه پروژه شما به یک ماژول است.</p>
 
@@ -75,8 +73,8 @@
 
 <figure class="code bash">
 <pre>$ cd $HOME/code/snippetbox
-$ go mod init snippetbox.alexedwards.net
-<samp>go: creating new go.mod: module snippetbox.alexedwards.net</samp></pre>
+$ go mod init snippetbox.letsgofa.net
+<samp>go: creating new go.mod: module snippetbox.letsgofa.net</samp></pre>
 </figure>
 
 <p>در این مرحله، پوشه پروژه شما باید کمی شبیه تصویر زیر باشد. آیا متوجه فایل <code>go.mod</code> که ایجاد شده هستید؟</p>
@@ -89,7 +87,7 @@ $ go mod init snippetbox.alexedwards.net
 
 <figure class="code plain">
 <figcaption style="direction: ltr; text-align: left;">File: go.mod</figcaption>
-<pre>module snippetbox.alexedwards.net
+<pre>module snippetbox.letsgofa.net
 
 go 1.23.0</pre>
 </figure>

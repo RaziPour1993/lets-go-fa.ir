@@ -3,12 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
 		<title>Dependency injection &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header>
@@ -56,7 +54,7 @@
 
 <p>و این سوال بیشتر تعمیم می‌یابد. بیشتر برنامه‌های وب دارای وابستگی‌های متعددی هستند که هندلرهای آن‌ها باید به آن‌ها دسترسی داشته باشند، مانند یک اتصال پایگاه داده، مدیریت خطای متمرکز و کش‌های قالب. آنچه واقعاً می‌خواهیم پاسخ دهیم این است: <em>چگونه می‌توانیم هر وابستگی را در دسترس هندلرهای خود قرار دهیم؟</em></p>
 
-<p>چند <a href="https://www.alexedwards.net/blog/organising-database-access">رویکرد مختلف</a> برای انجام این کار وجود دارد، ساده‌ترین آن‌ها این است که وابستگی‌ها را در متغیرهای جهانی قرار دهیم. اما به طور کلی، بهتر است وابستگی‌ها را به هندلرهای خود تزریق کنید. این کار کد شما را صریح‌تر، کمتر مستعد خطا و آسان‌تر برای تست واحد می‌کند تا اینکه از متغیرهای جهانی استفاده کنید.</p>
+<p>چند <a href="https://www.letsgofa.net/blog/organising-database-access">رویکرد مختلف</a> برای انجام این کار وجود دارد، ساده‌ترین آن‌ها این است که وابستگی‌ها را در متغیرهای جهانی قرار دهیم. اما به طور کلی، بهتر است وابستگی‌ها را به هندلرهای خود تزریق کنید. این کار کد شما را صریح‌تر، کمتر مستعد خطا و آسان‌تر برای تست واحد می‌کند تا اینکه از متغیرهای جهانی استفاده کنید.</p>
 
 <p>برای برنامه‌هایی که همه هندلرهای شما در یک بسته هستند، مانند برنامه ما، یک رویکرد مناسب برای تزریق وابستگی‌ها این است که آن‌ها را در یک ساختار <code>application</code> سفارشی قرار دهید و سپس توابع هندلر خود را به عنوان متدهایی در برابر <code>application</code> تعریف کنید.</p>
 
@@ -281,7 +279,7 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/hom
 <span class="p">}</span></pre>
 </figure>
 
-<p>می‌توانید یک مثال کامل و ملموس‌تر از نحوه استفاده از الگوی بسته را در <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">این Gist</a> پیدا کنید.</p>
+<p>می‌توانید یک مثال کامل و ملموس‌تر از نحوه استفاده از الگوی بسته را در <a href="https://gist.github.com/letsgofa/5cd712192b4831058b21">این Gist</a> پیدا کنید.</p>
 
 		</main>
 		<footer>

@@ -3,12 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
 		<title>Caching templates &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 		<style>
 			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
 				direction: ltr;
@@ -70,7 +68,7 @@
     <span class="s">&#34;html/template&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span>    <span class="s">&#34;path/filepath&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span>
-    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
 <span class="p">)</span>
 
 <span class="o">...</span>
@@ -132,7 +130,7 @@
     <span class="s">&#34;net/http&#34;</span>
     <span class="s">&#34;os&#34;</span>
 
-    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
 
     <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
 <span class="p">)</span>
@@ -235,7 +233,7 @@
     <span class="s">&#34;net/http&#34;</span>
     <span class="s">&#34;strconv&#34;</span>
 
-    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>

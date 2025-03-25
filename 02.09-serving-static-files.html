@@ -3,12 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
 		<title>Serving static files &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body dir="rtl">
 		<header>
@@ -35,7 +33,7 @@
 
 <figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
-$ curl https://www.alexedwards.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</pre>
+$ curl https://www.letsgofa.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</pre>
 </figure>
 
 <p>محتویات دایرکتوری <code>ui/static</code> شما اکنون باید به این شکل باشد:</p>
@@ -254,7 +252,7 @@ Date: Wed, 18 Mar 2024 11:29:23 GMT
 <pre>$ find ./ui/static -type d -exec touch {}/index.html \;</pre>
 </figure>
 
-<p>یک راه حل پیچیده‌تر (اما به طور قابل بحث بهتر) این است که یک پیاده‌سازی سفارشی از <a href="https://pkg.go.dev/net/http/#FileSystem"><code>http.FileSystem</code></a> ایجاد کنید و آن را برای هر دایرکتوری یک خطای <code>os.ErrNotExist</code> برگردانید. یک توضیح کامل و کد نمونه را می‌توانید در <a href="https://www.alexedwards.net/blog/disable-http-fileserver-directory-listings">این پست وبلاگ</a> پیدا کنید.</p>
+<p>یک راه حل پیچیده‌تر (اما به طور قابل بحث بهتر) این است که یک پیاده‌سازی سفارشی از <a href="https://pkg.go.dev/net/http/#FileSystem"><code>http.FileSystem</code></a> ایجاد کنید و آن را برای هر دایرکتوری یک خطای <code>os.ErrNotExist</code> برگردانید. یک توضیح کامل و کد نمونه را می‌توانید در <a href="https://www.letsgofa.net/blog/disable-http-fileserver-directory-listings">این پست وبلاگ</a> پیدا کنید.</p>
 
 		</main>
 		<footer>
