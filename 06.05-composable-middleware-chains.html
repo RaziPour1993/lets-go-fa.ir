@@ -1,68 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Composable middleware chains &mdash; Let's Go</title>
+		<title>زنجیره‌های میان‌افزار قابل ترکیب &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<style>
+			.text p, .text h2, .chapter {
+				direction: rtl;
+				text-align: right;
+			}
+			.code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">Middleware</a> &rsaquo; Composable middleware chains</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; زنجیره‌های میان‌افزار قابل ترکیب</span>
 				</div>
 				<div>
-					&lsaquo; <a href="06.04-panic-recovery.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.00-processing-forms.html">Next</a> &rsaquo;
+					&lsaquo; <a href="06.04-panic-recovery.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.00-processing-forms.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 6.5.</div>
-			<h2 id="composable-middleware-chains">Composable middleware chains</h2>
+			<div class="chapter">فصل ۶.۵</div>
+			<h2 id="composable-middleware-chains">زنجیره‌های میان‌افزار قابل ترکیب</h2>
 
-<p>In this chapter I&rsquo;d like to introduce the <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> package to help us manage our middleware/handler chains.</p>
+			<p>در این فصل می‌خواهم پکیج <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> را معرفی کنم که به ما در مدیریت زنجیره‌های میان‌افزار/هندلر کمک می‌کند.</p>
 
-<p>You don&rsquo;t <em>need</em> to use this package, but the reason I recommend it is because it makes it easy to create composable, reusable, middleware chains &mdash; and that can be a real help as your application grows and your routes become more complex. The package itself is also small and lightweight, and the code is clear and well written.</p>
+			<p>شما <em>نیازی</em> به استفاده از این پکیج ندارید، اما دلیلی که من آن را توصیه می‌کنم این است که ایجاد زنجیره‌های میان‌افزار قابل ترکیب و قابل استفاده مجدد را آسان می‌کند - و این می‌تواند با رشد برنامه شما و پیچیده‌تر شدن مسیرها، کمک واقعی باشد. خود پکیج نیز کوچک و سبک است، و کد آن واضح و خوب نوشته شده است.</p>
 
-<p>To demonstrate its features in one example, it allows you to rewrite a handler chain from this:</p>
+			<p>برای نمایش ویژگی‌های آن در یک مثال، به شما اجازه می‌دهد یک زنجیره هندلر را از این حالت:</p>
 
-<figure class="code go">
+			<figure class="code go">
 <pre><span class="k">return</span> <span class="nf">myMiddleware1</span><span class="p">(</span><span class="nf">myMiddleware2</span><span class="p">(</span><span class="nf">myMiddleware3</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
-</figure>
+			</figure>
 
-<p>Into this, which is a bit clearer to understand at a glance:</p>
+			<p>به این حالت تبدیل کنید، که در یک نگاه درک آن کمی واضح‌تر است:</p>
 
-<figure class="code go">
+			<figure class="code go">
 <pre><span class="k">return</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddleware1</span><span class="p">,</span> <span class="nx">myMiddleware2</span><span class="p">,</span> <span class="nx">myMiddleware3</span><span class="p">)</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
-</figure>
+			</figure>
 
-<p>But the real power lies in the fact that you can use it to create middleware chains that can be assigned to variables, appended to, and reused. For example:</p>
+			<p>اما قدرت واقعی در این است که می‌توانید از آن برای ایجاد زنجیره‌های میان‌افزار استفاده کنید که می‌توانند به متغیرها اختصاص داده شوند، به آنها اضافه شود و مجدداً استفاده شوند. برای مثال:</p>
 
-<figure class="code go">
+			<figure class="code go">
 <pre><span class="nx">myChain</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddlewareOne</span><span class="p">,</span> <span class="nx">myMiddlewareTwo</span><span class="p">)</span>
 <span class="nx">myOtherChain</span> <span class="o">:=</span> <span class="nx">myChain</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">myMiddleware3</span><span class="p">)</span>
 <span class="k">return</span> <span class="nx">myOtherChain</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
-</figure>
+			</figure>
 
-<p>If you&rsquo;re following along, please install the <code>justinas/alice</code> package using <code>go get</code>:</p>
+			<p>اگر همراه ما هستید، لطفاً پکیج <code>justinas/alice</code> را با استفاده از <code>go get</code> نصب کنید:</p>
 
-<figure class="code bash">
+			<figure class="code bash">
 <pre>$ go get github.com/justinas/alice@v1
 <samp>go: downloading github.com/justinas/alice v1.2.0</samp></pre>
-</figure>
+			</figure>
 
-<p>And if you open the <code>go.mod</code> file for your project, you should see a new corresponding <code>require</code> statement, like so:</p>
+			<p>و اگر فایل <code>go.mod</code> پروژه خود را باز کنید، باید یک عبارت <code>require</code> جدید مربوطه را مشاهده کنید، به این صورت:</p>
 
-<figure class="code plain">
+			<figure class="code plain">
 <figcaption>File: go.mod</figcaption>
 <pre>module snippetbox.alexedwards.net
 
@@ -74,13 +80,13 @@ require (
     filippo.io/edwards25519 v1.1.0 // indirect
     github.com/justinas/alice v1.2.0 // indirect
 )</pre>
-</figure>
+			</figure>
 
-<p>Again, this is currently listed as an indirect dependency because we&rsquo;re not actually importing and using it in our code yet.</p>
+			<p>مجدداً، این در حال حاضر به عنوان یک وابستگی غیرمستقیم فهرست شده است زیرا ما هنوز آن را در کد خود وارد و استفاده نمی‌کنیم.</p>
 
-<p>Let&rsquo;s go ahead and do that now, updating our <code>routes.go</code> file to use the <code>justinas/alice</code> package as follows:</p>
+			<p>بیایید اکنون این کار را انجام دهیم و فایل <code>routes.go</code> خود را به شرح زیر برای استفاده از پکیج <code>justinas/alice</code> به‌روزرسانی کنیم:</p>
 
-<figure class="code go">
+			<figure class="code go">
 <figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -101,28 +107,28 @@ require (
     <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
     <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span>
 
-    <span class="c1">// Create a middleware chain containing our &#39;standard&#39; middleware
+    <span class="c1">// Create a middleware chain containing our 'standard' middleware
 </span><span class="c1"></span>    <span class="c1">// which will be used for every request our application receives.
 </span><span class="c1"></span>    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
 
-    <span class="c1">// Return the &#39;standard&#39; middleware chain followed by the servemux.
+    <span class="c1">// Return the 'standard' middleware chain followed by the servemux.
 </span><span class="c1"></span>    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
 <span class="p">}</span></pre>
-</figure>
+			</figure>
 
-<p>If you want, feel free to restart the application at this point. You should find that everything compiles correctly and the application continues to work in the same way as before. You can also run <code>go mod tidy</code> again to remove the <code>// indirect</code> annotation from the <code>go.mod</code> file.</p>
+			<p>اگر می‌خواهید، می‌توانید در این مرحله برنامه را مجدداً راه‌اندازی کنید. باید متوجه شوید که همه چیز به درستی کامپایل می‌شود و برنامه همچنان مانند قبل کار می‌کند. همچنین می‌توانید مجدداً <code>go mod tidy</code> را اجرا کنید تا علامت <code>// indirect</code> از فایل <code>go.mod</code> حذف شود.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="06.04-panic-recovery.html">Previous</a>
+					&lsaquo; <a href="06.04-panic-recovery.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.00-processing-forms.html">Next</a> &rsaquo;
+					<a href="07.00-processing-forms.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -130,16 +136,12 @@ require (
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "06.04-panic-recovery.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "07.00-processing-forms.html";
 						break;
-						
 				}
 			};
 		</script>
