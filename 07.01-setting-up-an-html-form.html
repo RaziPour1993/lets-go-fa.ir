@@ -1,41 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Setting up an HTML form &mdash; Let's Go</title>
+		<title>راه‌اندازی فرم HTML &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body { direction: rtl; }
+			.code { direction: ltr; text-align: left; }
+			.text { text-align: right; }
+			.chapter { text-align: right; }
+		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Setting up an HTML form</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; راه‌اندازی فرم HTML</span>
 				</div>
 				<div>
-					&lsaquo; <a href="07.00-processing-forms.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.02-parsing-form-data.html">Next</a> &rsaquo;
+					&lsaquo; <a href="07.00-processing-forms.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.02-parsing-form-data.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 7.1.</div>
-			<h2 id="setting-up-an-html-form">Setting up an HTML form</h2>
+			<div class="chapter">فصل ۷.۱</div>
+			<h2 id="setting-up-an-html-form">راه‌اندازی فرم HTML</h2>
 
-<p>Let&rsquo;s begin by making a new <code>ui/html/pages/create.tmpl</code> file to hold the HTML for the form:</p>
+<p>بیایید با ایجاد یک فایل جدید <code>ui/html/pages/create.tmpl</code> برای نگهداری HTML فرم شروع کنیم:</p>
 
 <figure class="code bash">
 <pre>$ touch ui/html/pages/create.tmpl</pre>
 </figure>
 
-<p>&hellip; and then add the following markup, using the same template patterns that we used earlier in the book.</p>
+<p>... و سپس نشانه‌گذاری زیر را با استفاده از همان الگوهای قالب که قبلاً در کتاب استفاده کردیم، اضافه کنید.</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/create.tmpl</figcaption>
@@ -64,9 +66,9 @@
 {{end}}</pre>
 </figure>
 
-<p>There&rsquo;s nothing particularly special about this so far. Our <code>main</code> template contains a standard HTML form which sends three form values: <code>title</code>, <code>content</code> and <code>expires</code> (the number of days until the snippet should expire). The only thing to really point out is the form&rsquo;s <code>action</code> and <code>method</code> attributes &mdash; we&rsquo;ve set these up so that the form will <code>POST</code> the data to the URL <code>/snippet/create</code> when it&rsquo;s submitted.</p>
+<p>تا اینجا چیز خاصی وجود ندارد. قالب <code>main</code> ما شامل یک فرم HTML استاندارد است که سه مقدار فرم را ارسال می‌کند: <code>title</code>، <code>content</code> و <code>expires</code> (تعداد روزهایی که تا انقضای اسنیپت باقی مانده است). تنها نکته‌ای که باید به آن اشاره کرد، ویژگی‌های <code>action</code> و <code>method</code> فرم است - ما این‌ها را طوری تنظیم کرده‌ایم که وقتی فرم ارسال می‌شود، داده‌ها را به URL <code>/snippet/create</code> با متد <code>POST</code> ارسال کند.</p>
 
-<p>Now let&rsquo;s add a new &lsquo;Create snippet&rsquo; link to the navigation bar for our application, so that clicking it will take the user to this new form.</p>
+<p>حالا بیایید یک لینک 'ایجاد اسنیپت' جدید به نوار ناوبری برنامه‌مان اضافه کنیم، تا با کلیک کردن روی آن، کاربر به این فرم جدید هدایت شود.</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/partials/nav.tmpl</figcaption>
@@ -79,7 +81,7 @@
 {{end}}</pre>
 </figure>
 
-<p>And finally, we need to update the <code>snippetCreate</code> handler so that it renders our new page like so:</p>
+<p>و در نهایت، باید هندلر <code>snippetCreate</code> را به‌روزرسانی کنیم تا صفحه جدید ما را به این شکل رندر کند:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -96,7 +98,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>At this point you can fire up the application and visit <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a> in your browser. You should see a form which looks like this:</p>
+<p>در این مرحله می‌توانید برنامه را اجرا کنید و در مرورگر خود به آدرس <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a> بروید. باید فرمی مشابه این را ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/07.01-01.png" alt="07.01-01.png" />
@@ -106,13 +108,13 @@
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="07.00-processing-forms.html">Previous</a>
+					&lsaquo; <a href="07.00-processing-forms.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.02-parsing-form-data.html">Next</a> &rsaquo;
+					<a href="07.02-parsing-form-data.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -120,16 +122,12 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "07.00-processing-forms.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "07.02-parsing-form-data.html";
 						break;
-						
 				}
 			};
 		</script>
