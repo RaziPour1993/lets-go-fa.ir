@@ -1,36 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
-		<title>Setting common headers &mdash; Let's Go</title>
+		<title>تنظیم هدرهای مشترک &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<style>
+			body { direction: rtl; }
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql { direction: ltr; text-align: left; }
+		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">Middleware</a> &rsaquo; Setting common headers</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; تنظیم هدرهای مشترک</span>
 				</div>
 				<div>
-					&lsaquo; <a href="06.01-how-middleware-works.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="06.03-request-logging.html">Next</a> &rsaquo;
+					&lsaquo; <a href="06.01-how-middleware-works.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="06.03-request-logging.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 6.2.</div>
-			<h2 id="setting-common-headers">Setting common headers</h2>
+			<div class="chapter">فصل ۶.۲</div>
+			<h2 id="setting-common-headers">تنظیم هدرهای مشترک</h2>
 
-<p>Let&rsquo;s put the pattern we learned in the previous chapter to use, and make some middleware which automatically adds our <code>Server: Go</code> header to every response, along with the following HTTP security headers (inline with <a href="https://owasp.org/www-project-secure-headers">current OWASP guidance</a>).</p>
+<p>بیایید از الگویی که در فصل قبل آموختیم استفاده کنیم و میان‌افزاری بسازیم که به طور خودکار هدر <code>Server: Go</code> را به همراه هدرهای امنیتی HTTP زیر (مطابق با <a href="https://owasp.org/www-project-secure-headers">راهنمای فعلی OWASP</a>) به هر پاسخ اضافه کند.</p>
 
 <figure class="code plain">
 <pre>Content-Security-Policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
@@ -40,29 +39,29 @@ X-Frame-Options: deny
 X-XSS-Protection: 0</pre>
 </figure>
 
-<p>If you’re not familiar with these headers, I&rsquo;ll quickly explain what they do.</p>
+<p>اگر با این هدرها آشنا نیستید، به سرعت توضیح می‌دهم که چه کاری انجام می‌دهند.</p>
 
 <ul>
-<li><p><code>Content-Security-Policy</code> (often abbreviated to <em>CSP</em>) headers are used to restrict where the resources for your web page (e.g. JavaScript, images, fonts etc) can be loaded from. Setting a strict CSP policy helps prevent a variety of cross-site scripting, clickjacking, and other code-injection attacks.</p>
+<li><p>هدرهای <code>Content-Security-Policy</code> (که اغلب به اختصار <em>CSP</em> نامیده می‌شوند) برای محدود کردن منابعی که صفحه وب شما می‌تواند از آنها بارگذاری شود (مانند جاوااسکریپت، تصاویر، فونت‌ها و غیره) استفاده می‌شوند. تنظیم یک سیاست سختگیرانه CSP به جلوگیری از انواع حملات cross-site scripting، clickjacking و سایر حملات تزریق کد کمک می‌کند.</p>
 
-<p>CSP headers and how they work is a big topic, and I recommend reading <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP">this primer</a> if you haven&rsquo;t come across them before. But, in our case, the header tells the browser that it&rsquo;s OK to load fonts from <code>fonts.gstatic.com</code>, stylesheets from <code>fonts.googleapis.com</code> and <code>self</code> (our own origin), and then <em>everything else</em> only from <code>self</code>. Inline JavaScript is blocked by default.</p></li>
+<p>هدرهای CSP و نحوه کار آنها موضوع بزرگی است، و اگر قبلاً با آنها برخورد نکرده‌اید، پیشنهاد می‌کنم <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP">این مقدمه</a> را بخوانید. اما در مورد ما، هدر به مرورگر می‌گوید که بارگیری فونت‌ها از <code>fonts.gstatic.com</code>، استایل‌شیت‌ها از <code>fonts.googleapis.com</code> و <code>self</code> (منشأ خودمان)، و سپس <em>همه چیز دیگر</em> فقط از <code>self</code> مجاز است. جاوااسکریپت درون‌خطی به طور پیش‌فرض مسدود می‌شود.</p></li>
 
-<li><p><code>Referrer-Policy</code> is used to control what information is included in a <code>Referer</code> header when a user navigates away from your web page. In our case, we&rsquo;ll set the value to <code>origin-when-cross-origin</code>, which means that the full URL will be included for <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">same-origin requests</a>, but for all other requests information like the URL path and any query string values will be stripped out.</p></li>
+<li><p><code>Referrer-Policy</code> برای کنترل اطلاعاتی که در هدر <code>Referer</code> هنگام خروج کاربر از صفحه وب شما گنجانده می‌شود، استفاده می‌شود. در مورد ما، ما مقدار را روی <code>origin-when-cross-origin</code> تنظیم می‌کنیم، که به این معنی است که URL کامل برای درخواست‌های <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">same-origin</a> گنجانده خواهد شد، اما برای همه درخواست‌های دیگر، اطلاعاتی مانند مسیر URL و مقادیر رشته پرس‌وجو حذف خواهند شد.</p></li>
 
-<li><p><code>X-Content-Type-Options: nosniff</code> instructs browsers to <em>not</em> MIME-type sniff the content-type of the response, which in turn helps to prevent <a href="https://security.stackexchange.com/questions/7506/using-file-extension-and-mime-type-as-output-by-file-i-b-combination-to-dete/7531#7531">content-sniffing attacks</a>.</p></li>
+<li><p><code>X-Content-Type-Options: nosniff</code> به مرورگرها دستور می‌دهد که content-type پاسخ را MIME-type sniff نکنند، که به نوبه خود به جلوگیری از <a href="https://security.stackexchange.com/questions/7506/using-file-extension-and-mime-type-as-output-by-file-i-b-combination-to-dete/7531#7531">حملات content-sniffing</a> کمک می‌کند.</p></li>
 
-<li><p><code>X-Frame-Options: deny</code> is used to help prevent <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking">clickjacking</a> attacks in older browsers that don&rsquo;t support CSP headers.</p></li>
+<li><p><code>X-Frame-Options: deny</code> برای کمک به جلوگیری از حملات <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking">clickjacking</a> در مرورگرهای قدیمی‌تر که از هدرهای CSP پشتیبانی نمی‌کنند، استفاده می‌شود.</p></li>
 
-<li><p><code>X-XSS-Protection: 0</code> is used to <em>disable</em> the blocking of cross-site scripting attacks. Previously it was good practice to set this header to <code>X-XSS-Protection: 1; mode=block</code>, but when you&rsquo;re using CSP headers like we are <a href="https://owasp.org/www-project-secure-headers/#x-xss-protection">the recommendation</a> is to disable this feature altogether.</p></li>
+<li><p><code>X-XSS-Protection: 0</code> برای <em>غیرفعال کردن</em> مسدود کردن حملات cross-site scripting استفاده می‌شود. قبلاً تنظیم این هدر به <code>X-XSS-Protection: 1; mode=block</code> یک عمل خوب بود، اما وقتی از هدرهای CSP مانند ما استفاده می‌کنید، <a href="https://owasp.org/www-project-secure-headers/#x-xss-protection">توصیه</a> این است که این ویژگی را کاملاً غیرفعال کنید.</p></li>
 </ul>
 
-<p>OK, let&rsquo;s get back to our Go code and begin by creating a new <code>middleware.go</code> file. We&rsquo;ll use this to hold all the custom middleware that we write throughout this book.</p>
+<p>خب، بیایید به کد Go خود برگردیم و با ایجاد یک فایل جدید <code>middleware.go</code> شروع کنیم. ما از این برای نگهداری تمام میان‌افزارهای سفارشی که در طول این کتاب می‌نویسیم استفاده خواهیم کرد.</p>
 
 <figure class="code bash">
 <pre>$ touch cmd/web/middleware.go</pre>
 </figure>
 
-<p>Then open it up and add a <code>commonHeaders()</code> function using the pattern that we introduced in the previous chapter:</p>
+<p>سپس آن را باز کنید و یک تابع <code>commonHeaders()</code> با استفاده از الگویی که در فصل قبل معرفی کردیم اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/middleware.go</figcaption>
@@ -91,13 +90,13 @@ X-XSS-Protection: 0</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>Because we want this middleware to act on every request that is received, we need it to be executed <em>before</em> a request hits our servemux. We want the flow of control through our application to look like:</p>
+<p>از آنجا که می‌خواهیم این میان‌افزار روی هر درخواست دریافتی اعمال شود، باید آن را <em>قبل</em> اینکه درخواست به servemux ما برسد، اجرا کنیم. می‌خواهیم جریان کنترل در برنامه ما به این شکل باشد:</p>
 
 <figure class="code plain">
 <pre>commonHeaders → servemux → application handler</pre>
 </figure>
 
-<p>To do this we&rsquo;ll need the <code>commonHeaders</code> middleware function to <em>wrap our servemux</em>. Let’s update the <code>routes.go</code> file to do exactly that:</p>
+<p>برای انجام این کار، باید تابع میان‌افزار <code>commonHeaders</code> <em>servemux ما را دربرگیرد</em>. بیایید فایل <code>routes.go</code> را به‌روزرسانی کنیم تا دقیقاً همین کار را انجام دهد:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/routes.go</figcaption>
@@ -126,10 +125,10 @@ X-XSS-Protection: 0</pre>
 </figure>
 
 <aside class="important"><p>
-<strong>Important:</strong> Make sure that you update the signature of the <code>routes()</code> method so that it returns a <code>http.Handler</code> here, otherwise you&rsquo;ll get a compile-time error.
+<strong>مهم:</strong> اطمینان حاصل کنید که امضای متد <code>routes()</code> را به‌روزرسانی کرده‌اید تا یک <code>http.Handler</code> برگرداند، در غیر این صورت با خطای زمان کامپایل مواجه خواهید شد.
 </p></aside>
 
-<p>We also need to quickly update our <code>home</code> handler code to remove the <code>w.Header().Add(&quot;Server&quot;, &quot;Go&quot;)</code> line, otherwise we&rsquo;ll end up adding that header twice on responses from the homepage.</p>
+<p>همچنین باید سریعاً کد هندلر <code>home</code> خود را به‌روزرسانی کنیم تا خط <code>w.Header().Add(&quot;Server&quot;, &quot;Go&quot;)</code> را حذف کنیم، در غیر این صورت این هدر را دو بار در پاسخ‌های صفحه اصلی اضافه خواهیم کرد.</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -153,7 +152,7 @@ X-XSS-Protection: 0</pre>
 <span class="o">...</span></pre>
 </figure>
 
-<p>Go ahead and give this a try. Run the application then open a terminal window and try making some requests with curl. You should see that the security headers are now included in every response.</p>
+<p>پیش بروید و این را امتحان کنید. برنامه را اجرا کنید و سپس یک پنجره ترمینال باز کنید و سعی کنید با curl درخواست‌هایی ارسال کنید. باید ببینید که هدرهای امنیتی اکنون در هر پاسخ گنجانده شده‌اند.</p>
 
 <figure class="code bash">
 <pre>$ curl --head http://localhost:4000/
@@ -171,57 +170,57 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
 
-<h4 id="flow-of-control">Flow of control</h4>
+<h4 id="flow-of-control">جریان کنترل</h4>
 
-<p>It&rsquo;s important to know that when the last handler in the chain returns, control is passed back up the chain in the reverse direction. So when our code is being executed the flow of control actually looks like this:</p>
+<p>مهم است بدانید که وقتی آخرین هندلر در زنجیره برمی‌گردد، کنترل در جهت معکوس به بالای زنجیره برمی‌گردد. بنابراین وقتی کد ما در حال اجراست، جریان کنترل در واقع به این شکل است:</p>
 
 <figure class="code plain">
 <pre>commonHeaders → servemux → application handler → servemux → commonHeaders</pre>
 </figure>
 
-<p>In any middleware handler, code which comes before <code>next.ServeHTTP()</code> will be executed on the way down the chain, and any code after <code>next.ServeHTTP()</code>  &mdash; or in a deferred function &mdash; will be executed on the way back up.</p>
+<p>در هر هندلر میان‌افزار، کدی که قبل از <code>next.ServeHTTP()</code> می‌آید در مسیر پایین زنجیره اجرا می‌شود، و هر کدی که بعد از <code>next.ServeHTTP()</code> &mdash; یا در یک تابع deferred &mdash; می‌آید در مسیر برگشت به بالا اجرا خواهد شد.</p>
 
 <figure class="code go">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// Any code here will execute on the way down the chain.
+        <span class="c1">// هر کدی که اینجا باشد در مسیر پایین زنجیره اجرا می‌شود.
 </span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
-        <span class="c1">// Any code here will execute on the way back up the chain.
+        <span class="c1">// هر کدی که اینجا باشد در مسیر برگشت به بالای زنجیره اجرا می‌شود.
 </span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="early-returns">Early returns</h4>
+<h4 id="early-returns">برگشت‌های زودهنگام</h4>
 
-<p>Another thing to mention is that if you call <code>return</code> in your middleware function <em>before</em> you call <code>next.ServeHTTP()</code>, then the chain will stop being executed and control will flow back upstream.</p>
+<p>نکته دیگری که باید ذکر شود این است که اگر شما <code>return</code> را در تابع میان‌افزار خود <em>قبل</em> از فراخوانی <code>next.ServeHTTP()</code> صدا بزنید، زنجیره متوقف خواهد شد و کنترل به بالا برمی‌گردد.</p>
 
-<p>As an example, a common use-case for early returns is authentication middleware which only allows execution of the chain to continue if a particular check is passed. For instance:</p>
+<p>به عنوان مثال، یک مورد استفاده رایج برای برگشت‌های زودهنگام، میان‌افزار احراز هویت است که فقط در صورتی اجازه ادامه اجرای زنجیره را می‌دهد که یک بررسی خاص موفقیت‌آمیز باشد. به عنوان مثال:</p>
 
 <figure class="code go">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// If the user isn&#39;t authorized, send a 403 Forbidden status and
-</span><span class="c1"></span>        <span class="c1">// return to stop executing the chain.
+        <span class="c1">// اگر کاربر مجاز نیست، وضعیت 403 Forbidden را ارسال کنید و
+</span><span class="c1"></span>        <span class="c1">// برای توقف اجرای زنجیره برگردید.
 </span><span class="c1"></span>        <span class="k">if</span> <span class="p">!</span><span class="nf">isAuthorized</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusForbidden</span><span class="p">)</span>
             <span class="k">return</span>
         <span class="p">}</span>
 
-        <span class="c1">// Otherwise, call the next handler in the chain.
+        <span class="c1">// در غیر این صورت، هندلر بعدی در زنجیره را فراخوانی کنید.
 </span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
     <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>We&rsquo;ll use this &lsquo;early return&rsquo; pattern <a href="10.06-user-authorization.html">later in the book</a> to restrict access to certain parts of our application.</p>
+<p>ما از این الگوی 'برگشت زودهنگام' <a href="10.06-user-authorization.html">بعداً در کتاب</a> برای محدود کردن دسترسی به بخش‌های خاصی از برنامه‌مان استفاده خواهیم کرد.</p>
 
-<h4 id="debugging-csp-issues">Debugging CSP issues</h4>
+<h4 id="debugging-csp-issues">رفع اشکال مسائل CSP</h4>
 
-<p>While CSP headers are great and you should definitely use them, it&rsquo;s worth saying that I&rsquo;ve spent many hours trying to debug problems, only to eventually realize that a critical resource or script is being blocked by my own CSP rules 🤦.</p>
+<p>در حالی که هدرهای CSP عالی هستند و قطعاً باید از آنها استفاده کنید، ارزش گفتن دارد که من ساعت‌های زیادی را صرف رفع اشکال مشکلات کرده‌ام، فقط برای اینکه در نهایت متوجه شوم که یک منبع یا اسکریپت حیاتی توسط قوانین CSP خودم مسدود شده است 🤦.</p>
 
-<p>If you&rsquo;re working on a project which is using CSP headers, like this one, I recommend keeping your web browser developer tools handy and getting into the habit of checking the logs early on if you run into any unexpected problems. In Firefox, any blocked resources will be shown as an error in the console logs &mdash; similar to this:</p>
+<p>اگر روی پروژه‌ای کار می‌کنید که از هدرهای CSP استفاده می‌کند، مانند این پروژه، توصیه می‌کنم ابزارهای توسعه‌دهنده مرورگر وب خود را در دسترس داشته باشید و عادت کنید که اگر با مشکلات غیرمنتظره‌ای مواجه شدید، لاگ‌ها را زود بررسی کنید. در Firefox، هر منبع مسدود شده به عنوان یک خطا در لاگ‌های کنسول نمایش داده می‌شود &mdash; مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/06.02-01.png" alt="06.02-01.png" />
@@ -231,13 +230,13 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="06.01-how-middleware-works.html">Previous</a>
+					&lsaquo; <a href="06.01-how-middleware-works.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="06.03-request-logging.html">Next</a> &rsaquo;
+					<a href="06.03-request-logging.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -245,16 +244,12 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "06.01-how-middleware-works.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "06.03-request-logging.html";
 						break;
-						
 				}
 			};
 		</script>
