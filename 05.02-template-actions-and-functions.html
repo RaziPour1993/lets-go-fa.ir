@@ -10,124 +10,122 @@
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب های HTML پویا</a> &rsaquo; اقدامات و توابع قالب</span>
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Template actions and functions</span>
-						
-					
 				</div>
 				<div>
-					&lsaquo; <a href="05.01-displaying-dynamic-data.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="05.03-caching-templates.html">Next</a> &rsaquo;
+					&lsaquo; <a href="05.01-displaying-dynamic-data.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.03-caching-templates.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 5.2.</div>
-			<h2 id="template-actions-and-functions">Template actions and functions</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 5.2.</div>
+			<h2 id="template-actions-and-functions">اقدامات و توابع قالب</h2>
 
-<p>In this section we&rsquo;re going to look at the template <dfn>actions</dfn> and <dfn>functions</dfn> that Go provides.</p>
+<p>در این بخش به اقدامات <dfn>قالب</dfn> و <dfn>توابع</dfn> که Go ارائه می دهد، خواهیم پرداخت.</p>
 
-<p>We&rsquo;ve already talked about some of the actions &mdash; <code>{{define}}</code>, <code>{{template}}</code> and <code>{{block}}</code> &mdash; but there are three more which you can use to control the display of dynamic data &mdash; <code>{{if}}</code>, <code>{{with}}</code> and <code>{{range}}</code>.</p>
+<p>ما قبلاً در مورد برخی از اقدامات صحبت کرده ایم &mdash; <code>{{define}}</code>, <code>{{template}}</code> و <code>{{block}}</code> &mdash; اما سه مورد دیگر وجود دارد که می توانید برای کنترل نمایش داده های پویا استفاده کنید &mdash; <code>{{if}}</code>, <code>{{with}}</code> و <code>{{range}}</code>.</p>
 
 <table>
 <thead>
 <tr>
-<th>Action</th>
-<th>Description</th>
+<th>اقدام</th>
+<th>توضیحات</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
 <td><code>{{if .Foo}} C1 {{else}} C2 {{end}}</code></td>
-<td>If <code>.Foo</code> is not empty then render the content C1, otherwise render the content C2.</td>
+<td>اگر <code>.Foo</code> خالی نباشد، محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 </tr>
 
 <tr>
 <td><code>{{with .Foo}} C1 {{else}} C2 {{end}}</code></td>
-<td>If <code>.Foo</code> is not empty, then set dot to the value of <code>.Foo</code> and render the content C1, otherwise render the content C2.</td>
+<td>اگر <code>.Foo</code> خالی نباشد، نقطه را به مقدار <code>.Foo</code> تنظیم کنید و محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 </tr>
 
 <tr>
 <td><code>{{range .Foo}} C1 {{else}} C2 {{end}}</code></td>
-<td>If the length of <code>.Foo</code> is greater than zero then loop over each element, setting dot to the value of each element and rendering the content C1. If the length of <code>.Foo</code> is zero then render the content C2. The underlying type of <code>.Foo</code> must be an array, slice, map, or channel.</td>
+<td>اگر طول <code>.Foo</code> بیشتر از صفر باشد، بر روی هر عنصر حلقه بزنید، نقطه را به مقدار هر عنصر تنظیم کنید و محتوای C1 را رندر کنید. اگر طول <code>.Foo</code> صفر باشد، محتوای C2 را رندر کنید. نوع زیرین <code>.Foo</code> باید یک آرایه، برش، نقشه یا کانال باشد.</td>
 </tr>
 </tbody>
 </table>
-<p>There are a few things about these actions to point out:</p>
+<p>چند نکته در مورد این اقدامات وجود دارد:</p>
 
 <ul>
-<li><p>For all three actions the <code>{{else}}</code> clause is optional. For instance, you can write <code>{{if .Foo}} C1 {{end}}</code> if there&rsquo;s no <code>C2</code> content that you want to render.</p></li>
+<li><p>برای هر سه اقدام، بند <code>{{else}}</code> اختیاری است. به عنوان مثال، می توانید <code>{{if .Foo}} C1 {{end}}</code> بنویسید اگر محتوای <code>C2</code> وجود ندارد که بخواهید رندر کنید.</p></li>
 
-<li><p>The <em>empty</em> values are false, 0, any nil pointer or interface value, and any array, slice, map, or string of length zero.</p></li>
+<li><p>مقادیر <em>خالی</em> شامل false، 0، هر اشاره گر یا مقدار رابط nil و هر آرایه، برش، نقشه یا رشته با طول صفر است.</p></li>
 
-<li><p>It&rsquo;s important to grasp that the <code>with</code> and <code>range</code> actions change the value of dot. Once you start using them, <em>what dot represents can be different depending on where you are in the template and what you&rsquo;re doing.</em></p></li>
+<li><p>مهم است که درک کنید که اقدامات <code>with</code> و <code>range</code> مقدار نقطه را تغییر می دهند. هنگامی که شروع به استفاده از آنها می کنید، <em>آنچه نقطه نشان می دهد می تواند بسته به جایی که در قالب هستید و کاری که انجام می دهید متفاوت باشد.</em></p></li>
 </ul>
 
-<p>The <code>html/template</code> package also provides some template functions which you can use to add extra logic to your templates and control what is rendered at runtime. You can find a complete listing of functions <a href="https://pkg.go.dev/text/template/#hdr-Functions">here</a>, but the most important ones are:</p>
+<p>بسته <code>html/template</code> همچنین برخی از توابع قالب را ارائه می دهد که می توانید برای افزودن منطق اضافی به قالب های خود و کنترل آنچه در زمان اجرا رندر می شود، استفاده کنید. می توانید لیست کامل توابع را <a href="https://pkg.go.dev/text/template/#hdr-Functions">اینجا</a> پیدا کنید، اما مهمترین آنها عبارتند از:</p>
 
 <table>
 <thead>
 <tr>
-<th>Function</th>
-<th>Description</th>
+<th>تابع</th>
+<th>توضیحات</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
 <td><code>{{eq .Foo .Bar}}</code></td>
-<td>Yields true if <code>.Foo</code> is equal to <code>.Bar</code></td>
+<td>اگر <code>.Foo</code> برابر با <code>.Bar</code> باشد، true را برمی گرداند</td>
 </tr>
 
 <tr>
 <td><code>{{ne .Foo .Bar}}</code></td>
-<td>Yields true if <code>.Foo</code> is not equal to <code>.Bar</code></td>
+<td>اگر <code>.Foo</code> برابر با <code>.Bar</code> نباشد، true را برمی گرداند</td>
 </tr>
 
 <tr>
 <td><code>{{not .Foo}}</code></td>
-<td>Yields the boolean negation of <code>.Foo</code></td>
+<td>نفی منطقی <code>.Foo</code> را برمی گرداند</td>
 </tr>
 
 <tr>
 <td><code>{{or .Foo .Bar}}</code></td>
-<td>Yields <code>.Foo</code> if <code>.Foo</code> is not empty; otherwise yields <code>.Bar</code></td>
+<td>اگر <code>.Foo</code> خالی نباشد، <code>.Foo</code> را برمی گرداند؛ در غیر این صورت <code>.Bar</code> را برمی گرداند</td>
 </tr>
 
 <tr>
 <td><code>{{index .Foo i}}</code></td>
-<td>Yields the value of <code>.Foo</code> at index <code>i</code>. The underlying type of <code>.Foo</code> must be a map, slice or array, and <code>i</code> must be an integer value.</td>
+<td>مقدار <code>.Foo</code> در شاخص <code>i</code> را برمی گرداند. نوع زیرین <code>.Foo</code> باید یک نقشه، برش یا آرایه باشد و <code>i</code> باید یک مقدار عدد صحیح باشد.</td>
 </tr>
 
 <tr>
 <td><code>{{printf &quot;%s-%s&quot; .Foo .Bar}}</code></td>
-<td>Yields a formatted string containing the <code>.Foo</code> and <code>.Bar</code> values. Works in the same way as fmt.Sprintf().</td>
+<td>یک رشته قالب بندی شده حاوی مقادیر <code>.Foo</code> و <code>.Bar</code> را برمی گرداند. به همان روشی که fmt.Sprintf() کار می کند.</td>
 </tr>
 
 <tr>
 <td><code>{{len .Foo}}</code></td>
-<td>Yields the length of <code>.Foo</code> as an integer.</td>
+<td>طول <code>.Foo</code> را به عنوان یک عدد صحیح برمی گرداند.</td>
 </tr>
 
 <tr>
 <td><code>{{$bar := len .Foo}}</code></td>
-<td>Assign the length of <code>.Foo</code> to the template variable <code>$bar</code></td>
+<td>طول <code>.Foo</code> را به متغیر قالب <code>$bar</code> اختصاص می دهد</td>
 </tr>
 </tbody>
 </table>
-<p>The final row is an example of declaring a <dfn>template variable</dfn>. Template variables are particularly useful if you want to store the result from a function and use it in multiple places in your template. Variable names must be prefixed by a dollar sign and can contain alphanumeric characters only.</p>
+<p>ردیف نهایی نمونه ای از اعلام یک <dfn>متغیر قالب</dfn> است. متغیرهای قالب به ویژه مفید هستند اگر بخواهید نتیجه یک تابع را ذخیره کنید و در چندین مکان در قالب خود از آن استفاده کنید. نام متغیرها باید با علامت دلار پیشوند شوند و فقط می توانند حاوی کاراکترهای الفبایی باشند.</p>
 
-<h3 id="using-the-with-action">Using the with action</h3>
+<h3 id="using-the-with-action">استفاده از اقدام with</h3>
 
-<p>A good opportunity to use the <code>{{with}}</code> action is the <code>view.tmpl</code> file that we created in the previous chapter. Go ahead and update it like so:</p>
+<p>یک فرصت خوب برای استفاده از اقدام <code>{{with}}</code> فایل <code>view.tmpl</code> است که در فصل قبلی ایجاد کردیم. ادامه دهید و آن را به این صورت به روز کنید:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
 <pre>
 {{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
@@ -149,17 +147,17 @@
 {{end}}</pre>
 </figure>
 
-<p>So now, between <code>{{with .Snippet}}</code> and the corresponding <code>{{end}}</code> tag, the value of dot is set to <code>.Snippet</code>. Dot essentially becomes the <code>models.Snippet</code> struct instead of the parent <code>templateData</code> struct.</p>
+<p>بنابراین اکنون، بین <code>{{with .Snippet}}</code> و تگ <code>{{end}}</code> مربوطه، مقدار نقطه به <code>.Snippet</code> تنظیم می شود. نقطه اساساً به ساختار <code>models.Snippet</code> تبدیل می شود به جای ساختار والد <code>templateData</code>.</p>
 
-<h3 id="using-the-if-and-range-actions">Using the if and range actions</h3>
+<h3 id="using-the-if-and-range-actions">استفاده از اقدامات if و range</h3>
 
-<p>Let&rsquo;s also use the <code>{{if}}</code> and <code>{{range}}</code> actions in a concrete example and update our homepage to display a table of the latest snippets, a bit like this:</p>
+<p>بیایید همچنین از اقدامات <code>{{if}}</code> و <code>{{range}}</code> در یک مثال عملی استفاده کنیم و صفحه اصلی خود را به روز کنیم تا جدولی از آخرین قطعات را نمایش دهد، چیزی شبیه به این:</p>
 
 <p><img class="sketch" src="assets/img/05.02-01.png" alt="05.02-01.png"></img></p>
 
-<p>First update the <code>templateData</code> struct so that it contains a <code>Snippets</code> field for holding a slice of snippets, like so:</p>
+<p>ابتدا ساختار <code>templateData</code> را به روز کنید تا شامل یک فیلد <code>Snippets</code> برای نگهداری یک برش از قطعات باشد، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -172,9 +170,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Then update the <code>home</code> handler function so that it fetches the latest snippets from our database model and passes them to the <code>home.tmpl</code> template:</p>
+<p>سپس تابع <code>home</code> handler را به روز کنید تا آخرین قطعات را از مدل پایگاه داده ما بگیرد و آنها را به قالب <code>home.tmpl</code> منتقل کند:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -217,17 +215,17 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Now let&rsquo;s head over to the <code>ui/html/pages/home.tmpl</code> file and update it to display these snippets in a table using the <code>{{if}}</code> and <code>{{range}}</code> actions. Specifically:</p>
+<p>حالا بیایید به فایل <code>ui/html/pages/home.tmpl</code> برویم و آن را به روز کنیم تا این قطعات را در یک جدول با استفاده از اقدامات <code>{{if}}</code> و <code>{{range}}</code> نمایش دهیم. به طور خاص:</p>
 
 <ul>
-<li><p>We want to use the <code>{{if}}</code> action to check whether the slice of snippets is empty or not. If it&rsquo;s empty, we want to display a <code>&quot;There's nothing to see here yet!</code> message. Otherwise, we want to render a table containing the snippet information.</p></li>
+<li><p>ما می خواهیم از اقدام <code>{{if}}</code> استفاده کنیم تا بررسی کنیم که آیا برش قطعات خالی است یا خیر. اگر خالی است، می خواهیم یک پیام <code>&quot;هنوز چیزی برای دیدن اینجا نیست!</code> نمایش دهیم. در غیر این صورت، می خواهیم جدولی حاوی اطلاعات قطعه را رندر کنیم.</p></li>
 
-<li><p>We want to use the <code>{{range}}</code> action to iterate over all snippets in the slice, rendering the contents of each snippet in a table row.</p></li>
+<li><p>ما می خواهیم از اقدام <code>{{range}}</code> استفاده کنیم تا بر روی تمام قطعات در برش حلقه بزنیم و محتوای هر قطعه را در یک سطر جدول رندر کنیم.</p></li>
 </ul>
 
-<p>Here&rsquo;s the markup:</p>
+<p>در اینجا نشانه گذاری آمده است:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/home.tmpl</figcaption>
 <pre>
 {{define &#34;title&#34;}}Home{{end}}
@@ -250,12 +248,12 @@
         {{end}}
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">table</span><span class="p">&gt;</span>
     {{else}}
-        <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>There&#39;s nothing to see here... yet!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>هنوز چیزی برای دیدن اینجا نیست...!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
     {{end}}
 {{end}}</pre>
 </figure>
 
-<p>Make sure all your files are saved, restart the application and visit <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> in a web browser. If everything has gone to plan, you should see a page which looks a bit like this:</p>
+<p>اطمینان حاصل کنید که همه فایل های شما ذخیره شده اند، برنامه را مجدداً راه اندازی کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> در یک مرورگر وب مراجعه کنید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه ای را ببینید که شبیه به این است:</p>
 
 <figure class="img">
 <img src="assets/img/05.02-02.png" alt="05.02-02.png" />
@@ -263,29 +261,29 @@
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="combining-functions">Combining functions</h4>
+<h4 id="combining-functions">ترکیب توابع</h4>
 
-<p>It&rsquo;s possible to combine multiple functions in your template tags, using the parentheses <code>()</code> to surround the functions and their arguments as necessary.</p>
+<p>امکان ترکیب چندین تابع در برچسب های قالب شما وجود دارد، با استفاده از پرانتز <code>()</code> برای احاطه کردن توابع و آرگومان های آنها در صورت لزوم.</p>
 
-<p>For example, the following tag will render the content <code>C1</code> if the length of <code>Foo</code> is greater than 99:</p>
+<p>به عنوان مثال، برچسب زیر محتوای <code>C1</code> را رندر می کند اگر طول <code>Foo</code> بیشتر از 99 باشد:</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <pre>{{if (gt (len .Foo) 99)}} C1 {{end}}</pre>
 </figure>
 
-<p>Or as another example, the following tag will render the content <code>C1</code> if <code>.Foo</code> equals 1 <em>and</em> <code>.Bar</code> is less than or equal to 20:</p>
+<p>یا به عنوان مثال دیگر، برچسب زیر محتوای <code>C1</code> را رندر می کند اگر <code>.Foo</code> برابر با 1 باشد <em>و</em> <code>.Bar</code> کمتر یا برابر با 20 باشد:</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <pre>{{if (and (eq .Foo 1) (le .Bar 20))}} C1 {{end}}</pre>
 </figure>
 
-<h4 id="controlling-loop-behavior">Controlling loop behavior</h4>
+<h4 id="controlling-loop-behavior">کنترل رفتار حلقه</h4>
 
-<p>Within a <code>{{range}}</code> action you can use the <code>{{break}}</code> command to end the loop early, and <code>{{continue}}</code> to immediately start the next loop iteration.</p>
+<p>در یک اقدام <code>{{range}}</code> می توانید از دستور <code>{{break}}</code> برای پایان دادن به حلقه زودهنگام استفاده کنید و <code>{{continue}}</code> برای بلافاصله شروع تکرار بعدی حلقه.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="p">{</span><span class="p">{</span><span class="k">range</span> <span class="p">.</span><span class="nx">Foo</span><span class="p">}</span><span class="p">}</span>
     <span class="c1">// Skip this iteration if the .ID value equals 99.
 </span><span class="c1"></span>    <span class="p">{</span><span class="p">{</span><span class="k">if</span> <span class="nx">eq</span> <span class="p">.</span><span class="nx">ID</span> <span class="mi">99</span><span class="p">}</span><span class="p">}</span>
@@ -295,7 +293,7 @@
 </span><span class="c1"></span><span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span></pre>
 </figure>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="p">{</span><span class="p">{</span><span class="k">range</span> <span class="p">.</span><span class="nx">Foo</span><span class="p">}</span><span class="p">}</span>
     <span class="c1">// End the loop if the .ID value equals 99.
 </span><span class="c1"></span>    <span class="p">{</span><span class="p">{</span><span class="k">if</span> <span class="nx">eq</span> <span class="p">.</span><span class="nx">ID</span> <span class="mi">99</span><span class="p">}</span><span class="p">}</span>
@@ -304,18 +302,17 @@
     <span class="c1">// ...
 </span><span class="c1"></span><span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span></pre>
 </figure>
-
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="05.01-displaying-dynamic-data.html">Previous</a>
+					&lsaquo; <a href="05.01-displaying-dynamic-data.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="05.03-caching-templates.html">Next</a> &rsaquo;
+					<a href="05.03-caching-templates.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
