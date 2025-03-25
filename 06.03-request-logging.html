@@ -1,41 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Request logging &mdash; Let's Go</title>
+		<title>ثبت درخواست‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<style>
+			.text p, .text h2, .chapter { direction: rtl; text-align: right; }
+			.code, .code * { direction: ltr; text-align: left; }
+		</style>
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">Middleware</a> &rsaquo; Request logging</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; ثبت درخواست‌ها</span>
 				</div>
 				<div>
-					&lsaquo; <a href="06.02-setting-common-headers.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="06.04-panic-recovery.html">Next</a> &rsaquo;
+					&lsaquo; <a href="06.02-setting-common-headers.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="06.04-panic-recovery.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 6.3.</div>
-			<h2 id="request-logging">Request logging</h2>
+			<div class="chapter">فصل ۶.۳</div>
+			<h2 id="request-logging">ثبت درخواست‌ها</h2>
 
-<p>Let&rsquo;s continue in the same vein and add some middleware to <em>log HTTP requests</em>. Specifically, we&rsquo;re going to use the structured logger that we created earlier to record the IP address of the user, and the method, URI and HTTP version for the request.</p>
+			<p>بیایید در همین راستا ادامه دهیم و یک میان‌افزار برای <em>ثبت درخواست‌های HTTP</em> اضافه کنیم. به طور مشخص، ما از لاگر ساختاریافته‌ای که قبلاً ایجاد کردیم استفاده خواهیم کرد تا آدرس IP کاربر، متد، URI و نسخه HTTP درخواست را ثبت کنیم.</p>
 
-<p>Open your <code>middleware.go</code> file and create a <code>logRequest()</code> method using the standard middleware pattern, like so:</p>
+			<p>فایل <code>middleware.go</code> خود را باز کنید و یک متد <code>logRequest()</code> با استفاده از الگوی استاندارد میان‌افزار به شکل زیر ایجاد کنید:</p>
 
-<figure class="code go">
-<figcaption>File: cmd/web/middleware.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">main</span>
+			<figure class="code go">
+			<figcaption>File: cmd/web/middleware.go</figcaption>
+			<pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
 
@@ -54,21 +54,17 @@
     <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span>
 </pre>
-</figure>
+			</figure>
 
-<p>Notice that this time we&rsquo;re implementing the middleware as a method on <code>application</code>?</p>
+			<p>توجه کنید که این بار ما میان‌افزار را به عنوان یک متد روی <code>application</code> پیاده‌سازی می‌کنیم؟</p>
 
-<p>This is perfectly valid to do. Our middleware method has the same signature as before, but because it is a method against <code>application</code> it <em>also</em> has access to the handler dependencies including the structured logger.</p>
+			<p>این کاملاً معتبر است. متد میان‌افزار ما همان امضای قبلی را دارد، اما از آنجایی که یک متد روی <code>application</code> است، به وابستگی‌های هندلر از جمله لاگر ساختاریافته نیز دسترسی دارد.</p>
 
-<p>Now let&rsquo;s update our <code>routes.go</code> file so that the <code>logRequest</code> middleware is executed first, and for all requests, so that the flow of control (reading from left to right) looks like this:</p>
+			<p>حالا بیایید فایل <code>routes.go</code> خود را به‌روزرسانی کنیم تا میان‌افزار <code>logRequest</code> اول و برای تمام درخواست‌ها اجرا شود، به طوری که جریان کنترل (از چپ به راست) به این شکل باشد:</p>
 
-<figure class="code plain">
-<pre>logRequest ↔ commonHeaders ↔ servemux ↔ application handler</pre>
-</figure>
-
-<figure class="code go">
-<figcaption>File: cmd/web/routes.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">main</span>
+			<figure class="code go">
+			<figcaption>File: cmd/web/routes.go</figcaption>
+			<pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="s">&#34;net/http&#34;</span>
 
@@ -86,14 +82,14 @@
     <span class="c1">// Wrap the existing chain with the logRequest middleware.
 </span><span class="c1"></span>    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nf">logRequest</span><span class="p">(</span><span class="nf">commonHeaders</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span><span class="p">)</span>
 <span class="p">}</span></pre>
-</figure>
+			</figure>
 
-<p>Alright&hellip; let&rsquo;s give it a try!</p>
+			<p>خب... بیایید امتحانش کنیم!</p>
 
-<p>Restart your application, browse around, and then check your terminal window. You should see log output which looks a bit like this:</p>
+			<p>برنامه خود را مجدداً راه‌اندازی کنید، کمی در آن گشت و گذار کنید و سپس پنجره ترمینال خود را بررسی کنید. باید خروجی لاگی مشابه این ببینید:</p>
 
-<figure class="code bash">
-<pre>$ go run ./cmd/web
+			<figure class="code bash">
+			<pre>$ go run ./cmd/web
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:56536 proto=HTTP/1.1 method=GET uri=/
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:56536 proto=HTTP/1.1 method=GET uri=/static/css/main.css
@@ -101,23 +97,22 @@ time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:56536 proto=HTTP/1.1 method=GET uri=/static/img/logo.png
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:56536 proto=HTTP/1.1 method=GET uri=/static/img/favicon.ico
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:56536 proto=HTTP/1.1 method=GET uri=&#34;/snippet/view/2&#34;</samp></pre>
-</figure>
+			</figure>
 
-<aside class="note"><p>
-<strong>Note:</strong> Depending on how your browser caches static files, you might need to do a hard refresh (or open a new incognito/private browsing tab) to see any requests for static files.
-</p></aside>
-
+			<aside class="note"><p>
+			<strong>نکته:</strong> بسته به نحوه ذخیره‌سازی فایل‌های استاتیک در مرورگر شما، ممکن است نیاز به یک رفرش کامل (یا باز کردن یک تب ناشناس/مرور خصوصی جدید) داشته باشید تا درخواست‌های فایل‌های استاتیک را مشاهده کنید.
+			</p></aside>
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="06.02-setting-common-headers.html">Previous</a>
+					&lsaquo; <a href="06.02-setting-common-headers.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="06.04-panic-recovery.html">Next</a> &rsaquo;
+					<a href="06.04-panic-recovery.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
