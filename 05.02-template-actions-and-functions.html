@@ -32,28 +32,28 @@
 
 <p>ما قبلاً در مورد برخی از اقدامات صحبت کرده ایم &mdash; <code>{{define}}</code>, <code>{{template}}</code> و <code>{{block}}</code> &mdash; اما سه مورد دیگر وجود دارد که می توانید برای کنترل نمایش داده های پویا استفاده کنید &mdash; <code>{{if}}</code>, <code>{{with}}</code> و <code>{{range}}</code>.</p>
 
-<table>
+<table dir="rtl">
 <thead>
 <tr>
+<th style="text-align: right;">توضیحات اقدام</th>
 <th>اقدام</th>
-<th>توضیحات</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
+<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 <td><code>{{if .Foo}} C1 {{else}} C2 {{end}}</code></td>
-<td>اگر <code>.Foo</code> خالی نباشد، محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، نقطه را به مقدار <code>.Foo</code> تنظیم کنید و محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 <td><code>{{with .Foo}} C1 {{else}} C2 {{end}}</code></td>
-<td>اگر <code>.Foo</code> خالی نباشد، نقطه را به مقدار <code>.Foo</code> تنظیم کنید و محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">اگر طول <code>.Foo</code> بیشتر از صفر باشد، بر روی هر عنصر حلقه بزنید، نقطه را به مقدار هر عنصر تنظیم کنید و محتوای C1 را رندر کنید. اگر طول <code>.Foo</code> صفر باشد، محتوای C2 را رندر کنید. نوع زیرین <code>.Foo</code> باید یک آرایه، برش، نقشه یا کانال باشد.</td>
 <td><code>{{range .Foo}} C1 {{else}} C2 {{end}}</code></td>
-<td>اگر طول <code>.Foo</code> بیشتر از صفر باشد، بر روی هر عنصر حلقه بزنید، نقطه را به مقدار هر عنصر تنظیم کنید و محتوای C1 را رندر کنید. اگر طول <code>.Foo</code> صفر باشد، محتوای C2 را رندر کنید. نوع زیرین <code>.Foo</code> باید یک آرایه، برش، نقشه یا کانال باشد.</td>
 </tr>
 </tbody>
 </table>
@@ -72,50 +72,50 @@
 <table>
 <thead>
 <tr>
+<th style="text-align: right;">توضیحات تابع</th>
 <th>تابع</th>
-<th>توضیحات</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
+<td style="text-align: right;">اگر <code>.Foo</code> برابر با <code>.Bar</code> باشد، true را برمی گرداند</td>
 <td><code>{{eq .Foo .Bar}}</code></td>
-<td>اگر <code>.Foo</code> برابر با <code>.Bar</code> باشد، true را برمی گرداند</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">اگر <code>.Foo</code> برابر با <code>.Bar</code> نباشد، true را برمی گرداند</td>
 <td><code>{{ne .Foo .Bar}}</code></td>
-<td>اگر <code>.Foo</code> برابر با <code>.Bar</code> نباشد، true را برمی گرداند</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">نفی منطقی <code>.Foo</code> را برمی گرداند</td>
 <td><code>{{not .Foo}}</code></td>
-<td>نفی منطقی <code>.Foo</code> را برمی گرداند</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، <code>.Foo</code> را برمی گرداند؛ در غیر این صورت <code>.Bar</code> را برمی گرداند</td>
 <td><code>{{or .Foo .Bar}}</code></td>
-<td>اگر <code>.Foo</code> خالی نباشد، <code>.Foo</code> را برمی گرداند؛ در غیر این صورت <code>.Bar</code> را برمی گرداند</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">مقدار <code>.Foo</code> در شاخص <code>i</code> را برمی گرداند. نوع زیرین <code>.Foo</code> باید یک نقشه، برش یا آرایه باشد و <code>i</code> باید یک مقدار عدد صحیح باشد.</td>
 <td><code>{{index .Foo i}}</code></td>
-<td>مقدار <code>.Foo</code> در شاخص <code>i</code> را برمی گرداند. نوع زیرین <code>.Foo</code> باید یک نقشه، برش یا آرایه باشد و <code>i</code> باید یک مقدار عدد صحیح باشد.</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">یک رشته قالب بندی شده حاوی مقادیر <code>.Foo</code> و <code>.Bar</code> را برمی گرداند. به همان روشی که fmt.Sprintf() کار می کند.</td>
 <td><code>{{printf &quot;%s-%s&quot; .Foo .Bar}}</code></td>
-<td>یک رشته قالب بندی شده حاوی مقادیر <code>.Foo</code> و <code>.Bar</code> را برمی گرداند. به همان روشی که fmt.Sprintf() کار می کند.</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">طول <code>.Foo</code> را به عنوان یک عدد صحیح برمی گرداند.</td>
 <td><code>{{len .Foo}}</code></td>
-<td>طول <code>.Foo</code> را به عنوان یک عدد صحیح برمی گرداند.</td>
 </tr>
 
 <tr>
+<td style="text-align: right;">طول <code>.Foo</code> را به متغیر قالب <code>$bar</code> اختصاص می دهد</td>
 <td><code>{{$bar := len .Foo}}</code></td>
-<td>طول <code>.Foo</code> را به متغیر قالب <code>$bar</code> اختصاص می دهد</td>
 </tr>
 </tbody>
 </table>
