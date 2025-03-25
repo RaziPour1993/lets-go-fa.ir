@@ -185,9 +185,9 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 <figure class="code go">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// هر کدی که اینجا باشد در مسیر پایین زنجیره اجرا می‌شود.
+        <span class="c1">// Any code here will be executed on the way down the chain
 </span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
-        <span class="c1">// هر کدی که اینجا باشد در مسیر برگشت به بالای زنجیره اجرا می‌شود.
+        <span class="c1">// Any code here will be executed on the way back up the chain
 </span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
@@ -201,14 +201,14 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 <figure class="code go">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// اگر کاربر مجاز نیست، وضعیت 403 Forbidden را ارسال کنید و
-</span><span class="c1"></span>        <span class="c1">// برای توقف اجرای زنجیره برگردید.
+        <span class="c1">// If user is not authorized, send a 403 Forbidden status
+</span><span class="c1"></span>        <span class="c1">// and return to stop the chain execution
 </span><span class="c1"></span>        <span class="k">if</span> <span class="p">!</span><span class="nf">isAuthorized</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusForbidden</span><span class="p">)</span>
             <span class="k">return</span>
         <span class="p">}</span>
 
-        <span class="c1">// در غیر این صورت، هندلر بعدی در زنجیره را فراخوانی کنید.
+        <span class="c1">// Otherwise, call the next handler in the chain
 </span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
     <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
