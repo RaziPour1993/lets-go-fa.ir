@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>داده‌های پویای مشترک &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			/* Right align Persian text */
+			.chapter, h2, p {
+				text-align: right;
+			}
+			/* Keep code blocks left aligned and untranslated */
+			.code, pre, figure, 
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql,
+			.code.go pre, .code.html pre, .code.bash pre, .code.plain pre, .code.sql pre {
+				text-align: left;
+				direction: ltr;
+				unicode-bidi: embed;
+			}
+			/* Header and footer alignment */
+			header .wrapper, footer .wrapper {
+				direction: rtl;
+			}
+			header .wrapper > div:first-child {
+				text-align: right;
+			}
+			header .wrapper > div:last-child {
+				text-align: left;
+			}
+			footer .wrapper > div {
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; داده‌های پویای مشترک</span>
+				</div>
+				<div>
+					&lsaquo; <a href="05.04-catching-runtime-errors.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.06-custom-template-functions.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۵.۵</div>
+			<h2 id="common-dynamic-data">داده‌های پویای مشترک</h2>
+
+<p>در برخی از برنامه‌های وب، ممکن است داده‌های پویای مشترکی وجود داشته باشد که می‌خواهید در بیش از یک صفحه وب - یا حتی در تمام صفحات - گنجانده شوند. به عنوان مثال، ممکن است بخواهید نام و تصویر پروفایل کاربر فعلی یا توکن CSRF را در تمام صفحات دارای فرم قرار دهید.</p>
+
+<p>در مورد ما، بیایید با چیزی ساده شروع کنیم و بگوییم که می‌خواهیم سال جاری را در فوتر هر صفحه قرار دهیم.</p>
+
+<p>برای این کار، ابتدا یک فیلد جدید <code>CurrentYear</code> به ساختار <code>templateData</code> اضافه می‌کنیم، مانند این:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Add a CurrentYear field to the templateData struct.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">CurrentYear</span> <span class="kt">int</span>
+    <span class="nx">Snippet</span>     <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Snippets</span>    <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>گام بعدی اضافه کردن یک متد کمکی <code>newTemplateData()</code> به برنامه ما است که یک ساختار <code>templateData</code> مقداردهی شده با سال جاری را برمی‌گرداند.</p>
+
+<p>من نشان می‌دهم:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;bytes&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;time&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Create an newTemplateData() helper, which returns a templateData struct 
+</span><span class="c1"></span><span class="c1">// initialized with the current year. Note that we&#39;re not using the *http.Request 
+</span><span class="c1"></span><span class="c1">// parameter here at the moment, but we will do later in the book.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="nx">templateData</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">CurrentYear</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Year</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>حالا بیایید هندلرهای <code>home</code> و <code>snippetView</code> را به‌روزرسانی کنیم تا از کمکی <code>newTemplateData()</code> استفاده کنند، مانند این:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    
+    <span class="nx">snippets</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Latest</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Call the newTemplateData() helper to get a templateData struct containing
+</span><span class="c1"></span>    <span class="c1">// the &#39;default&#39; data (which for now is just the current year), and add the
+</span><span class="c1"></span>    <span class="c1">// snippets slice to it.
+</span><span class="c1"></span>    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">Snippets</span> <span class="p">=</span> <span class="nx">snippets</span>
+
+    <span class="c1">// Pass the data to the render() helper as normal.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;home.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// And do the same thing again here...
+</span><span class="c1"></span>    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">Snippet</span> <span class="p">=</span> <span class="nx">snippet</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;view.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>و در نهایت، باید فایل <code>ui/html/base.tmpl</code> را به‌روزرسانی کنیم تا سال را در فوتر نمایش دهد، مانند این:</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/base.tmpl</figcaption>
+<pre>{{define &#34;base&#34;}}
+<span class="cp">&lt;!doctype html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;en&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">head</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">title</span><span class="p"></span><span class="p">&gt;</span>{{template &#34;title&#34; .}} - Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">title</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/static/css/main.css&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;shortcut icon&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/static/img/favicon.ico&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;image/x-icon&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">body</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">header</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">h1</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">h1</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">header</span><span class="p">&gt;</span>
+        {{template &#34;nav&#34; .}}
+        <span class="p">&lt;</span><span class="nt">main</span><span class="p"></span><span class="p">&gt;</span>
+            {{template &#34;main&#34; .}}
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">main</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">footer</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="c">&lt;!--</span><span class="c"> Update the footer to include the current year </span><span class="c">--&gt;</span>
+            Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span> در {{.CurrentYear}}
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">footer</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;/static/js/main.js&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/javascript&#39;</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">html</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و به صفحه اصلی در <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید، اکنون باید سال جاری را در فوتر مشاهده کنید. مانند این:</p>
+
+<figure class="img">
+<img src="assets/img/05.05-01.png" alt="05.05-01.png" />
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.04-catching-runtime-errors.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="05.06-custom-template-functions.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.04-catching-runtime-errors.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "05.06-custom-template-functions.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Managing configuration settings &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go,
+			.code.html,
+			.code.bash {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; مدیریت تنظیمات پیکربندی</span>
+				</div>
+				<div>
+					&lsaquo; <a href="03.00-configuration-and-error-handling.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="03.02-structured-logging.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 3.1.</div>
+			<h2 id="managing-configuration-settings">مدیریت تنظیمات پیکربندی</h2>
+
+<p>فایل <code>main.go</code> برنامه وب ما در حال حاضر شامل چند تنظیمات پیکربندی هاردکد شده است:</p>
+
+<ul>
+<li>آدرس شبکه برای سرور جهت گوش دادن (در حال حاضر <code>&quot;:4000&quot;</code>)</li>
+<li>مسیر فایل برای دایرکتوری فایل‌های استاتیک (در حال حاضر <code>&quot;./ui/static&quot;</code>)</li>
+</ul>
+
+<p>داشتن این تنظیمات به صورت هاردکد ایده‌آل نیست. هیچ جدایی بین تنظیمات پیکربندی و کد ما وجود ندارد و نمی‌توانیم تنظیمات را در زمان اجرا تغییر دهیم (که این مهم اگر به تنظیمات مختلف برای محیط‌های توسعه، تست و تولید نیاز دارید).</p>
+
+<p>در این فصل شروع به بهبود این موضوع خواهیم کرد، با شروع از قابل تنظیم کردن آدرس شبکه برای سرور در زمان اجرا.</p>
+
+<h3 id="command-line-flags">پرچم‌های خط فرمان</h3>
+
+<p>در Go، یک روش رایج و متداول برای مدیریت تنظیمات پیکربندی استفاده از <dfn>پرچم‌های خط فرمان</dfn> هنگام شروع یک برنامه است. برای مثال:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web -addr=&#34;:80&#34;</pre>
+</figure>
+
+<p>ساده‌ترین راه برای پذیرش و تجزیه یک پرچم خط فرمان در برنامه شما با یک خط کد مانند این است:</p>
+
+<figure class="code go">
+<pre><span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>این اساساً یک پرچم خط فرمان جدید با نام <code>addr</code>، یک مقدار پیش‌فرض <code>&quot;:4000&quot;</code> و یک متن کمک کوتاه که توضیح می‌دهد پرچم چه چیزی را کنترل می‌کند، تعریف می‌کند. مقدار پرچم در زمان اجرا در متغیر <code>addr</code> ذخیره خواهد شد.</p>
+
+<p>بیایید از این در برنامه خود استفاده کنیم و آدرس شبکه هاردکد شده را با یک پرچم خط فرمان جایگزین کنیم:</p>
+
+<figure class="code go">
+<figcaption>File:  cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;flag&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Define a new command-line flag with the name &#39;addr&#39;, a default value of &#34;:4000&#34;
+</span><span class="c1"></span>    <span class="c1">// and some short help text explaining what the flag controls. The value of the
+</span><span class="c1"></span>    <span class="c1">// flag will be stored in the addr variable at runtime.
+</span><span class="c1"></span>    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Importantly, we use the flag.Parse() function to parse the command-line flag.
+</span><span class="c1"></span>    <span class="c1">// This reads in the command-line flag value and assigns it to the addr
+</span><span class="c1"></span>    <span class="c1">// variable. You need to call this *before* you use the addr variable
+</span><span class="c1"></span>    <span class="c1">// otherwise it will always contain the default value of &#34;:4000&#34;. If any errors are
+</span><span class="c1"></span>    <span class="c1">// encountered during parsing the application will be terminated.
+</span><span class="c1"></span>    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+    
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="c1">// The value returned from the flag.String() function is a pointer to the flag
+</span><span class="c1"></span>    <span class="c1">// value, not the value itself. So in this code, that means the addr variable 
+</span><span class="c1"></span>    <span class="c1">// is actually a pointer, and we need to dereference it (i.e. prefix it with
+</span><span class="c1"></span>    <span class="c1">// the * symbol) before using it. Note that we&#39;re using the log.Printf() 
+</span><span class="c1"></span>    <span class="c1">// function to interpolate the address with the log message.
+</span><span class="c1"></span>    <span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;starting server on %s&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="c1">// And we pass the dereferenced addr pointer to http.ListenAndServe() too.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>این فایل را ذخیره کنید و سعی کنید از پرچم <code>-addr</code> هنگام شروع برنامه استفاده کنید. باید متوجه شوید که سرور اکنون به هر آدرسی که مشخص می‌کنید گوش می‌دهد، به این صورت:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web -addr=&#34;:9999&#34;
+<samp>2024/03/18 11:29:23 starting server on :9999</samp></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> پورت‌های 0-1023 محدود هستند و (معمولاً) فقط توسط سرویس‌هایی که دارای امتیازات ریشه هستند قابل استفاده هستند. اگر سعی کنید از یکی از این پورت‌ها استفاده کنید، باید یک پیام خطای <code>bind: permission denied</code> در هنگام راه‌اندازی دریافت کنید.
+</p></aside>
+
+<h3 id="default-values">مقادیر پیش‌فرض</h3>
+
+<p>پرچم‌های خط فرمان کاملاً اختیاری هستند. به عنوان مثال، اگر برنامه را بدون پرچم <code>-addr</code> اجرا کنید، سرور به آدرس <code>&quot;:4000&quot;</code> (که مقدار پیش‌فرضی است که مشخص کرده‌ایم) گوش خواهد داد.</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
+</figure>
+
+<p>هیچ قانونی در مورد استفاده از مقادیر پیش‌فرض برای پرچم‌های خط فرمان وجود ندارد. من دوست دارم از پیش‌فرض‌هایی استفاده کنم که برای محیط توسعه من منطقی هستند، زیرا این کار در هنگام ساخت برنامه به من زمان و تایپ کردن را صرفه‌جویی می‌کند. اما ممکن است شما روش ایمن‌تری را ترجیح دهید که پیش‌فرض‌ها را برای محیط تولید خود تنظیم کنید.</p>
+
+<h3 id="type-conversions">تبدیلات نوع</h3>
+
+<p>در کد بالا از تابع <code>flag.String()</code> برای تعریف پرچم خط فرمان استفاده کرده‌ایم. این مزیت را دارد که هر مقداری که کاربر در زمان اجرا ارائه می‌دهد به نوع <code>string</code> تبدیل می‌شود. اگر مقدار <em>نتواند</em> به <code>string</code> تبدیل شود، برنامه یک پیام خطا چاپ کرده و خارج می‌شود.</p>
+
+<p>Go همچنین دارای مجموعه‌ای از توابع دیگر از جمله <a href="https://pkg.go.dev/flag/#Int"><code>flag.Int()</code></a>، <a href="https://pkg.go.dev/flag/#Bool"><code>flag.Bool()</code></a>، <a href="https://pkg.go.dev/flag/#Float64"><code>flag.Float64()</code></a> و <a href="https://pkg.go.dev/flag#Duration"><code>flag.Duration()</code></a> برای تعریف پرچم‌ها است. این توابع دقیقاً به همان شیوه <code>flag.String()</code> کار می‌کنند، به جز اینکه به طور خودکار مقدار پرچم خط فرمان را به نوع مناسب تبدیل می‌کنند.</p>
+
+<h3 id="automated-help">کمک خودکار</h3>
+
+<p>یکی دیگر از ویژگی‌های عالی این است که می‌توانید از پرچم <code>-help</code> برای لیست کردن تمام پرچم‌های خط فرمان موجود برای یک برنامه و متن کمک همراه آنها استفاده کنید. امتحان کنید:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web -help
+<samp>Usage of /tmp/go-build3672328037/b001/exe/web:
+  -addr string
+        HTTP network address (default &#34;:4000&#34;)</samp></pre>
+</figure>
+
+<p>بنابراین، به طور کلی، این شروع به نظر می‌رسد که واقعاً خوب است. ما یک روش متداول برای مدیریت تنظیمات پیکربندی برنامه خود در زمان اجرا معرفی کرده‌ایم و به لطف پرچم <code>-help</code>، ما همچنین یک رابط صریح و مستند بین برنامه و پیکربندی عملیاتی آن داریم.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="environment-variables">متغیرهای محیطی</h4>
+
+<p>اگر قبلاً برنامه‌های وب ساخته و مستقر کرده‌اید، احتمالاً فکر می‌کنید <em>چه درباره متغیرهای محیطی؟ مطمئناً <a href="http://12factor.net/config">بهترین عمل</a> این است که تنظیمات پیکربندی را در آنجا ذخیره کنید؟</em></p>
+
+<p>اگر بخواهید، می‌توانید تنظیمات پیکربندی خود را در متغیرهای محیطی ذخیره کنید و آنها را مستقیماً از برنامه خود با استفاده از تابع <a href="https://pkg.go.dev/os/#Getenv"><code>os.Getenv()</code></a> به این صورت دسترسی پیدا کنید:</p>
+
+<figure class="code go">
+<pre><span class="nx">addr</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;SNIPPETBOX_ADDR&#34;</span><span class="p">)</span></pre>
+</figure>
+
+<p>اما این نسبت به استفاده از پرچم‌های خط فرمان دارای برخی معایب است. نمی‌توانید یک تنظیم پیش‌فرض مشخص کنید (مقدار بازگشتی از <code>os.Getenv()</code> رشته خالی است اگر متغیر محیطی وجود نداشته باشد)، شما عملکرد <code>-help</code> را که با پرچم‌های خط فرمان دارید، دریافت نمی‌کنید و مقدار بازگشتی از <code>os.Getenv()</code> <em>همیشه</em> یک رشته است &mdash; شما تبدیل نوع خودکار مانند <code>flag.Int()</code>، <code>flag.Bool()</code> و سایر توابع پرچم خط فرمان را دریافت نمی‌کنید.</p>
+
+<p>در عوض، می‌توانید بهترین‌های هر دو جهان را با عبور دادن متغیر محیطی به عنوان یک پرچم خط فرمان هنگام شروع برنامه دریافت کنید. برای مثال:</p>
+
+<figure class="code bash">
+<pre>$ export SNIPPETBOX_ADDR=&#34;:9999&#34;
+$ go run ./cmd/web -addr=$SNIPPETBOX_ADDR
+<samp>2024/03/18 11:29:23 starting server on :9999</samp></pre>
+</figure>
+
+<h4 id="boolean-flags">پرچم‌های بولی</h4>
+
+<p>برای پرچم‌هایی که با <code>flag.Bool()</code> تعریف شده‌اند، حذف یک مقدار هنگام شروع برنامه همانند نوشتن <code>-flag=true</code> است. دو دستور زیر معادل هستند:</p>
+
+<figure class="code bash">
+<pre>$ go run ./example -flag=true
+$ go run ./example -flag</pre>
+</figure>
+
+<p>شما باید به صراحت از <code>-flag=false</code> استفاده کنید اگر می‌خواهید مقدار پرچم بولی را به false تنظیم کنید.</p>
+
+<h4 id="pre-existing-variables">متغیرهای پیش‌فرض</h4>
+
+<p>امکان تجزیه مقادیر پرچم خط فرمان به آدرس‌های حافظه متغیرهای پیش‌فرض با استفاده از <a href="https://pkg.go.dev/flag/#FlagSet.StringVar"><code>flag.StringVar()</code></a>، <a href="https://pkg.go.dev/flag/#FlagSet.IntVar"><code>flag.IntVar()</code></a>، <a href="https://pkg.go.dev/flag/#FlagSet.BoolVar"><code>flag.BoolVar()</code></a> و توابع مشابه برای انواع دیگر وجود دارد.</p>
+
+<p>این توابع به خصوص مفید هستند اگر بخواهید تمام تنظیمات پیکربندی خود را در یک ساختار واحد ذخیره کنید. به عنوان یک مثال تقریبی:</p>
+
+<figure class="code go">
+<pre><span class="kd">type</span> <span class="nx">config</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">addr</span>      <span class="kt">string</span>
+    <span class="nx">staticDir</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="o">...</span>
+
+<span class="kd">var</span> <span class="nx">cfg</span> <span class="nx">config</span>
+
+<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">.</span><span class="nx">addr</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+<span class="nx">flag</span><span class="p">.</span><span class="nf">StringVar</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">cfg</span><span class="p">.</span><span class="nx">staticDir</span><span class="p">,</span> <span class="s">&#34;static-dir&#34;</span><span class="p">,</span> <span class="s">&#34;./ui/static&#34;</span><span class="p">,</span> <span class="s">&#34;Path to static assets&#34;</span><span class="p">)</span>
+
+<span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="03.00-configuration-and-error-handling.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="03.02-structured-logging.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "03.00-configuration-and-error-handling.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "03.02-structured-logging.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

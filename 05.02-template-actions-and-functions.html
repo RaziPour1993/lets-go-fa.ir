@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Template actions and functions &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب های HTML پویا</a> &rsaquo; اقدامات و توابع قالب</span>
+						
+				</div>
+				<div>
+					&lsaquo; <a href="05.01-displaying-dynamic-data.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.03-caching-templates.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 5.2.</div>
+			<h2 id="template-actions-and-functions">اقدامات و توابع قالب</h2>
+
+<p>در این بخش به اقدامات <dfn>قالب</dfn> و <dfn>توابع</dfn> که Go ارائه می دهد، خواهیم پرداخت.</p>
+
+<p>ما قبلاً در مورد برخی از اقدامات صحبت کرده ایم &mdash; <code>{{define}}</code>, <code>{{template}}</code> و <code>{{block}}</code> &mdash; اما سه مورد دیگر وجود دارد که می توانید برای کنترل نمایش داده های پویا استفاده کنید &mdash; <code>{{if}}</code>, <code>{{with}}</code> و <code>{{range}}</code>.</p>
+
+<table dir="rtl">
+<thead>
+<tr>
+<th style="text-align: right;">توضیحات اقدام</th>
+<th>اقدام</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
+<td><code>{{if .Foo}} C1 {{else}} C2 {{end}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، نقطه را به مقدار <code>.Foo</code> تنظیم کنید و محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
+<td><code>{{with .Foo}} C1 {{else}} C2 {{end}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">اگر طول <code>.Foo</code> بیشتر از صفر باشد، بر روی هر عنصر حلقه بزنید، نقطه را به مقدار هر عنصر تنظیم کنید و محتوای C1 را رندر کنید. اگر طول <code>.Foo</code> صفر باشد، محتوای C2 را رندر کنید. نوع زیرین <code>.Foo</code> باید یک آرایه، برش، نقشه یا کانال باشد.</td>
+<td><code>{{range .Foo}} C1 {{else}} C2 {{end}}</code></td>
+</tr>
+</tbody>
+</table>
+<p>چند نکته در مورد این اقدامات وجود دارد:</p>
+
+<ul>
+<li><p>برای هر سه اقدام، بند <code>{{else}}</code> اختیاری است. به عنوان مثال، می توانید <code>{{if .Foo}} C1 {{end}}</code> بنویسید اگر محتوای <code>C2</code> وجود ندارد که بخواهید رندر کنید.</p></li>
+
+<li><p>مقادیر <em>خالی</em> شامل false، 0، هر اشاره گر یا مقدار رابط nil و هر آرایه، برش، نقشه یا رشته با طول صفر است.</p></li>
+
+<li><p>مهم است که درک کنید که اقدامات <code>with</code> و <code>range</code> مقدار نقطه را تغییر می دهند. هنگامی که شروع به استفاده از آنها می کنید، <em>آنچه نقطه نشان می دهد می تواند بسته به جایی که در قالب هستید و کاری که انجام می دهید متفاوت باشد.</em></p></li>
+</ul>
+
+<p>بسته <code>html/template</code> همچنین برخی از توابع قالب را ارائه می دهد که می توانید برای افزودن منطق اضافی به قالب های خود و کنترل آنچه در زمان اجرا رندر می شود، استفاده کنید. می توانید لیست کامل توابع را <a href="https://pkg.go.dev/text/template/#hdr-Functions">اینجا</a> پیدا کنید، اما مهمترین آنها عبارتند از:</p>
+
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">توضیحات تابع</th>
+<th>تابع</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td style="text-align: right;">اگر <code>.Foo</code> برابر با <code>.Bar</code> باشد، true را برمی گرداند</td>
+<td><code>{{eq .Foo .Bar}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">اگر <code>.Foo</code> برابر با <code>.Bar</code> نباشد، true را برمی گرداند</td>
+<td><code>{{ne .Foo .Bar}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">نفی منطقی <code>.Foo</code> را برمی گرداند</td>
+<td><code>{{not .Foo}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، <code>.Foo</code> را برمی گرداند؛ در غیر این صورت <code>.Bar</code> را برمی گرداند</td>
+<td><code>{{or .Foo .Bar}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">مقدار <code>.Foo</code> در شاخص <code>i</code> را برمی گرداند. نوع زیرین <code>.Foo</code> باید یک نقشه، برش یا آرایه باشد و <code>i</code> باید یک مقدار عدد صحیح باشد.</td>
+<td><code>{{index .Foo i}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">یک رشته قالب بندی شده حاوی مقادیر <code>.Foo</code> و <code>.Bar</code> را برمی گرداند. به همان روشی که fmt.Sprintf() کار می کند.</td>
+<td><code>{{printf &quot;%s-%s&quot; .Foo .Bar}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">طول <code>.Foo</code> را به عنوان یک عدد صحیح برمی گرداند.</td>
+<td><code>{{len .Foo}}</code></td>
+</tr>
+
+<tr>
+<td style="text-align: right;">طول <code>.Foo</code> را به متغیر قالب <code>$bar</code> اختصاص می دهد</td>
+<td><code>{{$bar := len .Foo}}</code></td>
+</tr>
+</tbody>
+</table>
+<p>ردیف نهایی نمونه ای از اعلام یک <dfn>متغیر قالب</dfn> است. متغیرهای قالب به ویژه مفید هستند اگر بخواهید نتیجه یک تابع را ذخیره کنید و در چندین مکان در قالب خود از آن استفاده کنید. نام متغیرها باید با علامت دلار پیشوند شوند و فقط می توانند حاوی کاراکترهای الفبایی باشند.</p>
+
+<h3 id="using-the-with-action">استفاده از اقدام with</h3>
+
+<p>یک فرصت خوب برای استفاده از اقدام <code>{{with}}</code> فایل <code>view.tmpl</code> است که در فصل قبلی ایجاد کردیم. ادامه دهید و آن را به این صورت به روز کنید:</p>
+
+<figure class="code html" dir="ltr">
+<figcaption>File: ui/html/pages/view.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
+
+{{define &#34;main&#34;}}
+    {{with .Snippet}}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">strong</span><span class="p"></span><span class="p">&gt;</span>{{.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">strong</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>#{{.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">pre</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">code</span><span class="p"></span><span class="p">&gt;</span>{{.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">code</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">pre</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Expires: {{.Expires}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {{end}}
+{{end}}</pre>
+</figure>
+
+<p>بنابراین اکنون، بین <code>{{with .Snippet}}</code> و تگ <code>{{end}}</code> مربوطه، مقدار نقطه به <code>.Snippet</code> تنظیم می شود. نقطه اساساً به ساختار <code>models.Snippet</code> تبدیل می شود به جای ساختار والد <code>templateData</code>.</p>
+
+<h3 id="using-the-if-and-range-actions">استفاده از اقدامات if و range</h3>
+
+<p>بیایید همچنین از اقدامات <code>{{if}}</code> و <code>{{range}}</code> در یک مثال عملی استفاده کنیم و صفحه اصلی خود را به روز کنیم تا جدولی از آخرین قطعات را نمایش دهد، چیزی شبیه به این:</p>
+
+<p><img class="sketch" src="assets/img/05.02-01.png" alt="05.02-01.png"></img></p>
+
+<p>ابتدا ساختار <code>templateData</code> را به روز کنید تا شامل یک فیلد <code>Snippets</code> برای نگهداری یک برش از قطعات باشد، به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+
+<span class="c1">// Include a Snippets field in the templateData struct.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Snippet</span>  <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Snippets</span> <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>سپس تابع <code>home</code> handler را به روز کنید تا آخرین قطعات را از مدل پایگاه داده ما بگیرد و آنها را به قالب <code>home.tmpl</code> منتقل کند:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    
+    <span class="nx">snippets</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Latest</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+        <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/pages/home.tmpl&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Create an instance of a templateData struct holding the slice of
+</span><span class="c1"></span>    <span class="c1">// snippets.
+</span><span class="c1"></span>    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">Snippets</span><span class="p">:</span> <span class="nx">snippets</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Pass in the templateData struct when executing the template.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>حالا بیایید به فایل <code>ui/html/pages/home.tmpl</code> برویم و آن را به روز کنیم تا این قطعات را در یک جدول با استفاده از اقدامات <code>{{if}}</code> و <code>{{range}}</code> نمایش دهیم. به طور خاص:</p>
+
+<ul>
+<li><p>ما می خواهیم از اقدام <code>{{if}}</code> استفاده کنیم تا بررسی کنیم که آیا برش قطعات خالی است یا خیر. اگر خالی است، می خواهیم یک پیام <code>&quot;هنوز چیزی برای دیدن اینجا نیست!</code> نمایش دهیم. در غیر این صورت، می خواهیم جدولی حاوی اطلاعات قطعه را رندر کنیم.</p></li>
+
+<li><p>ما می خواهیم از اقدام <code>{{range}}</code> استفاده کنیم تا بر روی تمام قطعات در برش حلقه بزنیم و محتوای هر قطعه را در یک سطر جدول رندر کنیم.</p></li>
+</ul>
+
+<p>در اینجا نشانه گذاری آمده است:</p>
+
+<figure class="code html" dir="ltr">
+<figcaption>File: ui/html/pages/home.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}Home{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p"></span><span class="p">&gt;</span>Latest Snippets<span class="p">&lt;</span><span class="p">/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    {{if .Snippets}}
+     <span class="p">&lt;</span><span class="nt">table</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">th</span><span class="p"></span><span class="p">&gt;</span>Title<span class="p">&lt;</span><span class="p">/</span><span class="nt">th</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">th</span><span class="p"></span><span class="p">&gt;</span>Created<span class="p">&lt;</span><span class="p">/</span><span class="nt">th</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">th</span><span class="p"></span><span class="p">&gt;</span>ID<span class="p">&lt;</span><span class="p">/</span><span class="nt">th</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        {{range .Snippets}}
+        <span class="p">&lt;</span><span class="nt">tr</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/snippet/view/{{.ID}}&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p"></span><span class="p">&gt;</span>{{.Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">td</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">td</span><span class="p"></span><span class="p">&gt;</span>#{{.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">td</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">tr</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">table</span><span class="p">&gt;</span>
+    {{else}}
+        <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>هنوز چیزی برای دیدن اینجا نیست...!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
+    {{end}}
+{{end}}</pre>
+</figure>
+
+<p>اطمینان حاصل کنید که همه فایل های شما ذخیره شده اند، برنامه را مجدداً راه اندازی کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> در یک مرورگر وب مراجعه کنید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه ای را ببینید که شبیه به این است:</p>
+
+<figure class="img">
+<img src="assets/img/05.02-02.png" alt="05.02-02.png" />
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="combining-functions">ترکیب توابع</h4>
+
+<p>امکان ترکیب چندین تابع در برچسب های قالب شما وجود دارد، با استفاده از پرانتز <code>()</code> برای احاطه کردن توابع و آرگومان های آنها در صورت لزوم.</p>
+
+<p>به عنوان مثال، برچسب زیر محتوای <code>C1</code> را رندر می کند اگر طول <code>Foo</code> بیشتر از 99 باشد:</p>
+
+<figure class="code plain" dir="ltr">
+<pre>{{if (gt (len .Foo) 99)}} C1 {{end}}</pre>
+</figure>
+
+<p>یا به عنوان مثال دیگر، برچسب زیر محتوای <code>C1</code> را رندر می کند اگر <code>.Foo</code> برابر با 1 باشد <em>و</em> <code>.Bar</code> کمتر یا برابر با 20 باشد:</p>
+
+<figure class="code plain" dir="ltr">
+<pre>{{if (and (eq .Foo 1) (le .Bar 20))}} C1 {{end}}</pre>
+</figure>
+
+<h4 id="controlling-loop-behavior">کنترل رفتار حلقه</h4>
+
+<p>در یک اقدام <code>{{range}}</code> می توانید از دستور <code>{{break}}</code> برای پایان دادن به حلقه زودهنگام استفاده کنید و <code>{{continue}}</code> برای بلافاصله شروع تکرار بعدی حلقه.</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="p">{</span><span class="p">{</span><span class="k">range</span> <span class="p">.</span><span class="nx">Foo</span><span class="p">}</span><span class="p">}</span>
+    <span class="c1">// Skip this iteration if the .ID value equals 99.
+</span><span class="c1"></span>    <span class="p">{</span><span class="p">{</span><span class="k">if</span> <span class="nx">eq</span> <span class="p">.</span><span class="nx">ID</span> <span class="mi">99</span><span class="p">}</span><span class="p">}</span>
+        <span class="p">{</span><span class="p">{</span><span class="k">continue</span><span class="p">}</span><span class="p">}</span>
+    <span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span>
+    <span class="c1">// ...
+</span><span class="c1"></span><span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span></pre>
+</figure>
+
+<figure class="code go" dir="ltr">
+<pre><span class="p">{</span><span class="p">{</span><span class="k">range</span> <span class="p">.</span><span class="nx">Foo</span><span class="p">}</span><span class="p">}</span>
+    <span class="c1">// End the loop if the .ID value equals 99.
+</span><span class="c1"></span>    <span class="p">{</span><span class="p">{</span><span class="k">if</span> <span class="nx">eq</span> <span class="p">.</span><span class="nx">ID</span> <span class="mi">99</span><span class="p">}</span><span class="p">}</span>
+        <span class="p">{</span><span class="p">{</span><span class="k">break</span><span class="p">}</span><span class="p">}</span>
+    <span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span>
+    <span class="c1">// ...
+</span><span class="c1"></span><span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span></pre>
+</figure>
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.01-displaying-dynamic-data.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="05.03-caching-templates.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.01-displaying-dynamic-data.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "05.03-caching-templates.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

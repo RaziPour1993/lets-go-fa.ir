@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>نمایش داده‌های پویا &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; نمایش داده‌های پویا</span>
+				</div>
+				<div>
+					&lsaquo; <a href="05.00-dynamic-html-templates.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.02-template-actions-and-functions.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 5.1.</div>
+			<h2 id="displaying-dynamic-data">نمایش داده‌های پویا</h2>
+
+<p>در حال حاضر، تابع <code>snippetView</code> ما یک شیء <code>models.Snippet</code> را از پایگاه داده دریافت می‌کند و سپس محتویات آن را به صورت یک پاسخ HTTP متنی ساده نمایش می‌دهد.</p>
+
+<p>در این فصل، این را بهبود می‌دهیم تا داده‌ها در یک صفحه وب HTML مناسب نمایش داده شوند که شبیه به این است:</p>
+
+<p><img class="sketch" src="assets/img/05.01-01.png" alt="05.01-01.png"></img></p>
+
+<p>بیایید با افزودن کدی به تابع <code>snippetView</code> شروع کنیم تا یک فایل قالب جدید <code>view.tmpl</code> را رندر کند (که در یک دقیقه ایجاد خواهیم کرد). امیدوارم این برای شما از قبل آشنا باشد.</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;html/template&#34;</span> <span class="c1">// Uncomment import
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Initialize a slice containing the paths to the view.tmpl file,
+</span><span class="c1"></span>    <span class="c1">// plus the base layout and navigation partial that we made earlier.
+</span><span class="c1"></span>    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+        <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/pages/view.tmpl&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Parse the template files...
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// And then execute them. Notice how we are passing in the snippet
+</span><span class="c1"></span>    <span class="c1">// data (a models.Snippet struct) as the final parameter?
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">snippet</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>در مرحله بعد، باید فایل <code>view.tmpl</code> را ایجاد کنیم که حاوی نشانه‌گذاری HTML برای صفحه است. اما قبل از آن، کمی نظریه را باید توضیح دهم&hellip;</p>
+
+<p>هر داده‌ای که به عنوان پارامتر نهایی به <code>ts.ExecuteTemplate()</code> ارسال می‌کنید، در قالب‌های HTML شما با کاراکتر <code>.</code> (که به آن <em>نقطه</em> گفته می‌شود) نمایش داده می‌شود.</p>
+
+<p>در این مورد خاص، نوع زیرین نقطه یک ساختار <code>models.Snippet</code> خواهد بود. هنگامی که نوع زیرین نقطه یک ساختار است، می‌توانید مقدار هر فیلد صادر شده را در قالب‌های خود با افزودن نقطه به نام فیلد نمایش دهید. بنابراین، چون ساختار <code>models.Snippet</code> ما یک فیلد <code>Title</code> دارد، می‌توانیم عنوان قطعه را با نوشتن <code>{{.Title}}</code> در قالب‌های خود نمایش دهیم.</p>
+
+<p>من نشان خواهم داد. یک فایل جدید در <code>ui/html/pages/view.tmpl</code> ایجاد کنید و نشانه‌گذاری زیر را اضافه کنید:</p>
+
+<figure class="code bash">
+<pre>$ touch ui/html/pages/view.tmpl</pre>
+</figure>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/view.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Snippet #{{.ID}}{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">strong</span><span class="p"></span><span class="p">&gt;</span>{{.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">strong</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>#{{.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">pre</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">code</span><span class="p"></span><span class="p">&gt;</span>{{.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">code</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">pre</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Expires: {{.Expires}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> در مرورگر خود بروید، باید ببینید که قطعه مربوطه از پایگاه داده دریافت شده، به قالب ارسال شده و محتوا به درستی رندر شده است.</p>
+
+<figure class="img">
+<img src="assets/img/05.01-02.png" alt="05.01-02.png" />
+</figure>
+
+<h3 id="rendering-multiple-pieces-of-data">رندر کردن چندین قطعه داده</h3>
+
+<p>یک نکته مهم برای توضیح این است که بسته <code>html/template</code> در Go به شما اجازه می‌دهد که تنها یک قطعه داده پویا را هنگام رندر کردن یک قالب ارسال کنید. اما در یک برنامه واقعی، اغلب چندین قطعه داده پویا وجود دارد که می‌خواهید در همان صفحه نمایش دهید.</p>
+
+<p>یک روش سبک و نوع‌امن برای دستیابی به این هدف این است که داده‌های پویا خود را در یک ساختار قرار دهید که به عنوان یک <em>ساختار نگهدارنده</em> برای داده‌های شما عمل کند.</p>
+
+<p>بیایید یک فایل جدید <code>cmd/web/templates.go</code> ایجاد کنیم که حاوی یک ساختار <code>templateData</code> برای انجام دقیقاً همین کار باشد.</p>
+
+<figure class="code bash">
+<pre>$ touch cmd/web/templates.go</pre>
+</figure>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+
+<span class="c1">// Define a templateData type to act as the holding structure for
+</span><span class="c1"></span><span class="c1">// any dynamic data that we want to pass to our HTML templates.
+</span><span class="c1"></span><span class="c1">// At the moment it only contains one field, but we&#39;ll add more
+</span><span class="c1"></span><span class="c1">// to it as the build progresses.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Snippet</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و سپس بیایید تابع <code>snippetView</code> را به‌روزرسانی کنیم تا از این ساختار جدید هنگام اجرای قالب‌های ما استفاده کند:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+// ... existing code ...
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">files</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+        <span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/partials/nav.tmpl&#34;</span><span class="p">,</span>
+        <span class="s">&#34;./ui/html/pages/view.tmpl&#34;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">files</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Create an instance of a templateData struct holding the snippet data.
+</span><span class="c1"></span>    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">Snippet</span><span class="p">:</span> <span class="nx">snippet</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Pass in the templateData struct when executing the template.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+// ... existing code ...
+</pre>
+</figure>
+
+<p>بنابراین اکنون، داده‌های قطعه ما در یک ساختار <em><code>models.Snippet</code> درون یک ساختار <code>templateData</code></em> قرار دارد. برای نمایش داده‌ها، باید نام فیلدهای مناسب را به این صورت زنجیره کنیم:</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/view.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">strong</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Title}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">strong</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>#{{.Snippet.ID}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">pre</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">code</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">code</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">pre</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;metadata&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Snippet.Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Expires: {{.Snippet.Expires}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>احساس راحتی کنید که برنامه را مجدداً راه‌اندازی کنید و دوباره به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بروید. باید همان صفحه‌ای که قبلاً در مرورگر شما رندر شده بود را ببینید.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="dynamic-content-escaping">فرار از محتوای پویا</h4>
+
+<p>بسته <code>html/template</code> به طور خودکار هر داده‌ای که بین تگ‌های <code>{{ }}</code> نمایش داده می‌شود را فرار می‌دهد. این رفتار به شدت در جلوگیری از حملات XSS کمک می‌کند و دلیل این است که باید از بسته <code>html/template</code> به جای بسته عمومی‌تر <code>text/template</code> که Go نیز ارائه می‌دهد، استفاده کنید.</p>
+
+<p>به عنوان مثال از فرار، اگر داده پویا که می‌خواهید نمایش دهید به این صورت باشد:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{&#34;<span class="p">&lt;</span><span class="nt">script</span><span class="p"></span><span class="p">&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;xss attack&#39;</span><span class="p">)</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>&#34;}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>به صورت بی‌ضرر به این صورت رندر می‌شود:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span><span class="ni">&amp;lt;</span>script<span class="ni">&amp;gt;</span>alert(<span class="ni">&amp;#39;</span>xss attack<span class="ni">&amp;#39;</span>)<span class="ni">&amp;lt;</span>/script<span class="ni">&amp;gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>بسته <code>html/template</code> همچنین به اندازه کافی هوشمند است که فرار را به صورت وابسته به زمینه انجام دهد. از توالی‌های فرار مناسب بسته به اینکه داده در کدام قسمت از صفحه که شامل HTML، CSS، جاوااسکریپت یا URI است، استفاده می‌کند.</p>
+
+<h4 id="nested-templates">قالب‌های تو در تو</h4>
+
+<p>بسیار مهم است که توجه داشته باشید وقتی که یک قالب را از قالب دیگری فراخوانی می‌کنید، نقطه باید به طور صریح به قالب فراخوانی شده ارسال یا <em>پایپ‌لاین</em> شود. این کار را با افزودن آن در انتهای هر <code>{{template}}</code> یا <code>{{block}}</code> انجام می‌دهید، به این صورت:</p>
+
+<figure class="code html">
+<pre>{{template &#34;main&#34; .}}
+{{block &#34;sidebar&#34; .}}{{end}}</pre>
+</figure>
+
+<p>به عنوان یک قاعده کلی، توصیه من این است که همیشه عادت کنید که نقطه را هر زمان که یک قالب را با استفاده از اقدامات <code>{{template}}</code> یا <code>{{block}}</code> فراخوانی می‌کنید، پایپ‌لاین کنید، مگر اینکه دلیل خوبی برای عدم انجام این کار داشته باشید.</p>
+
+<h4 id="calling-methods">فراخوانی متدها</h4>
+
+<p>اگر نوعی که بین تگ‌های <code>{{ }}</code> نمایش می‌دهید دارای متدهایی است که در برابر آن تعریف شده‌اند، می‌توانید این متدها را فراخوانی کنید (به شرطی که صادر شده باشند و تنها یک مقدار &mdash; یا یک مقدار و یک خطا &mdash; برگردانند).</p>
+
+<p>به عنوان مثال، فیلد ساختار <code>.Snippet.Created</code> ما دارای نوع زیرین <code>time.Time</code> است، به این معنی که می‌توانید نام روز هفته را با فراخوانی متد <a href="https://pkg.go.dev/time/#Time.Unix"><code>Weekday()</code></a> به این صورت رندر کنید:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Created.Weekday}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>همچنین می‌توانید پارامترها را به متدها ارسال کنید. به عنوان مثال، می‌توانید از متد <a href="https://pkg.go.dev/time/#Time.AddDate"><code>AddDate()</code></a> برای افزودن شش ماه به یک زمان به این صورت استفاده کنید:</p>
+
+<figure class="code html">
+<pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Created.AddDate 0 6 0}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
+</figure>
+
+<p>توجه داشته باشید که این نحو متفاوتی با فراخوانی توابع در Go دارد &mdash; پارامترها در پرانتز قرار نمی‌گیرند و با یک کاراکتر فاصله از هم جدا می‌شوند، نه با کاما.</p>
+
+<h4 id="html-comments">نظرات HTML</h4>
+
+<p>در نهایت، بسته <code>html/template</code> همیشه هر نظری که در قالب‌های خود قرار می‌دهید را حذف می‌کند، از جمله هر <a href="https://en.wikipedia.org/wiki/Conditional_comment">نظر شرطی</a>.</p>
+
+<p>دلیل این کار کمک به جلوگیری از حملات XSS هنگام رندر کردن محتوای پویا است. اجازه دادن به نظرات شرطی به این معنی است که Go همیشه نمی‌تواند پیش‌بینی کند که یک مرورگر چگونه نشانه‌گذاری در یک صفحه را تفسیر خواهد کرد، و بنابراین نمی‌تواند همه چیز را به درستی فرار دهد. برای حل این مشکل، Go به سادگی همه نظرات HTML را حذف می‌کند.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.00-dynamic-html-templates.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="05.02-template-actions-and-functions.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.00-dynamic-html-templates.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "05.02-template-actions-and-functions.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Creating a database connection pool &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go,
+			.code.html,
+			.code.bash,
+			.code.plain {
+				direction: ltr;
+				text-align: left;
+				unicode-bidi: embed;
+			}
+			.code.go pre,
+			.code.html pre,
+			.code.bash pre,
+			.code.plain pre {
+				direction: ltr;
+				text-align: left;
+				unicode-bidi: embed;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; ایجاد یک استخر اتصال به پایگاه داده</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.03-modules-and-reproducible-builds.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="04.05-designing-a-database-model.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۴.۴</div>
+			<h2 id="creating-a-database-connection-pool">ایجاد یک استخر اتصال به پایگاه داده</h2>
+
+<p>حالا که پایگاه داده MySQL راه‌اندازی شده و درایور آن نصب شده است، گام طبیعی بعدی اتصال به پایگاه داده از برنامه وب ما است.</p>
+
+<p>برای این کار به تابع <a href="https://pkg.go.dev/database/sql/#Open"><code>sql.Open()</code></a> گو نیاز داریم که به این صورت استفاده می‌شود:</p>
+
+<figure class="code go">
+<pre><span class="c1">// The sql.Open() function initializes a new sql.DB object, which is essentially a
+</span><span class="c1"></span><span class="c1">// pool of database connections.
+</span><span class="c1"></span><span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">)</span>
+<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>چند نکته مهم در مورد این کد وجود دارد که باید توضیح داده شود:</p>
+
+<ul>
+<li><p>پارامتر اول تابع <code>sql.Open()</code> نام درایور و پارامتر دوم نام منبع داده (گاهی اوقات رشته اتصال یا DSN نیز نامیده می‌شود) است که نحوه اتصال به پایگاه داده شما را توصیف می‌کند.</p></li>
+
+<li><p>فرمت نام منبع داده به پایگاه داده و درایوری که استفاده می‌کنید بستگی دارد. معمولاً می‌توانید اطلاعات و نمونه‌ها را در مستندات درایور خاص خود پیدا کنید. برای درایوری که ما استفاده می‌کنیم می‌توانید مستندات را <a href="https://github.com/go-sql-driver/mysql#dsn-data-source-name">اینجا</a> پیدا کنید.</p></li>
+
+<li><p>قسمت <code>parseTime=true</code> در DSN یک پارامتر خاص درایور است که به درایور ما دستور می‌دهد فیلدهای <code>TIME</code> و <code>DATE</code> SQL را به اشیاء <code>time.Time</code> گو تبدیل کند.</p></li>
+
+<li><p>تابع <code>sql.Open()</code> یک شیء <a href="https://pkg.go.dev/database/sql/#DB"><code>sql.DB</code></a> برمی‌گرداند. این یک اتصال به پایگاه داده نیست - بلکه یک <em>استخر از بسیاری از اتصالات</em> است. این یک تفاوت مهم است که باید درک شود. گو اتصالات را در این استخر به صورت خودکار مدیریت می‌کند و در صورت نیاز اتصالات را به پایگاه داده از طریق درایور باز و بسته می‌کند.</p></li>
+
+<li><p>استخر اتصال برای دسترسی همزمان امن است، بنابراین می‌توانید آن را از هندلرهای برنامه وب به طور ایمن استفاده کنید.</p></li>
+
+<li><p>استخر اتصال برای استفاده طولانی مدت طراحی شده است. در یک برنامه وب، معمول است که استخر اتصال را در تابع <code>main()</code> خود مقداردهی اولیه کنید و سپس استخر را به هندلرهای خود ارسال کنید. نباید <code>sql.Open()</code> را در یک هندلر HTTP کوتاه‌مدت فراخوانی کنید - این کار هدر رفتن حافظه و منابع شبکه خواهد بود.</p></li>
+</ul>
+
+<h3 id="using-it-in-our-web-application">استفاده از آن در برنامه وب ما</h3>
+
+<p>بیایید ببینیم چگونه می‌توانیم از <code>sql.Open()</code> در عمل استفاده کنیم. فایل <code>main.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+
+    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="c1">// Define a new command-line flag for the MySQL DSN string.
+</span><span class="c1"></span>    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// To keep the main() function tidy I&#39;ve put the code for creating a connection
+</span><span class="c1"></span>    <span class="c1">// pool into the separate openDB() function below. We pass openDB() the DSN
+</span><span class="c1"></span>    <span class="c1">// from the command-line flag.
+</span><span class="c1"></span>    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// We also defer a call to db.Close(), so that the connection pool is closed
+</span><span class="c1"></span>    <span class="c1">// before the main() function exits.
+</span><span class="c1"></span>    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span> <span class="nx">logger</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="c1">// Because the err variable is now already declared in the code above, we need
+</span><span class="c1"></span>    <span class="c1">// to use the assignment operator = here, instead of the := &#39;declare and assign&#39;
+</span><span class="c1"></span>    <span class="c1">// operator.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// The openDB() function wraps sql.Open() and returns a sql.DB connection pool
+</span><span class="c1"></span><span class="c1">// for a given DSN.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">openDB</span><span class="p">(</span><span class="nx">dsn</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Ping</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">db</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>چند نکته جالب در مورد این کد وجود دارد:</p>
+
+<ul>
+<li><p>توجه کنید که مسیر import برای درایور ما با یک زیرخط شروع می‌شود؟ این به این دلیل است که فایل <code>main.go</code> ما در واقع از هیچ چیز در بسته <code>mysql</code> استفاده نمی‌کند. بنابراین اگر سعی کنیم آن را به طور معمول import کنیم، کامپایلر گو خطا می‌دهد. با این حال، ما به تابع <code>init()</code> درایور نیاز داریم تا اجرا شود تا بتواند خود را با بسته <code>database/sql</code> ثبت کند. ترفند دور زدن این مشکل، نام مستعار دادن به نام بسته با شناسه خالی است، همانطور که ما اینجا انجام می‌دهیم. این یک روش استاندارد برای اکثر درایورهای SQL گو است.</p></li>
+
+<li><p>تابع <code>sql.Open()</code> در واقع هیچ اتصالی ایجاد نمی‌کند، فقط استخر را برای استفاده آینده مقداردهی اولیه می‌کند. اتصالات واقعی به پایگاه داده به صورت تنبل ایجاد می‌شوند، در اولین زمانی که نیاز می‌شوند. بنابراین برای تأیید اینکه همه چیز به درستی تنظیم شده است، باید از متد <a href="https://pkg.go.dev/database/sql/#DB.Ping"><code>db.Ping()</code></a> استفاده کنیم تا یک اتصال ایجاد کنیم و خطاها را بررسی کنیم. اگر خطایی وجود داشته باشد، <a href="https://pkg.go.dev/database/sql/#DB.Close"><code>db.Close()</code></a> را فراخوانی می‌کنیم تا استخر اتصال را ببندیم و خطا را برگردانیم.</p></li>
+
+<li><p>برگشت به تابع <code>main()</code>، در این لحظه فراخوانی <code>defer db.Close()</code> کمی اضافی است. برنامه ما فقط با یک سیگنال قطع (یعنی <code>Ctrl+C</code>) یا با <code>os.Exit(1)</code> خاتمه می‌یابد. در هر دو مورد، برنامه بلافاصله خارج می‌شود و توابع تعویق‌افتاده هرگز اجرا نمی‌شوند. اما اطمینان از بستن همیشه استخر اتصال عادت خوبی است که باید به آن عادت کنید و می‌تواند در آینده مفید باشد اگر یک خاموش‌سازی نرم به برنامه خود اضافه کنید.</p></li>
+</ul>
+
+<h3 id="testing-a-connection">تست اتصال</h3>
+
+<p>اطمینان حاصل کنید که فایل ذخیره شده است و سپس سعی کنید برنامه را اجرا کنید. اگر همه چیز طبق برنامه پیش رفته باشد، استخر اتصال باید ایجاد شود و متد <code>db.Ping()</code> باید بتواند یک اتصال بدون هیچ خطایی ایجاد کند. اگر همه چیز خوب باشد، باید پیام لاگ معمولی <em>starting server</em> را مانند زیر ببینید:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
+</figure>
+
+<p>اگر برنامه شروع نشد و پیام خطای <code>&quot;Access denied...&quot;</code> مانند زیر دریافت کردید، احتمالاً مشکل در DSN شما است. دوباره بررسی کنید که نام کاربری و رمز عبور صحیح هستند، که کاربران پایگاه داده شما دسترسی‌های مناسب دارند و که نمونه MySQL شما از تنظیمات استاندارد استفاده می‌کند.</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;Error 1045 (28000): Access denied for user &#39;web&#39;@&#39;localhost&#39; (using password: YES)&#34;
+exit status 1</samp></pre>
+</figure>
+
+<h3 id="tidying-the-go-mod-file">مرتب کردن فایل go.mod</h3>
+
+<p>حالا که کد ما در واقع درایور <code>github.com/go-sql-driver/mysql</code> را import می‌کند، می‌توانید دستور <code>go mod tidy</code> را اجرا کنید تا فایل <code>go.mod</code> خود را مرتب کنید و هر گونه حاشیه‌نویسی <code>// indirect</code> غیرضروری را حذف کنید.</p>
+
+<figure class="code bash">
+<pre>$ go mod tidy</pre>
+</figure>
+
+<p>پس از انجام این کار، فایل <code>go.mod</code> شما باید مانند زیر به نظر برسد - با <code>github.com/go-sql-driver/mysql</code> به عنوان یک وابستگی مستقیم و <code>filippo.io/edwards25519</code> همچنان به عنوان یک وابستگی غیرمستقیم.</p>
+
+<figure class="code plain">
+<figcaption>File: go.mod</figcaption>
+<pre>module snippetbox.alexedwards.net
+
+go 1.23.0
+
+require github.com/go-sql-driver/mysql v1.8.1
+
+require filippo.io/edwards25519 v1.1.0 // indirect</pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.03-modules-and-reproducible-builds.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="04.05-designing-a-database-model.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.03-modules-and-reproducible-builds.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.05-designing-a-database-model.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

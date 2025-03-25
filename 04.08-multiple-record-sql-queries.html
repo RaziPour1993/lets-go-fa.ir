@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Multiple-record SQL queries &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; پرس و جوهای SQL چند رکوردی</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="04.07-single-record-sql-queries.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="04.09-transactions-and-other-details.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 4.8.</div>
+			<h2 id="multiple-record-sql-queries">پرس و جوهای SQL چند رکوردی</h2>
+
+<p>در نهایت، بیایید به الگوی اجرای دستورات SQL که چندین سطر را برمی‌گرداند، نگاهی بیندازیم. من این را با به‌روزرسانی متد <code>SnippetModel.Latest()</code> برای برگرداندن ده <em>قطعه اخیراً ایجاد شده</em> (تا زمانی که منقضی نشده‌اند) با استفاده از پرس و جوی SQL زیر نشان خواهم داد:</p>
+
+<figure class="code sql" dir="ltr">
+<pre><span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span> <span class="k">FROM</span> <span class="n">snippets</span>
+<span class="k">WHERE</span> <span class="n">expires</span> <span class="o">&gt;</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">10</span></pre>
+</figure>
+
+<p>فایل <code>internal/models/snippets.go</code> را باز کنید و کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/snippets.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Latest</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Write the SQL statement we want to execute.
+</span><span class="c1"></span>    <span class="nx">stmt</span> <span class="o">:=</span> <span class="s">`</span><span class="s">SELECT id, title, content, created, expires FROM snippets
+</span><span class="s">    WHERE expires &gt; UTC_TIMESTAMP() ORDER BY id DESC LIMIT 10</span><span class="s">`</span>
+
+    <span class="c1">// Use the Query() method on the connection pool to execute our
+</span><span class="c1"></span>    <span class="c1">// SQL statement. This returns a sql.Rows resultset containing the result of
+</span><span class="c1"></span>    <span class="c1">// our query.
+</span><span class="c1"></span>    <span class="nx">rows</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="nx">stmt</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// We defer rows.Close() to ensure the sql.Rows resultset is
+</span><span class="c1"></span>    <span class="c1">// always properly closed before the Latest() method returns. This defer
+</span><span class="c1"></span>    <span class="c1">// statement should come *after* you check for an error from the Query()
+</span><span class="c1"></span>    <span class="c1">// method. Otherwise, if Query() returns an error, you&#39;ll get a panic
+</span><span class="c1"></span>    <span class="c1">// trying to close a nil resultset.
+</span><span class="c1"></span>    <span class="k">defer</span> <span class="nx">rows</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Initialize an empty slice to hold the Snippet structs.
+</span><span class="c1"></span>    <span class="kd">var</span> <span class="nx">snippets</span> <span class="p">[</span><span class="p">]</span><span class="nx">Snippet</span>
+
+    <span class="c1">// Use rows.Next to iterate through the rows in the resultset. This
+</span><span class="c1"></span>    <span class="c1">// prepares the first (and then each subsequent) row to be acted on by the
+</span><span class="c1"></span>    <span class="c1">// rows.Scan() method. If iteration over all the rows completes then the
+</span><span class="c1"></span>    <span class="c1">// resultset automatically closes itself and frees-up the underlying
+</span><span class="c1"></span>    <span class="c1">// database connection.
+</span><span class="c1"></span>    <span class="k">for</span> <span class="nx">rows</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Create a new zeroed Snippet struct.
+</span><span class="c1"></span>        <span class="kd">var</span> <span class="nx">s</span> <span class="nx">Snippet</span>
+        <span class="c1">// Use rows.Scan() to copy the values from each field in the row to the
+</span><span class="c1"></span>        <span class="c1">// new Snippet object that we created. Again, the arguments to row.Scan()
+</span><span class="c1"></span>        <span class="c1">// must be pointers to the place you want to copy the data into, and the
+</span><span class="c1"></span>        <span class="c1">// number of arguments must be exactly the same as the number of
+</span><span class="c1"></span>        <span class="c1">// columns returned by your statement.
+</span><span class="c1"></span>        <span class="nx">err</span> <span class="p">=</span> <span class="nx">rows</span><span class="p">.</span><span class="nf">Scan</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">ID</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Created</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">s</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+        <span class="c1">// Append it to the slice of snippets.
+</span><span class="c1"></span>        <span class="nx">snippets</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">snippets</span><span class="p">,</span> <span class="nx">s</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// When the rows.Next() loop has finished we call rows.Err() to retrieve any
+</span><span class="c1"></span>    <span class="c1">// error that was encountered during the iteration. It&#39;s important to
+</span><span class="c1"></span>    <span class="c1">// call this - don&#39;t assume that a successful iteration was completed
+</span><span class="c1"></span>    <span class="c1">// over the whole resultset.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">rows</span><span class="p">.</span><span class="nf">Err</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// If everything went OK then return the Snippets slice.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">snippets</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>مهم:</strong> بستن یک مجموعه نتیجه با <code>defer rows.Close()</code> در کد بالا بسیار مهم است. تا زمانی که یک مجموعه نتیجه باز است، اتصال پایگاه داده زیرین را باز نگه می‌دارد... بنابراین اگر در این روش مشکلی پیش بیاید و مجموعه نتیجه بسته نشود، می‌تواند به سرعت منجر به استفاده از تمام اتصالات در استخر شما شود.
+</p></aside>
+
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما</h3>
+
+<p>به فایل <code>cmd/web/handlers.go</code> برگردید و هندلر <code>home</code> را به‌روزرسانی کنید تا از متد <code>SnippetModel.Latest()</code> استفاده کند و محتوای قطعه را به یک پاسخ HTTP بریزد. فعلاً فقط کد مربوط به رندر قالب را کامنت کنید، به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="c1">// &#34;html/template&#34;
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
+    
+    <span class="nx">snippets</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Latest</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">snippet</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">snippets</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;%+v\n&#34;</span><span class="p">,</span> <span class="nx">snippet</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// files := []string{
+</span><span class="c1"></span>    <span class="c1">//     &#34;./ui/html/base.tmpl&#34;,
+</span><span class="c1"></span>    <span class="c1">//     &#34;./ui/html/partials/nav.tmpl&#34;,
+</span><span class="c1"></span>    <span class="c1">//     &#34;./ui/html/pages/home.tmpl&#34;,
+</span><span class="c1"></span>    <span class="c1">// }
+</span><span class="c1"></span>
+    <span class="c1">// ts, err := template.ParseFiles(files...)
+</span><span class="c1"></span>    <span class="c1">// if err != nil {
+</span><span class="c1"></span>    <span class="c1">//     app.serverError(w, r, err)
+</span><span class="c1"></span>    <span class="c1">//     return
+</span><span class="c1"></span>    <span class="c1">// }
+</span><span class="c1"></span>
+    <span class="c1">// err = ts.ExecuteTemplate(w, &#34;base&#34;, nil)
+</span><span class="c1"></span>    <span class="c1">// if err != nil {
+</span><span class="c1"></span>    <span class="c1">//     app.serverError(w, r, err)
+</span><span class="c1"></span>    <span class="c1">// }
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>اگر اکنون برنامه را اجرا کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> در مرورگر خود بروید، باید پاسخی مشابه این دریافت کنید:</p>
+
+<figure class="img">
+<img src="assets/img/04.08-01.png" alt="04.08-01.png" />
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.07-single-record-sql-queries.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="04.09-transactions-and-other-details.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "04.07-single-record-sql-queries.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "04.09-transactions-and-other-details.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
