@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Middleware &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; Middleware</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="05.06-custom-template-functions.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="06.01-how-middleware-works.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 6.</div>
+			<h1 id="middleware">Middleware</h1>
+
+<p>When you&rsquo;re building a web application there&rsquo;s probably some shared functionality that you want to use for many (or even all) HTTP requests. For example, you might want to log every request, compress every response, or check a cache before passing the request to your handlers.</p>
+
+<p>A common way of organizing this shared functionality is to set it up as <dfn>middleware</dfn>. This is essentially some self-contained code which independently acts on a request before or after your normal application handlers.</p>
+
+<p>In this section of the book you&rsquo;ll learn:</p>
+
+<ul>
+<li>An idiomatic pattern for <a href="06.01-how-middleware-works.html">building and using custom middleware</a> which is compatible with <code>net/http</code> and many third-party packages.</li>
+<li>How to create middleware which <a href="06.02-setting-common-headers.html">sets common HTTP headers</a> on every HTTP response.</li>
+<li>How to create middleware which <a href="06.03-request-logging.html">logs the requests</a> received by your application.</li>
+<li>How to create middleware which <a href="06.04-panic-recovery.html">recovers panics</a> so that they are gracefully handled by your application.</li>
+<li>How to create and use composable <a href="06.05-composable-middleware-chains.html">middleware chains</a> to help manage and organize your middleware.</li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.06-custom-template-functions.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="06.01-how-middleware-works.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.06-custom-template-functions.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "06.01-how-middleware-works.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>How middleware works &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">Middleware</a> &rsaquo; How middleware works</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="06.00-middleware.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="06.02-setting-common-headers.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 6.1.</div>
+			<h2 id="how-middleware-works">How middleware works</h2>
+
+<p><a href="02.10-the-http-handler-interface.html">Earlier in the book</a> I said something that I&rsquo;d like to expand on in this chapter:</p>
+
+<blockquote>
+<p>&ldquo;You can think of a Go web application as a chain of <code>ServeHTTP()</code> methods being called one after another.&rdquo;</p>
+</blockquote>
+
+<p>Currently, in our application, when our server receives a new HTTP request it calls the servemux’s <code>ServeHTTP()</code> method. This looks up the relevant handler based on the request method and URL path, and in turn calls that handler’s <code>ServeHTTP()</code> method.</p>
+
+<p>The basic idea of middleware is to insert another handler into this chain. The middleware handler executes some logic, like logging a request, and then calls the <code>ServeHTTP()</code> method of the <em>next</em> handler in the chain.</p>
+
+<p>In fact, we&rsquo;re actually already using some middleware in our application &mdash; the <code>http.StripPrefix()</code> function from <a href="02.09-serving-static-files.html">serving static files</a>, which removes a specific prefix from the request&rsquo;s URL path before passing the request on to the file server.</p>
+
+<h3 id="the-pattern">The pattern</h3>
+
+<p>The standard pattern for creating your own middleware looks like this:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">fn</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// TODO: Execute our middleware logic here...
+</span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">fn</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>The code itself is pretty succinct, but there&rsquo;s quite a lot in it to get your head around.</p>
+
+<ul>
+<li><p>The <code>myMiddleware()</code> function is essentially a wrapper around the <code>next</code> handler, which we pass to it as a parameter.</p></li>
+
+<li><p>It establishes a function <code>fn</code> which <em>closes over</em> the <code>next</code> handler to form a closure. When <code>fn</code> is run it executes our middleware logic and then transfers control to the <code>next</code> handler by calling it&rsquo;s <code>ServeHTTP()</code> method.</p></li>
+
+<li><p>Regardless of what you do with a closure it will always be able to access the variables that are local to the scope it was created in &mdash; which in this case means that <code>fn</code> will always have access to the <code>next</code> variable.</p></li>
+
+<li><p>In the final line of code, we then convert this closure to a <code>http.Handler</code> and return it using the <code>http.HandlerFunc()</code> adapter.</p></li>
+</ul>
+
+<p>If this feels confusing, you can think of it more simply: <code>myMiddleware()</code> is a function that accepts the next handler in a chain as a parameter. It <em>returns a handler</em> which executes some logic and then calls the next handler.</p>
+
+<h3 id="simplifying-the-middleware">Simplifying the middleware</h3>
+
+<p>A tweak to this pattern is to use an anonymous function inside <code>myMiddleware()</code> middleware, like so:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// TODO: Execute our middleware logic here...
+</span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>This pattern is very common in the wild, and the one that you’ll probably see most often if you’re reading the source code of other applications or third-party packages.</p>
+
+<h3 id="positioning-the-middleware">Positioning the middleware</h3>
+
+<p>It&rsquo;s important to explain that where you position the middleware in the chain of handlers will affect the behavior of your application.</p>
+
+<p>If you position your middleware before the servemux in the chain then it will act on every request that your application receives.</p>
+
+<figure class="code plain">
+<pre>myMiddleware → servemux → application handler</pre>
+</figure>
+
+<p>A good example of where this would be useful is middleware to log requests &mdash; as that&rsquo;s typically something you would want to do for <em>all</em> requests.</p>
+
+<p>Alternatively, you can position the middleware after the servemux in the chain &mdash; by wrapping a specific application handler. This would cause your middleware to only be executed for a specific route.</p>
+
+<figure class="code plain">
+<pre>servemux → myMiddleware → application handler</pre>
+</figure>
+
+<p>An example of this would be something like authorization middleware, which you may only want to run on specific routes.</p>
+
+<p>We&rsquo;ll demonstrate how to do both of these things in practice as we progress through the book.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="06.00-middleware.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="06.02-setting-common-headers.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "06.00-middleware.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "06.02-setting-common-headers.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Composable middleware chains &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">Middleware</a> &rsaquo; Composable middleware chains</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="06.04-panic-recovery.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="07.00-processing-forms.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 6.5.</div>
+			<h2 id="composable-middleware-chains">Composable middleware chains</h2>
+
+<p>In this chapter I&rsquo;d like to introduce the <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> package to help us manage our middleware/handler chains.</p>
+
+<p>You don&rsquo;t <em>need</em> to use this package, but the reason I recommend it is because it makes it easy to create composable, reusable, middleware chains &mdash; and that can be a real help as your application grows and your routes become more complex. The package itself is also small and lightweight, and the code is clear and well written.</p>
+
+<p>To demonstrate its features in one example, it allows you to rewrite a handler chain from this:</p>
+
+<figure class="code go">
+<pre><span class="k">return</span> <span class="nf">myMiddleware1</span><span class="p">(</span><span class="nf">myMiddleware2</span><span class="p">(</span><span class="nf">myMiddleware3</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+<p>Into this, which is a bit clearer to understand at a glance:</p>
+
+<figure class="code go">
+<pre><span class="k">return</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddleware1</span><span class="p">,</span> <span class="nx">myMiddleware2</span><span class="p">,</span> <span class="nx">myMiddleware3</span><span class="p">)</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
+</figure>
+
+<p>But the real power lies in the fact that you can use it to create middleware chains that can be assigned to variables, appended to, and reused. For example:</p>
+
+<figure class="code go">
+<pre><span class="nx">myChain</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddlewareOne</span><span class="p">,</span> <span class="nx">myMiddlewareTwo</span><span class="p">)</span>
+<span class="nx">myOtherChain</span> <span class="o">:=</span> <span class="nx">myChain</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">myMiddleware3</span><span class="p">)</span>
+<span class="k">return</span> <span class="nx">myOtherChain</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
+</figure>
+
+<p>If you&rsquo;re following along, please install the <code>justinas/alice</code> package using <code>go get</code>:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/justinas/alice@v1
+<samp>go: downloading github.com/justinas/alice v1.2.0</samp></pre>
+</figure>
+
+<p>And if you open the <code>go.mod</code> file for your project, you should see a new corresponding <code>require</code> statement, like so:</p>
+
+<figure class="code plain">
+<figcaption>File: go.mod</figcaption>
+<pre>module snippetbox.alexedwards.net
+
+go 1.23.0
+
+require github.com/go-sql-driver/mysql v1.8.1
+
+require (
+    filippo.io/edwards25519 v1.1.0 // indirect
+    github.com/justinas/alice v1.2.0 // indirect
+)</pre>
+</figure>
+
+<p>Again, this is currently listed as an indirect dependency because we&rsquo;re not actually importing and using it in our code yet.</p>
+
+<p>Let&rsquo;s go ahead and do that now, updating our <code>routes.go</code> file to use the <code>justinas/alice</code> package as follows:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;net/http&#34;</span>
+
+    <span class="s">&#34;github.com/justinas/alice&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+   
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="c1">// Create a middleware chain containing our &#39;standard&#39; middleware
+</span><span class="c1"></span>    <span class="c1">// which will be used for every request our application receives.
+</span><span class="c1"></span>    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+
+    <span class="c1">// Return the &#39;standard&#39; middleware chain followed by the servemux.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>If you want, feel free to restart the application at this point. You should find that everything compiles correctly and the application continues to work in the same way as before. You can also run <code>go mod tidy</code> again to remove the <code>// indirect</code> annotation from the <code>go.mod</code> file.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="06.04-panic-recovery.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="07.00-processing-forms.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "06.04-panic-recovery.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "07.00-processing-forms.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
