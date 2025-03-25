@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -8,6 +8,19 @@
 		<title>Caching templates &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
+				direction: ltr;
+				text-align: left;
+				unicode-bidi: embed;
+			}
+			main ol {
+				padding-right: 2em;
+			}
+			main ol li {
+				text-align: right;
+			}
+		</style>
 	</head>
 	<body>
 		<header>
@@ -27,18 +40,18 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 5.3.</div>
-			<h2 id="caching-templates">Caching templates</h2>
+			<div class="chapter">فصل ۵.۳.</div>
+			<h2 id="caching-templates">کش کردن قالب‌ها</h2>
 
-<p>Before we add any more functionality to our HTML templates, it&rsquo;s a good time to make some optimizations to our codebase. There are two main issues at the moment:</p>
+<p>قبل از اینکه عملکرد بیشتری به قالب‌های HTML اضافه کنیم، زمان خوبی است تا بهینه‌سازی‌هایی در کد پایه انجام دهیم. در حال حاضر دو مشکل اصلی وجود دارد:</p>
 
 <ol>
-<li><p>Each and every time we render a web page, our application reads and parses the relevant template files using the <code>template.ParseFiles()</code> function. We could avoid this duplicated work by parsing the files once &mdash; when starting the application &mdash; and storing the parsed templates in an in-memory <dfn>cache</dfn>.</p></li>
+<li><p>هر بار که صفحه وب را رندر می‌کنیم، برنامه ما فایل‌های قالب مربوطه را با استفاده از تابع <code>template.ParseFiles()</code> می‌خواند و تجزیه می‌کند. می‌توانیم از این کار تکراری با تجزیه یکباره فایل‌ها - هنگام شروع برنامه - و ذخیره قالب‌های تجزیه شده در یک <dfn>کش</dfn> در حافظه جلوگیری کنیم.</p></li>
 
-<li><p>There&rsquo;s duplicated code in the <code>home</code> and <code>snippetView</code> handlers, and we could reduce this duplication by creating a helper function.</p></li>
+<li><p>در هندلرهای <code>home</code> و <code>snippetView</code> کد تکراری وجود دارد و می‌توانیم این تکرار را با ایجاد یک تابع کمکی کاهش دهیم.</p></li>
 </ol>
 
-<p>Let&rsquo;s tackle the first point first, and create an in-memory map with the type <code>map[string]*template.Template</code> to cache the parsed templates. Open your <code>cmd/web/templates.go</code> file and add the following code:</p>
+<p>بیایید ابتدا نکته اول را بررسی کنیم و یک نقشه در حافظه با نوع <code>map[string]*template.Template</code> برای کش کردن قالب‌های تجزیه شده ایجاد کنیم. فایل <code>cmd/web/templates.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -96,7 +109,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>The next step is to initialize this cache in the <code>main()</code> function and make it available to our handlers as a dependency via the <code>application</code> struct, like this:</p>
+<p>مرحله بعدی، مقداردهی اولیه این کش در تابع <code>main()</code> و در دسترس قرار دادن آن برای هندلرهای ما به عنوان یک وابستگی از طریق ساختار <code>application</code> است، مانند این:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/main.go</figcaption>
@@ -160,11 +173,11 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>So, at this point, we&rsquo;ve got an in-memory cache of the relevant template set for each of our pages, and our handlers have access to this cache via the <code>application</code> struct.</p>
+<p>بنابراین، در این مرحله، ما یک کش در حافظه از مجموعه قالب مربوط به هر یک از صفحات خود داریم و هندلرهای ما از طریق ساختار <code>application</code> به این کش دسترسی دارند.</p>
 
-<p>Let&rsquo;s now tackle the second issue of duplicated code, and create a helper method so that we can easily render the templates from the cache.</p>
+<p>حالا بیایید مشکل دوم کد تکراری را بررسی کنیم و یک متد کمکی ایجاد کنیم تا بتوانیم به راحتی قالب‌ها را از کش رندر کنیم.</p>
 
-<p>Open up your <code>cmd/web/helpers.go</code> file and add the following <code>render()</code> method:</p>
+<p>فایل <code>cmd/web/helpers.go</code> خود را باز کنید و متد <code>render()</code> زیر را اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/helpers.go</figcaption>
@@ -201,7 +214,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>With that complete, we now get to see the payoff from these changes and can dramatically simplify the code in our handlers:</p>
+<p>با تکمیل این موارد، حالا می‌توانیم نتیجه این تغییرات را ببینیم و کد هندلرهای خود را به طور چشمگیری ساده‌تر کنیم:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -257,7 +270,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>If you restart the application and try visiting <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> and <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> again you should see that the pages are rendered in exactly the same way as before.</p>
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و سعی کنید از <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> و <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بازدید کنید، باید ببینید که صفحات دقیقاً به همان روش قبلی رندر می‌شوند.</p>
 
 <figure class="img">
 <img src="assets/img/05.03-01.png" alt="05.03-01.png" />
@@ -267,11 +280,11 @@
 <img src="assets/img/05.03-02.png" alt="05.03-02.png" />
 </figure>
 
-<h3 id="automatically-parsing-partials">Automatically parsing partials</h3>
+<h3 id="automatically-parsing-partials">تجزیه خودکار بخش‌های جزئی</h3>
 
-<p>Before we move on, let&rsquo;s make our <code>newTemplateCache()</code> function a bit more flexible so that it automatically parses <em>all templates in the <code>ui/html/partials</code> folder</em> &mdash; rather than only our <code>nav.tmpl</code> file.</p>
+<p>قبل از اینکه ادامه دهیم، بیایید تابع <code>newTemplateCache()</code> خود را کمی انعطاف‌پذیرتر کنیم تا به طور خودکار <em>تمام قالب‌های موجود در پوشه <code>ui/html/partials</code></em> را تجزیه کند - به جای فقط فایل <code>nav.tmpl</code> ما.</p>
 
-<p>This will save us time, typing and potential bugs if we want to add additional partials in the future.</p>
+<p>این کار در صورت اضافه کردن بخش‌های جزئی اضافی در آینده، زمان، تایپ و خطاهای احتمالی را صرفه‌جویی می‌کند.</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/templates.go</figcaption>
