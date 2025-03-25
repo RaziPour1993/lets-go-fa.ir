@@ -1,66 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Processing forms &mdash; Let's Go</title>
+		<title>پردازش فرم‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.text {
+				direction: rtl;
+				text-align: right;
+			}
+			.code, pre {
+				direction: ltr;
+				text-align: left;
+			}
+			.crumbs {
+				margin-right: 5px;
+			}
+		</style>
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; Processing forms</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; پردازش فرم‌ها</span>
 				</div>
 				<div>
-					&lsaquo; <a href="06.05-composable-middleware-chains.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.01-setting-up-an-html-form.html">Next</a> &rsaquo;
+					&lsaquo; <a href="06.05-composable-middleware-chains.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.01-setting-up-an-html-form.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 7.</div>
-			<h1 id="processing-forms">Processing forms</h1>
+			<div class="chapter">فصل ۷.</div>
+			<h1 id="processing-forms">پردازش فرم‌ها</h1>
 
-<p>In this section of the book we&rsquo;re going to focus on adding an HTML form for creating new snippets. The form will look a bit like this:</p>
+			<p>در این بخش از کتاب، ما بر روی اضافه کردن یک فرم HTML برای ایجاد اسنیپت‌های جدید تمرکز خواهیم کرد. فرم شبیه به این خواهد بود:</p>
 
-<p><img class="sketch" src="assets/img/07.00-01.png" alt="07.00-01.png"></img></p>
+			<p><img class="sketch" src="assets/img/07.00-01.png" alt="07.00-01.png"></img></p>
 
-<p>The high-level flow for processing this form will follow a standard <code>Post-Redirect-Get</code> pattern and will work like so:</p>
+			<p>جریان کلی برای پردازش این فرم از الگوی استاندارد <code>Post-Redirect-Get</code> پیروی می‌کند و به این صورت کار خواهد کرد:</p>
 
-<ol>
-<li>The user is shown the blank form when they make a <code>GET</code> request to <code>/snippet/create</code>.</li>
-<li>The user completes the form and it&rsquo;s submitted to the server via a <code>POST</code> request to <code>/snippet/create</code>.</li>
-<li>The form data will be validated by our <code>snippetCreatePost</code> handler. If there are any validation failures the form will be re-displayed with the appropriate form fields highlighted. If it passes our validation checks, the data for the new snippet will be added to the database and then we&rsquo;ll redirect the user to <code>GET /snippet/view/{id}</code>.</li>
-</ol>
+			<ol>
+				<li>زمانی که کاربر یک درخواست <code>GET</code> به <code>/snippet/create</code> می‌فرستد، فرم خالی به او نمایش داده می‌شود.</li>
+				<li>کاربر فرم را تکمیل می‌کند و از طریق یک درخواست <code>POST</code> به <code>/snippet/create</code> ارسال می‌شود.</li>
+				<li>داده‌های فرم توسط هندلر <code>snippetCreatePost</code> ما اعتبارسنجی می‌شود. اگر خطایی در اعتبارسنجی وجود داشته باشد، فرم با فیلدهای مربوطه برجسته شده مجدداً نمایش داده می‌شود. اگر از بررسی‌های اعتبارسنجی ما عبور کند، داده‌های اسنیپت جدید به پایگاه داده اضافه شده و سپس کاربر به <code>GET /snippet/view/{id}</code> هدایت می‌شود.</li>
+			</ol>
 
-<p>As part of this you&rsquo;ll learn:</p>
+			<p>در این بخش، شما یاد خواهید گرفت:</p>
 
-<ul>
-<li>How to <a href="07.02-parsing-form-data.html">parse and access</a> form data sent in a <code>POST</code> request.</li>
-<li>Some techniques for performing common <a href="07.03-validating-form-data.html">validation checks</a> on the form data.</li>
-<li>A <a href="07.04-displaying-errors-and-repopulating-fields.html">user-friendly pattern</a> for alerting the user to validation failures and re-populating form fields with previously submitted data.</li>
-<li>How to <a href="07.05-creating-validation-helpers.html">keep your handlers clean</a> by using helpers for form processing and validation.</li>
-</ul>
-
+			<ul>
+				<li>چگونه <a href="07.02-parsing-form-data.html">تجزیه و دسترسی</a> به داده‌های فرم ارسال شده در درخواست <code>POST</code> را انجام دهید.</li>
+				<li>برخی تکنیک‌ها برای انجام <a href="07.03-validating-form-data.html">بررسی‌های اعتبارسنجی</a> رایج روی داده‌های فرم.</li>
+				<li>یک <a href="07.04-displaying-errors-and-repopulating-fields.html">الگوی کاربرپسند</a> برای اطلاع‌رسانی خطاهای اعتبارسنجی به کاربر و پر کردن مجدد فیلدهای فرم با داده‌های قبلاً ارسال شده.</li>
+				<li>چگونه با استفاده از توابع کمکی برای پردازش و اعتبارسنجی فرم، <a href="07.05-creating-validation-helpers.html">هندلرهای خود را تمیز نگه دارید</a>.</li>
+			</ul>
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="06.05-composable-middleware-chains.html">Previous</a>
+					&lsaquo; <a href="06.05-composable-middleware-chains.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.01-setting-up-an-html-form.html">Next</a> &rsaquo;
+					<a href="07.01-setting-up-an-html-form.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
