@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Stateful HTTP &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; Stateful HTTP</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="07.06-automatic-form-parsing.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="08.01-choosing-a-session-manager.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 8.</div>
+			<h1 id="stateful-http">Stateful HTTP</h1>
+
+<p>A nice touch to improve our user experience would be to display a one-time confirmation message which the user sees <em>after</em> they&rsquo;ve added a new snippet. Like so:</p>
+
+<p><img class="sketch" src="assets/img/08.00-01.png" alt="08.00-01.png"></img></p>
+
+<p>A confirmation message like this should only show up for the user once (immediately after creating the snippet) and no other users should ever see the message. If you&rsquo;ve been programming for a while already, you might know this type of functionality as a <dfn>flash message</dfn> or a <dfn>toast</dfn>.</p>
+
+<p>To make this work, we need to start sharing data (or <dfn>state</dfn>) between HTTP requests for the same user. The most common way to do that is to implement a <dfn>session</dfn> for the user.</p>
+
+<p>In this section you&rsquo;ll learn:</p>
+
+<ul>
+<li>What <a href="08.01-choosing-a-session-manager.html">session managers</a> are available to help us implement sessions in Go.</li>
+<li>How to <a href="08.03-working-with-session-data.html">use sessions</a> to safely and securely share data between requests for a particular user.</li>
+<li>How you can <a href="08.02-setting-up-the-session-manager.html">customize session behavior</a> (including timeouts and cookie settings) based on your application&rsquo;s needs.</li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="07.06-automatic-form-parsing.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="08.01-choosing-a-session-manager.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "07.06-automatic-form-parsing.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "08.01-choosing-a-session-manager.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

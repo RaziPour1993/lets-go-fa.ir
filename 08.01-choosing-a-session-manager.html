@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<meta name="author" content="Alex Edwards">
+		<meta name="copyright" content="Copyright Alex Edwards 2024">
+		<title>Choosing a session manager &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">Stateful HTTP</a> &rsaquo; Choosing a session manager</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="08.00-stateful-http.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="08.02-setting-up-the-session-manager.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 8.1.</div>
+			<h2 id="choosing-a-session-manager">Choosing a session manager</h2>
+
+<p>There are a lot of <a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html">security considerations</a> when it comes to working with sessions, and proper implementation is not trivial. Unless you really need to roll your own implementation, it&rsquo;s a good idea to use an existing, well-tested, third-party package here.</p>
+
+<p>I recommend using either <a href="https://github.com/gorilla/sessions"><code>gorilla/sessions</code></a>, or <a href="https://github.com/alexedwards/scs"><code>alexedwards/scs</code></a>, depending on your project&rsquo;s needs.</p>
+
+<ul>
+<li><p><code>gorilla/sessions</code> is the most established and well-known session management package for Go. It has a simple and easy-to-use API, and let&rsquo;s you store session data client-side (in signed and encrypted cookies) or server-side (in a database like MySQL, PostgreSQL or Redis).</p>
+
+<p>However &mdash; importantly &mdash; it doesn&rsquo;t provide a mechanism to renew session IDs (which is necessary to reduce risks <a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#renew-the-session-id-after-any-privilege-level-change">associated with session fixation attacks</a> if you&rsquo;re using one of the server-side session stores).</p></li>
+
+<li><p><code>alexedwards/scs</code> lets you store session data server-side only. It supports automatic loading and saving of session data via middleware, has a nice interface for type-safe manipulation of data, and <em>does</em> allow renewal of session IDs. Like <code>gorilla/sessions</code>, it also supports a variety of databases (including MySQL, PostgreSQL and Redis).</p></li>
+</ul>
+
+<p>In summary, if you want to store session data client-side in a cookie then <code>gorilla/sessions</code> is a good choice, but otherwise <code>alexedwards/scs</code> is generally the better option due to the ability to renew session IDs.</p>
+
+<p>For this project we&rsquo;ve already got a MySQL database set up, so we&rsquo;ll opt to use <code>alexedwards/scs</code> and store the session data server-side in MySQL.</p>
+
+<p>If you&rsquo;re following along, make sure that you&rsquo;re in your project directory and install the necessary packages like so:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/alexedwards/scs/v2@v2
+<samp>go: downloading github.com/alexedwards/scs/v2 v2.8.0
+go get: added github.com/alexedwards/scs/v2 v2.8.0</samp>
+
+$ go get github.com/alexedwards/scs/mysqlstore@latest
+<samp>go: downloading github.com/alexedwards/scs/mysqlstore v0.0.0-20240316133359-d7ab9d9831ec
+go get: added github.com/alexedwards/scs/mysqlstore v0.0.0-20240316133359-d7ab9d9831ec</samp></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="08.00-stateful-http.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="08.02-setting-up-the-session-manager.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "08.00-stateful-http.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "08.02-setting-up-the-session-manager.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
