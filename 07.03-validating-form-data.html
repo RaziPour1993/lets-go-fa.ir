@@ -1,47 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Validating form data &mdash; Let's Go</title>
+		<title>اعتبارسنجی داده‌های فرم &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body { direction: rtl; }
+			.text { text-align: right; }
+			.code { direction: ltr; text-align: left; }
+			header .wrapper > div:first-child { text-align: right; }
+			header .wrapper > div:last-child { text-align: left; }
+		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Validating form data</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; اعتبارسنجی داده‌های فرم</span>
 				</div>
 				<div>
-					&lsaquo; <a href="07.02-parsing-form-data.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.04-displaying-errors-and-repopulating-fields.html">Next</a> &rsaquo;
+					&lsaquo; <a href="07.02-parsing-form-data.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.04-displaying-errors-and-repopulating-fields.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 7.3.</div>
-			<h2 id="validating-form-data">Validating form data</h2>
+			<div class="chapter">فصل ۷.۳</div>
+			<h2 id="validating-form-data">اعتبارسنجی داده‌های فرم</h2>
 
-<p>Right now there&rsquo;s a glaring problem with our code: we&rsquo;re not validating the (untrusted) user input from the form in any way. We should do this to ensure that the form data is present, of the correct type and meets any business rules that we have.</p>
+<p>در حال حاضر یک مشکل جدی در کد ما وجود دارد: ما به هیچ وجه ورودی (غیرقابل اعتماد) کاربر از فرم را اعتبارسنجی نمی‌کنیم. ما باید این کار را انجام دهیم تا اطمینان حاصل کنیم که داده‌های فرم موجود هستند، از نوع صحیح هستند و با قوانین کسب و کار ما مطابقت دارند.</p>
 
-<p>Specifically for this form we want to:</p>
+<p>به طور خاص برای این فرم، ما می‌خواهیم:</p>
 
 <ul>
-<li>Check that the <code>title</code> and <code>content</code> fields are not empty.</li>
-<li>Check that the <code>title</code> field is not more than 100 characters long.</li>
-<li>Check that the <code>expires</code> value exactly matches one of our permitted values (<code>1</code>, <code>7</code> or <code>365</code> days).</li>
+<li>بررسی کنیم که فیلدهای <code>title</code> و <code>content</code> خالی نباشند.</li>
+<li>بررسی کنیم که فیلد <code>title</code> بیش از ۱۰۰ کاراکتر نباشد.</li>
+<li>بررسی کنیم که مقدار <code>expires</code> دقیقاً با یکی از مقادیر مجاز ما (<code>1</code>، <code>7</code> یا <code>365</code> روز) مطابقت داشته باشد.</li>
 </ul>
 
-<p>All of these checks are fairly straightforward to implement using some <code>if</code> statements and various functions in Go&rsquo;s <a href="https://pkg.go.dev/strings/"><code>strings</code></a> and <a href="https://pkg.go.dev/unicode/utf8/"><code>unicode/utf8</code></a> packages.</p>
+<p>تمام این بررسی‌ها با استفاده از دستورات <code>if</code> و توابع مختلف در پکیج‌های <a href="https://pkg.go.dev/strings/"><code>strings</code></a> و <a href="https://pkg.go.dev/unicode/utf8/"><code>unicode/utf8</code></a> در Go به راحتی قابل پیاده‌سازی هستند.</p>
 
-<p>Open up your <code>handlers.go</code> file and update the <code>snippetCreatePost</code> handler to include the appropriate validation rules like so:</p>
+<p>فایل <code>handlers.go</code> خود را باز کنید و هندلر <code>snippetCreatePost</code> را با قوانین اعتبارسنجی مناسب به شکل زیر به‌روزرسانی کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -117,36 +120,34 @@
 </figure>
 
 <aside class="note"><p>
-<strong>Note:</strong> When we check the length of the <code>title</code> field, we&rsquo;re using the <a href="https://pkg.go.dev/unicode/utf8/#RuneCountInString"><code>utf8.RuneCountInString()</code></a> function &mdash; not Go&rsquo;s <code>len()</code> function. This will count the number of <em>Unicode code points</em> in the title rather than the number of bytes. To illustrate the difference, the string <code>&quot;Zoë&quot;</code> contains 3 Unicode code points, but 4 bytes because of the umlauted <code>ë</code> character.
-</p></aside>
+<strong>نکته:</strong> هنگام بررسی طول فیلد <code>title</code>، ما از تابع <a href="https://pkg.go.dev/unicode/utf8/#RuneCountInString"><code>utf8.RuneCountInString()</code></a> استفاده می‌کنیم - نه از تابع <code>len()</code> در Go. این تعداد <em>نقاط کد یونیکد</em> در عنوان را به جای تعداد بایت‌ها می‌شمارد. برای نشان دادن تفاوت، رشته <code>&quot;Zoë&quot;</code> شامل ۳ نقطه کد یونیکد است، اما به دلیل کاراکتر <code>ë</code> با اوملات، ۴ بایت است.</p></aside>
 
-<p>Alright, let&rsquo;s give this a try! Restart the application and try submitting the form with a too-long snippet title and blank content field, a bit like this&hellip;</p>
+<p>خب، بیایید این را امتحان کنیم! برنامه را مجدداً راه‌اندازی کنید و سعی کنید فرم را با یک عنوان خیلی طولانی و فیلد محتوای خالی ارسال کنید، مانند تصویر زیر...</p>
 
 <figure class="img">
 <img src="assets/img/07.03-01.png" alt="07.03-01.png" />
 </figure>
 
-<p>And you should see a dump of the appropriate validation failure messages, like so:</p>
+<p>و باید پیام‌های خطای اعتبارسنجی مناسب را به این شکل ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/07.03-02.png" alt="07.03-02.png" />
 </figure>
 
 <aside class="hint"><p>
-<strong>Tip:</strong> You can find a bunch of code patterns for processing and validating different types of inputs in <a href="https://www.alexedwards.net/blog/validation-snippets-for-go">this blog post</a>.
-</p></aside>
+<strong>نکته:</strong> شما می‌توانید الگوهای کد متعددی برای پردازش و اعتبارسنجی انواع مختلف ورودی‌ها را در <a href="https://www.alexedwards.net/blog/validation-snippets-for-go">این پست وبلاگ</a> پیدا کنید.</p></aside>
 
 		</main>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="07.02-parsing-form-data.html">Previous</a>
+					&lsaquo; <a href="07.02-parsing-form-data.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.04-displaying-errors-and-repopulating-fields.html">Next</a> &rsaquo;
+					<a href="07.04-displaying-errors-and-repopulating-fields.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -154,16 +155,12 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "07.02-parsing-form-data.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "07.04-displaying-errors-and-repopulating-fields.html";
 						break;
-						
 				}
 			};
 		</script>
