@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<title>میان‌افزار &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<style>
+			.text p, .text h1, .text .chapter {
+				text-align: right;
+				direction: rtl;
+			}
+			.text ul {
+				text-align: right;
+				direction: rtl;
+				padding-right: 20px;
+				padding-left: 0;
+			}
+			[class^="code"] {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; میان‌افزار</span>
+				</div>
+				<div>
+					&lsaquo; <a href="05.06-custom-template-functions.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="06.01-how-middleware-works.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۶.</div>
+			<h1 id="middleware">میان‌افزار</h1>
+
+<p>هنگامی که در حال ساخت یک برنامه وب هستید، احتمالاً برخی از قابلیت‌های مشترک وجود دارند که می‌خواهید برای بسیاری (یا حتی همه) درخواست‌های HTTP استفاده کنید. به عنوان مثال، ممکن است بخواهید هر درخواست را ثبت کنید، هر پاسخ را فشرده کنید، یا قبل از ارسال درخواست به پردازشگرهای خود، کش را بررسی کنید.</p>
+
+<p>یک روش معمول برای سازماندهی این قابلیت‌های مشترک، تنظیم آن‌ها به عنوان <dfn>میان‌افزار</dfn> است. این اساساً کدی مستقل است که به طور مستقل قبل یا بعد از پردازشگرهای معمول برنامه شما روی درخواست عمل می‌کند.</p>
+
+<p>در این بخش از کتاب، موارد زیر را یاد خواهید گرفت:</p>
+
+<ul>
+<li>یک الگوی اصولی برای <a href="06.01-how-middleware-works.html">ساخت و استفاده از میان‌افزار سفارشی</a> که با <code>net/http</code> و بسیاری از پکیج‌های شخص ثالث سازگار است.</li>
+<li>نحوه ایجاد میان‌افزاری که <a href="06.02-setting-common-headers.html">هدرهای HTTP مشترک</a> را روی هر پاسخ HTTP تنظیم می‌کند.</li>
+<li>نحوه ایجاد میان‌افزاری که <a href="06.03-request-logging.html">درخواست‌ها</a> را در برنامه شما ثبت می‌کند.</li>
+<li>نحوه ایجاد میان‌افزاری که <a href="06.04-panic-recovery.html">پنیک‌ها را بازیابی می‌کند</a> تا به طور مناسب توسط برنامه شما مدیریت شوند.</li>
+<li>نحوه ایجاد و استفاده از <a href="06.05-composable-middleware-chains.html">زنجیره‌های میان‌افزار قابل ترکیب</a> برای کمک به مدیریت و سازماندهی میان‌افزار شما.</li>
+</ul>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="05.06-custom-template-functions.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="06.01-how-middleware-works.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "05.06-custom-template-functions.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "06.01-how-middleware-works.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

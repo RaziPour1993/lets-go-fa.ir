@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Automatic form parsing &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; تجزیه خودکار فرم</span>
+				</div>
+				<div>
+					&lsaquo; <a href="07.05-creating-validation-helpers.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="08.00-stateful-http.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter" dir="rtl">فصل ۷.۶.</div>
+			<h2 id="automatic-form-parsing" dir="rtl">تجزیه خودکار فرم</h2>
+
+<p dir="rtl">ما می‌توانیم هندلر <code>snippetCreatePost</code> خود را با استفاده از یک پکیج شخص ثالث مانند <a href="https://github.com/go-playground/form"><code>go-playground/form</code></a> یا <a href="https://github.com/gorilla/schema"><code>gorilla/schema</code></a> برای رمزگشایی خودکار داده‌های فرم به ساختار <code>snippetCreateForm</code> ساده‌تر کنیم. استفاده از یک رمزگشا خودکار <em>کاملاً</em> اختیاری است، اما می‌تواند به شما در صرفه‌جویی در زمان و تایپ کمک کند &mdash; به ویژه اگر برنامه شما فرم‌های زیادی دارد یا نیاز به پردازش یک فرم بسیار بزرگ دارید.</p>
+
+<p dir="rtl">در این فصل، ما به نحوه استفاده از پکیج <code>go-playground/form</code> خواهیم پرداخت. اگر در حال دنبال کردن هستید، لطفاً آن را به این صورت نصب کنید:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/go-playground/form/v4@v4
+<samp>go get: added github.com/go-playground/form/v4 v4.2.1</samp></pre>
+</figure>
+
+<h3 id="using-the-form-decoder">استفاده از رمزگشای فرم</h3>
+
+<p dir="rtl">برای کار کردن این، اولین کاری که باید انجام دهیم این است که یک نمونه جدید از <a href="https://pkg.go.dev/github.com/go-playground/form?utm_source=godoc#Decoder"><code>*form.Decoder</code></a> را در فایل <code>main.go</code> خود مقداردهی کنیم و آن را به عنوان یک وابستگی در دسترس هندلرهای خود قرار دهیم. به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+
+    <span class="s">&#34;github.com/go-playground/form/v4&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Add a formDecoder field to hold a pointer to a form.Decoder instance.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">logger</span>        <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span>      <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span>
+    <span class="nx">templateCache</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span>
+    <span class="nx">formDecoder</span>   <span class="o">*</span><span class="nx">form</span><span class="p">.</span><span class="nx">Decoder</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">templateCache</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Initialize a decoder instance...
+</span><span class="c1"></span>    <span class="nx">formDecoder</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// And add it to the application dependencies.
+</span><span class="c1"></span>    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>        <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>      <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">templateCache</span><span class="p">:</span> <span class="nx">templateCache</span><span class="p">,</span>
+        <span class="nx">formDecoder</span><span class="p">:</span>   <span class="nx">formDecoder</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p dir="rtl">سپس به فایل <code>cmd/web/handlers.go</code> خود بروید و آن را به‌روزرسانی کنید تا از این رمزگشا جدید استفاده کند، به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Update our snippetCreateForm struct to include struct tags which tell the
+</span><span class="c1"></span><span class="c1">// decoder how to map HTML form values into the different struct fields. So, for
+</span><span class="c1"></span><span class="c1">// example, here we&#39;re telling the decoder to store the value from the HTML form
+</span><span class="c1"></span><span class="c1">// input with the name &#34;title&#34; in the Title field. The struct tag `form:&#34;-&#34;`
+</span><span class="c1"></span><span class="c1">// tells the decoder to completely ignore a field during decoding.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">snippetCreateForm</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Title</span>               <span class="kt">string</span> <span class="s">`</span><span class="s">form:&#34;title&#34;</span><span class="s">`</span>
+    <span class="nx">Content</span>             <span class="kt">string</span> <span class="s">`</span><span class="s">form:&#34;content&#34;</span><span class="s">`</span>
+    <span class="nx">Expires</span>             <span class="kt">int</span>    <span class="s">`</span><span class="s">form:&#34;expires&#34;</span><span class="s">`</span>
+    <span class="nx">validator</span><span class="p">.</span><span class="nx">Validator</span> <span class="s">`</span><span class="s">form:&#34;-&#34;</span><span class="s">`</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Declare a new empty instance of the snippetCreateForm struct.
+</span><span class="c1"></span>    <span class="kd">var</span> <span class="nx">form</span> <span class="nx">snippetCreateForm</span>
+
+    <span class="c1">// Call the Decode() method of the form decoder, passing in the current
+</span><span class="c1"></span>    <span class="c1">// request and *a pointer* to our snippetCreateForm struct. This will
+</span><span class="c1"></span>    <span class="c1">// essentially fill our struct with the relevant values from the HTML form.
+</span><span class="c1"></span>    <span class="c1">// If there is a problem, we return a 400 Bad Request response to the client.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">formDecoder</span><span class="p">.</span><span class="nf">Decode</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">form</span><span class="p">,</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Then validate and use the data as normal...
+</span><span class="c1"></span>    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p dir="rtl">امیدوارم بتوانید مزیت این الگو را ببینید. ما می‌توانیم از تگ‌های ساختار ساده برای تعریف یک نگاشت بین فرم HTML و فیلدهای ساختار 'مقصد' استفاده کنیم، و باز کردن داده‌های فرم به مقصد اکنون فقط نیاز به نوشتن چند خط کد دارد &mdash; بدون توجه به اندازه فرم.</p>
+
+<p dir="rtl">مهم است که تبدیل نوع‌ها نیز به صورت خودکار انجام می‌شود. ما می‌توانیم این را در کد بالا ببینیم، جایی که مقدار <code>expires</code> به طور خودکار به یک نوع داده <code>int</code> نگاشت می‌شود.</p>
+
+<p dir="rtl">بنابراین این واقعاً خوب است. اما یک مشکل وجود دارد.</p>
+
+<p dir="rtl">وقتی که <code>app.formDecoder.Decode()</code> را فراخوانی می‌کنیم، نیاز به یک اشاره‌گر غیر تهی به عنوان مقصد رمزگشایی دارد. اگر سعی کنیم چیزی که <em>نیست</em> یک اشاره‌گر غیر تهی را پاس دهیم، <code>Decode()</code> یک خطای <a href="https://pkg.go.dev/github.com/go-playground/form/v4#InvalidDecoderError"><code>form.InvalidDecoderError</code></a> برمی‌گرداند.</p>
+
+<p dir="rtl">اگر این اتفاق بیفتد، یک مشکل بحرانی با کد برنامه ما است (نه یک خطای مشتری به دلیل ورودی بد). بنابراین ما نیاز داریم که به طور خاص این خطا را بررسی کنیم و آن را به عنوان یک مورد خاص مدیریت کنیم، به جای اینکه فقط یک پاسخ <code>400 Bad Request</code> برگردانیم.</p>
+
+<h3 id="creating-a-decodepostform-helper" dir="rtl">ایجاد یک کمک‌کننده decodePostForm</h3>
+
+<p dir="rtl">برای کمک به این، بیایید یک کمک‌کننده جدید <code>decodePostForm()</code> ایجاد کنیم که سه کار انجام می‌دهد:</p>
+
+<ul dir="rtl">
+<li>فراخوانی <code>r.ParseForm()</code> بر روی درخواست فعلی.</li>
+<li>فراخوانی <code>app.formDecoder.Decode()</code> برای باز کردن داده‌های فرم HTML به مقصد هدف.</li>
+<li>بررسی برای خطای <code>form.InvalidDecoderError</code> و ایجاد یک وحشت اگر ما آن را ببینیم.</li>
+</ul>
+
+<p dir="rtl">اگر در حال دنبال کردن هستید، لطفاً این را به فایل <code>cmd/web/helpers.go</code> خود اضافه کنید به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;bytes&#34;</span>
+    <span class="s">&#34;errors&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;github.com/go-playground/form/v4&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Create a new decodePostForm() helper method. The second parameter here, dst,
+</span><span class="c1"></span><span class="c1">// is the target destination that we want to decode the form data into.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">decodePostForm</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">dst</span> <span class="nx">any</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+    <span class="c1">// Call ParseForm() on the request, in the same way that we did in our
+</span><span class="c1"></span>    <span class="c1">// snippetCreatePost handler.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Call Decode() on our decoder instance, passing the target destination as
+</span><span class="c1"></span>    <span class="c1">// the first parameter.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">formDecoder</span><span class="p">.</span><span class="nf">Decode</span><span class="p">(</span><span class="nx">dst</span><span class="p">,</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="c1">// If we try to use an invalid target destination, the Decode() method
+</span><span class="c1"></span>        <span class="c1">// will return an error with the type *form.InvalidDecoderError.We use
+</span><span class="c1"></span>        <span class="c1">// errors.As() to check for this and raise a panic rather than returning
+</span><span class="c1"></span>        <span class="c1">// the error.
+</span><span class="c1"></span>        <span class="kd">var</span> <span class="nx">invalidDecoderError</span> <span class="o">*</span><span class="nx">form</span><span class="p">.</span><span class="nx">InvalidDecoderError</span>
+        
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">As</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">invalidDecoderError</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="c1">// For all other errors, we return them as normal.
+</span><span class="c1"></span>        <span class="k">return</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p dir="rtl">و با انجام این کار، می‌توانیم ساده‌سازی نهایی را به هندلر <code>snippeCreatePost</code> خود انجام دهیم. بروید و آن را به‌روزرسانی کنید تا از کمک‌کننده <code>decodePostForm()</code> استفاده کند و فراخوانی <code>r.ParseForm()</code> را حذف کنید، به طوری که کد به این صورت باشد:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">form</span> <span class="nx">snippetCreateForm</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">decodePostForm</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">form</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p dir="rtl">این واقعاً خوب به نظر می‌رسد.</p>
+
+<p dir="rtl">کد هندلر ما اکنون زیبا و مختصر است، اما همچنان در مورد رفتار و کاری که انجام می‌دهد بسیار واضح است. و ما یک الگوی کلی برای پردازش و اعتبارسنجی فرم داریم که می‌توانیم به راحتی در فرم‌های دیگر پروژه خود استفاده کنیم &mdash; مانند فرم‌های ثبت‌نام و ورود کاربر که به زودی خواهیم ساخت.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="07.05-creating-validation-helpers.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="08.00-stateful-http.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "07.05-creating-validation-helpers.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "08.00-stateful-http.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

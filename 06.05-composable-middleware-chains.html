@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<title>زنجیره‌های میان‌افزار قابل ترکیب &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<style>
+			.text p, .text h2, .chapter {
+				direction: rtl;
+				text-align: right;
+			}
+			.code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; زنجیره‌های میان‌افزار قابل ترکیب</span>
+				</div>
+				<div>
+					&lsaquo; <a href="06.04-panic-recovery.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.00-processing-forms.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۶.۵</div>
+			<h2 id="composable-middleware-chains">زنجیره‌های میان‌افزار قابل ترکیب</h2>
+
+			<p>در این فصل می‌خواهم پکیج <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> را معرفی کنم که به ما در مدیریت زنجیره‌های میان‌افزار/هندلر کمک می‌کند.</p>
+
+			<p>شما <em>نیازی</em> به استفاده از این پکیج ندارید، اما دلیلی که من آن را توصیه می‌کنم این است که ایجاد زنجیره‌های میان‌افزار قابل ترکیب و قابل استفاده مجدد را آسان می‌کند - و این می‌تواند با رشد برنامه شما و پیچیده‌تر شدن مسیرها، کمک واقعی باشد. خود پکیج نیز کوچک و سبک است، و کد آن واضح و خوب نوشته شده است.</p>
+
+			<p>برای نمایش ویژگی‌های آن در یک مثال، به شما اجازه می‌دهد یک زنجیره هندلر را از این حالت:</p>
+
+			<figure class="code go">
+<pre><span class="k">return</span> <span class="nf">myMiddleware1</span><span class="p">(</span><span class="nf">myMiddleware2</span><span class="p">(</span><span class="nf">myMiddleware3</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
+			</figure>
+
+			<p>به این حالت تبدیل کنید، که در یک نگاه درک آن کمی واضح‌تر است:</p>
+
+			<figure class="code go">
+<pre><span class="k">return</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddleware1</span><span class="p">,</span> <span class="nx">myMiddleware2</span><span class="p">,</span> <span class="nx">myMiddleware3</span><span class="p">)</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
+			</figure>
+
+			<p>اما قدرت واقعی در این است که می‌توانید از آن برای ایجاد زنجیره‌های میان‌افزار استفاده کنید که می‌توانند به متغیرها اختصاص داده شوند، به آنها اضافه شود و مجدداً استفاده شوند. برای مثال:</p>
+
+			<figure class="code go">
+<pre><span class="nx">myChain</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddlewareOne</span><span class="p">,</span> <span class="nx">myMiddlewareTwo</span><span class="p">)</span>
+<span class="nx">myOtherChain</span> <span class="o">:=</span> <span class="nx">myChain</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">myMiddleware3</span><span class="p">)</span>
+<span class="k">return</span> <span class="nx">myOtherChain</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
+			</figure>
+
+			<p>اگر همراه ما هستید، لطفاً پکیج <code>justinas/alice</code> را با استفاده از <code>go get</code> نصب کنید:</p>
+
+			<figure class="code bash">
+<pre>$ go get github.com/justinas/alice@v1
+<samp>go: downloading github.com/justinas/alice v1.2.0</samp></pre>
+			</figure>
+
+			<p>و اگر فایل <code>go.mod</code> پروژه خود را باز کنید، باید یک عبارت <code>require</code> جدید مربوطه را مشاهده کنید، به این صورت:</p>
+
+			<figure class="code plain">
+<figcaption>File: go.mod</figcaption>
+<pre>module snippetbox.alexedwards.net
+
+go 1.23.0
+
+require github.com/go-sql-driver/mysql v1.8.1
+
+require (
+    filippo.io/edwards25519 v1.1.0 // indirect
+    github.com/justinas/alice v1.2.0 // indirect
+)</pre>
+			</figure>
+
+			<p>مجدداً، این در حال حاضر به عنوان یک وابستگی غیرمستقیم فهرست شده است زیرا ما هنوز آن را در کد خود وارد و استفاده نمی‌کنیم.</p>
+
+			<p>بیایید اکنون این کار را انجام دهیم و فایل <code>routes.go</code> خود را به شرح زیر برای استفاده از پکیج <code>justinas/alice</code> به‌روزرسانی کنیم:</p>
+
+			<figure class="code go">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;net/http&#34;</span>
+
+    <span class="s">&#34;github.com/justinas/alice&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+   
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="c1">// Create a middleware chain containing our 'standard' middleware
+</span><span class="c1"></span>    <span class="c1">// which will be used for every request our application receives.
+</span><span class="c1"></span>    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+
+    <span class="c1">// Return the 'standard' middleware chain followed by the servemux.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+			</figure>
+
+			<p>اگر می‌خواهید، می‌توانید در این مرحله برنامه را مجدداً راه‌اندازی کنید. باید متوجه شوید که همه چیز به درستی کامپایل می‌شود و برنامه همچنان مانند قبل کار می‌کند. همچنین می‌توانید مجدداً <code>go mod tidy</code> را اجرا کنید تا علامت <code>// indirect</code> از فایل <code>go.mod</code> حذف شود.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="06.04-panic-recovery.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="07.00-processing-forms.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					case 37:
+						window.location.href = "06.04-panic-recovery.html";
+						break;
+					case 39:
+						window.location.href = "07.00-processing-forms.html";
+						break;
+				}
+			};
+		</script>
+	</body>
+</html>
+

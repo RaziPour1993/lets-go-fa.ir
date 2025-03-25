@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>ایجاد کمک‌کننده‌های اعتبارسنجی &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code {
+				text-align: left;
+				direction: ltr;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; ایجاد کمک‌کننده‌های اعتبارسنجی</span>
+				</div>
+				<div>
+					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.06-automatic-form-parsing.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۷.۵.</div>
+			<h2 id="creating-validation-helpers">ایجاد کمک‌کننده‌های اعتبارسنجی</h2>
+
+<p>خب، حالا در موقعیتی هستیم که برنامه ما داده‌های فرم را بر اساس قوانین کسب‌وکار اعتبارسنجی می‌کند و به‌طور مؤثر خطاهای اعتبارسنجی را مدیریت می‌کند. این عالی است، اما برای رسیدن به اینجا کار زیادی انجام داده‌ایم.</p>
+
+<p>و در حالی که رویکردی که اتخاذ کرده‌ایم به‌عنوان یک‌بار خوب است، اگر برنامه شما <em>فرم‌های زیادی</em> داشته باشد، ممکن است با تکرار زیادی در کد و قوانین اعتبارسنجی مواجه شوید. به‌علاوه، نوشتن کد برای اعتبارسنجی فرم‌ها دقیقاً هیجان‌انگیزترین راه برای گذراندن وقت نیست.</p>
+
+<p>بنابراین برای کمک به ما در اعتبارسنجی در طول این پروژه، یک بسته کوچک <code>internal/validator</code> ایجاد خواهیم کرد تا بخشی از این رفتار را انتزاع کرده و کدهای تکراری در هندلرهایمان را کاهش دهیم. در واقع، نحوه کار برنامه برای کاربر را تغییر نخواهیم داد؛ این واقعاً فقط یک بازسازی کد است.</p>
+
+<h3 id="adding-a-validator-package">افزودن یک بسته اعتبارسنجی</h3>
+
+<p>اگر در حال کدنویسی هستید، لطفاً دایرکتوری و فایل زیر را در دستگاه خود ایجاد کنید:</p>
+
+<figure class="code bash">
+<pre>$ mkdir internal/validator
+$ touch internal/validator/validator.go</pre>
+</figure>
+
+<p>سپس در این فایل جدید <code>internal/validator/validator.go</code> کد زیر را اضافه کنید:</p>
+
+<figure class="code go">
+<figcaption>File: internal/validator/validator.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">validator</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;slices&#34;</span>
+    <span class="s">&#34;strings&#34;</span>
+    <span class="s">&#34;unicode/utf8&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Define a new Validator struct which contains a map of validation error messages 
+</span><span class="c1"></span><span class="c1">// for our form fields.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Validator</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">FieldErrors</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c1">// Valid() returns true if the FieldErrors map doesn&#39;t contain any entries.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="c1">// AddFieldError() adds an error message to the FieldErrors map (so long as no
+</span><span class="c1"></span><span class="c1">// entry already exists for the given key).
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">AddFieldError</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Note: We need to initialize the map first, if it isn&#39;t already
+</span><span class="c1"></span>    <span class="c1">// initialized.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">exists</span> <span class="o">:=</span> <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span><span class="p">;</span> <span class="p">!</span><span class="nx">exists</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="p">=</span> <span class="nx">message</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// CheckField() adds an error message to the FieldErrors map only if a
+</span><span class="c1"></span><span class="c1">// validation check is not &#39;ok&#39;.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">CheckField</span><span class="p">(</span><span class="nx">ok</span> <span class="kt">bool</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="nx">v</span><span class="p">.</span><span class="nf">AddFieldError</span><span class="p">(</span><span class="nx">key</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// NotBlank() returns true if a value is not an empty string.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">NotBlank</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span>
+<span class="p">}</span>
+
+<span class="c1">// MaxChars() returns true if a value contains no more than n characters.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">MaxChars</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">utf8</span><span class="p">.</span><span class="nf">RuneCountInString</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nx">n</span>
+<span class="p">}</span>
+
+<span class="c1">// PermittedValue() returns true if a value is in a list of specific permitted
+</span><span class="c1"></span><span class="c1">// values.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nx">PermittedValue</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">value</span> <span class="nx">T</span><span class="p">,</span> <span class="nx">permittedValues</span> <span class="o">...</span><span class="nx">T</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">slices</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">permittedValues</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>به‌طور خلاصه:</p>
+
+<p>در کد بالا، یک نوع ساختار <code>Validator</code> تعریف کرده‌ایم که شامل یک نقشه از پیام‌های خطا است. نوع <code>Validator</code> یک متد <code>CheckField()</code> برای افزودن شرطی خطاها به نقشه و یک متد <code>Valid()</code> که بررسی می‌کند آیا نقشه خطاها خالی است یا نه، ارائه می‌دهد. همچنین توابع <code>NotBlank()</code>، <code>MaxChars()</code> و <code>PermittedValue()</code> را برای انجام برخی بررسی‌های اعتبارسنجی خاص اضافه کرده‌ایم.</p>
+
+<aside class="note"><p>
+<strong>توجه:</strong> تابع <code>PermittedValue()</code> یک <em>تابع عمومی</em> است که با مقادیر انواع مختلف کار می‌کند. در پایان این فصل درباره جنریک‌ها بیشتر صحبت خواهیم کرد.
+</p></aside>
+
+<p>مفهومی، این نوع <code>Validator</code> بسیار ساده است، اما این چیز بدی نیست. همان‌طور که در طول این کتاب خواهیم دید، در عمل بسیار قدرتمند است و به ما انعطاف‌پذیری و کنترل زیادی بر روی بررسی‌های اعتبارسنجی و نحوه انجام آن‌ها می‌دهد.</p>
+
+<h3 id="using-the-helpers">استفاده از کمک‌کننده‌ها</h3>
+
+<p>خب، بیایید شروع به استفاده از نوع <code>Validator</code> کنیم!</p>
+
+<p>به فایل <code>cmd/web/handlers.go</code> برمی‌گردیم و آن را به‌روزرسانی می‌کنیم تا یک ساختار <code>Validator</code> را در ساختار <code>snippetCreateForm</code> خود <em>جاسازی</em> کنیم و سپس از این برای انجام بررسی‌های اعتبارسنجی لازم بر روی داده‌های فرم استفاده کنیم.</p>
+
+<aside class="hint"><p>
+<strong>نکته:</strong> اگر با مفهوم جاسازی ساختار در Go آشنا نیستید، الی بندرسکی یک <a href="https://eli.thegreenplace.net/2020/embedding-in-go-part-1-structs-in-structs/">مقدمه خوب</a> در این زمینه نوشته است و توصیه می‌کنم قبل از ادامه سریعاً آن را بخوانید.
+</p></aside>
+
+<p>به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/validator&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Remove the explicit FieldErrors struct field and instead embed the Validator
+</span><span class="c1"></span><span class="c1">// struct. Embedding this means that our snippetCreateForm &#34;inherits&#34; all the
+</span><span class="c1"></span><span class="c1">// fields and methods of our Validator struct (including the FieldErrors field).
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">snippetCreateForm</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Title</span>               <span class="kt">string</span> 
+    <span class="nx">Content</span>             <span class="kt">string</span> 
+    <span class="nx">Expires</span>             <span class="kt">int</span>    
+    <span class="nx">validator</span><span class="p">.</span><span class="nx">Validator</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">form</span> <span class="o">:=</span> <span class="nx">snippetCreateForm</span><span class="p">{</span>
+        <span class="nx">Title</span><span class="p">:</span>   <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Content</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Expires</span><span class="p">:</span> <span class="nx">expires</span><span class="p">,</span>
+        <span class="c1">// Remove the FieldErrors assignment from here.
+</span><span class="c1"></span>    <span class="p">}</span>
+
+    // Because the Validator struct is embedded by the snippetCreateForm struct,
+    // we can call CheckField() directly on it to execute our validation checks.
+    // CheckField() will add the provided key and error message to the
+    // FieldErrors map if the check does not evaluate to true. For example, in
+    // the first line here we "check that the form.Title field is not blank". In
+    // the second, we "check that the form.Title field has a maximum character
+    // length of 100" and so on.
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
+
+    // Use the Valid() method to see if any of the checks failed. If they did,
+    // then re-render the template passing in the form in the same way as
+    // before.
+    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>بنابراین این به‌خوبی شکل گرفته است.</p>
+
+<p>اکنون یک بسته <code>internal/validator</code> با قوانین و منطق اعتبارسنجی داریم که می‌تواند در سراسر برنامه ما استفاده شود و به‌راحتی می‌توان آن را برای شامل قوانین اضافی در آینده گسترش داد. هم داده‌های فرم و هم خطاها به‌طور مرتب در یک ساختار <code>snippetCreateForm</code> قرار گرفته‌اند &mdash; که می‌توانیم به‌راحتی به قالب‌های خود منتقل کنیم &mdash; و نحو نمایش پیام‌های خطا و پر کردن مجدد داده‌ها در قالب‌های ما ساده و سازگار است.</p>
+
+<p>اگر دوست دارید، برنامه را دوباره اجرا کنید. امیدوارم که فرم و قوانین اعتبارسنجی به‌درستی و به همان شیوه قبلی کار کنند.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="generics">جنریک‌ها</h4>
+
+<p>Go 1.18 اولین نسخه از زبان بود که از <em>جنریک‌ها</em> پشتیبانی می‌کرد &mdash; که با نام فنی‌تر <em>چندریختی پارامتری</em> نیز شناخته می‌شود. به‌طور کلی، جنریک‌ها به شما اجازه می‌دهند کدی بنویسید که با <em>انواع مختلف</em> کار کند.</p>
+
+<p>برای مثال، در نسخه‌های قدیمی‌تر Go، اگر می‌خواستید تعداد دفعاتی که یک مقدار خاص در یک برش <code>[]string</code> و یک برش <code>[]int</code> ظاهر می‌شود را بشمارید، باید دو تابع جداگانه می‌نوشتید &mdash; یک تابع برای نوع <code>[]string</code> و دیگری برای <code>[]int</code>. چیزی شبیه به این:</p>
+
+<figure class="code go">
+<pre><span class="c1">// Count how many times the value v appears in the slice s.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">countString</span><span class="p">(</span><span class="nx">v</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">count</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">vs</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">vs</span> <span class="p">{</span>
+            <span class="nx">count</span><span class="o">++</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">count</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">countInt</span><span class="p">(</span><span class="nx">v</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">count</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">vs</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">vs</span> <span class="p">{</span>
+            <span class="nx">count</span><span class="o">++</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">count</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اکنون، با جنریک‌ها، می‌توان یک تابع <code>count()</code> نوشت که برای <code>[]string</code>، <code>[]int</code> یا هر برش دیگری از یک <a href="https://pkg.go.dev/builtin#comparable">نوع قابل مقایسه</a> کار کند. کد به این صورت خواهد بود:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nx">count</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">v</span> <span class="nx">T</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="nx">T</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">count</span> <span class="o">:=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">vs</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">vs</span> <span class="p">{</span>
+            <span class="nx">count</span><span class="o">++</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">count</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر با نحو کد جنریک در Go آشنا نیستید، اطلاعات زیادی وجود دارد که توضیح می‌دهد جنریک‌ها چگونه کار می‌کنند و شما را از طریق نحو نوشتن کد جنریک راهنمایی می‌کند.</p>
+
+<p>برای به‌روز شدن، به شدت توصیه می‌کنم <a href="https://go.dev/doc/tutorial/generics">آموزش رسمی جنریک‌های Go</a> را بخوانید و همچنین ۱۵ دقیقه اول <a href="https://www.youtube.com/watch?v=Pa_e9EeCdy8">این ویدیو</a> را تماشا کنید تا آنچه را که یاد گرفته‌اید تقویت کنید.</p>
+
+<p>به‌جای تکرار همان اطلاعات در اینجا، می‌خواهم به‌طور مختصر درباره یک موضوع کمتر رایج (اما به همان اندازه مهم!) صحبت کنم: <em>چه زمانی</em> از جنریک‌ها استفاده کنیم.</p>
+
+<p>فعلاً، باید سعی کنید از جنریک‌ها <em>با احتیاط و دقت</em> استفاده کنید.</p>
+
+<p>می‌دانم که ممکن است کمی خسته‌کننده به نظر برسد، اما جنریک‌ها یک ویژگی نسبتاً جدید زبان هستند و بهترین روش‌ها برای نوشتن کد جنریک هنوز در حال شکل‌گیری هستند. اگر در یک تیم کار می‌کنید یا کد را به‌صورت عمومی می‌نویسید، همچنین به خاطر داشته باشید که همه توسعه‌دهندگان Go دیگر لزوماً با نحوه کار کد جنریک آشنا نیستند.</p>
+
+<p>شما <em>نیاز</em> به استفاده از جنریک‌ها ندارید و استفاده نکردن از آن‌ها اشکالی ندارد.</p>
+
+<p>اما حتی با این هشدارها، نوشتن کد جنریک می‌تواند در برخی سناریوها واقعاً مفید باشد. به‌طور کلی، ممکن است بخواهید آن را در نظر بگیرید:</p>
+
+<ul>
+<li>اگر خود را در حال نوشتن کد تکراری برای انواع داده‌های مختلف می‌بینید. مثال‌هایی از این ممکن است عملیات‌های رایج بر روی برش‌ها، نقشه‌ها یا کانال‌ها باشد &mdash; یا کمک‌کننده‌هایی برای انجام بررسی‌های اعتبارسنجی یا اظهارات تست بر روی انواع داده‌های مختلف.</li>
+<li>وقتی در حال نوشتن کد هستید و خود را در حال استفاده از نوع <code>any</code> (رابط خالی <code>interface{}</code>) می‌بینید. مثالی از این ممکن است زمانی باشد که در حال ایجاد یک ساختار داده (مانند صف، کش یا لیست پیوندی) هستید که نیاز به کار با انواع مختلف دارد.</li>
+</ul>
+
+<p>در مقابل، احتمالاً نمی‌خواهید از جنریک‌ها استفاده کنید:</p>
+
+<ul>
+<li>اگر کد شما را سخت‌تر برای درک یا کمتر واضح می‌کند.</li>
+<li>اگر همه انواعی که نیاز دارید با آن‌ها کار کنید مجموعه‌ای از متدهای مشترک دارند &mdash; در این صورت بهتر است یک نوع <code>interface</code> معمولی تعریف و استفاده کنید.</li>
+<li>فقط <em>به این دلیل که می‌توانید</em>. ترجیحاً به‌طور پیش‌فرض کد غیرجنریک بنویسید و بعداً به نسخه جنریک تغییر دهید <em>فقط اگر واقعاً نیاز باشد</em>.</li>
+</ul>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="07.06-automatic-form-parsing.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "07.04-displaying-errors-and-repopulating-fields.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "07.06-automatic-form-parsing.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
