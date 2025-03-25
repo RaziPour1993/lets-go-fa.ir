@@ -1,50 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Creating validation helpers &mdash; Let's Go</title>
+		<title>ایجاد کمک‌کننده‌های اعتبارسنجی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code {
+				text-align: left;
+				direction: ltr;
+			}
+		</style>
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Creating validation helpers</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; ایجاد کمک‌کننده‌های اعتبارسنجی</span>
 				</div>
 				<div>
-					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.06-automatic-form-parsing.html">Next</a> &rsaquo;
+					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.06-automatic-form-parsing.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 7.5.</div>
-			<h2 id="creating-validation-helpers">Creating validation helpers</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۷.۵.</div>
+			<h2 id="creating-validation-helpers">ایجاد کمک‌کننده‌های اعتبارسنجی</h2>
 
-<p>OK, so we&rsquo;re now in the position where our application is validating the form data according to our business rules and gracefully handling any validation errors. That&rsquo;s great, but it&rsquo;s taken quite a bit of work to get there.</p>
+<p>خب، حالا در موقعیتی هستیم که برنامه ما داده‌های فرم را بر اساس قوانین کسب‌وکار اعتبارسنجی می‌کند و به‌طور مؤثر خطاهای اعتبارسنجی را مدیریت می‌کند. این عالی است، اما برای رسیدن به اینجا کار زیادی انجام داده‌ایم.</p>
 
-<p>And while the approach we&rsquo;ve taken is fine as a one-off, if your application has <em>many forms</em> then you can end up with quite a lot of repetition in your code and validation rules. Not to mention, writing code for validating forms isn&rsquo;t exactly the most exciting way to spend your time.</p>
+<p>و در حالی که رویکردی که اتخاذ کرده‌ایم به‌عنوان یک‌بار خوب است، اگر برنامه شما <em>فرم‌های زیادی</em> داشته باشد، ممکن است با تکرار زیادی در کد و قوانین اعتبارسنجی مواجه شوید. به‌علاوه، نوشتن کد برای اعتبارسنجی فرم‌ها دقیقاً هیجان‌انگیزترین راه برای گذراندن وقت نیست.</p>
 
-<p>So to help us with validation throughout the rest of this project, we&rsquo;ll create our own small <code>internal/validator</code> package to abstract some of this behavior and reduce the boilerplate code in our handlers. We won&rsquo;t actually change how the application works for the user at all; it&rsquo;s really just a refactoring of our codebase.</p>
+<p>بنابراین برای کمک به ما در اعتبارسنجی در طول این پروژه، یک بسته کوچک <code>internal/validator</code> ایجاد خواهیم کرد تا بخشی از این رفتار را انتزاع کرده و کدهای تکراری در هندلرهایمان را کاهش دهیم. در واقع، نحوه کار برنامه برای کاربر را تغییر نخواهیم داد؛ این واقعاً فقط یک بازسازی کد است.</p>
 
-<h3 id="adding-a-validator-package">Adding a validator package</h3>
+<h3 id="adding-a-validator-package">افزودن یک بسته اعتبارسنجی</h3>
 
-<p>If you’re coding-along, please go ahead and create the following directory and file on your machine:</p>
+<p>اگر در حال کدنویسی هستید، لطفاً دایرکتوری و فایل زیر را در دستگاه خود ایجاد کنید:</p>
 
 <figure class="code bash">
 <pre>$ mkdir internal/validator
 $ touch internal/validator/validator.go</pre>
 </figure>
 
-<p>Then in this new <code>internal/validator/validator.go</code> file add the following code:</p>
+<p>سپس در این فایل جدید <code>internal/validator/validator.go</code> کد زیر را اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: internal/validator/validator.go</figcaption>
@@ -106,28 +108,27 @@ $ touch internal/validator/validator.go</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>To summarize this:</p>
+<p>به‌طور خلاصه:</p>
 
-<p>In the code above we’ve defined a <code>Validator</code> struct type which contains a map of error messages. The <code>Validator</code> type provides a <code>CheckField()</code> method for conditionally adding errors to the map,
-and a <code>Valid()</code> method which returns whether the errors map is empty or not. We’ve also added <code>NotBlank()</code> , <code>MaxChars()</code> and <code>PermittedValue()</code> functions to help us perform some specific validation checks</p>
+<p>در کد بالا، یک نوع ساختار <code>Validator</code> تعریف کرده‌ایم که شامل یک نقشه از پیام‌های خطا است. نوع <code>Validator</code> یک متد <code>CheckField()</code> برای افزودن شرطی خطاها به نقشه و یک متد <code>Valid()</code> که بررسی می‌کند آیا نقشه خطاها خالی است یا نه، ارائه می‌دهد. همچنین توابع <code>NotBlank()</code>، <code>MaxChars()</code> و <code>PermittedValue()</code> را برای انجام برخی بررسی‌های اعتبارسنجی خاص اضافه کرده‌ایم.</p>
 
 <aside class="note"><p>
-<strong>Note:</strong> the <code>PermittedValue()</code> function is a <em>generic function</em> which will work with values of different types. We&rsquo;ll talk about generics in more detail at the end of this chapter.
+<strong>توجه:</strong> تابع <code>PermittedValue()</code> یک <em>تابع عمومی</em> است که با مقادیر انواع مختلف کار می‌کند. در پایان این فصل درباره جنریک‌ها بیشتر صحبت خواهیم کرد.
 </p></aside>
 
-<p>Conceptually this <code>Validator</code> type is quite basic, but that’s not a bad thing. As we’ll see over the course of this book, it’s surprisingly powerful in practice and gives us a lot of flexibility and control over validation checks and how we perform them.</p>
+<p>مفهومی، این نوع <code>Validator</code> بسیار ساده است، اما این چیز بدی نیست. همان‌طور که در طول این کتاب خواهیم دید، در عمل بسیار قدرتمند است و به ما انعطاف‌پذیری و کنترل زیادی بر روی بررسی‌های اعتبارسنجی و نحوه انجام آن‌ها می‌دهد.</p>
 
-<h3 id="using-the-helpers">Using the helpers</h3>
+<h3 id="using-the-helpers">استفاده از کمک‌کننده‌ها</h3>
 
-<p>Alright, let’s start putting the <code>Validator</code> type to use!</p>
+<p>خب، بیایید شروع به استفاده از نوع <code>Validator</code> کنیم!</p>
 
-<p>We&rsquo;ll head back to our <code>cmd/web/handlers.go</code> file and update it to <em>embed</em> a <code>Validator</code> struct in our <code>snippetCreateForm</code> struct, and then use this to perform the necessary validation checks on the form data.</p>
+<p>به فایل <code>cmd/web/handlers.go</code> برمی‌گردیم و آن را به‌روزرسانی می‌کنیم تا یک ساختار <code>Validator</code> را در ساختار <code>snippetCreateForm</code> خود <em>جاسازی</em> کنیم و سپس از این برای انجام بررسی‌های اعتبارسنجی لازم بر روی داده‌های فرم استفاده کنیم.</p>
 
 <aside class="hint"><p>
-<strong>Tip:</strong> If you&rsquo;re not familiar with the concept of struct embedding in Go, Eli Bendersky has written a <a href="https://eli.thegreenplace.net/2020/embedding-in-go-part-1-structs-in-structs/">good introduction</a> on the topic and I recommend quickly reading it before you continue.
+<strong>نکته:</strong> اگر با مفهوم جاسازی ساختار در Go آشنا نیستید، الی بندرسکی یک <a href="https://eli.thegreenplace.net/2020/embedding-in-go-part-1-structs-in-structs/">مقدمه خوب</a> در این زمینه نوشته است و توصیه می‌کنم قبل از ادامه سریعاً آن را بخوانید.
 </p></aside>
 
-<p>Like so:</p>
+<p>به این صورت:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -175,22 +176,22 @@ and a <code>Valid()</code> method which returns whether the errors map is empty 
         <span class="c1">// Remove the FieldErrors assignment from here.
 </span><span class="c1"></span>    <span class="p">}</span>
 
-    <span class="c1">// Because the Validator struct is embedded by the snippetCreateForm struct,
-</span><span class="c1"></span>    <span class="c1">// we can call CheckField() directly on it to execute our validation checks.
-</span><span class="c1"></span>    <span class="c1">// CheckField() will add the provided key and error message to the
-</span><span class="c1"></span>    <span class="c1">// FieldErrors map if the check does not evaluate to true. For example, in
-</span><span class="c1"></span>    <span class="c1">// the first line here we &#34;check that the form.Title field is not blank&#34;. In
-</span><span class="c1"></span>    <span class="c1">// the second, we &#34;check that the form.Title field has a maximum character
-</span><span class="c1"></span>    <span class="c1">// length of 100&#34; and so on.
-</span><span class="c1"></span>    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    // Because the Validator struct is embedded by the snippetCreateForm struct,
+    // we can call CheckField() directly on it to execute our validation checks.
+    // CheckField() will add the provided key and error message to the
+    // FieldErrors map if the check does not evaluate to true. For example, in
+    // the first line here we "check that the form.Title field is not blank". In
+    // the second, we "check that the form.Title field has a maximum character
+    // length of 100" and so on.
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
     <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
     <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
     <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
 
-    <span class="c1">// Use the Valid() method to see if any of the checks failed. If they did,
-</span><span class="c1"></span>    <span class="c1">// then re-render the template passing in the form in the same way as
-</span><span class="c1"></span>    <span class="c1">// before.
-</span><span class="c1"></span>    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    // Use the Valid() method to see if any of the checks failed. If they did,
+    // then re-render the template passing in the form in the same way as
+    // before.
+    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
         <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
@@ -207,21 +208,21 @@ and a <code>Valid()</code> method which returns whether the errors map is empty 
 <span class="p">}</span></pre>
 </figure>
 
-<p>So this is shaping up really nicely.</p>
+<p>بنابراین این به‌خوبی شکل گرفته است.</p>
 
-<p>We&rsquo;ve now got an <code>internal/validator</code> package with validation rules and logic that can be reused across our application, and it can easily be extended to include additional rules in the future. Both form data and errors are neatly encapsulated in a single <code>snippetCreateForm</code> struct &mdash; which we can easily pass to our templates &mdash; and the syntax for displaying error messages and re-populating the data in our templates is simple and consistent.</p>
+<p>اکنون یک بسته <code>internal/validator</code> با قوانین و منطق اعتبارسنجی داریم که می‌تواند در سراسر برنامه ما استفاده شود و به‌راحتی می‌توان آن را برای شامل قوانین اضافی در آینده گسترش داد. هم داده‌های فرم و هم خطاها به‌طور مرتب در یک ساختار <code>snippetCreateForm</code> قرار گرفته‌اند &mdash; که می‌توانیم به‌راحتی به قالب‌های خود منتقل کنیم &mdash; و نحو نمایش پیام‌های خطا و پر کردن مجدد داده‌ها در قالب‌های ما ساده و سازگار است.</p>
 
-<p>If you like, go ahead and re-run the application now. All being well, you should find that the form and validation rules are working correctly and in exactly the same manner as before.</p>
+<p>اگر دوست دارید، برنامه را دوباره اجرا کنید. امیدوارم که فرم و قوانین اعتبارسنجی به‌درستی و به همان شیوه قبلی کار کنند.</p>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="generics">Generics</h4>
+<h4 id="generics">جنریک‌ها</h4>
 
-<p>Go 1.18 was the first version of the language to support <em>generics</em> &mdash; also known by the more technical name of <em>parametric polymorphism</em>. Very broadly, generics allow you to write code that works with <em>different concrete types</em>.</p>
+<p>Go 1.18 اولین نسخه از زبان بود که از <em>جنریک‌ها</em> پشتیبانی می‌کرد &mdash; که با نام فنی‌تر <em>چندریختی پارامتری</em> نیز شناخته می‌شود. به‌طور کلی، جنریک‌ها به شما اجازه می‌دهند کدی بنویسید که با <em>انواع مختلف</em> کار کند.</p>
 
-<p>For example, in older versions of Go, if you wanted to count how many times a particular value appears in a <code>[]string</code> slice and an <code>[]int</code> slice you would need to write two separate functions &mdash; one function for the <code>[]string</code> type and another for the <code>[]int</code>. A bit like this:</p>
+<p>برای مثال، در نسخه‌های قدیمی‌تر Go، اگر می‌خواستید تعداد دفعاتی که یک مقدار خاص در یک برش <code>[]string</code> و یک برش <code>[]int</code> ظاهر می‌شود را بشمارید، باید دو تابع جداگانه می‌نوشتید &mdash; یک تابع برای نوع <code>[]string</code> و دیگری برای <code>[]int</code>. چیزی شبیه به این:</p>
 
 <figure class="code go">
 <pre><span class="c1">// Count how many times the value v appears in the slice s.
@@ -246,7 +247,7 @@ and a <code>Valid()</code> method which returns whether the errors map is empty 
 <span class="p">}</span></pre>
 </figure>
 
-<p>Now, with generics, it&rsquo;s possible to write a single <code>count()</code> function that will work for <code>[]string</code>, <code>[]int</code>, or any other slice of a <a href="https://pkg.go.dev/builtin#comparable">comparable type</a>. The code would look like this:</p>
+<p>اکنون، با جنریک‌ها، می‌توان یک تابع <code>count()</code> نوشت که برای <code>[]string</code>، <code>[]int</code> یا هر برش دیگری از یک <a href="https://pkg.go.dev/builtin#comparable">نوع قابل مقایسه</a> کار کند. کد به این صورت خواهد بود:</p>
 
 <figure class="code go">
 <pre><span class="kd">func</span> <span class="nx">count</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">v</span> <span class="nx">T</span><span class="p">,</span> <span class="nx">s</span> <span class="p">[</span><span class="p">]</span><span class="nx">T</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
@@ -260,44 +261,44 @@ and a <code>Valid()</code> method which returns whether the errors map is empty 
 <span class="p">}</span></pre>
 </figure>
 
-<p>If you&rsquo;re not familiar with the syntax for generic code in Go, there&rsquo;s a lot of great information available which explains how generics works and walks you through the syntax for writing generic code.</p>
+<p>اگر با نحو کد جنریک در Go آشنا نیستید، اطلاعات زیادی وجود دارد که توضیح می‌دهد جنریک‌ها چگونه کار می‌کنند و شما را از طریق نحو نوشتن کد جنریک راهنمایی می‌کند.</p>
 
-<p>To get up to speed, I highly recommend reading the <a href="https://go.dev/doc/tutorial/generics">official Go generics tutorial</a>, and also watching the first 15 minutes of <a href="https://www.youtube.com/watch?v=Pa_e9EeCdy8">this video</a> to help consolidate what you&rsquo;ve learnt.</p>
+<p>برای به‌روز شدن، به شدت توصیه می‌کنم <a href="https://go.dev/doc/tutorial/generics">آموزش رسمی جنریک‌های Go</a> را بخوانید و همچنین ۱۵ دقیقه اول <a href="https://www.youtube.com/watch?v=Pa_e9EeCdy8">این ویدیو</a> را تماشا کنید تا آنچه را که یاد گرفته‌اید تقویت کنید.</p>
 
-<p>Rather than duplicating that same information here, instead I&rsquo;d like to talk briefly about a less common (but just as important!) topic: <em>when</em> to use generics.</p>
+<p>به‌جای تکرار همان اطلاعات در اینجا، می‌خواهم به‌طور مختصر درباره یک موضوع کمتر رایج (اما به همان اندازه مهم!) صحبت کنم: <em>چه زمانی</em> از جنریک‌ها استفاده کنیم.</p>
 
-<p>For now at least, you should aim to use generics <em>judiciously and cautiously</em>.</p>
+<p>فعلاً، باید سعی کنید از جنریک‌ها <em>با احتیاط و دقت</em> استفاده کنید.</p>
 
-<p>I know that might sound a bit boring, but generics are a relatively new language feature and best-practices around writing generic code are still being established. If you work on a team, or write code in public, it&rsquo;s also worth keeping in mind that not all other Go developers will necessarily be familiar with how generic code works.</p>
+<p>می‌دانم که ممکن است کمی خسته‌کننده به نظر برسد، اما جنریک‌ها یک ویژگی نسبتاً جدید زبان هستند و بهترین روش‌ها برای نوشتن کد جنریک هنوز در حال شکل‌گیری هستند. اگر در یک تیم کار می‌کنید یا کد را به‌صورت عمومی می‌نویسید، همچنین به خاطر داشته باشید که همه توسعه‌دهندگان Go دیگر لزوماً با نحوه کار کد جنریک آشنا نیستند.</p>
 
-<p>You don&rsquo;t <em>need</em> to use generics, and it&rsquo;s OK not to.</p>
+<p>شما <em>نیاز</em> به استفاده از جنریک‌ها ندارید و استفاده نکردن از آن‌ها اشکالی ندارد.</p>
 
-<p>But even with those caveats, writing generic code can be really useful in certain scenarios. Very generally speaking, you might want to consider it:</p>
+<p>اما حتی با این هشدارها، نوشتن کد جنریک می‌تواند در برخی سناریوها واقعاً مفید باشد. به‌طور کلی، ممکن است بخواهید آن را در نظر بگیرید:</p>
 
 <ul>
-<li>If you find yourself writing repeated boilerplate code for different data types. Examples of this might be common operations on slices, maps or channels &mdash; or helpers for carrying out validation checks or test assertions on different data types.</li>
-<li>When you are writing code and find yourself reaching for the <code>any</code> (empty <code>interface{}</code>) type. An example of this might be when you are creating a data structure (like a queue, cache or linked list) which needs to operate on different types.</li>
+<li>اگر خود را در حال نوشتن کد تکراری برای انواع داده‌های مختلف می‌بینید. مثال‌هایی از این ممکن است عملیات‌های رایج بر روی برش‌ها، نقشه‌ها یا کانال‌ها باشد &mdash; یا کمک‌کننده‌هایی برای انجام بررسی‌های اعتبارسنجی یا اظهارات تست بر روی انواع داده‌های مختلف.</li>
+<li>وقتی در حال نوشتن کد هستید و خود را در حال استفاده از نوع <code>any</code> (رابط خالی <code>interface{}</code>) می‌بینید. مثالی از این ممکن است زمانی باشد که در حال ایجاد یک ساختار داده (مانند صف، کش یا لیست پیوندی) هستید که نیاز به کار با انواع مختلف دارد.</li>
 </ul>
 
-<p>In contrast, you probably don&rsquo;t want to use generics:</p>
+<p>در مقابل، احتمالاً نمی‌خواهید از جنریک‌ها استفاده کنید:</p>
 
 <ul>
-<li>If it makes your code harder to understand or less clear.</li>
-<li>If all the types that you need to work with have a common set of methods &mdash; in which case it&rsquo;s better to define and use a normal <code>interface</code> type instead.</li>
-<li>Just <em>because you can</em>. Prefer instead write non-generic code by default, and switch to a generic version later <em>only if it is actually needed</em>.</li>
+<li>اگر کد شما را سخت‌تر برای درک یا کمتر واضح می‌کند.</li>
+<li>اگر همه انواعی که نیاز دارید با آن‌ها کار کنید مجموعه‌ای از متدهای مشترک دارند &mdash; در این صورت بهتر است یک نوع <code>interface</code> معمولی تعریف و استفاده کنید.</li>
+<li>فقط <em>به این دلیل که می‌توانید</em>. ترجیحاً به‌طور پیش‌فرض کد غیرجنریک بنویسید و بعداً به نسخه جنریک تغییر دهید <em>فقط اگر واقعاً نیاز باشد</em>.</li>
 </ul>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">Previous</a>
+					&lsaquo; <a href="07.04-displaying-errors-and-repopulating-fields.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.06-automatic-form-parsing.html">Next</a> &rsaquo;
+					<a href="07.06-automatic-form-parsing.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
