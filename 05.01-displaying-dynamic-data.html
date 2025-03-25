@@ -1,42 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<meta name="author" content="Alex Edwards">
 		<meta name="copyright" content="Copyright Alex Edwards 2024">
-		<title>Displaying dynamic data &mdash; Let's Go</title>
+		<title>نمایش داده‌های پویا &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Displaying dynamic data</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; نمایش داده‌های پویا</span>
 				</div>
 				<div>
-					&lsaquo; <a href="05.00-dynamic-html-templates.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="05.02-template-actions-and-functions.html">Next</a> &rsaquo;
+					&lsaquo; <a href="05.00-dynamic-html-templates.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.02-template-actions-and-functions.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 5.1.</div>
-			<h2 id="displaying-dynamic-data">Displaying dynamic data</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 5.1.</div>
+			<h2 id="displaying-dynamic-data">نمایش داده‌های پویا</h2>
 
-<p>Currently our <code>snippetView</code> handler function fetches a <code>models.Snippet</code> object from the database and then dumps the contents out in a plain-text HTTP response.</p>
+<p>در حال حاضر، تابع <code>snippetView</code> ما یک شیء <code>models.Snippet</code> را از پایگاه داده دریافت می‌کند و سپس محتویات آن را به صورت یک پاسخ HTTP متنی ساده نمایش می‌دهد.</p>
 
-<p>In this chapter we&rsquo;ll improve this so that the data is displayed in a proper HTML webpage which looks a bit like this:</p>
+<p>در این فصل، این را بهبود می‌دهیم تا داده‌ها در یک صفحه وب HTML مناسب نمایش داده شوند که شبیه به این است:</p>
 
 <p><img class="sketch" src="assets/img/05.01-01.png" alt="05.01-01.png"></img></p>
 
-<p>Let&rsquo;s start in the <code>snippetView</code> handler and add some code to render a new <code>view.tmpl</code> template file (which we will create in a minute). Hopefully this should look familiar to you from earlier in the book.</p>
+<p>بیایید با افزودن کدی به تابع <code>snippetView</code> شروع کنیم تا یک فایل قالب جدید <code>view.tmpl</code> را رندر کند (که در یک دقیقه ایجاد خواهیم کرد). امیدوارم این برای شما از قبل آشنا باشد.</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -97,13 +99,13 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Next up we need to create the <code>view.tmpl</code> file containing the HTML markup for the page. But before we do, there&rsquo;s a little theory that I need to explain&hellip;</p>
+<p>در مرحله بعد، باید فایل <code>view.tmpl</code> را ایجاد کنیم که حاوی نشانه‌گذاری HTML برای صفحه است. اما قبل از آن، کمی نظریه را باید توضیح دهم&hellip;</p>
 
-<p>Any data that you pass as the final parameter to <code>ts.ExecuteTemplate()</code> is represented within your HTML templates by the <code>.</code> character (referred to as <em>dot</em>).</p>
+<p>هر داده‌ای که به عنوان پارامتر نهایی به <code>ts.ExecuteTemplate()</code> ارسال می‌کنید، در قالب‌های HTML شما با کاراکتر <code>.</code> (که به آن <em>نقطه</em> گفته می‌شود) نمایش داده می‌شود.</p>
 
-<p>In this specific case, the underlying type of dot will be a <code>models.Snippet</code> struct. When the underlying type of dot is a struct, you can render (or <em>yield</em>) the value of any exported field in your templates by postfixing dot with the field name. So, because our <code>models.Snippet</code> struct has a <code>Title</code> field, we could yield the snippet title by writing <code>{{.Title}}</code> in our templates.</p>
+<p>در این مورد خاص، نوع زیرین نقطه یک ساختار <code>models.Snippet</code> خواهد بود. هنگامی که نوع زیرین نقطه یک ساختار است، می‌توانید مقدار هر فیلد صادر شده را در قالب‌های خود با افزودن نقطه به نام فیلد نمایش دهید. بنابراین، چون ساختار <code>models.Snippet</code> ما یک فیلد <code>Title</code> دارد، می‌توانیم عنوان قطعه را با نوشتن <code>{{.Title}}</code> در قالب‌های خود نمایش دهیم.</p>
 
-<p>I&rsquo;ll demonstrate. Create a new file at <code>ui/html/pages/view.tmpl</code> and add the following markup:</p>
+<p>من نشان خواهم داد. یک فایل جدید در <code>ui/html/pages/view.tmpl</code> ایجاد کنید و نشانه‌گذاری زیر را اضافه کنید:</p>
 
 <figure class="code bash">
 <pre>$ touch ui/html/pages/view.tmpl</pre>
@@ -128,19 +130,19 @@
 {{end}}</pre>
 </figure>
 
-<p>If you restart the application and visit <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> in your browser, you should find that the relevant snippet is fetched from the database, passed to the template, and the content is rendered correctly.</p>
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> در مرورگر خود بروید، باید ببینید که قطعه مربوطه از پایگاه داده دریافت شده، به قالب ارسال شده و محتوا به درستی رندر شده است.</p>
 
 <figure class="img">
 <img src="assets/img/05.01-02.png" alt="05.01-02.png" />
 </figure>
 
-<h3 id="rendering-multiple-pieces-of-data">Rendering multiple pieces of data</h3>
+<h3 id="rendering-multiple-pieces-of-data">رندر کردن چندین قطعه داده</h3>
 
-<p>An important thing to explain is that Go’s <code>html/template</code> package allows you to pass in one &mdash; and only one &mdash; item of dynamic data when rendering a template. But in a real-world application there are often multiple pieces of dynamic data that you want to display in the same page.</p>
+<p>یک نکته مهم برای توضیح این است که بسته <code>html/template</code> در Go به شما اجازه می‌دهد که تنها یک قطعه داده پویا را هنگام رندر کردن یک قالب ارسال کنید. اما در یک برنامه واقعی، اغلب چندین قطعه داده پویا وجود دارد که می‌خواهید در همان صفحه نمایش دهید.</p>
 
-<p>A lightweight and type-safe way to achieve this is to wrap your dynamic data in a struct which acts like a single &lsquo;holding structure&rsquo; for your data.</p>
+<p>یک روش سبک و نوع‌امن برای دستیابی به این هدف این است که داده‌های پویا خود را در یک ساختار قرار دهید که به عنوان یک <em>ساختار نگهدارنده</em> برای داده‌های شما عمل کند.</p>
 
-<p>Let&rsquo;s create a new <code>cmd/web/templates.go</code> file, containing a <code>templateData</code> struct to do exactly that.</p>
+<p>بیایید یک فایل جدید <code>cmd/web/templates.go</code> ایجاد کنیم که حاوی یک ساختار <code>templateData</code> برای انجام دقیقاً همین کار باشد.</p>
 
 <figure class="code bash">
 <pre>$ touch cmd/web/templates.go</pre>
@@ -161,13 +163,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>And then let&rsquo;s update the <code>snippetView</code> handler to use this new struct when executing our templates:</p>
+<p>و سپس بیایید تابع <code>snippetView</code> را به‌روزرسانی کنیم تا از این ساختار جدید هنگام اجرای قالب‌های ما استفاده کند:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
-<span class="o">...</span>
+// ... existing code ...
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
@@ -210,10 +212,11 @@
     <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="o">...</span></pre>
+// ... existing code ...
+</pre>
 </figure>
 
-<p>So now, our snippet data is contained in a <em><code>models.Snippet</code> struct within a <code>templateData</code> struct</em>. To yield the data, we need to chain the appropriate field names together like so:</p>
+<p>بنابراین اکنون، داده‌های قطعه ما در یک ساختار <em><code>models.Snippet</code> درون یک ساختار <code>templateData</code></em> قرار دارد. برای نمایش داده‌ها، باید نام فیلدهای مناسب را به این صورت زنجیره کنیم:</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
@@ -235,76 +238,76 @@
 {{end}}</pre>
 </figure>
 
-<p>Feel free to restart the application and visit <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> again. You should see the same page rendered in your browser as before.</p>
+<p>احساس راحتی کنید که برنامه را مجدداً راه‌اندازی کنید و دوباره به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بروید. باید همان صفحه‌ای که قبلاً در مرورگر شما رندر شده بود را ببینید.</p>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="dynamic-content-escaping">Dynamic content escaping</h4>
+<h4 id="dynamic-content-escaping">فرار از محتوای پویا</h4>
 
-<p>The <code>html/template</code> package automatically escapes any data that is yielded between <code>{{ }}</code> tags. This behavior is hugely helpful in avoiding cross-site scripting (XSS) attacks, and is the reason that you should use the <code>html/template</code> package instead of the more generic <code>text/template</code> package that Go also provides.</p>
+<p>بسته <code>html/template</code> به طور خودکار هر داده‌ای که بین تگ‌های <code>{{ }}</code> نمایش داده می‌شود را فرار می‌دهد. این رفتار به شدت در جلوگیری از حملات XSS کمک می‌کند و دلیل این است که باید از بسته <code>html/template</code> به جای بسته عمومی‌تر <code>text/template</code> که Go نیز ارائه می‌دهد، استفاده کنید.</p>
 
-<p>As an example of escaping, if the dynamic data you wanted to yield was:</p>
+<p>به عنوان مثال از فرار، اگر داده پویا که می‌خواهید نمایش دهید به این صورت باشد:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{&#34;<span class="p">&lt;</span><span class="nt">script</span><span class="p"></span><span class="p">&gt;</span><span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;xss attack&#39;</span><span class="p">)</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>&#34;}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>It would be rendered harmlessly as:</p>
+<p>به صورت بی‌ضرر به این صورت رندر می‌شود:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span><span class="ni">&amp;lt;</span>script<span class="ni">&amp;gt;</span>alert(<span class="ni">&amp;#39;</span>xss attack<span class="ni">&amp;#39;</span>)<span class="ni">&amp;lt;</span>/script<span class="ni">&amp;gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>The <code>html/template</code> package is also smart enough to make escaping context-dependent. It will use the appropriate escape sequences depending on whether the data is rendered in a part of the page that contains HTML, CSS, Javascript or a URI.</p>
+<p>بسته <code>html/template</code> همچنین به اندازه کافی هوشمند است که فرار را به صورت وابسته به زمینه انجام دهد. از توالی‌های فرار مناسب بسته به اینکه داده در کدام قسمت از صفحه که شامل HTML، CSS، جاوااسکریپت یا URI است، استفاده می‌کند.</p>
 
-<h4 id="nested-templates">Nested templates</h4>
+<h4 id="nested-templates">قالب‌های تو در تو</h4>
 
-<p>It&rsquo;s really important to note that when you&rsquo;re invoking one template from another template, dot needs to be explicitly passed or <em>pipelined</em> to the template being invoked. You do this by including it at the end of each <code>{{template}}</code> or <code>{{block}}</code> action, like so:</p>
+<p>بسیار مهم است که توجه داشته باشید وقتی که یک قالب را از قالب دیگری فراخوانی می‌کنید، نقطه باید به طور صریح به قالب فراخوانی شده ارسال یا <em>پایپ‌لاین</em> شود. این کار را با افزودن آن در انتهای هر <code>{{template}}</code> یا <code>{{block}}</code> انجام می‌دهید، به این صورت:</p>
 
 <figure class="code html">
 <pre>{{template &#34;main&#34; .}}
 {{block &#34;sidebar&#34; .}}{{end}}</pre>
 </figure>
 
-<p>As a general rule, my advice is to get into the habit of always pipelining dot whenever you invoke a template with the <code>{{template}}</code> or <code>{{block}}</code> actions, unless you have a good reason not to.</p>
+<p>به عنوان یک قاعده کلی، توصیه من این است که همیشه عادت کنید که نقطه را هر زمان که یک قالب را با استفاده از اقدامات <code>{{template}}</code> یا <code>{{block}}</code> فراخوانی می‌کنید، پایپ‌لاین کنید، مگر اینکه دلیل خوبی برای عدم انجام این کار داشته باشید.</p>
 
-<h4 id="calling-methods">Calling methods</h4>
+<h4 id="calling-methods">فراخوانی متدها</h4>
 
-<p>If the type that you&rsquo;re yielding between <code>{{ }}</code> tags has methods defined against it, you can call these methods (so long as they are exported and they return only a single value &mdash; or a single value and an error).</p>
+<p>اگر نوعی که بین تگ‌های <code>{{ }}</code> نمایش می‌دهید دارای متدهایی است که در برابر آن تعریف شده‌اند، می‌توانید این متدها را فراخوانی کنید (به شرطی که صادر شده باشند و تنها یک مقدار &mdash; یا یک مقدار و یک خطا &mdash; برگردانند).</p>
 
-<p>For example, our <code>.Snippet.Created</code> struct field has the underlying type <code>time.Time</code>, meaning that you could render the name of the weekday by calling its <a href="https://pkg.go.dev/time/#Time.Unix"><code>Weekday()</code></a> method like so:</p>
+<p>به عنوان مثال، فیلد ساختار <code>.Snippet.Created</code> ما دارای نوع زیرین <code>time.Time</code> است، به این معنی که می‌توانید نام روز هفته را با فراخوانی متد <a href="https://pkg.go.dev/time/#Time.Unix"><code>Weekday()</code></a> به این صورت رندر کنید:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Created.Weekday}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>You can also pass parameters to methods. For example, you could use the <a href="https://pkg.go.dev/time/#Time.AddDate"><code>AddDate()</code></a> method to add six months to a time like so:</p>
+<p>همچنین می‌توانید پارامترها را به متدها ارسال کنید. به عنوان مثال، می‌توانید از متد <a href="https://pkg.go.dev/time/#Time.AddDate"><code>AddDate()</code></a> برای افزودن شش ماه به یک زمان به این صورت استفاده کنید:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">span</span><span class="p"></span><span class="p">&gt;</span>{{.Snippet.Created.AddDate 0 6 0}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">span</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>Notice that this is different syntax to calling functions in Go &mdash; the parameters are <em>not</em> surrounded by parentheses and are separated by a single space character, not a comma.</p>
+<p>توجه داشته باشید که این نحو متفاوتی با فراخوانی توابع در Go دارد &mdash; پارامترها در پرانتز قرار نمی‌گیرند و با یک کاراکتر فاصله از هم جدا می‌شوند، نه با کاما.</p>
 
-<h4 id="html-comments">HTML comments</h4>
+<h4 id="html-comments">نظرات HTML</h4>
 
-<p>Finally, the <code>html/template</code> package always strips out any HTML comments you include in your templates, including any <a href="https://en.wikipedia.org/wiki/Conditional_comment">conditional comments</a>.</p>
+<p>در نهایت، بسته <code>html/template</code> همیشه هر نظری که در قالب‌های خود قرار می‌دهید را حذف می‌کند، از جمله هر <a href="https://en.wikipedia.org/wiki/Conditional_comment">نظر شرطی</a>.</p>
 
-<p>The reason for this is to help avoid XSS attacks when rendering dynamic content. Allowing conditional comments would mean that Go isn&rsquo;t always able to anticipate how a browser will interpret the markup in a page, and therefore it wouldn&rsquo;t necessarily be able to escape everything appropriately. To solve this, Go simply strips out <em>all</em> HTML comments.</p>
+<p>دلیل این کار کمک به جلوگیری از حملات XSS هنگام رندر کردن محتوای پویا است. اجازه دادن به نظرات شرطی به این معنی است که Go همیشه نمی‌تواند پیش‌بینی کند که یک مرورگر چگونه نشانه‌گذاری در یک صفحه را تفسیر خواهد کرد، و بنابراین نمی‌تواند همه چیز را به درستی فرار دهد. برای حل این مشکل، Go به سادگی همه نظرات HTML را حذف می‌کند.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="05.00-dynamic-html-templates.html">Previous</a>
+					&lsaquo; <a href="05.00-dynamic-html-templates.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="05.02-template-actions-and-functions.html">Next</a> &rsaquo;
+					<a href="05.02-template-actions-and-functions.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
