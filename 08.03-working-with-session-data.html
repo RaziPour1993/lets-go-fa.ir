@@ -1,37 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Working with session data &mdash; Let's Go</title>
+		<title>کار با داده‌های جلسه &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go,
+			.code.html,
+			.code.bash,
+			.code.plain,
+			.code.sql {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">Stateful HTTP</a> &rsaquo; Working with session data</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">حالت دار HTTP</a> &rsaquo; کار با داده‌های جلسه</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="09.00-server-and-security-improvements.html">Next</a> &rsaquo;
+					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="09.00-server-and-security-improvements.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 8.3.</div>
-			<h2 id="working-with-session-data">Working with session data</h2>
+		<main class="wrapper text" style="direction: rtl;">
+			<div class="chapter">فصل 8.3.</div>
+			<h2 id="working-with-session-data">کار با داده‌های جلسه</h2>
 
-<p>In this chapter let&rsquo;s put the session functionality to work and use it to persist the confirmation flash message between HTTP requests that we <a href="08.00-stateful-http.html">discussed earlier</a>.</p>
+<p>در این فصل، بیایید قابلیت جلسه را به کار بگیریم و از آن برای حفظ پیام تأیید بین درخواست‌های HTTP که <a href="08.00-stateful-http.html">قبلاً بحث کردیم</a>، استفاده کنیم.</p>
 
-<p>We&rsquo;ll begin in our <code>cmd/web/handlers.go</code> file and update our <code>snippetCreatePost</code> method so that a flash message is added to the user&rsquo;s session data if &mdash; and only if &mdash; the snippet was created successfully. Like so:</p>
+<p>ما در فایل <code>cmd/web/handlers.go</code> خود شروع می‌کنیم و روش <code>snippetCreatePost</code> خود را به‌روزرسانی می‌کنیم تا یک پیام فلش به داده‌های جلسه کاربر اضافه شود، اگر و فقط اگر قطعه با موفقیت ایجاد شده باشد. به این صورت:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -48,10 +58,10 @@
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند خالی باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند بیش از 100 کاراکتر باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند خالی باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد باید برابر با 1، 7 یا 365 باشد&#34;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
@@ -68,27 +78,29 @@
 
     <span class="c1">// Use the Put() method to add a string value (&#34;Snippet successfully 
 </span><span class="c1"></span>    <span class="c1">// created!&#34;) and the corresponding key (&#34;flash&#34;) to the session data.
-</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">,</span> <span class="s">&#34;Snippet successfully created!&#34;</span><span class="p">)</span>
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">,</span> <span class="s">&#34;قطعه با موفقیت ایجاد شد!&#34;</span><span class="p">)</span>
 
     <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>That&rsquo;s nice and simple, but there are a couple of things to point out:</p>
+<p style="direction: rtl;">
+    اولین پارامتری که به <code>app.sessionManager.Put()</code> می‌دهیم، زمینه درخواست فعلی است. ما بعداً در کتاب به‌طور کامل درباره زمینه درخواست و نحوه استفاده از آن صحبت خواهیم کرد، اما فعلاً می‌توانید آن را به‌عنوان جایی که مدیر جلسه به‌طور موقت اطلاعات را ذخیره می‌کند در حالی که هندلرهای شما با درخواست سروکار دارند، در نظر بگیرید.
+</p>
 
-<ul>
-<li><p>The first parameter that we pass to <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.Put"><code>app.sessionManager.Put()</code></a> is the <em>current request context</em>. We&rsquo;ll talk properly about what the request context is and how to use it later in the book, but for now you can just think of it as somewhere that the session manager temporarily stores information while your handlers are dealing with the request.</p></li>
+<p style="direction: rtl;">
+    پارامتر دوم (در مورد ما رشته <code>"flash"</code>) کلید برای پیام خاصی است که به داده‌های جلسه اضافه می‌کنیم. ما بعداً پیام را از داده‌های جلسه با استفاده از این کلید بازیابی خواهیم کرد.
+</p>
 
-<li><p>The second parameter (in our case the string <code>&quot;flash&quot;</code>) is the <em>key</em> for the specific message that we are adding to the session data. We&rsquo;ll subsequently retrieve the message from the session data using this key too.</p></li>
+<p style="direction: rtl;">
+    اگر جلسه‌ای برای کاربر فعلی وجود نداشته باشد (یا جلسه آن‌ها منقضی شده باشد)، یک جلسه جدید و خالی برای آن‌ها به‌طور خودکار توسط میان‌افزار جلسه ایجاد خواهد شد.
+</p>
 
-<li><p>If there&rsquo;s no existing session for the current user (or their session has expired) then a new, empty, session for them will automatically be created by the session middleware.</p></li>
-</ul>
+<p>در مرحله بعد، می‌خواهیم هندلر <code>snippetView</code> ما پیام فلش را (اگر در جلسه کاربر فعلی وجود داشته باشد) بازیابی کند و آن را به قالب HTML برای نمایش بعدی ارسال کند.</p>
 
-<p>Next up we want our <code>snippetView</code> handler to retrieve the flash message (if one exists in the session for the current user) and pass it to the HTML template for subsequent display.</p>
+<p>چون می‌خواهیم پیام فلش را فقط یک‌بار نمایش دهیم، در واقع می‌خواهیم پیام را از داده‌های جلسه بازیابی و حذف کنیم. ما می‌توانیم هر دو این عملیات را به‌طور همزمان با استفاده از روش <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.PopString"><code>PopString()</code></a> انجام دهیم.</p>
 
-<p>Because we want to display the flash message once only, we actually want to retrieve <em>and remove</em> the message from the session data. We can do both these operations at the same time by using the <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.PopString"><code>PopString()</code></a> method.</p>
-
-<p>I&rsquo;ll demonstrate:</p>
+<p>من نشان خواهم داد:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -132,10 +144,10 @@
 </figure>
 
 <aside class="hint"><p>
-<strong>Info:</strong> If you want to retrieve a value from the session data only (and leave it in there) you can use the <code>GetString()</code> method instead. The <code>scs</code> package also provides methods for retrieving other common data types, including <code>GetInt()</code>, <code>GetBool()</code>,  <code>GetBytes()</code> and <code>GetTime()</code>.
+<strong>اطلاعات:</strong> اگر می‌خواهید فقط یک مقدار را از داده‌های جلسه بازیابی کنید (و آن را در آنجا بگذارید)، می‌توانید از روش <code>GetString()</code> استفاده کنید. بسته <code>scs</code> همچنین روش‌هایی برای بازیابی انواع داده‌های رایج دیگر، از جمله <code>GetInt()</code>، <code>GetBool()</code>،  <code>GetBytes()</code> و <code>GetTime()</code> ارائه می‌دهد.
 </p></aside>
 
-<p>If you try to run the application now, the compiler will (rightly) grumble that the <code>Flash</code> field isn&rsquo;t defined in our <code>templateData</code> struct. Go ahead and add it in like so:</p>
+<p>اگر اکنون سعی کنید برنامه را اجرا کنید، کامپایلر (به‌درستی) غر خواهد زد که فیلد <code>Flash</code> در ساختار <code>templateData</code> تعریف نشده است. بروید و آن را به این صورت اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -160,13 +172,13 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>And now, we can update our <code>base.tmpl</code> file to display the flash message, if one exists.</p>
+<p>و اکنون، می‌توانیم فایل <code>base.tmpl</code> خود را به‌روزرسانی کنیم تا پیام فلش را نمایش دهد، اگر وجود داشته باشد.</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/base.tmpl</figcaption>
 <pre>{{define &#34;base&#34;}}
 <span class="cp">&lt;!doctype html&gt;</span>
-<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;en&#39;</span><span class="p"></span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;fa&#39;</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">head</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">title</span><span class="p"></span><span class="p">&gt;</span>{{template &#34;title&#34; .}} - Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">title</span><span class="p">&gt;</span>
@@ -195,31 +207,31 @@
 {{end}}</pre>
 </figure>
 
-<p>Remember, the <code>{{with .Flash}}</code> block will only be executed if the value of <code>.Flash</code> is <a href="05.02-template-actions-and-functions.html">not the empty string</a>. So, if there&rsquo;s no <code>&quot;flash&quot;</code> key in the current user&rsquo;s session, the result is that the chunk of new markup simply won&rsquo;t be displayed.</p>
+<p>به یاد داشته باشید، بلوک <code>{{with .Flash}}</code> فقط در صورتی اجرا می‌شود که مقدار <code>.Flash</code> <a href="05.02-template-actions-and-functions.html">رشته خالی نباشد</a>. بنابراین، اگر کلید <code>&quot;flash&quot;</code> در جلسه کاربر فعلی وجود نداشته باشد، نتیجه این است که قطعه جدیدی از نشانه‌گذاری به‌سادگی نمایش داده نمی‌شود.</p>
 
-<p>Once that&rsquo;s done, save all your files and restart the application. Try adding a new snippet like so&hellip;</p>
+<p>پس از انجام این کار، همه فایل‌های خود را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. سعی کنید یک قطعه دیگر ایجاد کنید به این صورت&hellip;</p>
 
 <figure class="img">
 <img src="assets/img/08.03-01.png" alt="08.03-01.png" />
 </figure>
 
-<p>And after redirection you should see the flash message now being displayed:</p>
+<p>و پس از تغییر مسیر باید ببینید که پیام فلش اکنون نمایش داده می‌شود:</p>
 
 <figure class="img">
 <img src="assets/img/08.03-02.png" alt="08.03-02.png" />
 </figure>
 
-<p>If you try refreshing the page, you can confirm that the flash message is no longer shown &mdash; it was a one-off message for the current user immediately after they created the snippet.</p>
+<p>اگر سعی کنید صفحه را تازه‌سازی کنید، می‌توانید تأیید کنید که پیام فلش دیگر نمایش داده نمی‌شود &mdash; این یک پیام یک‌بار برای کاربر فعلی بلافاصله پس از ایجاد قطعه بود.</p>
 
 <figure class="img">
 <img src="assets/img/08.03-03.png" alt="08.03-03.png" />
 </figure>
 
-<h3 id="auto-displaying-flash-messages">Auto-displaying flash messages</h3>
+<h3 id="auto-displaying-flash-messages">نمایش خودکار پیام‌های فلش</h3>
 
-<p>A little improvement we can make (which will save us some work later in the project) is to automate the display of flash messages, so that any message is automatically included the next time <em>any page is rendered</em>.</p>
+<p>یک بهبود کوچک که می‌توانیم انجام دهیم (که بعداً در پروژه برای ما کار را آسان‌تر می‌کند) این است که نمایش پیام‌های فلش را خودکار کنیم، به‌طوری که هر پیامی به‌طور خودکار در دفعه بعدی که <em>هر صفحه‌ای رندر می‌شود</em>، گنجانده شود.</p>
 
-<p>We can do this by adding any flash message to the template data via the <code>newTemplateData()</code> helper method that we made earlier, like so:</p>
+<p>ما می‌توانیم این کار را با افزودن هر پیام فلش به داده‌های قالب از طریق روش کمکی <code>newTemplateData()</code> که قبلاً ساخته‌ایم، انجام دهیم، به این صورت:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/helpers.go</figcaption>
@@ -238,7 +250,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Making that change means that we no longer need to check for the flash message within the <code>snippetView</code> handler, and the code can be reverted to look like this:</p>
+<p>ایجاد این تغییر به این معنی است که دیگر نیازی به بررسی پیام فلش در هندلر <code>snippetView</code> نداریم و کد می‌تواند به این صورت برگردد:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -272,29 +284,29 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Feel free to try running the application again and creating another snippet. You should find that the flash message functionality still works as expected.</p>
+<p style="direction: rtl;">
+    احساس راحتی کنید و دوباره برنامه را اجرا کنید و یک قطعه دیگر ایجاد کنید. باید ببینید که عملکرد پیام فلش همچنان به‌درستی کار می‌کند.
+</p>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="behind-the-scenes-of-session-management">Behind the scenes of session management</h4>
+<h4 id="behind-the-scenes-of-session-management">پشت صحنه مدیریت جلسه</h4>
 
-<p>I&rsquo;d like to take a moment to unpack some of the &lsquo;magic&rsquo; behind session management and explain how it works behind the scenes.</p>
+<p>می‌خواهم لحظه‌ای وقت بگذارم تا برخی از "جادو"های پشت مدیریت جلسه را باز کنم و توضیح دهم که چگونه در پشت صحنه کار می‌کند.</p>
 
-<p>If you like, open up the developer tools in your web browser and take a look at the cookie data for one of the pages. You should see a cookie named <code>session</code> in the request data, similar to this:</p>
+<p>اگر دوست دارید، ابزارهای توسعه‌دهنده مرورگر خود را باز کنید و به داده‌های کوکی برای یکی از صفحات نگاه کنید. باید یک کوکی به نام <code>session</code> در داده‌های درخواست ببینید، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/08.03-04.png" alt="08.03-04.png" />
 </figure>
 
-<p>This is the <em>session cookie</em>, and it will be sent back to the Snippetbox application with every request that your browser makes.</p>
+<p>این <em>کوکی جلسه</em> است و با هر درخواستی که مرورگر شما به برنامه Snippetbox می‌فرستد، ارسال خواهد شد. کوکی جلسه حاوی <em>توکن جلسه</em> &mdash; که گاهی اوقات به‌عنوان <em>شناسه جلسه</em> نیز شناخته می‌شود. توکن جلسه یک رشته تصادفی با انتروپی بالا است، که در مورد من مقدار <code>y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4</code> است (مال شما متفاوت خواهد بود).</p>
 
-<p>The session cookie contains the <em>session token</em> &mdash; also sometimes known as the <em>session ID</em>. The session token is a high-entropy random string, which in my case is the value <code>y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4</code> (yours will be different).</p>
+<p>مهم است که تأکید کنیم که توکن جلسه فقط یک رشته تصادفی است. در خود، هیچ <em>داده جلسه</em> (مانند پیام فلشی که در این فصل تنظیم کردیم) را حمل یا منتقل نمی‌کند.</p>
 
-<p>It&rsquo;s important to emphasize that the session token is just a random string. In itself, it doesn&rsquo;t carry or convey any <em>session data</em> (like the flash message that we set in this chapter).</p>
-
-<p>Next, you might like to open up a terminal to MySQL and run a <code>SELECT</code> query against the <code>sessions</code> table to lookup the session token that you see in your browser. Like so:</p>
+<p>بعد، ممکن است بخواهید یک ترمینال به MySQL باز کنید و یک پرس و جوی <code>SELECT</code> را در برابر جدول <code>sessions</code> اجرا کنید تا توکن جلسه‌ای که در مرورگر خود می‌بینید را جستجو کنید. به این صورت:</p>
 
 <figure class="code bash">
 <pre>mysql&gt; SELECT * FROM sessions WHERE token = &#39;y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4&#39;;
@@ -306,27 +318,27 @@
 1 row in set (0.00 sec)</samp></pre>
 </figure>
 
-<p>This should return one record. The <code>data</code> value here is the thing that <em>actually contains the user&rsquo;s session data</em>. Specifically, what we&rsquo;re looking at is a MySQL <code>BLOB</code> (binary large object) containing a <a href="https://pkg.go.dev/encoding/gob">gob-encoded</a> representation of the session data.</p>
+<p>این باید یک رکورد را برگرداند. مقدار <code>data</code> در اینجا چیزی است که <em>در واقع حاوی داده‌های جلسه کاربر است</em>. به‌طور خاص، آنچه که ما در حال مشاهده آن هستیم یک <code>BLOB</code> (شیء بزرگ باینری) MySQL است که حاوی یک نمایش <a href="https://pkg.go.dev/encoding/gob">رمزگذاری شده gob</a> از داده‌های جلسه است.</p>
 
-<p>Each and every time we make a change to our session data, this <code>data</code> value will be updated to reflect the changes.</p>
+<p>هر بار که تغییری در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، این مقدار <code>data</code> به‌روزرسانی می‌شود تا تغییرات را منعکس کند.</p>
 
-<p>Lastly, the final column in the database is the <code>expiry</code> time, after which the session will no longer be considered valid.</p>
+<p>در نهایت، ستون آخر در پایگاه داده زمان <code>expiry</code> است، پس از آن جلسه دیگر معتبر در نظر گرفته نمی‌شود.</p>
 
-<p>So, what happens in our application is that the <code>LoadAndSave()</code> middleware checks each incoming request for a session cookie. If a session cookie is present, it reads the session token from the cookie and retrieves the corresponding session data from the database (while also checking that the session hasn&rsquo;t expired). It then adds the session data to the <em>request context</em> so it can be used in your handlers.</p>
+<p>بنابراین، آنچه که در برنامه ما اتفاق می‌افتد این است که میان‌افزار <code>LoadAndSave()</code> هر درخواست ورودی را برای یک کوکی جلسه بررسی می‌کند. اگر یک کوکی جلسه وجود داشته باشد، توکن جلسه را از کوکی می‌خواند و داده‌های جلسه مربوطه را از پایگاه داده بازیابی می‌کند (در حالی که بررسی می‌کند که جلسه منقضی نشده باشد). سپس داده‌های جلسه را به <em>زمینه درخواست</em> اضافه می‌کند تا بتواند در هندلرهای شما استفاده شود.</p>
 
-<p>Any changes that you make to the session data in your handlers are updated in the request context, and then the <code>LoadAndSave()</code> middleware updates the database with any changes to the session data before it returns.</p>
+<p>هر تغییری که در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، در زمینه درخواست به‌روزرسانی می‌شود و سپس میان‌افزار <code>LoadAndSave()</code> پایگاه داده را با هر تغییری در داده‌های جلسه قبل از بازگشت به‌روزرسانی می‌کند.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">Previous</a>
+					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="09.00-server-and-security-improvements.html">Next</a> &rsaquo;
+					<a href="09.00-server-and-security-improvements.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
