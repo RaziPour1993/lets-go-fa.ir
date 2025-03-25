@@ -20,22 +20,30 @@
 			main ol li {
 				text-align: right;
 			}
+			header .wrapper, footer .wrapper {
+				direction: rtl;
+			}
+			header .wrapper > div:first-child {
+				text-align: right;
+			}
+			header .wrapper > div:last-child {
+				text-align: left;
+			}
+			footer .wrapper > div {
+				text-align: center;
+			}
 		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">Dynamic HTML templates</a> &rsaquo; Caching templates</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; کش کردن قالب‌ها</span>
 				</div>
 				<div>
-					&lsaquo; <a href="05.02-template-actions-and-functions.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="05.04-catching-runtime-errors.html">Next</a> &rsaquo;
+					&lsaquo; <a href="05.02-template-actions-and-functions.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="05.04-catching-runtime-errors.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
@@ -333,13 +341,13 @@
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="05.02-template-actions-and-functions.html">Previous</a>
+					&lsaquo; <a href="05.02-template-actions-and-functions.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="05.04-catching-runtime-errors.html">Next</a> &rsaquo;
+					<a href="05.04-catching-runtime-errors.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
