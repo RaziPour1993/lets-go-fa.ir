@@ -1,45 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Parsing form data &mdash; Let's Go</title>
+		<title>تجزیه داده‌های فرم &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.text {
+				direction: rtl;
+				text-align: right;
+			}
+			.code, pre, figure.code {
+				direction: ltr;
+				text-align: left;
+			}
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
+				direction: ltr;
+				text-align: left;
+			}
+			header .wrapper, footer .wrapper {
+				direction: rtl;
+			}
+		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Parsing form data</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; تجزیه داده‌های فرم</span>
 				</div>
 				<div>
-					&lsaquo; <a href="07.01-setting-up-an-html-form.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.03-validating-form-data.html">Next</a> &rsaquo;
+					&lsaquo; <a href="07.01-setting-up-an-html-form.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.03-validating-form-data.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 7.2.</div>
-			<h2 id="parsing-form-data">Parsing form data</h2>
+			<div class="chapter">فصل ۷.۲</div>
+			<h2 id="parsing-form-data">تجزیه داده‌های فرم</h2>
 
-<p>Thanks to the work we did previously in the <a href="02.05-method-based-routing.html">foundations</a> section, any <code>POST /snippets/create</code> requests are already being dispatched to our <code>snippetCreatePost</code> handler. We&rsquo;ll now update this handler to process and use the form data when it&rsquo;s submitted.</p>
+<p>با توجه به کاری که قبلاً در بخش <a href="02.05-method-based-routing.html">پایه‌ها</a> انجام دادیم، هر درخواست <code>POST /snippets/create</code> به هندلر <code>snippetCreatePost</code> ما ارسال می‌شود. اکنون این هندلر را به‌روزرسانی می‌کنیم تا داده‌های فرم را هنگام ارسال پردازش و استفاده کند.</p>
 
-<p>At a high-level, we can break this down into two distinct steps.</p>
+<p>در سطح بالا، می‌توانیم این را به دو مرحله مجزا تقسیم کنیم.</p>
 
 <ol>
-<li><p>First, we need to use the <a href="https://pkg.go.dev/net/http/#Request.ParseForm"><code>r.ParseForm()</code></a> method to parse the request body. This checks that the request body is well-formed, and then stores the form data in the request&rsquo;s <a href="https://pkg.go.dev/net/http/#Request"><code>r.PostForm</code></a> map. If there are any errors encountered when parsing the body (like there is no body, or it&rsquo;s too large to process) then it will return an error. The <code>r.ParseForm()</code> method is also idempotent; it can safely be called multiple times on the same request without any side-effects.</p></li>
+<li><p>ابتدا، باید از متد <a href="https://pkg.go.dev/net/http/#Request.ParseForm"><code>r.ParseForm()</code></a> برای تجزیه بدنه درخواست استفاده کنیم. این بررسی می‌کند که بدنه درخواست به درستی شکل گرفته است، و سپس داده‌های فرم را در نقشه <a href="https://pkg.go.dev/net/http/#Request"><code>r.PostForm</code></a> درخواست ذخیره می‌کند. اگر هنگام تجزیه بدنه خطایی رخ دهد (مانند عدم وجود بدنه، یا خیلی بزرگ بودن آن برای پردازش) یک خطا برمی‌گرداند. متد <code>r.ParseForm()</code> همچنین ایدمپوتنت است؛ می‌تواند چندین بار روی یک درخواست یکسان بدون هیچ عوارض جانبی فراخوانی شود.</p></li>
 
-<li><p>We can then get to the form data contained in <code>r.PostForm</code> by using the <code>r.PostForm.Get()</code> method. For example, we can retrieve the value of the <code>title</code> field with <code>r.PostForm.Get(&quot;title&quot;)</code>. If there is no matching field name in the form this will return the empty string <code>&quot;&quot;</code>.</p></li>
+<li><p>سپس می‌توانیم به داده‌های فرم موجود در <code>r.PostForm</code> با استفاده از متد <code>r.PostForm.Get()</code> دسترسی پیدا کنیم. به عنوان مثال، می‌توانیم مقدار فیلد <code>title</code> را با <code>r.PostForm.Get(&quot;title&quot;)</code> بازیابی کنیم. اگر هیچ فیلد منطبقی در فرم وجود نداشته باشد، رشته خالی <code>&quot;&quot;</code> را برمی‌گرداند.</p></li>
 </ol>
 
-<p>Open your <code>cmd/web/handlers.go</code> file and update it to include the following code:</p>
+<p>فایل <code>cmd/web/handlers.go</code> خود را باز کنید و آن را با کد زیر به‌روزرسانی کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -84,13 +97,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Alright, let&rsquo;s give this a try!  Restart the application and try filling in the form with the title and content of a snippet, a bit like this:</p>
+<p>خب، بیایید این را امتحان کنیم! برنامه را مجدداً راه‌اندازی کنید و سعی کنید فرم را با عنوان و محتوای یک اسنیپت پر کنید، چیزی شبیه به این:</p>
 
 <figure class="img">
 <img src="assets/img/07.02-01.png" alt="07.02-01.png" />
 </figure>
 
-<p>And then submit the form. If everything has worked, you should be redirected to a page displaying your new snippet like so:</p>
+<p>و سپس فرم را ارسال کنید. اگر همه چیز درست کار کرده باشد، باید به صفحه‌ای که اسنیپت جدید شما را نمایش می‌دهد، هدایت شوید، به این شکل:</p>
 
 <figure class="img">
 <img src="assets/img/07.02-02.png" alt="07.02-02.png" />
@@ -98,17 +111,17 @@
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
 
-<h4 id="the-postformvalue-method">The PostFormValue method</h4>
+<h4 id="the-postformvalue-method">متد PostFormValue</h4>
 
-<p>The <code>net/http</code> package also provides the <a href="https://pkg.go.dev/net/http/#Request.PostFormValue"><code>r.PostFormValue()</code></a> method, which is essentially a shortcut function that calls <code>r.ParseForm()</code> for you and then fetches the appropriate field value from <code>r.PostForm</code>.</p>
+<p>پکیج <code>net/http</code> همچنین متد <a href="https://pkg.go.dev/net/http/#Request.PostFormValue"><code>r.PostFormValue()</code></a> را ارائه می‌دهد، که اساساً یک تابع میانبر است که <code>r.ParseForm()</code> را برای شما فراخوانی می‌کند و سپس مقدار فیلد مناسب را از <code>r.PostForm</code> بازیابی می‌کند.</p>
 
-<p>I recommend avoiding this shortcut because it <em>silently ignores any errors</em> returned by <code>r.ParseForm()</code>. If you use it, it means that the parsing step could be encountering errors and failing for users, but there&rsquo;s no feedback mechanism to let them (or you) know about the problem.</p>
+<p>توصیه می‌کنم از این میانبر استفاده نکنید زیرا هر خطایی که توسط <code>r.ParseForm()</code> برگردانده می‌شود را به صورت خاموش نادیده می‌گیرد. اگر از آن استفاده کنید، به این معنی است که مرحله تجزیه ممکن است با خطا مواجه شود و برای کاربران شکست بخورد، اما هیچ مکانیزم بازخوردی برای اطلاع دادن به آنها (یا شما) درباره مشکل وجود ندارد.</p>
 
-<h4 id="multiple-value-fields">Multiple-value fields</h4>
+<h4 id="multiple-value-fields">فیلدهای چند مقداری</h4>
 
-<p>Strictly speaking, the <code>r.PostForm.Get()</code> method that we&rsquo;ve used in this chapter only returns the <em>first</em> value for a specific form field. This means you can&rsquo;t use it with form fields which potentially send multiple values, such as a group of checkboxes.</p>
+<p>به طور دقیق، متد <code>r.PostForm.Get()</code> که در این فصل استفاده کردیم فقط <em>اولین</em> مقدار برای یک فیلد فرم خاص را برمی‌گرداند. این بدان معناست که نمی‌توانید از آن با فیلدهای فرمی که احتمالاً چندین مقدار ارسال می‌کنند، مانند گروهی از چک‌باکس‌ها استفاده کنید.</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;foo&#34;</span><span class="p"></span><span class="p">&gt;</span> Foo
@@ -124,11 +137,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="limiting-form-size">Limiting form size</h4>
+<h4 id="limiting-form-size">محدود کردن اندازه فرم</h4>
 
-<p>By default, forms submitted with a <code>POST</code> method have a size limit of 10MB of data. The exception to this is if your form has the <code>enctype=&quot;multipart/form-data&quot;</code> attribute and is sending multipart data, in which case there is no default limit.</p>
+<p>به طور پیش‌فرض، فرم‌هایی که با متد <code>POST</code> ارسال می‌شوند محدودیت اندازه ۱۰ مگابایت داده دارند. استثنا این است که اگر فرم شما ویژگی <code>enctype=&quot;multipart/form-data&quot;</code> داشته باشد و داده‌های چندبخشی ارسال کند، در این صورت هیچ محدودیت پیش‌فرضی وجود ندارد.</p>
 
-<p>If you want to change the 10MB limit, you can use the <a href="https://pkg.go.dev/net/http/#MaxBytesReader"><code>http.MaxBytesReader()</code></a> function like so:</p>
+<p>اگر می‌خواهید محدودیت ۱۰ مگابایت را تغییر دهید، می‌توانید از تابع <a href="https://pkg.go.dev/net/http/#MaxBytesReader"><code>http.MaxBytesReader()</code></a> به این صورت استفاده کنید:</p>
 
 <figure class="code go">
 <pre><span class="c1">// Limit the request body size to 4096 bytes
@@ -141,13 +154,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>With this code only the first 4096 bytes of the request body will be read during <code>r.ParseForm()</code>. Trying to read beyond this limit will cause the <code>MaxBytesReader</code> to return an error, which will subsequently be surfaced by <code>r.ParseForm()</code>.</p>
+<p>با این کد تنها ۴۰۹۶ بایت اول بدنه درخواست در طول <code>r.ParseForm()</code> خوانده خواهد شد. تلاش برای خواندن فراتر از این محدودیت باعث می‌شود <code>MaxBytesReader</code> یک خطا برگرداند، که متعاقباً توسط <code>r.ParseForm()</code> نمایش داده می‌شود.</p>
 
-<p>Additionally &mdash; if the limit is hit &mdash; <code>MaxBytesReader</code> sets a flag on <code>http.ResponseWriter</code> which instructs the server to close the underlying TCP connection.</p>
+<p>علاوه بر این - اگر به محدودیت برخورد شود - <code>MaxBytesReader</code> یک پرچم روی <code>http.ResponseWriter</code> تنظیم می‌کند که به سرور دستور می‌دهد اتصال TCP زیربنایی را ببندد.</p>
 
-<h4 id="query-string-parameters">Query string parameters</h4>
+<h4 id="query-string-parameters">پارامترهای رشته پرس‌وجو</h4>
 
-<p>If you have a form that submits data using the HTTP method <code>GET</code>, rather than <code>POST</code>, the form data will be included as URL <em>query string parameters</em>. For example, if you have a HTML form that looks like this:</p>
+<p>اگر فرمی دارید که داده‌ها را با استفاده از متد HTTP <code>GET</code>، به جای <code>POST</code> ارسال می‌کند، داده‌های فرم به عنوان <em>پارامترهای رشته پرس‌وجو</em> URL گنجانده خواهند شد. به عنوان مثال، اگر یک فرم HTML به این شکل داشته باشید:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/foo/bar&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;GET&#39;</span><span class="p"></span><span class="p">&gt;</span>
@@ -158,9 +171,9 @@
 <span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>When the form is submitted, it will send a <code>GET</code> request with a URL that looks like this: <code>/foo/bar?title=value&amp;content=value</code>.</p>
+<p>هنگامی که فرم ارسال می‌شود، یک درخواست <code>GET</code> با URL به این شکل ارسال خواهد کرد: <code>/foo/bar?title=value&amp;content=value</code>.</p>
 
-<p>You can retrieve the values for the query string parameters in your handlers via the <code>r.URL.Query().Get()</code> method. This will always return a string value for a parameter, or the empty string <code>&quot;&quot;</code> if no matching parameter exists. For example:</p>
+<p>می‌توانید مقادیر پارامترهای رشته پرس‌وجو را در هندلرهای خود از طریق متد <code>r.URL.Query().Get()</code> بازیابی کنید. این همیشه یک مقدار رشته‌ای برای یک پارامتر برمی‌گرداند، یا رشته خالی <code>&quot;&quot;</code> اگر هیچ پارامتر منطبقی وجود نداشته باشد. به عنوان مثال:</p>
 
 <figure class="code go">
 <pre><span class="kd">func</span> <span class="nf">exampleHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -171,11 +184,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="the-r-form-map">The r.Form map</h4>
+<h4 id="the-r-form-map">نقشه r.Form</h4>
 
-<p>An alternative way to access query string parameters is via the <code>r.Form</code> map. This is similar to the <code>r.PostForm</code> map that we&rsquo;ve used in this chapter, except that it contains the form data from any <code>POST</code> request body <strong>and</strong> any query string parameters.</p>
+<p>روش جایگزین برای دسترسی به پارامترهای رشته پرس‌وجو از طریق نقشه <code>r.Form</code> است. این مشابه نقشه <code>r.PostForm</code> است که در این فصل استفاده کردیم، با این تفاوت که شامل داده‌های فرم از هر بدنه درخواست <code>POST</code> <strong>و</strong> هر پارامتر رشته پرس‌وجو است.</p>
 
-<p>Let&rsquo;s say that you have some code in your handler that looks like this:</p>
+<p>فرض کنید کدی در هندلر خود به این شکل دارید:</p>
 
 <figure class="code go">
 <pre><span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
@@ -187,21 +200,21 @@
 <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Form</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>In this code, the line <code>r.Form.Get(&quot;title&quot;)</code> will return the <code>title</code> value from the <code>POST</code> request body <em>or</em> from a query string parameter with the name <code>title</code>. In the event of a conflict, the request body value will take precedent over the query string parameter.</p>
+<p>در این کد، خط <code>r.Form.Get(&quot;title&quot;)</code> مقدار <code>title</code> را از بدنه درخواست <code>POST</code> <em>یا</em> از یک پارامتر رشته پرس‌وجو با نام <code>title</code> برمی‌گرداند. در صورت تعارض، مقدار بدنه درخواست بر پارامتر رشته پرس‌وجو اولویت دارد.</p>
 
-<p>Using <code>r.Form</code> can be very helpful if you want your application to be agnostic about how data values are passed to it. But outside of that scenario, <code>r.Form</code> doesn&rsquo;t offer any benefits and it is clearer and more explicit to read data from the <code>POST</code> request body via <code>r.PostForm</code> or from query string parameters via <code>r.URL.Query().Get()</code>.</p>
+<p>استفاده از <code>r.Form</code> می‌تواند بسیار مفید باشد اگر می‌خواهید برنامه شما نسبت به نحوه ارسال مقادیر داده بی‌تفاوت باشد. اما خارج از آن سناریو، <code>r.Form</code> هیچ مزیتی ارائه نمی‌دهد و واضح‌تر و صریح‌تر است که داده‌ها را از بدنه درخواست <code>POST</code> از طریق <code>r.PostForm</code> یا از پارامترهای رشته پرس‌وجو از طریق <code>r.URL.Query().Get()</code> بخوانید.</p>
 
 		</main>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="07.01-setting-up-an-html-form.html">Previous</a>
+					&lsaquo; <a href="07.01-setting-up-an-html-form.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.03-validating-form-data.html">Next</a> &rsaquo;
+					<a href="07.03-validating-form-data.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -209,16 +222,12 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "07.01-setting-up-an-html-form.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "07.03-validating-form-data.html";
 						break;
-						
 				}
 			};
 		</script>
