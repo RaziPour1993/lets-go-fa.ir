@@ -3,12 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
 		<title>سفارشی‌سازی پاسخ‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body dir="rtl">
 		<header>
@@ -154,7 +152,7 @@ Hello from Snippetbox</samp></pre>
 
 <p>نکته کلیدی که باید درک کنید این است&hellip; <em>زیرا مقدار <code>http.ResponseWriter</code> در هندلرهای شما یک متد <code>Write()</code> دارد، آن <a href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a> را برآورده می‌کند</em>.</p>
 
-<p>اگر در Go تازه‌کار هستید، ممکن است <a href="https://www.alexedwards.net/blog/interfaces-explained">مفهوم اینترفیس‌ها</a> کمی گیج‌کننده باشد و نمی‌خواهم در حال حاضر خیلی به آن بپردازم. اما در سطح عملی، این به این معناست که هر تابعی که یک پارامتر <code>io.Writer</code> دارد، می‌توانید مقدار <code>http.ResponseWriter</code> خود را به آن ارسال کنید و هر چیزی که نوشته می‌شود به عنوان بدنه پاسخ HTTP ارسال خواهد شد.</p>
+<p>اگر در Go تازه‌کار هستید، ممکن است <a href="https://www.letsgofa.net/blog/interfaces-explained">مفهوم اینترفیس‌ها</a> کمی گیج‌کننده باشد و نمی‌خواهم در حال حاضر خیلی به آن بپردازم. اما در سطح عملی، این به این معناست که هر تابعی که یک پارامتر <code>io.Writer</code> دارد، می‌توانید مقدار <code>http.ResponseWriter</code> خود را به آن ارسال کنید و هر چیزی که نوشته می‌شود به عنوان بدنه پاسخ HTTP ارسال خواهد شد.</p>
 
 <p>این به این معناست که می‌توانید از توابع کتابخانه استاندارد مانند <a href="https://pkg.go.dev/io#WriteString"><code>io.WriteString()</code></a> و خانواده <a href="https://pkg.go.dev/fmt#Fprint"><code>fmt.Fprint*()</code></a> (همه آن‌ها یک پارامتر <code>io.Writer</code> می‌پذیرند) برای نوشتن بدنه‌های پاسخ متنی ساده نیز استفاده کنید.</p>
 
@@ -200,7 +198,7 @@ Hello from Snippetbox</samp></pre>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/json&#34;</span><span class="p">)</span>
-<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`</span><span class="s">{</span><span class="s">&#34;name&#34;:&#34;Alex&#34;}</span><span class="s">`</span><span class="p">)</span><span class="p">)</span></pre>
+<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`</span><span class="s">{</span><span class="s">&#34;name&#34;:&#34;letsgofa&#34;}</span><span class="s">`</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
 <h4 id="manipulating-the-header-map">دستکاری نقشه هدر</h4>

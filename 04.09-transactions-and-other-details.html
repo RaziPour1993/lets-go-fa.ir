@@ -3,12 +3,10 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<meta name="author" content="Alex Edwards">
-		<meta name="copyright" content="Copyright Alex Edwards 2024">
 		<title>Transactions and other details &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header dir="rtl">
@@ -58,7 +56,7 @@
 &amp;lt;nil&amp;gt; into type *string</samp></pre>
 </figure>
 
-<p>به طور تقریبی، راه‌حل این است که فیلدی که در حال اسکن آن هستید را از نوع <code>string</code> به نوع <code>sql.NullString</code> تغییر دهید. برای یک مثال کاری به <a href="https://gist.github.com/alexedwards/dc3145c8e2e6d2fd6cd9">این گیت</a> مراجعه کنید.</p>
+<p>به طور تقریبی، راه‌حل این است که فیلدی که در حال اسکن آن هستید را از نوع <code>string</code> به نوع <code>sql.NullString</code> تغییر دهید. برای یک مثال کاری به <a href="https://gist.github.com/letsgofa/dc3145c8e2e6d2fd6cd9">این گیت</a> مراجعه کنید.</p>
 
 <p>اما به عنوان یک قاعده، ساده‌ترین کار این است که به سادگی از مقادیر <code>NULL</code> اجتناب کنید. محدودیت‌های <code>NOT NULL</code> را بر روی تمام ستون‌های پایگاه داده خود تنظیم کنید، همانطور که در این کتاب انجام داده‌ایم، همراه با مقادیر <code>DEFAULT</code> معقول در صورت لزوم.</p>
 
