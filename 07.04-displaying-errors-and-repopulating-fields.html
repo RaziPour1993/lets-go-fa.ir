@@ -1,39 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Displaying errors and repopulating fields &mdash; Let's Go</title>
+		<title>نمایش خطاها و پر کردن مجدد فیلدها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body {
+				direction: rtl;
+				text-align: right;
+			}
+			[class^="code"] {
+				direction: ltr;
+				text-align: left;
+			}
+			.wrapper div {
+				direction: ltr;
+			}
+		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">Processing forms</a> &rsaquo; Displaying errors and repopulating fields</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; نمایش خطاها و پر کردن مجدد فیلدها</span>
 				</div>
 				<div>
-					&lsaquo; <a href="07.03-validating-form-data.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="07.05-creating-validation-helpers.html">Next</a> &rsaquo;
+					&lsaquo; <a href="07.03-validating-form-data.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="07.05-creating-validation-helpers.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 7.4.</div>
-			<h2 id="displaying-errors-and-repopulating-fields">Displaying errors and repopulating fields</h2>
+			<div class="chapter">فصل ۷.۴</div>
+			<h2 id="displaying-errors-and-repopulating-fields">نمایش خطاها و پر کردن مجدد فیلدها</h2>
 
-<p>Now that the <code>snippetCreatePost</code> handler is validating the data, the next stage is to manage these validation errors gracefully.</p>
+<p>حالا که هندلر <code>snippetCreatePost</code> داده‌ها را اعتبارسنجی می‌کند، مرحله بعدی مدیریت این خطاهای اعتبارسنجی به صورت مناسب است.</p>
 
-<p>If there are any validation errors, we want to re-display the HTML form, highlighting the fields which failed validation and automatically re-populating any previously submitted data (so that the user doesn&rsquo;t need to enter it again).</p>
+<p>اگر خطاهای اعتبارسنجی وجود داشته باشد، می‌خواهیم فرم HTML را مجدداً نمایش دهیم، فیلدهایی که در اعتبارسنجی رد شده‌اند را برجسته کنیم و داده‌های قبلاً ارسال شده را به صورت خودکار پر کنیم (تا کاربر مجبور نباشد دوباره آنها را وارد کند).</p>
 
-<p>To do this, let&rsquo;s begin by adding a new <code>Form</code> field to our <code>templateData</code> struct:</p>
+<p>برای انجام این کار، بیایید با اضافه کردن یک فیلد <code>Form</code> جدید به ساختار <code>templateData</code> خود شروع کنیم:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -58,9 +67,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>We&rsquo;ll use this <code>Form</code> field to pass the validation errors and previously submitted data back to the template when we re-display the form.</p>
+<p>ما از این فیلد <code>Form</code> برای ارسال خطاهای اعتبارسنجی و داده‌های قبلاً ارسال شده به قالب هنگام نمایش مجدد فرم استفاده خواهیم کرد.</p>
 
-<p>Next let&rsquo;s head back to our <code>cmd/web/handlers.go</code> file and define a new <code>snippetCreateForm</code> struct to hold the form data and any validation errors, and update our <code>snippetCreatePost</code> handler to use this.</p>
+<p>سپس به فایل <code>cmd/web/handlers.go</code> برویم و یک ساختار <code>snippetCreateForm</code> جدید برای نگهداری داده‌های فرم و هرگونه خطای اعتبارسنجی تعریف کنیم، و هندلر <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا از آن استفاده کند.</p>
 
 <p>Like so:</p>
 
@@ -144,23 +153,23 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>OK, so now when there are any validation errors we are re-displaying the <code>create.tmpl</code> template, passing in the previous data and validation errors in a <code>snippetCreateForm</code> struct via the template data&rsquo;s <code>Form</code> field.</p>
+<p>خب، حالا وقتی خطاهای اعتبارسنجی وجود دارد، قالب <code>create.tmpl</code> را مجدداً نمایش می‌دهیم و داده‌های قبلی و خطاهای اعتبارسنجی را در یک ساختار <code>snippetCreateForm</code> از طریق فیلد <code>Form</code> داده‌های قالب ارسال می‌کنیم.</p>
 
-<p>If you like, you should be able to run the application at this point and the code should compile without any errors.</p>
+<p>اگر مایل هستید، باید بتوانید در این مرحله برنامه را اجرا کنید و کد باید بدون هیچ خطایی کامپایل شود.</p>
 
-<h3 id="updating-the-html-template">Updating the HTML template</h3>
+<h3 id="updating-the-html-template">به‌روزرسانی قالب HTML</h3>
 
-<p>The next thing that we need to do is update our <code>create.tmpl</code> template to display the validation errors and re-populate any previous data.</p>
+<p>کار بعدی که باید انجام دهیم به‌روزرسانی قالب <code>create.tmpl</code> برای نمایش خطاهای اعتبارسنجی و پر کردن مجدد داده‌های قبلی است.</p>
 
-<p>Re-populating the form data is straightforward enough &mdash; we should be able to render this in the templates using tags like <code>{{.Form.Title}}</code> and <code>{{.Form.Content}}</code>, in the same way that we displayed the snippet data earlier in the book.</p>
+<p>پر کردن مجدد داده‌های فرم به اندازه کافی ساده است - باید بتوانیم این را در قالب‌ها با استفاده از تگ‌هایی مانند <code>{{.Form.Title}}</code> و <code>{{.Form.Content}}</code> رندر کنیم، به همان روشی که قبلاً در کتاب داده‌های اسنیپت را نمایش دادیم.</p>
 
-<p>For the validation errors, the underlying type of our <code>FieldErrors</code> field is a <code>map[string]string</code>, which uses the form field names as keys. For maps, it&rsquo;s possible to access the value for a given key by simply chaining the key name. So, for example, to render a validation error for the <code>title</code> field we can use the tag <code>{{.Form.FieldErrors.title}}</code> in our template.</p>
+<p>برای خطاهای اعتبارسنجی، نوع زیربنایی فیلد <code>FieldErrors</code> ما یک <code>map[string]string</code> است که از نام‌های فیلد فرم به عنوان کلید استفاده می‌کند. برای نقشه‌ها، می‌توان به مقدار یک کلید خاص با زنجیره کردن نام کلید دسترسی پیدا کرد. بنابراین، به عنوان مثال، برای رندر کردن یک خطای اعتبارسنجی برای فیلد <code>title</code> می‌توانیم از تگ <code>{{.Form.FieldErrors.title}}</code> در قالب خود استفاده کنیم.</p>
 
 <aside class="note"><p>
-<strong>Note:</strong> Unlike struct fields, map key names <em>don&rsquo;t</em> have to be capitalized in order to access them from a template.
+<strong>نکته:</strong> برخلاف فیلدهای ساختار، نام‌های کلید نقشه <em>نیازی به بزرگ بودن</em> برای دسترسی از قالب ندارند.
 </p></aside>
 
-<p>With that in mind, let&rsquo;s update the <code>create.tmpl</code> file to re-populate the data and display the error messages for each field, if they exist.</p>
+<p>با این در نظر گرفتن، بیایید فایل <code>create.tmpl</code> را به‌روزرسانی کنیم تا داده‌ها را مجدداً پر کند و پیام‌های خطا را برای هر فیلد، در صورت وجود، نمایش دهد.</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/create.tmpl</figcaption>
@@ -170,37 +179,26 @@
 <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Title:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
-        <span class="c">&lt;!--</span><span class="c"> Use the `with` action to render the value of .Form.FieldErrors.title
-</span><span class="c">        if it is not empty. </span><span class="c">--&gt;</span>
         {{with .Form.FieldErrors.title}}
             <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
         {{end}}
-        <span class="c">&lt;!--</span><span class="c"> Re</span><span class="c">-</span><span class="c">populate the title data by setting the `value` attribute. </span><span class="c">--&gt;</span>
         <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;title&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Title}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Content:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
-        <span class="c">&lt;!--</span><span class="c"> Likewise render the value of .Form.FieldErrors.content if it is not
-</span><span class="c">        empty. </span><span class="c">--&gt;</span>
         {{with .Form.FieldErrors.content}}
             <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
         {{end}}
-        <span class="c">&lt;!--</span><span class="c"> Re</span><span class="c">-</span><span class="c">populate the content data as the inner HTML of the textarea. </span><span class="c">--&gt;</span>
         <span class="p">&lt;</span><span class="nt">textarea</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;content&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.Form.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">textarea</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Delete in:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
-        <span class="c">&lt;!--</span><span class="c"> And render the value of .Form.FieldErrors.expires if it is not empty. </span><span class="c">--&gt;</span>
         {{with .Form.FieldErrors.expires}}
             <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
         {{end}}
-        <span class="c">&lt;!--</span><span class="c"> Here we use the `if` action to check if the value of the re</span><span class="c">-</span><span class="c">populated
-</span><span class="c">        expires field equals 365. If it does, then we render the `checked`
-</span><span class="c">        attribute so that the radio input is re</span><span class="c">-</span><span class="c">selected. </span><span class="c">--&gt;</span>
-        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;365&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">365</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Year
-        <span class="c">&lt;!--</span><span class="c"> And we do the same for the other possible values too... </span><span class="c">--&gt;</span>
-        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;7&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">7</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Week
-        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;1&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">1</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Day
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;365&#39;</span> {{if (eq .Form.Expires 365)}}checked{{end}}><span class="p"></span><span class="p">&gt;</span> One Year
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;7&#39;</span> {{if (eq .Form.Expires 7)}}checked{{end}}><span class="p"></span><span class="p">&gt;</span> One Week
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;1&#39;</span> {{if (eq .Form.Expires 1)}}checked{{end}}><span class="p"></span><span class="p">&gt;</span> One Day
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;submit&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;Publish snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
@@ -209,11 +207,11 @@
 {{end}}</pre>
 </figure>
 
-<p>Hopefully this markup and our use of Go&rsquo;s templating actions is generally clear &mdash; it&rsquo;s just using techniques that we&rsquo;ve already <a href="05.02-template-actions-and-functions.html">seen and discussed</a> earlier in the book.</p>
+<p>امیدوارم این نشانه‌گذاری و استفاده ما از اکشن‌های قالب‌سازی Go به طور کلی واضح باشد - فقط از تکنیک‌هایی استفاده می‌کند که قبلاً در کتاب <a href="05.02-template-actions-and-functions.html">دیده و بحث کرده‌ایم</a>.</p>
 
-<p>There&rsquo;s one final thing we need to do. If we tried to run the application now, we would get a <code>500 Internal Server Error</code> when we first visit the form at <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a>. This is because our <code>snippetCreate</code> handler currently doesn&rsquo;t set a value for the <code>templateData.Form</code> field, meaning that when Go tries to evaluate a template tag like <code>{{with .Form.FieldErrors.title}}</code> it would result in an error because <code>Form</code> is <code>nil</code>.</p>
+<p>یک کار نهایی باقی مانده است. اگر الان سعی کنیم برنامه را اجرا کنیم، وقتی برای اولین بار از فرم در <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a> بازدید می‌کنیم، یک خطای <code>500 Internal Server Error</code> دریافت خواهیم کرد. این به این دلیل است که هندلر <code>snippetCreate</code> ما در حال حاضر مقداری برای فیلد <code>templateData.Form</code> تنظیم نمی‌کند، به این معنی که وقتی Go سعی می‌کند یک تگ قالب مانند <code>{{with .Form.FieldErrors.title}}</code> را ارزیابی کند، منجر به خطا می‌شود زیرا <code>Form</code> برابر با <code>nil</code> است.</p>
 
-<p>Let&rsquo;s fix that by updating our <code>snippetCreate</code> handler so that it initializes a new <code>snippetCreateForm</code> instance and passes it to the template, like so:</p>
+<p>بیایید با به‌روزرسانی هندلر <code>snippetCreate</code> خود این مشکل را برطرف کنیم تا یک نمونه جدید <code>snippetCreateForm</code> را مقداردهی اولیه کند و آن را به قالب ارسال کند، مانند این:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -238,36 +236,36 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Now that&rsquo;s done, please restart the application and visit <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a> in your browser. You should find that the page renders correctly without any errors.</p>
+<p>حالا که این کار انجام شد، لطفاً برنامه را مجدداً راه‌اندازی کنید و از <a href="http://localhost:4000/snippet/create"><code>http://localhost:4000/snippet/create</code></a> در مرورگر خود بازدید کنید. باید متوجه شوید که صفحه بدون هیچ خطایی به درستی رندر می‌شود.</p>
 
-<p>Then try adding some content and changing the default expiry time, but <em>leave the title field blank</em> like so:</p>
+<p>سپس سعی کنید مقداری محتوا اضافه کنید و زمان انقضای پیش‌فرض را تغییر دهید، اما <em>فیلد عنوان را خالی بگذارید</em> مانند این:</p>
 
 <figure class="img">
 <img src="assets/img/07.04-01.png" alt="07.04-01.png" />
 </figure>
 
-<p>After submission you should now see the form re-displayed, with the correctly re-populated snippet content and expiry option, and a &ldquo;This field cannot be blank&rdquo; error message alongside the title field:</p>
+<p>پس از ارسال، اکنون باید فرم را مجدداً با محتوای اسنیپت و گزینه انقضای صحیح پر شده ببینید، و یک پیام خطای "این فیلد نمی‌تواند خالی باشد" در کنار فیلد عنوان مشاهده کنید:</p>
 
 <figure class="img">
 <img src="assets/img/07.04-02.png" alt="07.04-02.png" />
 </figure>
 
-<p>Before we continue, feel free to spend some time playing around with the form and validation rules until you&rsquo;re confident that everything is working as you expect it to.</p>
+<p>قبل از ادامه، لطفاً کمی وقت صرف بازی با فرم و قوانین اعتبارسنجی کنید تا مطمئن شوید که همه چیز همانطور که انتظار دارید کار می‌کند.</p>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
 
-<h4 id="restful-routing">Restful routing</h4>
+<h4 id="restful-routing">مسیریابی RESTful</h4>
 
-<p>If you&rsquo;ve got a background in Ruby-on-Rails, Laravel or similar, you might be wondering why we haven&rsquo;t structured our routes and handlers to be more &lsquo;RESTful&rsquo; and look like this:</p>
+<p>اگر پیش‌زمینه‌ای در Ruby-on-Rails، Laravel یا مشابه آن دارید، ممکن است تعجب کنید که چرا مسیرها و هندلرهای خود را بیشتر 'RESTful' نکرده‌ایم تا به این شکل باشند:</p>
 
 <table>
 <thead>
 <tr>
-<th>Route pattern</th>
-<th>Handler</th>
-<th>Action</th>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عملیات</th>
 </tr>
 </thead>
 
@@ -275,45 +273,46 @@
 <tr>
 <td>GET /snippets</td>
 <td>snippetIndex</td>
-<td>Display the home page</td>
+<td>نمایش صفحه اصلی</td>
 </tr>
 
 <tr>
 <td>GET /snippets/{id}</td>
 <td>snippetView</td>
-<td>Display a specific snippet</td>
+<td>نمایش یک اسنیپت خاص</td>
 </tr>
 
 <tr>
 <td>GET /snippets/create</td>
 <td>snippetCreate</td>
-<td>Display a form for creating a new snippet</td>
+<td>نمایش فرم برای ایجاد یک اسنیپت جدید</td>
 </tr>
 
 <tr>
 <td>POST /snippets</td>
 <td>snippetCreatePost</td>
-<td>Save a new snippet</td>
+<td>ذخیره یک اسنیپت جدید</td>
 </tr>
 </tbody>
 </table>
-<p>There are a couple of reasons.</p>
 
-<p>The first reason is because of overlapping routes &mdash; a HTTP request to <code>/snippets/create</code> potentially matches both the <code>GET /snippets/{id}</code> and <code>GET /snippets/create</code> routes. In our application, the snippet ID values are always numeric so there will never be a &lsquo;real&rsquo; overlap between these two routes &mdash; but imagine if our snippet ID values were user-generated, or a random 6-character string, and hopefully you can see the potential for a problem. Generally speaking, overlapping routes can be a source of bugs and unexpected behavior in your application, and it&rsquo;s good practice to avoid them if you can &mdash; or use them with care and caution if you can&rsquo;t.</p>
+<p>چند دلیل وجود دارد.</p>
 
-<p>The second reason is that the HTML form presented on <code>/snippets/create</code> would need to post to <code>/snippets</code> when submitted. This means that when we re-render the HTML form to show any validation errors, the URL in the user&rsquo;s browser will also change to <code>/snippets</code>. YMMV on whether you consider this a problem or not &mdash; most users don&rsquo;t look at URLs, but I think it&rsquo;s a bit clunky and confusing in terms of UX&hellip; especially if a <code>GET</code> request to <code>/snippets</code> normally renders something else (like a list of all snippets).</p>
+<p>دلیل اول به خاطر مسیرهای همپوشان است - یک درخواست HTTP به <code>/snippets/create</code> به طور بالقوه با هر دو مسیر <code>GET /snippets/{id}</code> و <code>GET /snippets/create</code> مطابقت دارد. در برنامه ما، مقادیر شناسه اسنیپت همیشه عددی هستند بنابراین هرگز همپوشانی 'واقعی' بین این دو مسیر وجود نخواهد داشت - اما تصور کنید اگر مقادیر شناسه اسنیپت ما توسط کاربر تولید می‌شدند، یا یک رشته 6 کاراکتری تصادفی بودند، و امیدوارم بتوانید پتانسیل مشکل را ببینید. به طور کلی، مسیرهای همپوشان می‌توانند منبع باگ‌ها و رفتار غیرمنتظره در برنامه شما باشند، و بهتر است در صورت امکان از آنها اجتناب کنید - یا اگر نمی‌توانید، با دقت و احتیاط از آنها استفاده کنید.</p>
+
+<p>دلیل دوم این است که فرم HTML ارائه شده در <code>/snippets/create</code> باید هنگام ارسال به <code>/snippets</code> پست شود. این بدان معناست که وقتی فرم HTML را برای نمایش هرگونه خطای اعتبارسنجی مجدداً رندر می‌کنیم، URL در مرورگر کاربر نیز به <code>/snippets</code> تغییر خواهد کرد. YMMV در مورد اینکه آیا این را مشکل می‌دانید یا نه - اکثر کاربران به URL‌ها نگاه نمی‌کنند، اما من فکر می‌کنم از نظر UX کمی ناهموار و گیج‌کننده است... به خصوص اگر یک درخواست <code>GET</code> به <code>/snippets</code> معمولاً چیز دیگری را رندر کند (مثل لیستی از همه اسنیپت‌ها).</p>
 
 		</main>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="07.03-validating-form-data.html">Previous</a>
+					&lsaquo; <a href="07.03-validating-form-data.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="07.05-creating-validation-helpers.html">Next</a> &rsaquo;
+					<a href="07.05-creating-validation-helpers.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -321,16 +320,12 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "07.03-validating-form-data.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "07.05-creating-validation-helpers.html";
 						break;
-						
 				}
 			};
 		</script>
