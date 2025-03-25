@@ -121,15 +121,7 @@
 
 <h4 id="multiple-value-fields">فیلدهای چند مقداری</h4>
 
-<p>به طور دقیق، متد <code>r.PostForm.Get()</code> که در این فصل استفاده کردیم فقط <em>اولین</em> مقدار برای یک فیلد فرم خاص را برمی‌گرداند. این بدان معناست که نمی‌توانید از آن با فیلدهای فرمی که احتمالاً چندین مقدار ارسال می‌کنند، مانند گروهی از چک‌باکس‌ها استفاده کنید.</p>
-
-<figure class="code html">
-<pre><span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;foo&#34;</span><span class="p"></span><span class="p">&gt;</span> Foo
-<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;bar&#34;</span><span class="p"></span><span class="p">&gt;</span> Bar
-<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;baz&#34;</span><span class="p"></span><span class="p">&gt;</span> Baz</pre>
-</figure>
-
-<p>In this case you&rsquo;ll need to work with the <code>r.PostForm</code> map directly. The underlying type of the <code>r.PostForm</code> map is <a href="https://pkg.go.dev/net/url/#Values"><code>url.Values</code></a>, which in turn has the underlying type <code>map[string][]string</code>. So, for fields with multiple values you can loop over the underlying map to access them like so:</p>
+<p>در این حالت باید مستقیماً با نقشه <code>r.PostForm</code> کار کنید. نوع زیربنایی نقشه <code>r.PostForm</code>، <a href="https://pkg.go.dev/net/url/#Values"><code>url.Values</code></a> است، که به نوبه خود نوع زیربنایی <code>map[string][]string</code> دارد. بنابراین، برای فیلدهایی با چندین مقدار می‌توانید روی نقشه زیربنایی به این صورت حلقه بزنید:</p>
 
 <figure class="code go">
 <pre><span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">item</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">[</span><span class="s">&#34;items&#34;</span><span class="p">]</span> <span class="p">{</span>
