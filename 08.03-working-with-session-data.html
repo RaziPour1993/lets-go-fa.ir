@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>کار با داده‌های جلسه &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go,
+			.code.html,
+			.code.bash,
+			.code.plain,
+			.code.sql {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">حالت دار HTTP</a> &rsaquo; کار با داده‌های جلسه</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="09.00-server-and-security-improvements.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" style="direction: rtl;">
+			<div class="chapter">فصل 8.3.</div>
+			<h2 id="working-with-session-data">کار با داده‌های جلسه</h2>
+
+<p>در این فصل، بیایید قابلیت جلسه را به کار بگیریم و از آن برای حفظ پیام تأیید بین درخواست‌های HTTP که <a href="08.00-stateful-http.html">قبلاً بحث کردیم</a>، استفاده کنیم.</p>
+
+<p>ما در فایل <code>cmd/web/handlers.go</code> خود شروع می‌کنیم و روش <code>snippetCreatePost</code> خود را به‌روزرسانی می‌کنیم تا یک پیام فلش به داده‌های جلسه کاربر اضافه شود، اگر و فقط اگر قطعه با موفقیت ایجاد شده باشد. به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">form</span> <span class="nx">snippetCreateForm</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">decodePostForm</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">form</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند خالی باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند بیش از 100 کاراکتر باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند خالی باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد باید برابر با 1، 7 یا 365 باشد&#34;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;create.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the Put() method to add a string value (&#34;Snippet successfully 
+</span><span class="c1"></span>    <span class="c1">// created!&#34;) and the corresponding key (&#34;flash&#34;) to the session data.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">,</span> <span class="s">&#34;قطعه با موفقیت ایجاد شد!&#34;</span><span class="p">)</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p style="direction: rtl;">
+    اولین پارامتری که به <code>app.sessionManager.Put()</code> می‌دهیم، زمینه درخواست فعلی است. ما بعداً در کتاب به‌طور کامل درباره زمینه درخواست و نحوه استفاده از آن صحبت خواهیم کرد، اما فعلاً می‌توانید آن را به‌عنوان جایی که مدیر جلسه به‌طور موقت اطلاعات را ذخیره می‌کند در حالی که هندلرهای شما با درخواست سروکار دارند، در نظر بگیرید.
+</p>
+
+<p style="direction: rtl;">
+    پارامتر دوم (در مورد ما رشته <code>"flash"</code>) کلید برای پیام خاصی است که به داده‌های جلسه اضافه می‌کنیم. ما بعداً پیام را از داده‌های جلسه با استفاده از این کلید بازیابی خواهیم کرد.
+</p>
+
+<p style="direction: rtl;">
+    اگر جلسه‌ای برای کاربر فعلی وجود نداشته باشد (یا جلسه آن‌ها منقضی شده باشد)، یک جلسه جدید و خالی برای آن‌ها به‌طور خودکار توسط میان‌افزار جلسه ایجاد خواهد شد.
+</p>
+
+<p>در مرحله بعد، می‌خواهیم هندلر <code>snippetView</code> ما پیام فلش را (اگر در جلسه کاربر فعلی وجود داشته باشد) بازیابی کند و آن را به قالب HTML برای نمایش بعدی ارسال کند.</p>
+
+<p>چون می‌خواهیم پیام فلش را فقط یک‌بار نمایش دهیم، در واقع می‌خواهیم پیام را از داده‌های جلسه بازیابی و حذف کنیم. ما می‌توانیم هر دو این عملیات را به‌طور همزمان با استفاده از روش <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.PopString"><code>PopString()</code></a> انجام دهیم.</p>
+
+<p>من نشان خواهم داد:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the PopString() method to retrieve the value for the &#34;flash&#34; key.
+</span><span class="c1"></span>    <span class="c1">// PopString() also deletes the key and value from the session data, so it
+</span><span class="c1"></span>    <span class="c1">// acts like a one-time fetch. If there is no matching key in the session
+</span><span class="c1"></span>    <span class="c1">// data this will return the empty string.
+</span><span class="c1"></span>    <span class="nx">flash</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">PopString</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">)</span>
+
+    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">Snippet</span> <span class="p">=</span> <span class="nx">snippet</span>
+
+    <span class="c1">// Pass the flash message to the template.
+</span><span class="c1"></span>    <span class="nx">data</span><span class="p">.</span><span class="nx">Flash</span> <span class="p">=</span> <span class="nx">flash</span> 
+
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;view.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<aside class="hint"><p>
+<strong>اطلاعات:</strong> اگر می‌خواهید فقط یک مقدار را از داده‌های جلسه بازیابی کنید (و آن را در آنجا بگذارید)، می‌توانید از روش <code>GetString()</code> استفاده کنید. بسته <code>scs</code> همچنین روش‌هایی برای بازیابی انواع داده‌های رایج دیگر، از جمله <code>GetInt()</code>، <code>GetBool()</code>،  <code>GetBytes()</code> و <code>GetTime()</code> ارائه می‌دهد.
+</p></aside>
+
+<p>اگر اکنون سعی کنید برنامه را اجرا کنید، کامپایلر (به‌درستی) غر خواهد زد که فیلد <code>Flash</code> در ساختار <code>templateData</code> تعریف نشده است. بروید و آن را به این صورت اضافه کنید:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;path/filepath&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">CurrentYear</span> <span class="kt">int</span>
+    <span class="nx">Snippet</span>     <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Snippets</span>    <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Form</span>        <span class="nx">any</span>
+    <span class="nx">Flash</span>       <span class="kt">string</span> <span class="c1">// Add a Flash field to the templateData struct.
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>و اکنون، می‌توانیم فایل <code>base.tmpl</code> خود را به‌روزرسانی کنیم تا پیام فلش را نمایش دهد، اگر وجود داشته باشد.</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/base.tmpl</figcaption>
+<pre>{{define &#34;base&#34;}}
+<span class="cp">&lt;!doctype html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;fa&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">head</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">title</span><span class="p"></span><span class="p">&gt;</span>{{template &#34;title&#34; .}} - Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">title</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/static/css/main.css&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;shortcut icon&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/static/img/favicon.ico&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;image/x-icon&#39;</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">&#39;stylesheet&#39;</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">body</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">header</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">h1</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">h1</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">header</span><span class="p">&gt;</span>
+        {{template &#34;nav&#34; .}}
+        <span class="p">&lt;</span><span class="nt">main</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="c">&lt;!--</span><span class="c"> Display the flash message if one exists </span><span class="c">--&gt;</span>
+            {{with .Flash}}
+                <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;flash&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+            {{end}}
+            {{template &#34;main&#34; .}}
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">main</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">footer</span><span class="p"></span><span class="p">&gt;</span>
+            Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span> in {{.CurrentYear}}
+        <span class="p">&lt;</span><span class="p">/</span><span class="nt">footer</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;/static/js/main.js&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/javascript&#39;</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">html</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>به یاد داشته باشید، بلوک <code>{{with .Flash}}</code> فقط در صورتی اجرا می‌شود که مقدار <code>.Flash</code> <a href="05.02-template-actions-and-functions.html">رشته خالی نباشد</a>. بنابراین، اگر کلید <code>&quot;flash&quot;</code> در جلسه کاربر فعلی وجود نداشته باشد، نتیجه این است که قطعه جدیدی از نشانه‌گذاری به‌سادگی نمایش داده نمی‌شود.</p>
+
+<p>پس از انجام این کار، همه فایل‌های خود را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. سعی کنید یک قطعه دیگر ایجاد کنید به این صورت&hellip;</p>
+
+<figure class="img">
+<img src="assets/img/08.03-01.png" alt="08.03-01.png" />
+</figure>
+
+<p>و پس از تغییر مسیر باید ببینید که پیام فلش اکنون نمایش داده می‌شود:</p>
+
+<figure class="img">
+<img src="assets/img/08.03-02.png" alt="08.03-02.png" />
+</figure>
+
+<p>اگر سعی کنید صفحه را تازه‌سازی کنید، می‌توانید تأیید کنید که پیام فلش دیگر نمایش داده نمی‌شود &mdash; این یک پیام یک‌بار برای کاربر فعلی بلافاصله پس از ایجاد قطعه بود.</p>
+
+<figure class="img">
+<img src="assets/img/08.03-03.png" alt="08.03-03.png" />
+</figure>
+
+<h3 id="auto-displaying-flash-messages">نمایش خودکار پیام‌های فلش</h3>
+
+<p>یک بهبود کوچک که می‌توانیم انجام دهیم (که بعداً در پروژه برای ما کار را آسان‌تر می‌کند) این است که نمایش پیام‌های فلش را خودکار کنیم، به‌طوری که هر پیامی به‌طور خودکار در دفعه بعدی که <em>هر صفحه‌ای رندر می‌شود</em>، گنجانده شود.</p>
+
+<p>ما می‌توانیم این کار را با افزودن هر پیام فلش به داده‌های قالب از طریق روش کمکی <code>newTemplateData()</code> که قبلاً ساخته‌ایم، انجام دهیم، به این صورت:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="nx">templateData</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">CurrentYear</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Year</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="c1">// Add the flash message to the template data, if one exists.
+</span><span class="c1"></span>        <span class="nx">Flash</span><span class="p">:</span>       <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">PopString</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>ایجاد این تغییر به این معنی است که دیگر نیازی به بررسی پیام فلش در هندلر <code>snippetView</code> نداریم و کد می‌تواند به این صورت برگردد:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetView</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">snippet</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">Snippet</span> <span class="p">=</span> <span class="nx">snippet</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;view.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p style="direction: rtl;">
+    احساس راحتی کنید و دوباره برنامه را اجرا کنید و یک قطعه دیگر ایجاد کنید. باید ببینید که عملکرد پیام فلش همچنان به‌درستی کار می‌کند.
+</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="behind-the-scenes-of-session-management">پشت صحنه مدیریت جلسه</h4>
+
+<p>می‌خواهم لحظه‌ای وقت بگذارم تا برخی از "جادو"های پشت مدیریت جلسه را باز کنم و توضیح دهم که چگونه در پشت صحنه کار می‌کند.</p>
+
+<p>اگر دوست دارید، ابزارهای توسعه‌دهنده مرورگر خود را باز کنید و به داده‌های کوکی برای یکی از صفحات نگاه کنید. باید یک کوکی به نام <code>session</code> در داده‌های درخواست ببینید، مشابه این:</p>
+
+<figure class="img">
+<img src="assets/img/08.03-04.png" alt="08.03-04.png" />
+</figure>
+
+<p>این <em>کوکی جلسه</em> است و با هر درخواستی که مرورگر شما به برنامه Snippetbox می‌فرستد، ارسال خواهد شد. کوکی جلسه حاوی <em>توکن جلسه</em> &mdash; که گاهی اوقات به‌عنوان <em>شناسه جلسه</em> نیز شناخته می‌شود. توکن جلسه یک رشته تصادفی با انتروپی بالا است، که در مورد من مقدار <code>y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4</code> است (مال شما متفاوت خواهد بود).</p>
+
+<p>مهم است که تأکید کنیم که توکن جلسه فقط یک رشته تصادفی است. در خود، هیچ <em>داده جلسه</em> (مانند پیام فلشی که در این فصل تنظیم کردیم) را حمل یا منتقل نمی‌کند.</p>
+
+<p>بعد، ممکن است بخواهید یک ترمینال به MySQL باز کنید و یک پرس و جوی <code>SELECT</code> را در برابر جدول <code>sessions</code> اجرا کنید تا توکن جلسه‌ای که در مرورگر خود می‌بینید را جستجو کنید. به این صورت:</p>
+
+<figure class="code bash">
+<pre>mysql&gt; SELECT * FROM sessions WHERE token = &#39;y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4&#39;;
+<samp>+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+
+| token                                       | data                                                                                                                                                                                                                                             | expiry                     |
++---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+
+| y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4 | 0x26FF81030102FF820001020108446561646C696E6501FF8400010656616C75657301FF8600000010FF830501010454696D6501FF8400000027FF85040101176D61705B737472696E675D696E74657266616365207B7D01FF8600010C0110000016FF82010F010000000ED9F4496109B650EBFFFF010000 | 2024-03-18 11:29:23.179505 |
++---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+
+1 row in set (0.00 sec)</samp></pre>
+</figure>
+
+<p>این باید یک رکورد را برگرداند. مقدار <code>data</code> در اینجا چیزی است که <em>در واقع حاوی داده‌های جلسه کاربر است</em>. به‌طور خاص، آنچه که ما در حال مشاهده آن هستیم یک <code>BLOB</code> (شیء بزرگ باینری) MySQL است که حاوی یک نمایش <a href="https://pkg.go.dev/encoding/gob">رمزگذاری شده gob</a> از داده‌های جلسه است.</p>
+
+<p>هر بار که تغییری در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، این مقدار <code>data</code> به‌روزرسانی می‌شود تا تغییرات را منعکس کند.</p>
+
+<p>در نهایت، ستون آخر در پایگاه داده زمان <code>expiry</code> است، پس از آن جلسه دیگر معتبر در نظر گرفته نمی‌شود.</p>
+
+<p>بنابراین، آنچه که در برنامه ما اتفاق می‌افتد این است که میان‌افزار <code>LoadAndSave()</code> هر درخواست ورودی را برای یک کوکی جلسه بررسی می‌کند. اگر یک کوکی جلسه وجود داشته باشد، توکن جلسه را از کوکی می‌خواند و داده‌های جلسه مربوطه را از پایگاه داده بازیابی می‌کند (در حالی که بررسی می‌کند که جلسه منقضی نشده باشد). سپس داده‌های جلسه را به <em>زمینه درخواست</em> اضافه می‌کند تا بتواند در هندلرهای شما استفاده شود.</p>
+
+<p>هر تغییری که در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، در زمینه درخواست به‌روزرسانی می‌شود و سپس میان‌افزار <code>LoadAndSave()</code> پایگاه داده را با هر تغییری در داده‌های جلسه قبل از بازگشت به‌روزرسانی می‌کند.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="09.00-server-and-security-improvements.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "08.02-setting-up-the-session-manager.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "09.00-server-and-security-improvements.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
