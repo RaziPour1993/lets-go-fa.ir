@@ -8,6 +8,38 @@
 		<title>Custom template functions &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.persian-text {
+				text-align: right;
+				direction: rtl;
+			}
+			.persian-text ol {
+				padding-right: 2em;
+			}
+			.persian-text code {
+				direction: ltr;
+				text-align: left;
+			}
+			/* Keep specific code block classes left-aligned and untranslated */
+			.code.go,
+			.code.html,
+			.code.bash,
+			.code.plain,
+			.code.sql {
+				direction: ltr;
+				text-align: left;
+				unicode-bidi: embed;
+			}
+			.code.go pre,
+			.code.html pre,
+			.code.bash pre,
+			.code.plain pre,
+			.code.sql pre {
+				direction: ltr;
+				text-align: left;
+				unicode-bidi: embed;
+			}
+		</style>
 	</head>
 	<body>
 		<header>
@@ -26,23 +58,23 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 5.6.</div>
-			<h2 id="custom-template-functions">Custom template functions</h2>
+		<main class="wrapper text persian-text">
+			<div class="chapter">فصل ۵.۶.</div>
+			<h2 id="custom-template-functions">توابع سفارشی قالب</h2>
 
-<p>In the last part of this section about templating and dynamic data, I&rsquo;d like to explain how to create your own custom functions to use in Go templates.</p>
+<p>در آخرین بخش از این مبحث درباره قالب‌ها و داده‌های پویا، می‌خواهم توضیح دهم که چگونه می‌توانید توابع سفارشی خود را برای استفاده در قالب‌های Go ایجاد کنید.</p>
 
-<p>To illustrate this, let&rsquo;s create a custom <code>humanDate()</code> function which outputs datetimes in a nice &lsquo;humanized&rsquo; format like <code>1 Jan 2024 at 10:47</code> or <code>18 Mar 2024 at 15:04</code> instead of outputting dates in the default format of <code>YYYY-MM-DD HH:MM:SS +0000 UTC</code> like we are currently.</p>
+<p>برای نشان دادن این موضوع، بیایید یک تابع سفارشی <code>humanDate()</code> ایجاد کنیم که تاریخ‌ها را در فرمت زیبای "انسانی" مانند <code>1 Jan 2024 at 10:47</code> یا <code>18 Mar 2024 at 15:04</code> نمایش دهد، به جای نمایش تاریخ‌ها در فرمت پیش‌فرض <code>YYYY-MM-DD HH:MM:SS +0000 UTC</code> که در حال حاضر استفاده می‌کنیم.</p>
 
-<p>There are two main steps to doing this:</p>
+<p>برای انجام این کار دو مرحله اصلی وجود دارد:</p>
 
 <ol>
-<li><p>We need to create a <a href="https://pkg.go.dev/text/template/#FuncMap"><code>template.FuncMap</code></a> object containing the custom <code>humanDate()</code> function.</p></li>
+<li><p>ما نیاز داریم یک شیء <a href="https://pkg.go.dev/text/template/#FuncMap"><code>template.FuncMap</code></a> حاوی تابع سفارشی <code>humanDate()</code> ایجاد کنیم.</p></li>
 
-<li><p>We need to use the <a href="https://pkg.go.dev/html/template/#Template.Funcs"><code>template.Funcs()</code></a> method to register this before parsing the templates.</p></li>
+<li><p>ما باید از متد <a href="https://pkg.go.dev/html/template/#Template.Funcs"><code>template.Funcs()</code></a> برای ثبت این تابع قبل از تجزیه قالب‌ها استفاده کنیم.</p></li>
 </ol>
 
-<p>Go ahead and add the following code to your <code>templates.go</code> file:</p>
+<p>حالا کد زیر را به فایل <code>templates.go</code> خود اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -108,9 +140,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Before we continue, I should explain: custom template functions (like our <code>humanDate()</code> function) can accept as many parameters as they need to, but they <em>must</em> return one value only. The only exception to this is if you want to return an error as the second value, in which case that&rsquo;s OK too.</p>
+<p>قبل از ادامه، باید توضیح دهم: توابع سفارشی قالب (مانند تابع <code>humanDate()</code> ما) می‌توانند به تعداد دلخواه پارامتر دریافت کنند، اما <em>باید</em> فقط یک مقدار برگردانند. تنها استثنا در این مورد زمانی است که می‌خواهید یک خطا را به عنوان مقدار دوم برگردانید، که در این صورت مشکلی نیست.</p>
 
-<p>Now we can use our <code>humanDate()</code> function in the same way as the built-in template functions:</p>
+<p>حالا می‌توانیم از تابع <code>humanDate()</code> خود به همان روش توابع داخلی قالب استفاده کنیم:</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/home.tmpl</figcaption>
@@ -165,7 +197,7 @@
 {{end}}</pre>
 </figure>
 
-<p>Once that&rsquo;s done, restart the application. If you visit <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> and <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> in your browser you should see the new, nicely formatted, dates being used.</p>
+<p>پس از انجام این تغییرات، برنامه را مجدداً راه‌اندازی کنید. اگر به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> و <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> در مرورگر خود مراجعه کنید، باید تاریخ‌های جدید و زیبا را مشاهده کنید.</p>
 
 <figure class="img">
 <img src="assets/img/05.06-01.png" alt="05.06-01.png" />
@@ -177,23 +209,23 @@
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
 
-<h4 id="pipelining">Pipelining</h4>
+<h4 id="pipelining">خط لوله‌سازی</h4>
 
-<p>In the code above, we called our custom template function like this:</p>
+<p>در کد بالا، ما تابع سفارشی قالب خود را به این صورت فراخوانی کردیم:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{humanDate .Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>An alternative approach is to use the <code>|</code> character to <em>pipeline</em> values to a function. This works a bit like pipelining outputs from one command to another in Unix terminals. We could re-write the above as:</p>
+<p>یک روش جایگزین استفاده از کاراکتر <code>|</code> برای <em>خط لوله‌سازی</em> مقادیر به یک تابع است. این کار کمی شبیه به خط لوله‌سازی خروجی‌ها از یک دستور به دستور دیگر در ترمینال‌های یونیکس است. می‌توانیم کد بالا را به این صورت بازنویسی کنیم:</p>
 
 <figure class="code html">
-<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Created | humanDate}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
+<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>{{.Created | humanDate}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>A nice feature of pipelining is that you can make an arbitrarily long chain of template functions which use the output from one as the input for the next. For example, we could pipeline the output from our <code>humanDate</code> function to the inbuilt <code>printf</code> function like so:</p>
+<p>یکی از ویژگی‌های خوب خط لوله‌سازی این است که می‌توانید زنجیره‌ای به طول دلخواه از توابع قالب ایجاد کنید که خروجی یکی را به عنوان ورودی دیگری استفاده می‌کنند. برای مثال، می‌توانیم خروجی تابع <code>humanDate</code> را به تابع داخلی <code>printf</code> خط لوله کنیم:</p>
 
 <figure class="code html">
 <pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>{{.Created | humanDate | printf &#34;Created: %s&#34;}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
