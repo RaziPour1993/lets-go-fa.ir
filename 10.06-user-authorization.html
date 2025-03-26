@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -10,42 +10,38 @@
 	</head>
 	<body>
 		<header>
-			<div class="wrapper">
+			<div class="wrapper" dir="rtl">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">User authentication</a> &rsaquo; User authorization</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; مجوز کاربر</span>
 				</div>
 				<div>
-					&lsaquo; <a href="10.05-user-logout.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="10.07-csrf-protection.html">Next</a> &rsaquo;
+					&lsaquo; <a href="10.05-user-logout.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="10.07-csrf-protection.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 10.6.</div>
-			<h2 id="user-authorization">User authorization</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 10.6.</div>
+			<h2 id="user-authorization">مجوز کاربر</h2>
 
-<p>Being able to authenticate the users of our application is all well and good, but now we need to do something useful with that information. In this chapter we&rsquo;ll introduce some <em>authorization</em> checks so that:</p>
+<p>احراز هویت کاربران برنامه ما خوب است، اما اکنون باید با آن اطلاعات کاری مفید انجام دهیم. در این فصل، برخی از بررسی‌های <em>مجوز</em> را معرفی خواهیم کرد تا:</p>
 
-<ol>
-<li>Only authenticated (i.e. logged in) users can create a new snippet; and</li>
-<li>The contents of the navigation bar changes depending on whether a user is authenticated (logged in) or not. Specifically:
+<ol dir="rtl">
+<li>فقط کاربران احراز هویت شده (یعنی وارد شده) بتوانند یک قطعه جدید ایجاد کنند؛ و</li>
+<li>محتوای نوار ناوبری بسته به اینکه کاربر احراز هویت شده است (وارد شده) یا نه تغییر کند. به طور خاص:
 
 <ul>
-<li>Authenticated users should see links to &lsquo;Home&rsquo;, &lsquo;Create snippet&rsquo; and &lsquo;Logout&rsquo;.</li>
-<li>Unauthenticated users should see links to &lsquo;Home&rsquo;, &lsquo;Signup&rsquo; and &lsquo;Login&rsquo;.</li>
+<li>کاربران احراز هویت شده باید لینک‌های &lsquo;خانه&rsquo;، &lsquo;ایجاد قطعه&rsquo; و &lsquo;خروج&rsquo; را ببینند.</li>
+<li>کاربران احراز هویت نشده باید لینک‌های &lsquo;خانه&rsquo;، &lsquo;ثبت‌نام&rsquo; و &lsquo;ورود&rsquo; را ببینند.</li>
 </ul></li>
 </ol>
 
-<p>As I mentioned briefly in the previous chapter, we can check whether a request is being made by an authenticated user or not by checking for the existence of an <code>&quot;authenticatedUserID&quot;</code> value in their session data.</p>
+<p>همانطور که در فصل قبلی به طور مختصر اشاره کردم، می‌توانیم بررسی کنیم که آیا درخواست توسط یک کاربر احراز هویت شده انجام شده است یا نه با بررسی وجود یک مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های جلسه آنها.</p>
 
-<p>So let&rsquo;s start with that. Open the <code>cmd/web/helpers.go</code> file and add an <code>isAuthenticated()</code> helper function to return the authentication status like so:</p>
+<p>بنابراین بیایید با آن شروع کنیم. فایل <code>cmd/web/helpers.go</code> را باز کنید و یک تابع کمکی <code>isAuthenticated()</code> اضافه کنید تا وضعیت احراز هویت را به این صورت برگرداند:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -58,13 +54,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>That&rsquo;s neat. We can now check whether or not the request is coming from an authenticated (logged in) user by simply calling this <code>isAuthenticated()</code> helper.</p>
+<p>این عالی است. اکنون می‌توانیم بررسی کنیم که آیا درخواست از یک کاربر احراز هویت شده (وارد شده) است یا نه با فراخوانی ساده این تابع کمکی <code>isAuthenticated()</code>.</p>
 
-<p>The next step is to find a way to pass this information to our HTML templates, so that we can toggle the contents of the navigation bar appropriately.</p>
+<p>گام بعدی این است که راهی پیدا کنیم تا این اطلاعات را به قالب‌های HTML خود منتقل کنیم، تا بتوانیم محتوای نوار ناوبری را به درستی تغییر دهیم.</p>
 
-<p>There are two parts to this. First, we&rsquo;ll need to add a new <code>IsAuthenticated</code> field to our <code>templateData</code> struct:</p>
+<p>دو بخش برای این کار وجود دارد. اول، باید یک فیلد جدید <code>IsAuthenticated</code> به ساختار <code>templateData</code> خود اضافه کنیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -88,9 +84,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>And the second step is to update our <code>newTemplateData()</code> helper so that this information is automatically added to the <code>templateData</code> struct every time we render a template. Like so:</p>
+<p>و گام دوم این است که تابع کمکی <code>newTemplateData()</code> خود را به‌روزرسانی کنیم تا این اطلاعات به‌طور خودکار به ساختار <code>templateData</code> اضافه شود هر بار که یک قالب را رندر می‌کنیم. به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -108,9 +104,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Once that&rsquo;s done, we can update the <code>ui/html/partials/nav.tmpl</code> file to toggle the navigation links using the <code>{{if .IsAuthenticated}}</code> action like so:</p>
+<p>پس از انجام این کار، می‌توانیم فایل <code>ui/html/partials/nav.tmpl</code> را به‌روزرسانی کنیم تا لینک‌های ناوبری را با استفاده از عمل <code>{{if .IsAuthenticated}}</code> به این صورت تغییر دهیم:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/partials/nav.tmpl</figcaption>
 <pre>{{define &#34;nav&#34;}}
 <span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
@@ -136,29 +132,29 @@
 {{end}}</pre>
 </figure>
 
-<p>Save all the files and try running the application now. If you&rsquo;re not currently logged in, your application homepage should look like this:</p>
+<p>تمام فایل‌ها را ذخیره کنید و اکنون برنامه را اجرا کنید. اگر در حال حاضر وارد نشده‌اید، صفحه اصلی برنامه شما باید به این صورت باشد:</p>
 
 <figure class="img">
 <img src="assets/img/10.06-01.png" alt="10.06-01.png" />
 </figure>
 
-<p>Otherwise &mdash; if you are logged in &mdash; your homepage should look like this:</p>
+<p>در غیر این صورت &mdash; اگر وارد شده‌اید &mdash; صفحه اصلی شما باید به این صورت باشد:</p>
 
 <figure class="img">
 <img src="assets/img/10.06-02.png" alt="10.06-02.png" />
 </figure>
 
-<p>Feel free to have a play around with this, and try logging in and out until you&rsquo;re confident that the navigation bar is being changed as you would expect.</p>
+<p>احساس راحتی کنید و با این کار بازی کنید و سعی کنید وارد و خارج شوید تا مطمئن شوید که نوار ناوبری به درستی تغییر می‌کند.</p>
 
-<h3 id="restricting-access">Restricting access</h3>
+<h3 id="restricting-access">محدود کردن دسترسی</h3>
 
-<p>As it stands, we&rsquo;re hiding the &lsquo;Create snippet&rsquo; navigation link for any user that isn&rsquo;t logged in. But an unauthenticated user could still create a new snippet by visiting the <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> page directly.</p>
+<p>همانطور که هست، ما لینک ناوبری &lsquo;ایجاد قطعه&rsquo; را برای هر کاربری که وارد نشده است پنهان می‌کنیم. اما یک کاربر احراز هویت نشده هنوز می‌تواند با مراجعه به صفحه <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> به طور مستقیم یک قطعه جدید ایجاد کند.</p>
 
-<p>Let&rsquo;s fix that, so that if an unauthenticated user tries to visit any routes with the URL path <code>/snippet/create</code> they are redirected to <code>/user/login</code> instead.</p>
+<p>بیایید این را درست کنیم، به طوری که اگر یک کاربر احراز هویت نشده سعی کند به هر مسیری با مسیر URL <code>/snippet/create</code> مراجعه کند، به <code>/user/login</code> هدایت شود.</p>
 
-<p>The simplest way to do this is via some middleware. Open the <code>cmd/web/middleware.go</code> file and create a new <code>requireAuthentication()</code> middleware function, following the same pattern that we used <a href="06.01-how-middleware-works.html">earlier in the book</a>:</p>
+<p>ساده‌ترین راه برای انجام این کار از طریق برخی از میان‌افزارها است. فایل <code>cmd/web/middleware.go</code> را باز کنید و یک تابع میان‌افزار جدید <code>requireAuthentication()</code> ایجاد کنید، با پیروی از همان الگویی که <a href="06.01-how-middleware-works.html">قبلاً در کتاب</a> استفاده کردیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/middleware.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -185,17 +181,17 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>We can now add this middleware to our <code>cmd/web/routes.go</code> file to protect specific routes.</p>
+<p>اکنون می‌توانیم این میان‌افزار را به فایل <code>cmd/web/routes.go</code> خود اضافه کنیم تا مسیرهای خاصی را محافظت کنیم.</p>
 
-<p>In our case we&rsquo;ll want to protect the <code>GET /snippet/create</code> and <code>POST /snippet/create</code> routes. And there&rsquo;s not much point logging out a user if they&rsquo;re not logged in, so it makes sense to use it on the <code>POST /user/logout</code> route as well.</p>
+<p>در مورد ما، می‌خواهیم مسیرهای <code>GET /snippet/create</code> و <code>POST /snippet/create</code> را محافظت کنیم. و هیچ دلیلی برای خروج یک کاربر وجود ندارد اگر وارد نشده باشد، بنابراین منطقی است که از آن در مسیر <code>POST /user/logout</code> نیز استفاده کنیم.</p>
 
-<p>To help with this, let&rsquo;s rearrange our application routes into two &lsquo;groups&rsquo;.</p>
+<p>برای کمک به این کار، بیایید مسیرهای برنامه خود را به دو &lsquo;گروه&rsquo; تقسیم کنیم.</p>
 
-<p>The first group will contain our &lsquo;unprotected&rsquo; routes and use our existing <code>dynamic</code> middleware chain. The second group will contain our &lsquo;protected&rsquo; routes and will use a new <code>protected</code> middleware chain &mdash; consisting of the <code>dynamic</code> middleware chain <em>plus</em> our new <code>requireAuthentication()</code> middleware.</p>
+<p>گروه اول شامل مسیرهای &lsquo;غیرمحافظت شده&rsquo; ما خواهد بود و از زنجیره میان‌افزار <code>dynamic</code> موجود ما استفاده خواهد کرد. گروه دوم شامل مسیرهای &lsquo;محافظت شده&rsquo; ما خواهد بود و از یک زنجیره میان‌افزار جدید <code>protected</code> استفاده خواهد کرد &mdash; که شامل زنجیره میان‌افزار <code>dynamic</code> <em>به‌علاوه</em> میان‌افزار جدید <code>requireAuthentication()</code> ما است.</p>
 
-<p>Like this:</p>
+<p>به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -230,13 +226,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Save the files, restart the application and make sure that you&rsquo;re logged out.</p>
+<p>فایل‌ها را ذخیره کنید، برنامه را مجدداً راه‌اندازی کنید و مطمئن شوید که خارج شده‌اید.</p>
 
-<p>Then try visiting <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> directly in your browser. You should find that you get immediately redirected to the login form instead.</p>
+<p>سپس سعی کنید به طور مستقیم به <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> در مرورگر خود مراجعه کنید. باید متوجه شوید که بلافاصله به فرم ورود هدایت می‌شوید.</p>
 
-<p>If you like, you can also confirm with curl that unauthenticated users are redirected for the <code>POST /snippet/create</code> route too:</p>
+<p>اگر دوست دارید، می‌توانید با curl نیز تأیید کنید که کاربران احراز هویت نشده برای مسیر <code>POST /snippet/create</code> نیز هدایت می‌شوند:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -ki -d &#34;&#34; https://localhost:4000/snippet/create
 <samp>HTTP/2 303 
 content-security-policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
@@ -253,27 +249,27 @@ date: Wed, 18 Mar 2024 11:29:23 GMT</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="without-using-alice">Without using alice</h4>
+<h4 id="without-using-alice">بدون استفاده از alice</h4>
 
-<p>If you&rsquo;re not using the <code>justinas/alice</code> package to manage your middleware that&rsquo;s OK &mdash; you can manually wrap your handlers like this instead:</p>
+<p>اگر از بسته <code>justinas/alice</code> برای مدیریت میان‌افزار خود استفاده نمی‌کنید، مشکلی نیست &mdash; می‌توانید به صورت دستی هندلرهای خود را به این صورت بپیچید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">requireAuthentication</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
 		</main>
 		<footer>
-			<div class="wrapper">
+			<div class="wrapper" dir="rtl">
 				<div>
-					&lsaquo; <a href="10.05-user-logout.html">Previous</a>
+					&lsaquo; <a href="10.05-user-logout.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="10.07-csrf-protection.html">Next</a> &rsaquo;
+					<a href="10.07-csrf-protection.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
