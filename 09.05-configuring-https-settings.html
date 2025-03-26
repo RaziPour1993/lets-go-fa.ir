@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Configuring HTTPS settings &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; Configuring HTTPS settings</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="09.04-running-a-https-server.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="09.06-connection-timeouts.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 9.5.</div>
+			<h2 id="configuring-https-settings">Configuring HTTPS settings</h2>
+
+<p>Go has good default settings for its HTTPS server, but it&rsquo;s possible to optimize and customize how the server behaves.</p>
+
+<p>One change, which is almost always a good idea to make, is to restrict the <em>elliptic curves</em> that can potentially be used during the TLS handshake. Go supports a few elliptic curves, but as of Go 1.23 only <code>tls.CurveP256</code> and <code>tls.X25519</code> have assembly implementations. The others are very CPU intensive, so omitting them helps ensure that our server will remain performant under heavy loads.</p>
+
+<p>To make this tweak, we can create a <a href="https://pkg.go.dev/crypto/tls#Config"><code>tls.Config</code></a> struct containing our non-default TLS settings, and add it to our <code>http.Server</code> struct before we start the server.</p>
+
+<p>I&rsquo;ll demonstrate:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;crypto/tls&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+
+    <span class="s">&#34;github.com/alexedwards/scs/mysqlstore&#34;</span>
+    <span class="s">&#34;github.com/alexedwards/scs/v2&#34;</span>
+    <span class="s">&#34;github.com/go-playground/form/v4&#34;</span>
+    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+
+    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>         <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>       <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">templateCache</span><span class="p">:</span>  <span class="nx">templateCache</span><span class="p">,</span>
+        <span class="nx">formDecoder</span><span class="p">:</span>    <span class="nx">formDecoder</span><span class="p">,</span>
+        <span class="nx">sessionManager</span><span class="p">:</span> <span class="nx">sessionManager</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Initialize a tls.Config struct to hold the non-default TLS settings we
+</span><span class="c1"></span>    <span class="c1">// want the server to use. In this case the only thing that we&#39;re changing
+</span><span class="c1"></span>    <span class="c1">// is the curve preferences value, so that only elliptic curves with
+</span><span class="c1"></span>    <span class="c1">// assembly implementations are used.
+</span><span class="c1"></span>    <span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+        <span class="nx">CurvePreferences</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="nx">tls</span><span class="p">.</span><span class="nx">CurveID</span><span class="p">{</span><span class="nx">tls</span><span class="p">.</span><span class="nx">X25519</span><span class="p">,</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">CurveP256</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Set the server&#39;s TLSConfig field to use the tlsConfig variable we just
+</span><span class="c1"></span>    <span class="c1">// created.
+</span><span class="c1"></span>    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>      <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span>   <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">ErrorLog</span><span class="p">:</span>  <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">TLSConfig</span><span class="p">:</span> <span class="nx">tlsConfig</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">&#34;./tls/cert.pem&#34;</span><span class="p">,</span> <span class="s">&#34;./tls/key.pem&#34;</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="tls-versions">TLS versions</h4>
+
+<p>By default, Go&rsquo;s HTTPS server is configured to support TLS 1.2 and 1.3. You can customize this and change the minimum and maximum TLS versions using the <code>tls.Config.MinVersion</code> and <code>MaxVersion</code> fields and <a href="https://pkg.go.dev/crypto/tls/#pkg-constants">TLS versions constants</a> in the <code>crypto/tls</code> package.</p>
+
+<p>For example, if you want the server to support TLS versions 1.0 to 1.2 only, you can use a configuration like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+    <span class="nx">MinVersion</span><span class="p">:</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">VersionTLS10</span><span class="p">,</span>
+    <span class="nx">MaxVersion</span><span class="p">:</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">VersionTLS12</span><span class="p">,</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h4 id="cipher-suites">Cipher suites</h4>
+
+<p>The cipher suites that Go supports are also defined in the <code>crypto/tls</code> <a href="https://pkg.go.dev/crypto/tls/#pkg-constants">package constants</a>.</p>
+
+<p>However some of these cipher suites (specifically, the cipher suites that do not support Perfect Forward Secrecy, or which use RC4, 3DES or CBC_SHA256) are considered weak and are not used by Go&rsquo;s HTTPS server by default. As of Go 1.23, the cipher suites that Go&rsquo;s HTTPS server uses by default are:</p>
+
+<figure class="code plain">
+<pre>TLS_AES_128_GCM_SHA256                          // TLS 1.3 connections only
+TLS_AES_256_GCM_SHA384                          // TLS 1.3 connections only
+TLS_CHACHA20_POLY1305_SHA256                    // TLS 1.3 connections only
+
+TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256         // TLS 1.2 connections only
+TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384         // TLS 1.2 connections only
+TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256           // TLS 1.2 connections only
+TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384           // TLS 1.2 connections only
+TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256     // TLS 1.2 connections only
+TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256   // TLS 1.2 connections only
+
+TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA            // TLS 1.0, 1.1 and 1.2 connections
+TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA            // TLS 1.0, 1.1 and 1.2 connections
+TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA              // TLS 1.0, 1.1 and 1.2 connections
+TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA              // TLS 1.0, 1.1 and 1.2 connections</pre>
+</figure>
+
+<aside class="important"><p>
+<strong>Important:</strong> <a href="https://github.com/golang/go/issues/13385">For client compatibility reasons</a>, this default list includes some CBC ciphers that are vulnerable to <a href="https://en.wikipedia.org/wiki/Lucky_Thirteen_attack">Lucky Thirteen</a> timing attacks. The Go implementation of these <a href="https://go-review.googlesource.com/c/go/+/18130">has been patched</a> to provide some &mdash; but not full &mdash; mitigation against potential attacks .
+</p></aside>
+
+<p>If you want to change the cipher suites used by Go&rsquo;s HTTPS server &mdash; either by including weak cipher suites that aren&rsquo;t used by default, or removing certain ciphers which are used by default &mdash; you can do this via the <code>tls.Config.CipherSuites</code> field.</p>
+
+<p>For example, if you want to use the default cipher list but <em>with the CBC ciphers omitted</em>, you can configure your <code>tls.Config</code> like this:</p>
+
+<figure class="code go">
+<pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+    <span class="nx">CipherSuites</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="kt">uint16</span><span class="p">{</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_AES_128_GCM_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_AES_256_GCM_SHA384</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_CHACHA20_POLY1305_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256</span><span class="p">,</span>
+    <span class="p">}</span><span class="p">,</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Go will automatically choose <em>which</em> of these cipher suites is actually used at runtime based on the cipher security, performance, and client/server hardware support.</p>
+
+<p>It&rsquo;s also important (and interesting) to note that if a TLS 1.3 connection is negotiated, the <code>tls.Config.CipherSuites</code> will be ignored. The reason for this is that all the cipher suites that Go supports for TLS 1.3 connections are considered to be <em>safe</em>, so there isn&rsquo;t much point in providing a mechanism to configure them.</p>
+
+<p>Basically, using <code>tls.Config.CipherSuites</code> to set a custom list of supported cipher suites will affect TLS 1.0-1.2 connections only. So, in the above example, it isn&rsquo;t actually necessary to include the TLS 1.3 specific ciphers and it can be simplified to this:</p>
+
+<figure class="code go">
+<pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+    <span class="nx">CipherSuites</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="kt">uint16</span><span class="p">{</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256</span><span class="p">,</span>
+        <span class="nx">tls</span><span class="p">.</span><span class="nx">TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256</span><span class="p">,</span>
+    <span class="p">}</span><span class="p">,</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>Important:</strong> Restricting the supported cipher suites can mean that users with certain older browsers won&rsquo;t be able to use your website. There&rsquo;s a balance to be struck between security and backwards-compatibility, and the right decision for you will depend on the technology typically used by your user base. Mozilla&rsquo;s <a href="https://wiki.mozilla.org/Security/Server_Side_TLS">recommended configurations</a> for modern, intermediate and old browsers may assist you in making a decision here.
+</p></aside>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.04-running-a-https-server.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="09.06-connection-timeouts.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.04-running-a-https-server.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "09.06-connection-timeouts.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>The http.Server struct &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; The http.Server struct</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="09.00-server-and-security-improvements.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="09.02-the-server-error-log.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 9.1.</div>
+			<h2 id="the-http-server-struct">The http.Server struct</h2>
+
+<p>So far in this book we&rsquo;ve been using the <code>http.ListenAndServe()</code> shortcut function to start our server.</p>
+
+<p>Although <code>http.ListenAndServe()</code> is very useful in short examples and tutorials, in real-world applications it&rsquo;s more common to manually create and use a <a href="https://pkg.go.dev/net/http#Server"><code>http.Server</code></a> struct instead. Doing this opens up the opportunity to customize the behavior of your server, which is exactly that we&rsquo;ll be doing in this section of the book.</p>
+
+<p>So in preparation for that, let&rsquo;s quickly update our <code>main.go</code> file to stop using the <code>http.ListenAndServe()</code> shortcut, and manually create and use a <code>http.Server</code> struct instead.</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">templateCache</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">formDecoder</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">sessionManager</span> <span class="o">:=</span> <span class="nx">scs</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Store</span> <span class="p">=</span> <span class="nx">mysqlstore</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Lifetime</span> <span class="p">=</span> <span class="mi">12</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Hour</span>
+
+    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>         <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>       <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">templateCache</span><span class="p">:</span>  <span class="nx">templateCache</span><span class="p">,</span>
+        <span class="nx">formDecoder</span><span class="p">:</span>    <span class="nx">formDecoder</span><span class="p">,</span>
+        <span class="nx">sessionManager</span><span class="p">:</span> <span class="nx">sessionManager</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Initialize a new http.Server struct. We set the Addr and Handler fields so
+</span><span class="c1"></span>    <span class="c1">// that the server uses the same network address and routes as before.
+</span><span class="c1"></span>    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>    <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="c1">// Call the ListenAndServe() method on our new http.Server struct to start 
+</span><span class="c1"></span>    <span class="c1">// the server.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>This is a small change which doesn&rsquo;t affect our application behavior (yet!), but it sets us up nicely for the work to come.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.00-server-and-security-improvements.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="09.02-the-server-error-log.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.00-server-and-security-improvements.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "09.02-the-server-error-log.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

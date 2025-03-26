@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Generating a self-signed TLS certificate &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; Generating a self-signed TLS certificate</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="09.02-the-server-error-log.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="09.04-running-a-https-server.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 9.3.</div>
+			<h2 id="generating-a-self-signed-tls-certificate">Generating a self-signed TLS certificate</h2>
+
+<p>Let&rsquo;s switch our attention to getting our application using HTTPS (rather than plain HTTP) for all requests and responses.</p>
+
+<p>HTTPS is essentially HTTP sent across a TLS (<em>Transport Layer Security</em>) connection. The advantage to this is that HTTPS traffic is encrypted and signed, which helps ensure its privacy and integrity during transit.</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> If you&rsquo;re not familiar with the term, TLS is essentially the modern version of SSL (<em>Secure Sockets Layer</em>). SSL now has been officially deprecated due to security concerns, but the name still lives on in the public consciousness and is often used interoperably with TLS. For clarity and accuracy, we&rsquo;ll stick with the term TLS throughout this book.
+</p></aside>
+
+<p>Before our server can start using HTTPS, we need to generate a <em>TLS certificate</em>.</p>
+
+<p>For production servers I recommend using <a href="https://letsencrypt.org/">Let&rsquo;s Encrypt</a> to create your TLS certificates, but for development purposes the simplest thing to do is to generate your own <em>self-signed certificate</em>.</p>
+
+<p>A self-signed certificate is the same as a normal TLS certificate, except that it isn&rsquo;t cryptographically signed by a trusted certificate authority. This means that your web browser will raise a warning the first time it&rsquo;s used, but it will nonetheless encrypt HTTPS traffic correctly and is fine for development and testing purposes.</p>
+
+<p>Handily, the <code>crypto/tls</code> package in Go&rsquo;s standard library includes a <code>generate_cert.go</code> tool that we can use to easily create our own self-signed certificate.</p>
+
+<p>If you&rsquo;re following along, first create a new <code>tls</code> directory in the root of your project repository to hold the certificate and change into it:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ mkdir tls
+$ cd tls</pre>
+</figure>
+
+<p>To run the <code>generate_cert.go</code> tool, you&rsquo;ll need to know the place on your computer where the source code for the Go standard library is installed. If you&rsquo;re using Linux, macOS or FreeBSD and followed the <a href="https://golang.org/doc/install#install">official install instructions</a>, then the <code>generate_cert.go</code> file should be located under <code>/usr/local/go/src/crypto/tls</code>.</p>
+
+<p>If you&rsquo;re using macOS and installed Go using Homebrew, the file will probably be at <code>/usr/local/Cellar/go/&lt;version&gt;/libexec/src/crypto/tls/generate_cert.go</code> or a similar path.</p>
+
+<p>Once you know where it is located, you can then run the <code>generate_cert.go</code> tool like so:</p>
+
+<figure class="code bash">
+<pre>$ go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+<samp>2024/03/18 11:29:23 wrote cert.pem
+2024/03/18 11:29:23 wrote key.pem</samp></pre>
+</figure>
+
+<p>Behind the scenes, this <code>generate_cert.go</code> command works in two stages:</p>
+
+<ol>
+<li><p>First it generates a <a href="https://www.fastly.com/blog/key-size-for-tls">2048-bit</a> RSA key pair, which is a cryptographically secure <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">public key and private key</a>.</p></li>
+
+<li><p>It then stores the private key in a <code>key.pem</code> file, and generates a self-signed TLS certificate for the host <code>localhost</code> containing the public key &mdash; which it stores in a <code>cert.pem</code> file. Both the private key and certificate are PEM encoded, which is the standard format used by most TLS implementations.</p></li>
+</ol>
+
+<p>Your project repository should now look something like this:</p>
+
+<figure class="img">
+<img src="assets/img/09.01-01.png" alt="09.01-01.png" />
+</figure>
+
+<p>And that&rsquo;s it! We&rsquo;ve now got a self-signed TLS certificate (and corresponding private key) that we can use during development.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="the-mkcert-tool">The mkcert tool</h4>
+
+<p>As an alternative to the <code>generate_cert.go</code> tool, you might want to consider using <a href="https://github.com/FiloSottile/mkcert">mkcert</a> to generate the TLS certificates. Although this requires some extra set up, it has the advantage that the generated certificates are <em>locally trusted</em> &mdash; meaning that you can use them for testing and development without getting security warnings in your web browser.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.02-the-server-error-log.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="09.04-running-a-https-server.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.02-the-server-error-log.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "09.04-running-a-https-server.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

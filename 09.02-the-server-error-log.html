@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>The server error log &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; The server error log</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="09.01-the-http-server-struct.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="09.03-generating-a-self-signed-tls-certificate.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 9.2.</div>
+			<h2 id="the-server-error-log">The server error log</h2>
+
+<p>It&rsquo;s important to be aware that Go&rsquo;s <code>http.Server</code> may write its own log entries relating to things like unrecovered panics, or problems accepting or writing to HTTP connections.</p>
+
+<p>By default, it writes these entries using the standard logger &mdash; which means they will be written to the standard error stream (instead of standard out like our other log entries), and they won&rsquo;t be in the same format as the rest of our nice structured log entries.</p>
+
+<p>To demonstrate this, let&rsquo;s add a deliberate error to our application and set a <code>Content-Length</code> header with an invalid value on our responses. Go ahead and update the <code>render()</code> helper like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">render</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">status</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">page</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">templateData</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ts</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">templateCache</span><span class="p">[</span><span class="nx">page</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="nx">err</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;the template %s does not exist&#34;</span><span class="p">,</span> <span class="nx">page</span><span class="p">)</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">buf</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">buf</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    
+    <span class="c1">// Deliberate error: set a Content-Length header with an invalid (non-integer) 
+</span><span class="c1"></span>    <span class="c1">// value.
+</span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Content-Length&#34;</span><span class="p">,</span> <span class="s">&#34;this isn&#39;t an integer!&#34;</span><span class="p">)</span>
+
+    <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">status</span><span class="p">)</span>
+
+    <span class="nx">buf</span><span class="p">.</span><span class="nf">WriteTo</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>Then run the application, make a request to <a href="http://localhost:4000/"><code>http://localhost:4000</code></a>, and check the application log. You should see that it looks similar to this:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web/
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
+time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:60824 proto=HTTP/1.1 method=GET uri=/
+2024/03/18 11:29:23 http: invalid Content-Length of &#34;this isn&#39;t an integer!&#34;
+time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:60824 proto=HTTP/1.1 method=GET uri=/static/css/main.css
+time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:60830 proto=HTTP/1.1 method=GET uri=/static/img/logo.png</samp></pre>
+</figure>
+
+<p>We can see that the third log entry here, which informs us of the <code>Content-Length</code> problem, is in a very different format to the others. That&rsquo;s not great, especially if you want to filter your logs to look for errors, or use an external service to monitor them and send you alerts.</p>
+
+<p>Unfortunately, it&rsquo;s not possible to configure <code>http.Server</code> to use our new structured logger directly. Instead, we have to convert our structured logger <em>handler</em> into a <code>*log.Logger</code> which writes log entries at a specific fixed level, and then register that with the <code>http.Server</code>. We can do this conversion using the <a href="https://pkg.go.dev/log/slog@master#NewLogLogger"><code>slog.NewLogLogger()</code></a> function, like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="o">...</span>
+
+    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>     <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span>  <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="c1">// Create a *log.Logger from our structured logger handler, which writes
+</span><span class="c1"></span>        <span class="c1">// log entries at Error level, and assign it to the ErrorLog field. If 
+</span><span class="c1"></span>        <span class="c1">// you would prefer to log the server errors at Warn level instead, you
+</span><span class="c1"></span>        <span class="c1">// could pass slog.LevelWarn as the final parameter.
+</span><span class="c1"></span>        <span class="nx">ErrorLog</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>With that in place, any log messages that <code>http.Server</code> automatically writes will now be written using our structured logger at <code>Error</code> level. If you restart the application and make another request to <a href="http://localhost:4000/"><code>http://localhost:4000</code></a>, you should see that the log entries now look like this:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web/
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
+time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:40854 proto=HTTP/1.1 method=GET uri=/
+time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;http: invalid Content-Length of \&#34;this isn&#39;t an integer!\&#34;&#34;</samp></pre>
+</figure>
+
+<p>Before we go any further, head back to your <code>cmd/web/helpers.go</code> file and remove the deliberate error from the <code>render()</code> method:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">render</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">status</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">page</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">data</span> <span class="nx">templateData</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">ts</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">templateCache</span><span class="p">[</span><span class="nx">page</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+        <span class="nx">err</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;the template %s does not exist&#34;</span><span class="p">,</span> <span class="nx">page</span><span class="p">)</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">buf</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">Buffer</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ExecuteTemplate</span><span class="p">(</span><span class="nx">buf</span><span class="p">,</span> <span class="s">&#34;base&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    
+    <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">status</span><span class="p">)</span>
+
+    <span class="nx">buf</span><span class="p">.</span><span class="nf">WriteTo</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.01-the-http-server-struct.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="09.03-generating-a-self-signed-tls-certificate.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.01-the-http-server-struct.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "09.03-generating-a-self-signed-tls-certificate.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

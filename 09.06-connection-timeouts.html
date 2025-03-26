@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Connection timeouts &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; Connection timeouts</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="09.05-configuring-https-settings.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="10.00-user-authentication.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 9.6.</div>
+			<h2 id="connection-timeouts">Connection timeouts</h2>
+
+<p>Let&rsquo;s take a moment to improve the resiliency of our server by adding some timeout settings, like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+    
+    <span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+        <span class="nx">CurvePreferences</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="nx">tls</span><span class="p">.</span><span class="nx">CurveID</span><span class="p">{</span><span class="nx">tls</span><span class="p">.</span><span class="nx">X25519</span><span class="p">,</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">CurveP256</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>      <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span>   <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">ErrorLog</span><span class="p">:</span>  <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">TLSConfig</span><span class="p">:</span> <span class="nx">tlsConfig</span><span class="p">,</span>
+        <span class="c1">// Add Idle, Read and Write timeouts to the server.
+</span><span class="c1"></span>        <span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">,</span>
+        <span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+        <span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">&#34;./tls/cert.pem&#34;</span><span class="p">,</span> <span class="s">&#34;./tls/key.pem&#34;</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>All three of these timeouts &mdash; <code>IdleTimeout</code>, <code>ReadTimeout</code> and <code>WriteTimeout</code> &mdash; are server-wide settings which act on the underlying connection and apply to all requests irrespective of their handler or URL.</p>
+
+<h3 id="the-idletimeout-setting">The IdleTimeout setting</h3>
+
+<p>By default, Go enables <a href="https://en.wikipedia.org/wiki/HTTP_persistent_connection">keep-alives</a> on all accepted connections. This helps reduce latency (especially for HTTPS connections) because a client can reuse the same connection for multiple requests without having to repeat the TLS handshake.</p>
+
+<p>By default, keep-alive connections will be automatically closed after a couple of minutes (the exact time <a href="https://github.com/golang/go/issues/23459#issuecomment-374777402">depends on your operating system</a>). This helps to clear-up connections where the user has disappeared unexpectedly &mdash; e.g. due to a power cut on the client&rsquo;s end.</p>
+
+<p>There is no way to <em>increase</em> this default (unless you roll your own <code>net.Listener</code>), but you can <em>reduce</em> it via the <code>IdleTimeout</code> setting. In our case, we&rsquo;ve set <code>IdleTimeout</code> to 1 minute, which means that all keep-alive connections will be automatically closed after 1 minute of inactivity.</p>
+
+<h3 id="the-readtimeout-setting">The ReadTimeout setting</h3>
+
+<p>In our code we&rsquo;ve also set the <code>ReadTimeout</code> setting to 5 seconds. This means that if the request headers or body are still being read 5 seconds after the request is first accepted, then Go will close the underlying connection. Because this is a &lsquo;hard&rsquo; closure on the connection, the user won&rsquo;t receive any HTTP(S) response.</p>
+
+<p>Setting a short <code>ReadTimeout</code> period helps to mitigate the risk from  slow-client attacks &mdash; such as <a href="https://en.wikipedia.org/wiki/Slowloris_(computer_security)">Slowloris</a> &mdash; which could otherwise keep a connection open indefinitely by sending partial, incomplete, HTTP(S) requests.</p>
+
+<aside class="important"><p>
+<strong>Important:</strong> If you set <code>ReadTimeout</code> but don&rsquo;t set <code>IdleTimeout</code>, then <code>IdleTimeout</code> will default to using the same setting as <code>ReadTimeout</code>.  For instance, if you set <code>ReadTimeout</code> to 3 seconds, then there is the side-effect that all keep-alive connections will also be closed after 3 seconds of inactivity. Generally, my recommendation is to avoid any ambiguity and always set an explicit <code>IdleTimeout</code> value for your server.
+</p></aside>
+
+<h3 id="the-writetimeout-setting">The WriteTimeout setting</h3>
+
+<p>The <code>WriteTimeout</code> setting will close the underlying connection if our server attempts to write to the connection after a given period (in our code, 10 seconds). But this behaves slightly differently depending on the protocol being used.</p>
+
+<ul>
+<li><p>For HTTP connections, if some data is written to the connection more than 10 seconds after the <em>read of the request header</em> finished, Go will close the underlying connection instead of writing the data.</p></li>
+
+<li><p>For HTTPS connections, if some data is written to the connection more than 10 seconds after the request is <em>first accepted</em>, Go will close the underlying connection instead of writing the data. This means that if you&rsquo;re using HTTPS (like we are) it&rsquo;s sensible to set <code>WriteTimeout</code> to a value greater than <code>ReadTimeout</code>.</p></li>
+</ul>
+
+<p>It&rsquo;s important to bear in mind that writes made by a handler are buffered and written to the connection as one when the handler returns. Therefore, the idea of <code>WriteTimeout</code> is generally <em>not</em> to prevent long-running handlers, but to prevent the data that the handler returns from taking too long to write.</p>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="the-readheadertimeout-setting">The ReadHeaderTimeout setting</h4>
+
+<p><code>http.Server</code> also provides a <code>ReadHeaderTimeout</code> setting, which we haven&rsquo;t used in our application. This works in a similar way to <code>ReadTimeout</code>, except that it applies to the read of the HTTP(S) headers only. So, if you set <code>ReadHeaderTimeout</code> to 3 seconds, a connection will be closed if the request headers are still being read 3 seconds after the request is accepted. However, reading of the request body can still take place after 3 seconds has passed, without the connection being closed.</p>
+
+<p>This can be useful if you want to apply a server-wide limit to reading request headers, but want to implement different timeouts on different routes when it comes to reading the request body (possibly using the <a href="https://pkg.go.dev/net/http/#TimeoutHandler"><code>http.TimeoutHandler()</code></a> middleware).</p>
+
+<p>For our Snippetbox web application we don&rsquo;t have any actions that warrant per-route read timeouts &mdash; reading the request headers and bodies for all our routes should be comfortably completed in 5 seconds, so we&rsquo;ll stick to using <code>ReadTimeout</code>.</p>
+
+<h4 id="the-maxheaderbytes-setting">The MaxHeaderBytes setting</h4>
+
+<p><code>http.Server</code> includes a <code>MaxHeaderBytes</code> field, which you can use to control the maximum number of bytes the server will read when parsing request headers. By default, Go allows a maximum header length of 1MB.</p>
+
+<p>If you want to limit the maximum header length to 0.5MB, for example, you would write:</p>
+
+<figure class="code go">
+<pre><span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+    <span class="nx">Addr</span><span class="p">:</span>           <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+    <span class="nx">MaxHeaderBytes</span><span class="p">:</span> <span class="mi">524288</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>If <code>MaxHeaderBytes</code> is exceeded, then the user will automatically be sent a <code>431 Request Header Fields Too Large</code> response.</p>
+
+<p>There&rsquo;s a gotcha to point out here: Go <em>always</em> adds an <a href="https://github.com/golang/go/blob/4b36e129f865f802eb87f7aa2b25e3297c5d8cfd/src/net/http/server.go#L871">additional 4096 bytes</a> of headroom to the figure you set. If you need <code>MaxHeaderBytes</code> to be a precise or very low number you&rsquo;ll need to factor this in.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.05-configuring-https-settings.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="10.00-user-authentication.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.05-configuring-https-settings.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.00-user-authentication.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
