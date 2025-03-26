@@ -1,47 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Customizing how tests run &mdash; Let's Go</title>
+		<title>سفارشی‌سازی نحوه اجرای تست‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Customizing how tests run</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; سفارشی‌سازی نحوه اجرای تست‌ها</span>
 				</div>
 				<div>
-					&lsaquo; <a href="13.03-end-to-end-testing.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="13.05-mocking-dependencies.html">Next</a> &rsaquo;
+					&lsaquo; <a href="13.03-end-to-end-testing.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.05-mocking-dependencies.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 13.4.</div>
-			<h2 id="customizing-how-tests-run">Customizing how tests run</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۳.۴.</div>
+			<h2 id="customizing-how-tests-run">سفارشی‌سازی نحوه اجرای تست‌ها</h2>
 
-<p>Before we continue adding more tests to our application, I want to take a quick break and talk about a few of the useful flags and options that are available to customize how your tests run.</p>
+<p>قبل از اینکه به افزودن تست‌های بیشتر به برنامه خود ادامه دهیم، می‌خواهم یک وقفه کوتاه بگیرم و درباره چندین فلگ و گزینه مفید که برای سفارشی‌سازی نحوه اجرای تست‌ها در دسترس هستند صحبت کنم.</p>
 
-<h3 id="controlling-which-tests-are-run">Controlling which tests are run</h3>
+<h3 id="controlling-which-tests-are-run">کنترل اینکه کدام تست‌ها اجرا شوند</h3>
 
-<p>So far in this book we&rsquo;ve been running the tests in a specific package (the <code>cmd/web</code> package) like so:</p>
+<p>تا کنون در این کتاب، ما تست‌ها را در یک پکیج خاص (پکیج <code>cmd/web</code>) به این صورت اجرا کرده‌ایم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test ./cmd/web</pre>
 </figure>
 
-<p>But it&rsquo;s also possible to run  <em>all</em> the tests in your current project by using the <code>./...</code> wildcard pattern. In our case, we can use it to run all tests in our project like this:</p>
+<p>اما همچنین می‌توان تمام تست‌ها را در پروژه فعلی خود با استفاده از الگوی وایلدکارد <code>./...</code> اجرا کرد. در مورد ما، می‌توانیم از آن برای اجرای تمام تست‌ها در پروژه خود به این صورت استفاده کنیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test ./...
 <samp>ok      snippetbox.alexedwards.net/cmd/web      0.007s
 ?       snippetbox.alexedwards.net/internal/models      [no test files]
@@ -49,11 +45,11 @@
 ?       snippetbox.alexedwards.net/ui   [no test files]</samp></pre>
 </figure>
 
-<p>Or going in the other direction, it&rsquo;s possible to only run specific tests by using the <code>-run</code> flag. This allows you to specify a regular expression &mdash; and only tests with a name that matches the regular expression will be run.</p>
+<p>یا در جهت دیگر، می‌توان فقط تست‌های خاصی را با استفاده از فلگ <code>-run</code> اجرا کرد. این به شما اجازه می‌دهد یک عبارت منظم مشخص کنید و فقط تست‌هایی که نامشان با عبارت منظم مطابقت دارد اجرا شوند.</p>
 
-<p>For example, we could opt to run only the <code>TestPing</code> test as follows:</p>
+<p>برای مثال، می‌توانیم انتخاب کنیم که فقط تست <code>TestPing</code> را به این صورت اجرا کنیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -v -run=&#34;^TestPing$&#34; ./cmd/web/
 <samp>=== RUN   TestPing
 --- PASS: TestPing (0.00s)
@@ -61,9 +57,9 @@ PASS
 ok      snippetbox.alexedwards.net/cmd/web      0.008s</samp></pre>
 </figure>
 
-<p>And you can even use the <code>-run</code> flag to limit testing to some specific sub-tests using the format <code>{test regexp}/{sub-test regexp}</code>. For example to run the <code>UTC</code> sub-test of our <code>TestHumanDate</code> test we could do this:</p>
+<p>و حتی می‌توانید از فلگ <code>-run</code> برای محدود کردن تست به برخی زیرتست‌های خاص با استفاده از فرمت <code>{test regexp}/{sub-test regexp}</code> استفاده کنید. برای مثال برای اجرای زیرتست <code>UTC</code> از تست <code>TestHumanDate</code> می‌توانیم این کار را انجام دهیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -v -run=&#34;^TestHumanDate$/^UTC$&#34; ./cmd/web
 <samp>=== RUN   TestHumanDate
 === RUN   TestHumanDate/UTC
@@ -73,9 +69,9 @@ PASS
 ok      snippetbox.alexedwards.net/cmd/web    0.003s</samp></pre>
 </figure>
 
-<p>In contrast, you can prevent specific tests from running by using the <code>-skip</code> flag. Like the <code>-run</code> flag we just looked at, this allows you to specify a regular expression and any tests with a name that matches the regular expression <em>won&rsquo;t</em> be run. For example, to skip the <code>TestHumanDate</code> test:</p>
+<p>در مقابل، می‌توانید از اجرای تست‌های خاصی با استفاده از فلگ <code>-skip</code> جلوگیری کنید. مانند فلگ <code>-run</code> که به تازگی بررسی کردیم، این به شما اجازه می‌دهد یک عبارت منظم مشخص کنید و هر تستی که نامش با عبارت منظم مطابقت دارد <em>اجرا نخواهد شد</em>. برای مثال، برای رد کردن تست <code>TestHumanDate</code>:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -v -skip=&#34;^TestHumanDate$&#34; ./cmd/web/
 <samp>=== RUN   TestPing
 --- PASS: TestPing (0.00s)
@@ -85,52 +81,52 @@ PASS
 ok      snippetbox.alexedwards.net/cmd/web      0.006s</samp></pre>
 </figure>
 
-<h3 id="test-caching">Test caching</h3>
+<h3 id="test-caching">کشینگ تست</h3>
 
-<p>You&rsquo;ve perhaps noticed by now that if you run exactly the same test twice &mdash; without making any changes to the package that you&rsquo;re testing &mdash; then a <em>cached</em> version of the test result is shown (indicated by the <code>(cached)</code> annotation next to the package name).</p>
+<p>شاید تا کنون متوجه شده‌اید که اگر دقیقاً همان تست را دو بار اجرا کنید &mdash; بدون ایجاد هیچ تغییری در پکیجی که در حال تست آن هستید &mdash; سپس یک نسخه <em>کش‌شده</em> از نتیجه تست نمایش داده می‌شود (که با علامت <code>(cached)</code> در کنار نام پکیج نشان داده می‌شود).</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test ./cmd/web
 <samp>ok      snippetbox.alexedwards.net/cmd/web      (cached)</samp></pre>
 </figure>
 
-<p>In most cases, the caching of test results is really useful (especially for large codebases) because it helps reduce the total test runtime. But if you want force your tests to run in full (and avoid the cache) you can use the <code>-count=1</code> flag:</p>
+<p>در بیشتر موارد، کشینگ نتایج تست واقعاً مفید است (به خصوص برای کدبیس‌های بزرگ) زیرا به کاهش زمان کلی اجرای تست کمک می‌کند. اما اگر می‌خواهید تست‌های خود را به طور کامل اجرا کنید (و از کش اجتناب کنید) می‌توانید از فلگ <code>-count=1</code> استفاده کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -count=1 ./cmd/web </pre>
 </figure>
 
 <aside class="note"><p>
-<strong>Note:</strong> The <code>count</code> flag is used to tell <code>go test</code> <em>how many times you want to execute each test</em>.  It&rsquo;s a <em>non-cacheable</em> flag, which means that any time you use it <code>go test</code> will neither read or write the test results to the cache. So using <code>count=1</code> is a bit of a trick to avoid the cache without otherwise affecting how your tests run.
+<strong>توجه:</strong> فلگ <code>count</code> برای این استفاده می‌شود که به <code>go test</code> <em>چند بار می‌خواهید هر تست را اجرا کنید</em> بگویید. این یک فلگ <em>غیرقابل کش</em> است، به این معنی که هر زمان که از آن استفاده کنید <code>go test</code> نتایج تست را نه می‌خواند و نه به کش می‌نویسد. بنابراین استفاده از <code>count=1</code> یک ترفند برای اجتناب از کش بدون تأثیرگذاری بر نحوه اجرای تست‌های شما است.
 </p></aside>
 
-<p>Alternatively, you can clear cached results for all tests with the <code>go clean</code> command:</p>
+<p>به طور متناوب، می‌توانید نتایج کش‌شده برای تمام تست‌ها را با استفاده از دستور <code>go clean</code> پاک کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go clean -testcache   </pre>
 </figure>
 
-<h3 id="fast-failure">Fast failure</h3>
+<h3 id="fast-failure">شکست سریع</h3>
 
-<p>As I mentioned briefly a couple of chapters ago, when you use the <code>t.Errorf()</code> function to mark a test as failed, it doesn&rsquo;t cause <code>go test</code> to immediately exit. All your other tests (and sub-tests) will continue to be run after a failure.</p>
+<p>همانطور که چند فصل پیش به طور مختصر اشاره کردم، وقتی از تابع <code>t.Errorf()</code> برای علامت‌گذاری یک تست به عنوان شکست‌خورده استفاده می‌کنید، باعث نمی‌شود که <code>go test</code> بلافاصله خارج شود. تمام تست‌های دیگر شما (و زیرتست‌ها) پس از یک شکست ادامه خواهند یافت.</p>
 
-<p>If you would prefer to terminate the tests immediately after the first failure you can use the <code>-failfast</code> flag:</p>
+<p>اگر ترجیح می‌دهید تست‌ها بلافاصله پس از اولین شکست متوقف شوند، می‌توانید از فلگ <code>-failfast</code> استفاده کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -failfast ./cmd/web</pre>
 </figure>
 
-<p>It&rsquo;s important to note that the <code>-failfast</code> flag only stops tests <em>in the package that had the failure</em>. If you are running tests in multiple packages (for example by using <code>go test ./...</code>), then the tests in the other packages <a href="https://github.com/golang/go/issues/33038">will continue to run</a>.</p>
+<p>مهم است که توجه داشته باشید که فلگ <code>-failfast</code> فقط تست‌ها را <em>در پکیجی که شکست داشته است</em> متوقف می‌کند. اگر در حال اجرای تست‌ها در چندین پکیج هستید (برای مثال با استفاده از <code>go test ./...</code>)، سپس تست‌ها در پکیج‌های دیگر <a href="https://github.com/golang/go/issues/33038">ادامه خواهند یافت</a>.</p>
 
-<h3 id="parallel-testing">Parallel testing</h3>
+<h3 id="parallel-testing">تست موازی</h3>
 
-<p>By default, the <code>go test</code> command executes all tests in a serial manner, one after another. When you have a small number of tests (like we do) and the runtime is very fast, this is absolutely fine.</p>
+<p>به طور پیش‌فرض، دستور <code>go test</code> تمام تست‌ها را به صورت سریالی اجرا می‌کند، یکی پس از دیگری. وقتی تعداد کمی تست دارید (مانند ما) و زمان اجرا بسیار سریع است، این کاملاً مناسب است.</p>
 
-<p>But if you have hundreds or thousands of tests the total run time can start adding up to something more meaningful. And in that scenario, you may save yourself some time by running the tests in parallel.</p>
+<p>اما اگر صدها یا هزاران تست داشته باشید، زمان اجرای کل می‌تواند به چیزی معنادار تبدیل شود. و در آن سناریو، ممکن است با اجرای تست‌ها به صورت موازی، مقداری زمان صرفه‌جویی کنید.</p>
 
-<p>You can indicate that it&rsquo;s OK for a test to be run concurrently alongside other tests by calling the <code>t.Parallel()</code> function at the start of the test. For example:</p>
+<p>می‌توانید نشان دهید که اجرای یک تست به صورت همزمان با دیگر تست‌ها مشکلی ندارد با فراخوانی تابع <code>t.Parallel()</code> در ابتدای تست. برای مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">TestPing</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">t</span><span class="p">.</span><span class="nf">Parallel</span><span class="p">(</span><span class="p">)</span>
 
@@ -138,46 +134,46 @@ ok      snippetbox.alexedwards.net/cmd/web      0.006s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>It&rsquo;s important to note here that:</p>
+<p>مهم است که در اینجا توجه داشته باشید که:</p>
 
 <ul>
-<li><p>Tests marked using <code>t.Parallel()</code> will be run in parallel with &mdash; <em>and only with</em> &mdash; other parallel tests.</p></li>
+<li><p>تست‌هایی که با استفاده از <code>t.Parallel()</code> علامت‌گذاری شده‌اند، به صورت موازی با &mdash; <em>و فقط با</em> &mdash; دیگر تست‌های موازی اجرا خواهند شد.</p></li>
 
-<li><p>By default, the maximum number of tests that will be run simultaneously is the current value of <a href="https://pkg.go.dev/runtime/#pkg-constants">GOMAXPROCS</a>. You can override this by setting a specific value via the <code>-parallel</code> flag. For example:</p>
+<li><p>به طور پیش‌فرض، حداکثر تعداد تست‌هایی که به صورت همزمان اجرا خواهند شد، مقدار فعلی <a href="https://pkg.go.dev/runtime/#pkg-constants">GOMAXPROCS</a> است. می‌توانید این مقدار را با تنظیم یک مقدار خاص از طریق فلگ <code>-parallel</code> تغییر دهید. برای مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -parallel=4 ./...</pre>
 </figure>
 </li>
 
-<li><p>Not all tests are suitable to be run in parallel. For example, if you have an integration test which requires a database table to be in a specific known state, then you wouldn&rsquo;t want to run it in parallel with other tests that manipulate the same database table.</p></li>
+<li><p>همه تست‌ها برای اجرا به صورت موازی مناسب نیستند. برای مثال، اگر یک تست یکپارچه دارید که نیاز به یک جدول پایگاه داده در یک حالت خاص دارد، نمی‌خواهید آن را به صورت موازی با دیگر تست‌هایی که همان جدول پایگاه داده را تغییر می‌دهند اجرا کنید.</p></li>
 </ul>
 
-<h3 id="enabling-the-race-detector">Enabling the race detector</h3>
+<h3 id="enabling-the-race-detector">فعال‌سازی آشکارساز رقابت</h3>
 
-<p>The <code>go test</code> command includes a <code>-race</code> flag which enables Go&rsquo;s <a href="https://golang.org/doc/articles/race_detector.html">race detector</a> when running tests.</p>
+<p>دستور <code>go test</code> شامل یک فلگ <code>-race</code> است که آشکارساز <a href="https://golang.org/doc/articles/race_detector.html">رقابت</a> Go را هنگام اجرای تست‌ها فعال می‌کند.</p>
 
-<p>If the code you&rsquo;re testing leverages concurrency, or you&rsquo;re running tests in parallel, enabling this can be a good idea to help to flag up race conditions that exist in your application. You can use it like so:</p>
+<p>اگر کدی که در حال تست آن هستید از همزمانی استفاده می‌کند، یا در حال اجرای تست‌ها به صورت موازی هستید، فعال‌سازی این می‌تواند ایده خوبی باشد تا شرایط رقابتی که در برنامه شما وجود دارد را پرچم‌گذاری کند. می‌توانید از آن به این صورت استفاده کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -race ./cmd/web/</pre>
 </figure>
 
-<p>You should be aware that the race detector is limited in its usefulness&hellip; it&rsquo;s just a tool that flags data races if and when they are identified at runtime during testing. It doesn&rsquo;t carry out static analysis of your codebase, and a clear run doesn&rsquo;t <em>ensure</em> that your code is free of race conditions.</p>
+<p>باید بدانید که آشکارساز رقابت در مفید بودن خود محدود است... این فقط یک ابزار است که شرایط رقابتی را اگر و زمانی که در زمان اجرا در طول تست شناسایی شوند، پرچم‌گذاری می‌کند. این تحلیل استاتیک از کدبیس شما انجام نمی‌دهد، و یک اجرای بدون مشکل تضمین نمی‌کند که کد شما از شرایط رقابتی خالی است.</p>
 
-<p>Enabling the race detector will also increase the overall running time of your tests. So if you&rsquo;re running tests very frequently as part of a TDD workflow, you may prefer to use the <code>-race</code> flag during pre-commit test runs only.</p>
+<p>فعال‌سازی آشکارساز رقابت همچنین زمان کلی اجرای تست‌های شما را افزایش خواهد داد. بنابراین اگر در حال اجرای تست‌ها به صورت بسیار مکرر به عنوان بخشی از یک جریان کاری TDD هستید، ممکن است ترجیح دهید از فلگ <code>-race</code> فقط در طول اجرای تست‌های پیش از تعهد استفاده کنید.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="13.03-end-to-end-testing.html">Previous</a>
+					&lsaquo; <a href="13.03-end-to-end-testing.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="13.05-mocking-dependencies.html">Next</a> &rsaquo;
+					<a href="13.05-mocking-dependencies.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
