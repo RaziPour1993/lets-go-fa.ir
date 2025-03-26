@@ -9,35 +9,35 @@
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">User authentication</a> &rsaquo; User login</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ورود کاربر</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="10.05-user-logout.html">Next</a> &rsaquo;
+					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="10.05-user-logout.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 10.4.</div>
-			<h2 id="user-login">User login</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 10.4.</div>
+			<h2 id="user-login">ورود کاربر</h2>
 
-<p>In this chapter were going to focus on creating the user login page for our application.</p>
+<p>در این فصل قصد داریم روی ایجاد صفحه ورود کاربر برای برنامه خود تمرکز کنیم.</p>
 
-<p>Before we get into the main part of this work, let&rsquo;s quickly revisit the <code>internal/validator</code> package that we made earlier and update it to support validation errors <em>which aren&rsquo;t associated with one specific form field</em>.</p>
+<p>قبل از اینکه به بخش اصلی این کار بپردازیم، بیایید به سرعت به بسته <code>internal/validator</code> که قبلاً ساخته‌ایم نگاهی بیندازیم و آن را به‌روزرسانی کنیم تا از خطاهای اعتبارسنجی <em>که به یک فیلد خاص فرم مرتبط نیستند</em> پشتیبانی کند.</p>
 
-<p>We&rsquo;ll use this later in the chapter to show the user a generic “<em>your email address or password is wrong”</em> message if their login fails, as this considered <a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses">more secure</a> than explicitly indicating why the login failed.</p>
+<p>ما از این بعداً در فصل استفاده خواهیم کرد تا به کاربر یک پیام عمومی "<em>آدرس ایمیل یا رمز عبور شما اشتباه است</em>" نشان دهیم اگر ورود آنها ناموفق باشد، زیرا این کار <a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses">امن‌تر</a> از بیان صریح دلیل شکست ورود است.</p>
 
-<p>Please go ahead and update your <code>internal/validator/validator.go</code> file like so:</p>
+<p>لطفاً فایل <code>internal/validator/validator.go</code> خود را به صورت زیر به‌روزرسانی کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/validator/validator.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">validator</span>
 
@@ -65,13 +65,13 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>Next let&rsquo;s create a new <code>ui/html/pages/login.tmpl</code> template containing the markup for our login page. We&rsquo;ll follow the same pattern for showing validation errors and re-displaying data that we used for our signup page.</p>
+<p>بعد، بیایید یک قالب جدید <code>ui/html/pages/login.tmpl</code> ایجاد کنیم که حاوی نشانه‌گذاری برای صفحه ورود ما باشد. ما از همان الگوی نمایش خطاهای اعتبارسنجی و نمایش مجدد داده‌ها که برای صفحه ثبت‌نام خود استفاده کردیم، پیروی خواهیم کرد.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ touch ui/html/pages/login.tmpl</pre>
 </figure>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/login.tmpl</figcaption>
 <pre>{{define &#34;title&#34;}}Login{{end}}
 
@@ -103,11 +103,11 @@
 {{end}}</pre>
 </figure>
 
-<p>Then let’s head to our <code>cmd/web/handlers.go</code> file and create a new <code>userLoginForm</code> struct (to represent and hold the form data), and adapt our <code>userLogin</code> handler to render the login page.</p>
+<p>سپس به فایل <code>cmd/web/handlers.go</code> خود بروید و یک ساختار جدید <code>userLoginForm</code> ایجاد کنید (برای نمایش و نگهداری داده‌های فرم)، و handler <code>userLogin</code> خود را برای نمایش صفحه ورود تطبیق دهید.</p>
 
-<p>Like so:</p>
+<p>به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -130,27 +130,27 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>If you run the application and visit <a href="https://localhost:4000/user/login"><code>https://localhost:4000/user/login</code></a>, you should now see the login page looking like this:</p>
+<p>اگر برنامه را اجرا کنید و به <a href="https://localhost:4000/user/login"><code>https://localhost:4000/user/login</code></a> بروید، اکنون باید صفحه ورود را به این شکل ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/10.04-01.png" alt="10.04-01.png" />
 </figure>
 
-<h3 id="verifying-the-user-details">Verifying the user details</h3>
+<h3 id="verifying-the-user-details">تأیید جزئیات کاربر</h3>
 
-<p>The next step is the interesting part: <em>how do we verify that the email and password submitted by a user are correct?</em></p>
+<p>گام بعدی بخش جالب است: <em>چگونه می‌توانیم تأیید کنیم که ایمیل و رمز عبور ارسال شده توسط کاربر صحیح است؟</em></p>
 
-<p>The core part of this verification logic will take place in the <code>UserModel.Authenticate()</code> method of our user model. Specifically, we&rsquo;ll need it to do two things:</p>
+<p>بخش اصلی این منطق تأیید در متد <code>UserModel.Authenticate()</code> مدل کاربر ما انجام خواهد شد. به طور خاص، ما به دو چیز نیاز داریم:</p>
 
 <ol>
-<li><p>First it should retrieve the hashed password associated with the email address from our MySQL <code>users</code> table. If the email doesn&rsquo;t exist in the database, we will return the <code>ErrInvalidCredentials</code> error that we made earlier.</p></li>
+<li><p>ابتدا باید رمز عبور هش شده مرتبط با آدرس ایمیل را از جدول MySQL <code>users</code> بازیابی کنیم. اگر ایمیل در پایگاه داده وجود نداشته باشد، خطای <code>ErrInvalidCredentials</code> را که قبلاً ساخته‌ایم برمی‌گردانیم.</p></li>
 
-<li><p>Otherwise, we want to compare the hashed password from the <code>users</code> table with the plain-text password that the user provided when logging in. If they don&rsquo;t match, we want to return the <code>ErrInvalidCredentials</code> error again. But if they do match, we want to return the user&rsquo;s <code>id</code> value from the database.</p></li>
+<li><p>در غیر این صورت، می‌خواهیم رمز عبور هش شده از جدول <code>users</code> را با رمز عبور متنی که کاربر هنگام ورود ارائه کرده است مقایسه کنیم. اگر آنها مطابقت نداشته باشند، می‌خواهیم دوباره خطای <code>ErrInvalidCredentials</code> را برگردانیم. اما اگر مطابقت داشته باشند، می‌خواهیم مقدار <code>id</code> کاربر را از پایگاه داده برگردانیم.</p></li>
 </ol>
 
-<p>Let&rsquo;s do exactly that. Go ahead and add the following code to your <code>internal/models/users.go</code> file:</p>
+<p>بیایید دقیقاً این کار را انجام دهیم. کد زیر را به فایل <code>internal/models/users.go</code> خود اضافه کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -189,13 +189,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Our next step involves updating the <code>userLoginPost</code> handler so that it parses the submitted login form data and calls this <code>UserModel.Authenticate()</code> method.</p>
+<p>گام بعدی ما شامل به‌روزرسانی handler <code>userLoginPost</code> است تا داده‌های فرم ورود ارسال شده را تجزیه کند و این متد <code>UserModel.Authenticate()</code> را فراخوانی کند.</p>
 
-<p>If the login details are valid, we then want to add the user&rsquo;s <code>id</code> to their session data so that &mdash; for future requests &mdash; we know that they have authenticated successfully and which user they are.</p>
+<p>اگر جزئیات ورود معتبر باشند، سپس می‌خواهیم <code>id</code> کاربر را به داده‌های جلسه آنها اضافه کنیم تا &mdash; برای درخواست‌های آینده &mdash; بدانیم که آنها با موفقیت احراز هویت شده‌اند و کدام کاربر هستند.</p>
 
-<p>Head over to your <code>handlers.go</code> file and update it as follows:</p>
+<p>به فایل <code>handlers.go</code> خود بروید و آن را به صورت زیر به‌روزرسانی کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -263,24 +263,24 @@
 </figure>
 
 <aside class="note"><p>
-<strong>Note:</strong> The <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.RenewToken"><code>SessionManager.RenewToken()</code></a> method that we&rsquo;re using in the code above will change the ID of the current user&rsquo;s session <em>but retain any data associated with the session</em>. It&rsquo;s good practice to do this before login to mitigate the risk of a session fixation attack. For more background and information on this, please see the <a href="https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change">OWASP Session Management Cheat Sheet</a>.
+<strong>توجه:</strong> متد <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.RenewToken"><code>SessionManager.RenewToken()</code></a> که در کد بالا استفاده می‌کنیم، شناسه جلسه کاربر فعلی را تغییر می‌دهد <em>اما هر داده‌ای که با جلسه مرتبط است را حفظ می‌کند</em>. این کار قبل از ورود به سیستم برای کاهش خطر حمله تثبیت جلسه، یک عمل خوب است. برای اطلاعات بیشتر و پس‌زمینه در این مورد، لطفاً به <a href="https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change">برگه تقلب مدیریت جلسه OWASP</a> مراجعه کنید.
 </p></aside>
 
-<p>Alright, let&rsquo;s give this a try!</p>
+<p>بسیار خوب، بیایید این را امتحان کنیم!</p>
 
-<p>Restart the application and try submitting some invalid user credentials&hellip;</p>
+<p>برنامه را مجدداً راه‌اندازی کنید و سعی کنید برخی از اعتبارنامه‌های کاربر نامعتبر را ارسال کنید&hellip;</p>
 
 <figure class="img">
 <img src="assets/img/10.04-02.png" alt="10.04-02.png" />
 </figure>
 
-<p>You should get a non-field validation error message which looks like this:</p>
+<p>باید یک پیام خطای اعتبارسنجی غیر فیلدی دریافت کنید که به این شکل است:</p>
 
 <figure class="img">
 <img src="assets/img/10.04-03.png" alt="10.04-03.png" />
 </figure>
 
-<p>But when you input some correct credentials (use the email address and password for the user that you created in the previous chapter), the application should log you in and redirect you to the create snippet page, like so:</p>
+<p>اما وقتی برخی از اعتبارنامه‌های صحیح را وارد می‌کنید (از آدرس ایمیل و رمز عبور برای کاربری که در فصل قبلی ایجاد کرده‌اید استفاده کنید)، برنامه باید شما را وارد کند و به صفحه ایجاد قطعه هدایت کند، به این صورت:</p>
 
 <figure class="img">
 <img src="assets/img/10.04-04.png" alt="10.04-04.png" />
@@ -290,25 +290,25 @@
 <img src="assets/img/10.04-05.png" alt="10.04-05.png" />
 </figure>
 
-<p>We&rsquo;ve covered a lot of ground in the last two chapters, so let&rsquo;s quickly take stock of where things are at.</p>
+<p>ما در دو فصل گذشته کارهای زیادی انجام داده‌ایم، بنابراین بیایید به سرعت بررسی کنیم که وضعیت چگونه است.</p>
 
 <ul>
-<li><p>Users can now <em>register</em> with the site using the <code>GET /user/signup</code> form. We store the details of registered users (including a hashed version of their password) in the <code>users</code> table of our database.</p></li>
+<li><p>کاربران اکنون می‌توانند با استفاده از فرم <code>GET /user/signup</code> در سایت <em>ثبت‌نام</em> کنند. ما جزئیات کاربران ثبت‌نام شده (از جمله نسخه هش شده رمز عبور آنها) را در جدول <code>users</code> پایگاه داده خود ذخیره می‌کنیم.</p></li>
 
-<li><p>Registered users can then <em>authenticate</em> by using the <code>GET /user/login</code> form to provide their email address and password. If these match the details of a registered user, we deem them to have authenticated successfully and add the relevant <code>&quot;authenticatedUserID&quot;</code> value to their session data.</p></li>
+<li><p>کاربران ثبت‌نام شده سپس می‌توانند با استفاده از فرم <code>GET /user/login</code> برای ارائه آدرس ایمیل و رمز عبور خود <em>احراز هویت</em> کنند. اگر این موارد با جزئیات یک کاربر ثبت‌نام شده مطابقت داشته باشد، ما آنها را به عنوان احراز هویت موفقیت‌آمیز می‌دانیم و مقدار <code>&quot;authenticatedUserID&quot;</code> مربوطه را به داده‌های جلسه آنها اضافه می‌کنیم.</p></li>
 </ul>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">Previous</a>
+					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="10.05-user-logout.html">Next</a> &rsaquo;
+					<a href="10.05-user-logout.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
