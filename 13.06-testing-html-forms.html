@@ -4,46 +4,46 @@
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Testing HTML forms &mdash; Let's Go</title>
+		<title>تست فرم‌های HTML &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body>
-		<header>
+	<body dir="rtl">
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Testing HTML forms</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست فرم‌های HTML</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="13.05-mocking-dependencies.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="13.07-integration-testing.html">Next</a> &rsaquo;
+					&lsaquo; <a href="13.05-mocking-dependencies.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.07-integration-testing.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 13.6.</div>
-			<h2 id="testing-html-forms">Testing HTML forms</h2>
+			<div class="chapter">فصل 13.6.</div>
+			<h2 id="testing-html-forms">تست فرم‌های HTML</h2>
 
-<p>In this chapter we&rsquo;re going to add an end-to-end test for the <code>POST /user/signup</code> route, which is handled by our <code>userSignupPost</code> handler.</p>
+<p>در این فصل، ما قصد داریم یک تست انتها به انتها برای مسیر <code>POST /user/signup</code> اضافه کنیم، که توسط هندلر <code>userSignupPost</code> مدیریت می‌شود.</p>
 
-<p>Testing this route is made a bit more complicated by the anti-CSRF check that our application does. Any request that we make to <code>POST /user/signup</code> will always receive a <code>400 Bad Request</code> response <em>unless</em> the request contains a valid CSRF token and cookie. To get around this we need to simulate the workflow of a real-life user as part of our test, like so:</p>
+<p>تست این مسیر به دلیل بررسی ضد-CSRF که برنامه ما انجام می‌دهد، کمی پیچیده‌تر است. هر درخواستی که به <code>POST /user/signup</code> ارسال می‌شود، همیشه یک پاسخ <code>400 Bad Request</code> دریافت می‌کند مگر اینکه درخواست شامل یک توکن CSRF معتبر و کوکی باشد. برای دور زدن این موضوع، باید به عنوان بخشی از تست خود، جریان کاری یک کاربر واقعی را شبیه‌سازی کنیم، به این صورت:</p>
 
-<ol>
-<li><p>Make a <code>GET /user/signup</code> request. This will return a response which contains a CSRF cookie in the response headers and the CSRF token for the signup page in the response body.</p></li>
+<ol dir="rtl">
+<li><p>یک درخواست <code>GET /user/signup</code> ارسال کنید. این درخواست پاسخی را برمی‌گرداند که شامل یک کوکی CSRF در هدرهای پاسخ و توکن CSRF برای صفحه ثبت‌نام در بدنه پاسخ است.</p></li>
 
-<li><p>Extract the CSRF token from the HTML response body.</p></li>
+<li><p>توکن CSRF را از بدنه پاسخ HTML استخراج کنید.</p></li>
 
-<li><p>Make a <code>POST /user/signup</code> request, using the same <code>http.Client</code> that we used in step 1 (so it automatically passes the CSRF cookie with the <code>POST</code> request) and including the CSRF token alongside the other <code>POST</code> data that we want to test.</p></li>
+<li><p>یک درخواست <code>POST /user/signup</code> ارسال کنید، با استفاده از همان <code>http.Client</code> که در مرحله 1 استفاده کردیم (بنابراین به طور خودکار کوکی CSRF را با درخواست <code>POST</code> ارسال می‌کند) و شامل توکن CSRF به همراه سایر داده‌های <code>POST</code> که می‌خواهیم تست کنیم.</p></li>
 </ol>
 
-<p>Let&rsquo;s begin by adding a new helper function to our <code>cmd/web/testutils_test.go</code> file for extracting the CSRF token (if one exists) from an HTML response body:</p>
+<p>بیایید با اضافه کردن یک تابع کمکی جدید به فایل <code>cmd/web/testutils_test.go</code> برای استخراج توکن CSRF (در صورت وجود) از بدنه پاسخ HTML شروع کنیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/testutils_test.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -86,14 +86,14 @@
 </figure>
 
 <aside class="note"><p>
-<strong>Note:</strong> You might be wondering why we are using the <a href="https://pkg.go.dev/html#UnescapeString"><code>html.UnescapeString()</code></a> function before returning the CSRF token. The reason for this is because Go&rsquo;s <code>html/template</code> package automatically escapes all dynamically rendered data&hellip; including our CSRF token. Because the CSRF token is a base64 encoded string it will potentially include the <code>+</code> character, and this will be escaped to <code>&amp;#43;</code>. So after extracting the token from the HTML we need to run it through <code>html.UnescapeString()</code> to get the original token value.
+<strong>توجه:</strong> ممکن است بپرسید چرا از تابع <a href="https://pkg.go.dev/html#UnescapeString"><code>html.UnescapeString()</code></a> قبل از بازگرداندن توکن CSRF استفاده می‌کنیم. دلیل این است که بسته <code>html/template</code> در Go به طور خودکار تمام داده‌های رندر شده پویا را فرار می‌دهد... از جمله توکن CSRF ما. از آنجا که توکن CSRF یک رشته کدگذاری شده base64 است، ممکن است شامل کاراکتر <code>+</code> باشد، و این به <code>&amp;#43;</code> فرار می‌کند. بنابراین پس از استخراج توکن از HTML، باید آن را از طریق <code>html.UnescapeString()</code> اجرا کنیم تا مقدار اصلی توکن را بدست آوریم.
 </p></aside>
 
-<p>Now that&rsquo;s in place, let&rsquo;s go back to our <code>cmd/web/handlers_test.go</code> file and create a new <code>TestUserSignup</code> test.</p>
+<p>حالا که این در جای خود قرار دارد، بیایید به فایل <code>cmd/web/handlers_test.go</code> برگردیم و یک تست جدید <code>TestUserSignup</code> ایجاد کنیم.</p>
 
-<p>To start with, we&rsquo;ll make this perform a <code>GET /user/signup</code> request and then extract and print out the CSRF token from the HTML response body. Like so:</p>
+<p>برای شروع، ما این کار را با ارسال یک درخواست <code>GET /user/signup</code> و سپس استخراج و چاپ توکن CSRF از بدنه پاسخ HTML انجام خواهیم داد. به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers_test.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -118,32 +118,32 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Importantly, you must run tests using the <code>-v</code> flag (to enable verbose output) in order to see any output from the <code>t.Logf()</code> function.</p>
+<p>مهم است که تست‌ها را با استفاده از فلگ <code>-v</code> (برای فعال کردن خروجی مفصل) اجرا کنید تا هر خروجی از تابع <code>t.Logf()</code> را ببینید.</p>
 
-<p>Let&rsquo;s go ahead and do that now:</p>
+<p>بیایید این کار را اکنون انجام دهیم:</p>
 
-<figure class="code bash">
-<pre>$ go test -v -run=&#34;TestUserSignup&#34; ./cmd/web/
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v -run="TestUserSignup" ./cmd/web/
 <samp>=== RUN   TestUserSignup
-    handlers_test.go:81: CSRF token is: &#34;C92tcpQpL1n6aIUaF8XAonwy+YjcVnyaAaOvfkdl6vJqoNSbgaTtdBRC61pFMoGP2ojV+sZ1d0SUikah3mfREQ==&#34;
+    handlers_test.go:81: CSRF token is: "C92tcpQpL1n6aIUaF8XAonwy+YjcVnyaAaOvfkdl6vJqoNSbgaTtdBRC61pFMoGP2ojV+sZ1d0SUikah3mfREQ=="
 --- PASS: TestUserSignup (0.01s)
 PASS
 ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
 </figure>
 
-<p>OK, that looks like it&rsquo;s working. The test is running without any problems and printing out the CSRF token that we&rsquo;ve extracted from the response body HTML.</p>
+<p>خوب، به نظر می‌رسد که کار می‌کند. تست بدون هیچ مشکلی اجرا می‌شود و توکن CSRF که از بدنه پاسخ استخراج کرده‌ایم را چاپ می‌کند.</p>
 
 <aside class="note"><p>
-<strong>Note:</strong> If you run this test for a second time immediately afterwards, without changing anything in the <code>cmd/web</code> package, you&rsquo;ll get the same CSRF token in the test output <em>because the test results have been cached</em>.
+<strong>توجه:</strong> اگر این تست را برای بار دوم بلافاصله پس از آن اجرا کنید، بدون تغییر چیزی در بسته <code>cmd/web</code>، همان توکن CSRF را در خروجی تست دریافت خواهید کرد <em>زیرا نتایج تست کش شده‌اند</em>.
 </p></aside>
 
-<h3 id="testing-post-requests">Testing post requests</h3>
+<h3 id="testing-post-requests">تست درخواست‌های پست</h3>
 
-<p>Now let&rsquo;s head back to our <code>cmd/web/testutils_test.go</code> file and create a new <code>postForm()</code> method on our <code>testServer</code> type, which we can use to send a <code>POST</code> request to our test server with specific form data in the request body.</p>
+<p>حالا بیایید به فایل <code>cmd/web/testutils_test.go</code> برگردیم و یک متد جدید <code>postForm()</code> روی نوع <code>testServer</code> خود ایجاد کنیم، که می‌توانیم از آن برای ارسال یک درخواست <code>POST</code> به سرور تست خود با داده‌های فرم خاص در بدنه درخواست استفاده کنیم.</p>
 
-<p>Go ahead and add the following code (which follows the same general pattern that we used for the <code>get()</code> method earlier in the book):</p>
+<p>کد زیر را اضافه کنید (که از همان الگوی کلی که برای متد <code>get()</code> قبلاً در کتاب استفاده کردیم پیروی می‌کند):</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/testutils_test.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -190,33 +190,33 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>And now, at last, we&rsquo;re ready to add some table-driven sub-tests to test the behavior of our application&rsquo;s <code>POST /user/signup</code> route. Specifically, we want to test that:</p>
+<p>و حالا، در نهایت، آماده‌ایم تا برخی از تست‌های زیرمجموعه‌ای مبتنی بر جدول را برای تست رفتار مسیر <code>POST /user/signup</code> برنامه خود اضافه کنیم. به طور خاص، می‌خواهیم تست کنیم که:</p>
+
+<ul dir="rtl">
+<li>یک ثبت‌نام معتبر منجر به پاسخ <code>303 See Other</code> می‌شود.</li>
+<li>ارسال فرم بدون توکن CSRF معتبر منجر به پاسخ <code>400 Bad Request</code> می‌شود.</li>
+<li>ارسال فرم نامعتبر منجر به پاسخ <code>422 Unprocessable Entity</code> می‌شود و فرم ثبت‌نام دوباره نمایش داده می‌شود. این باید زمانی اتفاق بیفتد که:
 
 <ul>
-<li>A valid signup results in a <code>303 See Other</code> response.</li>
-<li>A form submission without a valid CSRF token results in a <code>400 Bad Request</code> response.</li>
-<li>A invalid form submission results in a <code>422 Unprocessable Entity</code> response and the signup form is redisplayed. This should happen when:
-
-<ul>
-<li>The name, email or password fields are empty.</li>
-<li>The email is not in a valid format.</li>
-<li>The password is less than 8 characters long.</li>
-<li>The email address is already in use.</li>
+<li>فیلدهای نام، ایمیل یا رمز عبور خالی باشند.</li>
+<li>ایمیل در قالب معتبری نباشد.</li>
+<li>رمز عبور کمتر از 8 کاراکتر باشد.</li>
+<li>آدرس ایمیل قبلاً استفاده شده باشد.</li>
 </ul></li>
 </ul>
 
-<p>Go ahead and update the <code>TestUserSignup</code> function to carry out these tests like so:</p>
+<p>به‌روزرسانی تابع <code>TestUserSignup</code> برای انجام این تست‌ها به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers_test.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;net/http&#34;</span>
-    <span class="s">&#34;net/url&#34;</span> <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">&#34;testing&#34;</span>
+    <span class="s">"net/http"</span>
+    <span class="s">"net/url"</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">"testing"</span>
 
-    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+    <span class="s">"snippetbox.alexedwards.net/internal/assert"</span>
 <span class="p">)</span>
 
 <span class="o">...</span>
@@ -230,13 +230,13 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
     <span class="nx">validCSRFToken</span> <span class="o">:=</span> <span class="nf">extractCSRFToken</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">)</span>
 
     <span class="kd">const</span> <span class="p">(</span>
-        <span class="nx">validName</span>     <span class="p">=</span> <span class="s">&#34;Bob&#34;</span>
-        <span class="nx">validPassword</span> <span class="p">=</span> <span class="s">&#34;validPa$$word&#34;</span>
-        <span class="nx">validEmail</span>    <span class="p">=</span> <span class="s">&#34;bob@example.com&#34;</span>
-        <span class="nx">formTag</span>       <span class="p">=</span> <span class="s">&#34;&lt;form action=&#39;/user/signup&#39; method=&#39;POST&#39; novalidate&gt;&#34;</span>
+        <span class="nx">validName</span>     <span class="p">=</span> <span class="s">"Bob"</span>
+        <span class="nx">validPassword</span> <span class="p">=</span> <span class="s">"validPa$$word"</span>
+        <span class="nx">validEmail</span>    <span class="p">=</span> <span class="s">"bob@example.com"</span>
+        <span class="nx">formTag</span>       <span class="p">=</span> <span class="s">"&lt;form action='/user/signup' method='POST' novalidate&gt;"</span>
     <span class="p">)</span>
 
-    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[]</span><span class="kd">struct</span> <span class="p">{</span>
         <span class="nx">name</span>         <span class="kt">string</span>
         <span class="nx">userName</span>     <span class="kt">string</span>
         <span class="nx">userEmail</span>    <span class="kt">string</span>
@@ -246,7 +246,7 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
         <span class="nx">wantFormTag</span>  <span class="kt">string</span>
     <span class="p">}</span><span class="p">{</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Valid submission&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Valid submission"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
             <span class="nx">userEmail</span><span class="p">:</span>    <span class="nx">validEmail</span><span class="p">,</span>
             <span class="nx">userPassword</span><span class="p">:</span> <span class="nx">validPassword</span><span class="p">,</span>
@@ -254,16 +254,16 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Invalid CSRF Token&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Invalid CSRF Token"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
             <span class="nx">userEmail</span><span class="p">:</span>    <span class="nx">validEmail</span><span class="p">,</span>
             <span class="nx">userPassword</span><span class="p">:</span> <span class="nx">validPassword</span><span class="p">,</span>
-            <span class="nx">csrfToken</span><span class="p">:</span>    <span class="s">&#34;wrongToken&#34;</span><span class="p">,</span>
+            <span class="nx">csrfToken</span><span class="p">:</span>    <span class="s">"wrongToken"</span><span class="p">,</span>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Empty name&#34;</span><span class="p">,</span>
-            <span class="nx">userName</span><span class="p">:</span>     <span class="s">&#34;&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Empty name"</span><span class="p">,</span>
+            <span class="nx">userName</span><span class="p">:</span>     <span class="s">""</span><span class="p">,</span>
             <span class="nx">userEmail</span><span class="p">:</span>    <span class="nx">validEmail</span><span class="p">,</span>
             <span class="nx">userPassword</span><span class="p">:</span> <span class="nx">validPassword</span><span class="p">,</span>
             <span class="nx">csrfToken</span><span class="p">:</span>    <span class="nx">validCSRFToken</span><span class="p">,</span>
@@ -271,45 +271,45 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
             <span class="nx">wantFormTag</span><span class="p">:</span>  <span class="nx">formTag</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Empty email&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Empty email"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
-            <span class="nx">userEmail</span><span class="p">:</span>    <span class="s">&#34;&#34;</span><span class="p">,</span>
+            <span class="nx">userEmail</span><span class="p">:</span>    <span class="s">""</span><span class="p">,</span>
             <span class="nx">userPassword</span><span class="p">:</span> <span class="nx">validPassword</span><span class="p">,</span>
             <span class="nx">csrfToken</span><span class="p">:</span>    <span class="nx">validCSRFToken</span><span class="p">,</span>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span>
             <span class="nx">wantFormTag</span><span class="p">:</span>  <span class="nx">formTag</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Empty password&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Empty password"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
             <span class="nx">userEmail</span><span class="p">:</span>    <span class="nx">validEmail</span><span class="p">,</span>
-            <span class="nx">userPassword</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+            <span class="nx">userPassword</span><span class="p">:</span> <span class="s">""</span><span class="p">,</span>
             <span class="nx">csrfToken</span><span class="p">:</span>    <span class="nx">validCSRFToken</span><span class="p">,</span>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span>
             <span class="nx">wantFormTag</span><span class="p">:</span>  <span class="nx">formTag</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Invalid email&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Invalid email"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
-            <span class="nx">userEmail</span><span class="p">:</span>    <span class="s">&#34;bob@example.&#34;</span><span class="p">,</span>
+            <span class="nx">userEmail</span><span class="p">:</span>    <span class="s">"bob@example."</span><span class="p">,</span>
             <span class="nx">userPassword</span><span class="p">:</span> <span class="nx">validPassword</span><span class="p">,</span>
             <span class="nx">csrfToken</span><span class="p">:</span>    <span class="nx">validCSRFToken</span><span class="p">,</span>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span>
             <span class="nx">wantFormTag</span><span class="p">:</span>  <span class="nx">formTag</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Short password&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Short password"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
             <span class="nx">userEmail</span><span class="p">:</span>    <span class="nx">validEmail</span><span class="p">,</span>
-            <span class="nx">userPassword</span><span class="p">:</span> <span class="s">&#34;pa$$&#34;</span><span class="p">,</span>
+            <span class="nx">userPassword</span><span class="p">:</span> <span class="s">"pa$$"</span><span class="p">,</span>
             <span class="nx">csrfToken</span><span class="p">:</span>    <span class="nx">validCSRFToken</span><span class="p">,</span>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span>
             <span class="nx">wantFormTag</span><span class="p">:</span>  <span class="nx">formTag</span><span class="p">,</span>
         <span class="p">}</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>         <span class="s">&#34;Duplicate email&#34;</span><span class="p">,</span>
+            <span class="nx">name</span><span class="p">:</span>         <span class="s">"Duplicate email"</span><span class="p">,</span>
             <span class="nx">userName</span><span class="p">:</span>     <span class="nx">validName</span><span class="p">,</span>
-            <span class="nx">userEmail</span><span class="p">:</span>    <span class="s">&#34;dupe@example.com&#34;</span><span class="p">,</span>
+            <span class="nx">userEmail</span><span class="p">:</span>    <span class="s">"dupe@example.com"</span><span class="p">,</span>
             <span class="nx">userPassword</span><span class="p">:</span> <span class="nx">validPassword</span><span class="p">,</span>
             <span class="nx">csrfToken</span><span class="p">:</span>    <span class="nx">validCSRFToken</span><span class="p">,</span>
             <span class="nx">wantCode</span><span class="p">:</span>     <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span>
@@ -320,16 +320,16 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
     <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
         <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">form</span> <span class="o">:=</span> <span class="nx">url</span><span class="p">.</span><span class="nx">Values</span><span class="p">{</span><span class="p">}</span>
-            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;name&#34;</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">userName</span><span class="p">)</span>
-            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;email&#34;</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">userEmail</span><span class="p">)</span>
-            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;password&#34;</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">userPassword</span><span class="p">)</span>
-            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;csrf_token&#34;</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">csrfToken</span><span class="p">)</span>
+            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"name"</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">userName</span><span class="p">)</span>
+            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"email"</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">userEmail</span><span class="p">)</span>
+            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"password"</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">userPassword</span><span class="p">)</span>
+            <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">"csrf_token"</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">csrfToken</span><span class="p">)</span>
 
             <span class="nx">code</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">body</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">postForm</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/user/signup&#34;</span><span class="p">,</span> <span class="nx">form</span><span class="p">)</span>
 
             <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantCode</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantFormTag</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantFormTag</span> <span class="o">!=</span> <span class="s">""</span> <span class="p">{</span>
                 <span class="nx">assert</span><span class="p">.</span><span class="nf">StringContains</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantFormTag</span><span class="p">)</span>
             <span class="p">}</span>
         <span class="p">}</span><span class="p">)</span>
@@ -337,10 +337,10 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>If you run the test, you should see that all the sub-tests run and pass successfully &mdash; similar to this:</p>
+<p>اگر تست را اجرا کنید، باید ببینید که همه زیرمجموعه‌های تست اجرا و با موفقیت پاس می‌شوند &mdash; مشابه این:</p>
 
-<figure class="code bash">
-<pre>$ go test -v -run=&#34;TestUserSignup&#34; ./cmd/web/
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v -run="TestUserSignup" ./cmd/web/
 <samp>=== RUN   TestUserSignup
 === RUN   TestUserSignup/Valid_submission
 === RUN   TestUserSignup/Invalid_CSRF_Token
@@ -366,16 +366,16 @@ ok      snippetbox.alexedwards.net/cmd/web      0.016s</samp></pre>
 </figure>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="13.05-mocking-dependencies.html">Previous</a>
+					&lsaquo; <a href="13.05-mocking-dependencies.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="13.07-integration-testing.html">Next</a> &rsaquo;
+					<a href="13.07-integration-testing.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
