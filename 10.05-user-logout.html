@@ -9,34 +9,34 @@
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">User authentication</a> &rsaquo; User logout</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; خروج کاربر</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="10.04-user-login.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="10.06-user-authorization.html">Next</a> &rsaquo;
+					&lsaquo; <a href="10.04-user-login.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="10.06-user-authorization.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 10.5.</div>
-			<h2 id="user-logout">User logout</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۰.۵.</div>
+			<h2 id="user-logout">خروج کاربر</h2>
 
-<p>This brings us nicely to logging out a user. Implementing the user logout is straightforward in comparison to the signup and login &mdash; essentially all we need to do is remove the <code>&quot;authenticatedUserID&quot;</code> value from their session.</p>
+<p>این ما را به خوبی به خروج کاربر می‌رساند. پیاده‌سازی خروج کاربر در مقایسه با ثبت‌نام و ورود به سیستم ساده‌تر است &mdash; اساساً تنها کاری که باید انجام دهیم حذف مقدار <code>&quot;authenticatedUserID&quot;</code> از جلسه کاربر است.</p>
 
-<p>At the same time it&rsquo;s good practice to renew the session ID again, and we&rsquo;ll also add a flash message to the session data to confirm to the user that they&rsquo;ve been logged out.</p>
+<p>در عین حال، بهتر است شناسه جلسه را دوباره تجدید کنیم و همچنین یک پیام فلش به داده‌های جلسه اضافه کنیم تا به کاربر تأیید کنیم که از سیستم خارج شده است.</p>
 
-<p>Let&rsquo;s update the <code>userLogoutPost</code> handler to do exactly that.</p>
+<p>بیایید handler <code>userLogoutPost</code> را به‌روزرسانی کنیم تا دقیقاً این کار را انجام دهد.</p>
 
-<figure class="code go">
-<figcaption>File: cmd/web/handlers.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File:  cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
@@ -63,23 +63,23 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Save the file and restart the application. If you now click the &lsquo;Logout&rsquo; link in the navigation bar you should be logged out and redirected to the homepage like so:</p>
+<p>فایل را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. اگر اکنون روی لینک &lsquo;خروج&rsquo; در نوار ناوبری کلیک کنید، باید از سیستم خارج شده و به صفحه اصلی هدایت شوید، به این صورت:</p>
 
 <figure class="img">
 <img src="assets/img/10.05-01.png" alt="10.05-01.png" />
 </figure>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="10.04-user-login.html">Previous</a>
+					&lsaquo; <a href="10.04-user-login.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="10.06-user-authorization.html">Next</a> &rsaquo;
+					<a href="10.06-user-authorization.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
