@@ -8,40 +8,40 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body>
+	<body dir="rtl">
 		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; Running a HTTPS server</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; اجرای یک سرور HTTPS</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="09.03-generating-a-self-signed-tls-certificate.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="09.05-configuring-https-settings.html">Next</a> &rsaquo;
+					&lsaquo; <a href="09.03-generating-a-self-signed-tls-certificate.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="09.05-configuring-https-settings.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 9.4.</div>
-			<h2 id="running-a-https-server">Running a HTTPS server</h2>
+			<div class="chapter">فصل 9.4.</div>
+			<h2 id="running-a-https-server">اجرای یک سرور HTTPS</h2>
 
-<p>Now that we have a self-signed TLS certificate and corresponding private key, starting a HTTPS web server is lovely and simple &mdash; we just need open the <code>main.go</code> file and swap the <code>srv.ListenAndServe()</code> method for <a href="https://pkg.go.dev/net/http/#Server.ListenAndServeTLS"><code>srv.ListenAndServeTLS()</code></a> instead.</p>
+<p>اکنون که یک گواهی TLS خود امضا و کلید خصوصی مربوطه داریم، شروع یک سرور وب HTTPS بسیار ساده است &mdash; فقط باید فایل <code>main.go</code> را باز کرده و متد <code>srv.ListenAndServe()</code> را با <a href="https://pkg.go.dev/net/http/#Server.ListenAndServeTLS"><code>srv.ListenAndServeTLS()</code></a> جایگزین کنیم.</p>
 
-<p>Alter your <code>main.go</code> file to match the following code:</p>
+<p>فایل <code>main.go</code> خود را به کد زیر تغییر دهید:</p>
 
-<figure class="code go">
-<figcaption>File: cmd/web/main.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File:  cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
 
 <span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
-    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">"addr"</span><span class="p">,</span> <span class="s">":4000"</span><span class="p">,</span> <span class="s">"HTTP network address"</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">"dsn"</span><span class="p">,</span> <span class="s">"web:pass@/snippetbox?parseTime=true"</span><span class="p">,</span> <span class="s">"MySQL data source name"</span><span class="p">)</span>
     <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
 
     <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
@@ -84,12 +84,12 @@
         <span class="nx">ErrorLog</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">"starting server"</span><span class="p">,</span> <span class="s">"addr"</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
     
     <span class="c1">// Use the ListenAndServeTLS() method to start the HTTPS server. We
 </span><span class="c1"></span>    <span class="c1">// pass in the paths to the TLS certificate and corresponding private key as
 </span><span class="c1"></span>    <span class="c1">// the two parameters.
-</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">&#34;./tls/cert.pem&#34;</span><span class="p">,</span> <span class="s">&#34;./tls/key.pem&#34;</span><span class="p">)</span>
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">"./tls/cert.pem"</span><span class="p">,</span> <span class="s">"./tls/key.pem"</span><span class="p">)</span>
     <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
     <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">}</span>
@@ -97,83 +97,83 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>When we run this, our server will still be listening on port 4000 &mdash; the only difference is that it will now be talking HTTPS instead of HTTP.</p>
+<p>وقتی این را اجرا می‌کنیم، سرور ما همچنان در پورت 4000 گوش می‌دهد &mdash; تنها تفاوت این است که اکنون به جای HTTP، HTTPS صحبت می‌کند.</p>
 
-<p>Go ahead and run it as normal:</p>
+<p>به صورت عادی آن را اجرا کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
 $ go run ./cmd/web
-<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg="starting server" addr=:4000</samp></pre>
 </figure>
 
-<p>If you open up your web browser and visit <a href="https://localhost:4000/">https://localhost:4000/</a> you will probably get a browser warning because the TLS certificate is self-signed, similar to the screenshot below.</p>
+<p>اگر مرورگر وب خود را باز کنید و به <a href="https://localhost:4000/">https://localhost:4000/</a> بروید، احتمالاً یک هشدار مرورگر دریافت خواهید کرد زیرا گواهی TLS خود امضا است، مشابه تصویر زیر.</p>
 
 <figure class="img">
 <img src="assets/img/09.02-01.png" alt="09.02-01.png" />
 </figure>
 
 <ul>
-<li>If you&rsquo;re using Firefox like me, click &ldquo;Advanced&rdquo; then &ldquo;Accept the Risk and Continue&rdquo;.</li>
-<li>If you&rsquo;re using Chrome or Chromium, click &ldquo;Advanced&rdquo; and then the &ldquo;Proceed to localhost (unsafe)&rdquo; link.</li>
+<li>اگر مانند من از فایرفاکس استفاده می‌کنید، روی "پیشرفته" سپس "پذیرش ریسک و ادامه" کلیک کنید.</li>
+<li>اگر از کروم یا کرومیوم استفاده می‌کنید، روی "پیشرفته" و سپس لینک "ادامه به localhost (ناامن)" کلیک کنید.</li>
 </ul>
 
-<p>After that the application homepage should appear (although it will still carry a warning in the URL bar).</p>
+<p>بعد از آن، صفحه اصلی برنامه باید ظاهر شود (اگرچه همچنان در نوار URL هشدار خواهد داشت).</p>
 
-<p>In Firefox, it should look a bit like this:</p>
+<p>در فایرفاکس، باید شبیه به این باشد:</p>
 
 <figure class="img">
 <img src="assets/img/09.02-02.png" alt="09.02-02.png" />
 </figure>
 
-<p>If you&rsquo;re using Firefox, I recommend pressing <code>Ctrl+i</code> to inspect the Page Info for your homepage:</p>
+<p>اگر از فایرفاکس استفاده می‌کنید، پیشنهاد می‌کنم <code>Ctrl+i</code> را فشار دهید تا اطلاعات صفحه برای صفحه اصلی خود را بررسی کنید:</p>
 
 <figure class="img">
 <img src="assets/img/09.02-03.png" alt="09.02-03.png" />
 </figure>
 
-<p>The &lsquo;Security &gt; Technical Details&rsquo; section here confirms that our connection is encrypted and working as expected.</p>
+<p>بخش 'امنیت &gt; جزئیات فنی' در اینجا تأیید می‌کند که اتصال ما رمزگذاری شده و به درستی کار می‌کند.</p>
 
-<p>In my case, I can see that TLS version 1.3 is being used, and the <dfn>cipher suite</dfn> for my HTTPS connection is <code>TLS_AES_128_GCM_SHA256</code>. We&rsquo;ll talk more about cipher suites in the next chapter.</p>
+<p>در مورد من، می‌توانم ببینم که نسخه TLS 1.3 استفاده می‌شود و <dfn>مجموعه رمز</dfn> برای اتصال HTTPS من <code>TLS_AES_128_GCM_SHA256</code> است. در فصل بعدی بیشتر در مورد مجموعه‌های رمز صحبت خواهیم کرد.</p>
 
 <aside class="note"><p>
-<strong>Aside:</strong> If you&rsquo;re wondering who or what &lsquo;Acme Co&rsquo; is in the Web Site Identity section of the screenshot above, it&rsquo;s just a hard-coded placeholder name that the <code>generate_cert.go</code> tool uses.
+<strong>توجه:</strong> اگر کنجکاو هستید که 'Acme Co' در بخش هویت وب سایت در تصویر بالا کیست یا چیست، فقط یک نام جایگزین سخت‌کد شده است که ابزار <code>generate_cert.go</code> استفاده می‌کند.
 </p></aside>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="http-requests">HTTP requests</h4>
+<h4 id="http-requests">درخواست‌های HTTP</h4>
 
-<p>It&rsquo;s important to note that our HTTPS server <em>only supports HTTPS</em>. If you try making a regular HTTP request to it, the server will send the user a <code>400 Bad Request</code> status and the message <code>&quot;Client sent an HTTP request to an HTTPS server&quot;</code>. Nothing will be logged.</p>
+<p>مهم است که توجه داشته باشید که سرور HTTPS ما <em>فقط از HTTPS پشتیبانی می‌کند</em>. اگر سعی کنید یک درخواست HTTP معمولی به آن ارسال کنید، سرور به کاربر یک وضعیت <code>400 Bad Request</code> و پیام <code>"Client sent an HTTP request to an HTTPS server"</code> ارسال می‌کند. هیچ چیزی ثبت نخواهد شد.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i http://localhost:4000/
 <samp>HTTP/1.0 400 Bad Request
 
 Client sent an HTTP request to an HTTPS server.</samp></pre>
 </figure>
 
-<h4 id="http-2-connections">HTTP/2 connections</h4>
+<h4 id="http-2-connections">اتصالات HTTP/2</h4>
 
-<p>A big plus of using HTTPS is that Go&rsquo;s will automatically upgrade the connection to use HTTP/2 if the client supports it.</p>
+<p>یکی از مزایای بزرگ استفاده از HTTPS این است که Go به طور خودکار اتصال را به HTTP/2 ارتقا می‌دهد اگر مشتری از آن پشتیبانی کند.</p>
 
-<p>This is good because it means that, ultimately, our pages will load faster for users. If you&rsquo;re not familiar with HTTP/2 you can get a run-down of the basics and a flavor of how it has been implemented behind the scenes in Go in this <a href="https://www.youtube.com/watch?v=FARQMJndUn0">GoSF meetup talk</a> by Brad Fitzpatrick.</p>
+<p>این خوب است زیرا به این معنی است که در نهایت صفحات ما برای کاربران سریع‌تر بارگذاری می‌شوند. اگر با HTTP/2 آشنا نیستید، می‌توانید یک مرور کلی از اصول و نحوه پیاده‌سازی آن در پشت صحنه در Go را در این <a href="https://www.youtube.com/watch?v=FARQMJndUn0">گفتگوی GoSF meetup</a> توسط برد فیتزپاتریک دریافت کنید.</p>
 
-<p>If you&rsquo;re using an up-to-date version of Firefox you should be able to see this in action. Press <code>Ctrl+Shift+E</code> to open the Developer Tools, and if you look at the headers for the homepage you should see that the protocol being used is HTTP/2.</p>
+<p>اگر از نسخه به‌روز فایرفاکس استفاده می‌کنید، باید بتوانید این را در عمل ببینید. <code>Ctrl+Shift+E</code> را فشار دهید تا ابزارهای توسعه‌دهنده باز شود، و اگر به هدرهای صفحه اصلی نگاه کنید، باید ببینید که پروتکل استفاده شده HTTP/2 است.</p>
 
 <figure class="img">
 <img src="assets/img/09.02-04.png" alt="09.02-04.png" />
 </figure>
 
-<h4 id="certificate-permissions">Certificate permissions</h4>
+<h4 id="certificate-permissions">مجوزهای گواهی</h4>
 
-<p>It’s important to note that the user that you&rsquo;re using to run your Go application must have read permissions for both the <code>cert.pem</code> and <code>key.pem</code> files, otherwise <code>ListenAndServeTLS()</code> will return a <code>permission denied</code> error.</p>
+<p>مهم است که توجه داشته باشید که کاربری که از آن برای اجرای برنامه Go خود استفاده می‌کنید باید مجوز خواندن برای هر دو فایل <code>cert.pem</code> و <code>key.pem</code> داشته باشد، در غیر این صورت <code>ListenAndServeTLS()</code> یک خطای <code>permission denied</code> برمی‌گرداند.</p>
 
-<p>By default, the <code>generate_cert.go</code> tool grants read permission to <em>all users</em> for the <code>cert.pem</code> file but read permission only to the <em>owner</em> of the <code>key.pem</code> file. In my case the permissions look like this:</p>
+<p>به طور پیش‌فرض، ابزار <code>generate_cert.go</code> مجوز خواندن را به <em>همه کاربران</em> برای فایل <code>cert.pem</code> اعطا می‌کند اما مجوز خواندن را فقط به <em>مالک</em> فایل <code>key.pem</code> می‌دهد. در مورد من، مجوزها به این شکل هستند:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox/tls
 $ ls -l
 <samp>total 8
@@ -181,28 +181,28 @@ $ ls -l
 -rw------- 1 alex alex 1704 Mar 18 16:24 key.pem</samp></pre>
 </figure>
 
-<p>Generally, it&rsquo;s a good idea to keep the permissions of your private keys as tight as possible and allow them to be read only by the owner or a specific group.</p>
+<p>به طور کلی، ایده خوبی است که مجوزهای کلیدهای خصوصی خود را تا حد ممکن محدود نگه دارید و اجازه دهید فقط توسط مالک یا یک گروه خاص خوانده شوند.</p>
 
-<h4 id="source-control">Source control</h4>
+<h4 id="source-control">کنترل نسخه</h4>
 
-<p>If you&rsquo;re using a version control system (like Git or Mercurial) you may want to add an ignore rule so the contents of the <code>tls</code> directory are not accidentally committed. With Git, for instance:</p>
+<p>اگر از یک سیستم کنترل نسخه (مانند Git یا Mercurial) استفاده می‌کنید، ممکن است بخواهید یک قانون نادیده‌گیری اضافه کنید تا محتوای دایرکتوری <code>tls</code> به طور تصادفی متعهد نشود. به عنوان مثال، با Git:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
-$ echo &#39;tls/&#39; &gt;&gt; .gitignore</pre>
+$ echo 'tls/' >> .gitignore</pre>
 </figure>
 
 		</main>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="09.03-generating-a-self-signed-tls-certificate.html">Previous</a>
+					&lsaquo; <a href="09.03-generating-a-self-signed-tls-certificate.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="09.05-configuring-https-settings.html">Next</a> &rsaquo;
+					<a href="09.05-configuring-https-settings.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
