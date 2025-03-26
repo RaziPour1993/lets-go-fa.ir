@@ -7,6 +7,16 @@
 		<title>Test the snippetCreate handler &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body, p, h2, h4, ul, li {
+				direction: rtl;
+				text-align: right;
+			}
+			.code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
 	</head>
 	<body>
 		<header>
@@ -14,49 +24,49 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">Guided exercises</a> &rsaquo; Test the snippetCreate handler</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرینات راهنما</a> &rsaquo; آزمایش هندلر snippetCreate</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="16.02-add-a-debug-mode.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="16.04-add-an-account-page-to-the-application.html">Next</a> &rsaquo;
+					&lsaquo; <a href="16.02-add-a-debug-mode.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="16.04-add-an-account-page-to-the-application.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 16.3.</div>
-			<h2 id="test-the-snippetcreate-handler">Test the snippetCreate handler</h2>
+			<div class="chapter">فصل 16.3.</div>
+			<h2 id="test-the-snippetcreate-handler">آزمایش هندلر snippetCreate</h2>
 
-<p>Your goal in this exercise is to create an end-to-end test for the <code>GET /snippet/create</code> route. Specifically, you want to test that:</p>
+<p>هدف شما در این تمرین ایجاد یک تست انتها به انتها برای مسیر <code>GET /snippet/create</code> است. به طور خاص، می‌خواهید آزمایش کنید که:</p>
 
 <ul>
-<li>Unauthenticated users are redirected to the login form.</li>
-<li>Authenticated users are shown the form to create a new snippet.</li>
+<li>کاربران غیرمجاز به فرم ورود هدایت می‌شوند.</li>
+<li>کاربران مجاز فرم ایجاد یک قطعه جدید را مشاهده می‌کنند.</li>
 </ul>
 
-<h4 id="step-1">Step 1</h4>
+<h4 id="step-1">مرحله 1</h4>
 
-<p>Create a new <code>TestSnippetCreate</code> test in your <code>cmd/web/handlers_test.go</code> file. In this test, use the pattern and helpers from the <a href="13.03-end-to-end-testing.html">end-to-end testing chapter</a> to initialize a new test server using the application routes and mocked dependencies.</p>
+<p>یک تست جدید <code>TestSnippetCreate</code> در فایل <code>cmd/web/handlers_test.go</code> خود ایجاد کنید. در این تست، از الگو و کمک‌کننده‌های فصل <a href="13.03-end-to-end-testing.html">تست انتها به انتها</a> برای راه‌اندازی یک سرور تست جدید با استفاده از مسیرهای برنامه و وابستگی‌های شبیه‌سازی شده استفاده کنید.</p>
 
-<p><a href="#17.03-suggested-code-for-step-1">Show suggested code</a></p>
+<p><a href="#17.03-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">Step 2</h4>
+<h4 id="step-2">مرحله 2</h4>
 
-<p>Create a sub-test with the name <code>&quot;Unauthenticated&quot;</code>. In this sub-test, make a  <code>GET /snippet/create</code> request against the test server as an unauthenticated user. Verify that the response has the status code <code>303</code> and a <code>Location: /user/login</code> header. Again, reuse the helpers that we made in the end-to-end testing chapter.</p>
+<p>یک زیرتست با نام <code>"Unauthenticated"</code> ایجاد کنید. در این زیرتست، یک درخواست <code>GET /snippet/create</code> به سرور تست به عنوان یک کاربر غیرمجاز ارسال کنید. تأیید کنید که پاسخ دارای کد وضعیت <code>303</code> و یک هدر <code>Location: /user/login</code> است. دوباره از کمک‌کننده‌هایی که در فصل تست انتها به انتها ساختیم استفاده کنید.</p>
 
-<p><a href="#17.03-suggested-code-for-step-2">Show suggested code</a></p>
+<p><a href="#17.03-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-3">Step 3</h4>
+<h4 id="step-3">مرحله 3</h4>
 
-<p>Create another sub-test with the name <code>&quot;Authenticated</code>&rdquo;. In this sub-test, mimic the workflow of logging in as a user to authenticate. Specifically, you&rsquo;ll need to make a <code>GET /user/login</code> request, extract the CSRF token from the response body, then make a <code>POST /user/login</code> request using the credentials in the mock user model (email of <code>&quot;alice@example.com&quot;</code>, password of <code>&quot;pa$$word&quot;</code>).</p>
+<p>یک زیرتست دیگر با نام <code>"Authenticated"</code> ایجاد کنید. در این زیرتست، جریان ورود به سیستم به عنوان یک کاربر برای احراز هویت را شبیه‌سازی کنید. به طور خاص، باید یک درخواست <code>GET /user/login</code> ارسال کنید، توکن CSRF را از بدنه پاسخ استخراج کنید، سپس یک درخواست <code>POST /user/login</code> با استفاده از اعتبارنامه‌های مدل کاربر شبیه‌سازی شده (ایمیل <code>"alice@example.com"</code>، رمز عبور <code>"pa$$word"</code>) ارسال کنید.</p>
 
-<p>Then once you&rsquo;ve authenticated, make a <code>GET /snippet/create</code> request and verify that you receive the status code <code>200</code> and an HTML body including the text <code>&lt;form action='/snippet/create' method='POST'&gt;</code>.</p>
+<p>سپس پس از احراز هویت، یک درخواست <code>GET /snippet/create</code> ارسال کنید و تأیید کنید که کد وضعیت <code>200</code> و یک بدنه HTML شامل متن <code>&lt;form action='/snippet/create' method='POST'&gt;</code> دریافت می‌کنید.</p>
 
-<p><a href="#17.03-suggested-code-for-step-3">Show suggested code</a></p>
+<p><a href="#17.03-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
 
-<h3 id="suggested-code">Suggested code</h3>
+<h3 id="suggested-code">کد پیشنهادی</h3>
 
 <h4 id="17.03-suggested-code-for-step-1">Suggested code for step 1</h4>
 
@@ -162,13 +172,13 @@ ok      snippetbox.alexedwards.net/cmd/web      0.012s</samp></pre>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="16.02-add-a-debug-mode.html">Previous</a>
+					&lsaquo; <a href="16.02-add-a-debug-mode.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="16.04-add-an-account-page-to-the-application.html">Next</a> &rsaquo;
+					<a href="16.04-add-an-account-page-to-the-application.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
