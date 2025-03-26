@@ -4,72 +4,73 @@
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Integration testing &mdash; Let's Go</title>
+		<title>تست یکپارچه‌سازی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Integration testing</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست یکپارچه‌سازی</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="13.06-testing-html-forms.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="13.08-profiling-test-coverage.html">Next</a> &rsaquo;
+					&lsaquo; <a href="13.06-testing-html-forms.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.08-profiling-test-coverage.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 13.7.</div>
-			<h2 id="integration-testing">Integration testing</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۳.۷.</div>
 
-<p>Running end-to-end tests with mocked dependencies is a good thing to do, but we could improve confidence in our application even more if we also verify that our real MySQL database models are working as expected.</p>
+			<h2 id="integration-testing">تست یکپارچه‌سازی</h2>
 
-<p>To do this we can run <dfn>integration tests</dfn> against a test version our MySQL database, which <em>mimics our production database</em> but exists for testing purposes only.</p>
+<p>اجرای تست‌های انتها به انتها با وابستگی‌های شبیه‌سازی شده کار خوبی است، اما می‌توانیم اعتماد به برنامه خود را حتی بیشتر کنیم اگر اطمینان حاصل کنیم که مدل‌های واقعی پایگاه داده MySQL ما همانطور که انتظار می‌رود کار می‌کنند.</p>
 
-<p>As a demonstration, in this chapter we&rsquo;ll setup an integration test to ensure that our <code>models.UserModel.Exists()</code> method is working correctly.</p>
+<p>برای انجام این کار می‌توانیم <dfn>تست‌های یکپارچه‌سازی</dfn> را در برابر نسخه آزمایشی پایگاه داده MySQL خود اجرا کنیم، که <em>پایگاه داده تولیدی ما را شبیه‌سازی می‌کند</em> اما فقط برای اهداف آزمایشی وجود دارد.</p>
 
-<h3 id="test-database-setup-and-teardown">Test database setup and teardown</h3>
+<p>به عنوان یک نمایش، در این فصل یک تست یکپارچه‌سازی را تنظیم خواهیم کرد تا اطمینان حاصل کنیم که متد <code>models.UserModel.Exists()</code> ما به درستی کار می‌کند.</p>
 
-<p>The first step is to create the test version of our MySQL database.</p>
+<h3 id="test-database-setup-and-teardown">راه‌اندازی و تخریب پایگاه داده آزمایشی</h3>
 
-<p>If you&rsquo;re following along, connect to MySQL from your terminal window as the <code>root</code> user and execute the following SQL statements to create a new <code>test_snippetbox</code> database and <code>test_web</code> user:</p>
+<p>اولین قدم ایجاد نسخه آزمایشی پایگاه داده MySQL ما است.</p>
 
-<figure class="code sql">
+<p>اگر در حال دنبال کردن هستید، از پنجره ترمینال خود به MySQL به عنوان کاربر <code>root</code> متصل شوید و دستورات SQL زیر را برای ایجاد یک پایگاه داده جدید <code>test_snippetbox</code> و کاربر <code>test_web</code> اجرا کنید:</p>
+
+<figure class="code sql" dir="ltr">
 <pre><span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">test_snippetbox</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">utf8mb4</span> <span class="k">COLLATE</span> <span class="n">utf8mb4_unicode_ci</span><span class="p">;</span></pre>
 </figure>
 
-<figure class="code sql">
+<figure class="code sql" dir="ltr">
 <pre><span class="k">CREATE</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
 <span class="k">GRANT</span> <span class="k">CREATE</span><span class="p">,</span> <span class="k">DROP</span><span class="p">,</span> <span class="k">ALTER</span><span class="p">,</span> <span class="k">INDEX</span><span class="p">,</span> <span class="k">SELECT</span><span class="p">,</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">test_snippetbox</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
 <span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;</span><span class="s1">pass</span><span class="s1">&#39;</span><span class="p">;</span></pre>
 </figure>
 
-<p>Once that&rsquo;s done, let&rsquo;s make two SQL scripts:</p>
+<p>پس از انجام این کار، بیایید دو اسکریپت SQL ایجاد کنیم:</p>
 
 <ol>
-<li><p>A <dfn>setup script</dfn> to create the database tables (so that they mimic our production database) and insert a known set of test data than we can work with in our tests.</p></li>
+<li><p>یک <dfn>اسکریپت راه‌اندازی</dfn> برای ایجاد جداول پایگاه داده (به طوری که پایگاه داده تولیدی ما را شبیه‌سازی کنند) و وارد کردن مجموعه‌ای از داده‌های آزمایشی که می‌توانیم در تست‌های خود با آن کار کنیم.</p></li>
 
-<li><p>A <dfn>teardown script</dfn> which drops the database tables and data.</p></li>
+<li><p>یک <dfn>اسکریپت تخریب</dfn> که جداول و داده‌های پایگاه داده را حذف می‌کند.</p></li>
 </ol>
 
-<p>The idea is that we&rsquo;ll call these scripts at the start and end of each integration test, so that the test database is fully reset each time. This helps ensure that any changes we make during one test are not &lsquo;leaking&rsquo; and affecting the results of another test.</p>
+<p>ایده این است که این اسکریپت‌ها را در ابتدای هر تست یکپارچه‌سازی و در پایان آن فراخوانی کنیم، به طوری که پایگاه داده آزمایشی هر بار به طور کامل بازنشانی شود. این کمک می‌کند تا اطمینان حاصل شود که هر تغییری که در طول یک تست ایجاد می‌کنیم به نتایج تست دیگری نشت نمی‌کند و تأثیر نمی‌گذارد.</p>
 
-<p>Let&rsquo;s go ahead and create these scripts in a new <code>internal/models/testdata</code> directory like so:</p>
+<p>بیایید این اسکریپت‌ها را در یک دایرکتوری جدید <code>internal/models/testdata</code> ایجاد کنیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ mkdir internal/models/testdata
 $ touch internal/models/testdata/setup.sql
 $ touch internal/models/testdata/teardown.sql</pre>
 </figure>
 
-<figure class="code sql">
+<figure class="code sql" dir="ltr">
 <figcaption>File: internal/models/testdata/setup.sql</figcaption>
 <pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">snippets</span> <span class="p">(</span>
     <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
@@ -99,7 +100,7 @@ $ touch internal/models/testdata/teardown.sql</pre>
 <span class="p">)</span><span class="p">;</span></pre>
 </figure>
 
-<figure class="code sql">
+<figure class="code sql" dir="ltr">
 <figcaption>File: internal/models/testdata/teardown.sql</figcaption>
 <pre><span class="k">DROP</span> <span class="k">TABLE</span> <span class="n">users</span><span class="p">;</span>
 
@@ -107,24 +108,24 @@ $ touch internal/models/testdata/teardown.sql</pre>
 </figure>
 
 <aside class="note"><p>
-<strong>Note:</strong> The Go tool ignores any directories called <code>testdata</code>, so these scripts will be ignored when compiling your application. As an aside, it also ignores any directories or files which have names that begin with an <code>_</code> or <code>.</code> character too.
+<strong>توجه:</strong> ابزار Go هر دایرکتوری به نام <code>testdata</code> را نادیده می‌گیرد، بنابراین این اسکریپت‌ها هنگام کامپایل برنامه شما نادیده گرفته می‌شوند. به عنوان یک نکته جانبی، همچنین هر دایرکتوری یا فایلی که نام آن با کاراکتر <code>_</code> یا <code>.</code> شروع می‌شود را نیز نادیده می‌گیرد.
 </p></aside>
 
-<p>Alright, now that we&rsquo;ve got the scripts in place, let&rsquo;s make a new file to hold some helper functions for our integration tests:</p>
+<p>خوب، حالا که اسکریپت‌ها را در جای خود داریم، بیایید یک فایل جدید برای نگهداری برخی از توابع کمکی برای تست‌های یکپارچه‌سازی خود ایجاد کنیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ touch internal/models/testutils_test.go</pre>
 </figure>
 
-<p>In this file let&rsquo;s create a <code>newTestDB()</code> helper function which:</p>
+<p>در این فایل بیایید یک تابع کمکی <code>newTestDB()</code> ایجاد کنیم که:</p>
 
 <ul>
-<li>Creates a new <code>*sql.DB</code> connection pool for the test database;</li>
-<li>Executes the <code>setup.sql</code> script to create the database tables and dummy data;</li>
-<li>Register a &lsquo;cleanup&rsquo; function which executes the <code>teardown.sql</code> script and closes the connection pool.</li>
+<li>یک استخر اتصال <code>*sql.DB</code> جدید برای پایگاه داده آزمایشی ایجاد می‌کند؛</li>
+<li>اسکریپت <code>setup.sql</code> را برای ایجاد جداول پایگاه داده و داده‌های آزمایشی اجرا می‌کند؛</li>
+<li>یک تابع 'پاکسازی' ثبت می‌کند که اسکریپت <code>teardown.sql</code> را اجرا می‌کند و استخر اتصال را می‌بندد.</li>
 </ul>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/testutils_test.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -180,24 +181,24 @@ $ touch internal/models/testdata/teardown.sql</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>The important thing to take away here is this:</p>
+<p>نکته مهمی که باید از اینجا بگیرید این است:</p>
 
-<p><em>Whenever we call this <code>newTestDB()</code> function inside a test (or sub-test) it will run the setup script against the test database. And when the test or sub-test finishes, the cleanup function will automatically be executed and the teardown script will be run.</em></p>
+<p><em>هر زمان که این تابع <code>newTestDB()</code> را در یک تست (یا زیرتست) فراخوانی کنیم، اسکریپت راه‌اندازی را در برابر پایگاه داده آزمایشی اجرا خواهد کرد. و هنگامی که تست یا زیرتست به پایان می‌رسد، تابع پاکسازی به طور خودکار اجرا می‌شود و اسکریپت تخریب اجرا خواهد شد.</em></p>
 
-<h3 id="testing-the-usermodel-exists-method">Testing the UserModel.Exists method</h3>
+<h3 id="testing-the-usermodel-exists-method">تست متد UserModel.Exists</h3>
 
-<p>Now that the preparatory work is done, we&rsquo;re ready to actually write our integration test for the <code>models.UserModel.Exists()</code> method.</p>
+<p>حالا که کارهای مقدماتی انجام شده است، آماده‌ایم تا واقعاً تست یکپارچه‌سازی خود را برای متد <code>models.UserModel.Exists()</code> بنویسیم.</p>
 
-<p>We know that our <code>setup.sql</code> script creates a <code>users</code> table containing one record (which should have the user ID <code>1</code> and email address <code>alice@example.com</code>). So we want to test that:</p>
+<p>ما می‌دانیم که اسکریپت <code>setup.sql</code> ما یک جدول <code>users</code> ایجاد می‌کند که حاوی یک رکورد است (که باید شناسه کاربر <code>1</code> و آدرس ایمیل <code>alice@example.com</code> داشته باشد). بنابراین می‌خواهیم تست کنیم که:</p>
 
 <ul>
-<li>Calling <code>models.UserModel.Exists(1)</code> returns a <code>true</code> boolean value and a <code>nil</code> error value.</li>
-<li>Calling <code>models.UserModel.Exists()</code> with any other user ID returns a <code>false</code> boolean value and a <code>nil</code> error value.</li>
+<li>فراخوانی <code>models.UserModel.Exists(1)</code> یک مقدار بولی <code>true</code> و یک مقدار خطای <code>nil</code> برمی‌گرداند.</li>
+<li>فراخوانی <code>models.UserModel.Exists()</code> با هر شناسه کاربر دیگری یک مقدار بولی <code>false</code> و یک مقدار خطای <code>nil</code> برمی‌گرداند.</li>
 </ul>
 
-<p>Let&rsquo;s first head to our <code>internal/assert</code> package and create a new <code>NilError()</code> assertion, which we will use to check that an error value is <code>nil</code>. Like so:</p>
+<p>بیایید ابتدا به بسته <code>internal/assert</code> خود برویم و یک <code>NilError()</code> جدید ایجاد کنیم، که از آن برای بررسی اینکه مقدار خطا <code>nil</code> است استفاده خواهیم کرد. به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/assert/assert.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">assert</span>
 
@@ -212,99 +213,15 @@ $ touch internal/models/testdata/teardown.sql</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>Then let&rsquo;s follow the Go conventions and create a new <code>users_test.go</code> file for our test, directly alongside the code being tested:</p>
+<p>سپس بیایید طبق کنوانسیون‌های Go یک فایل جدید <code>users_test.go</code> برای تست خود ایجاد کنیم، مستقیماً در کنار کدی که تست می‌شود:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ touch internal/models/users_test.go</pre>
 </figure>
 
-<p>And add a <code>TestUserModelExists</code> test containing the following code:</p>
+<p>و یک تست <code>TestUserModelExists</code> حاوی کد زیر اضافه کنیم:</p>
 
-<figure class="code go">
-<figcaption>File: internal/models/users_test.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">models</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;testing&#34;</span>
-
-    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// Set up a suite of table-driven tests and expected results.
-</span><span class="c1"></span>    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
-        <span class="nx">name</span>   <span class="kt">string</span>
-        <span class="nx">userID</span> <span class="kt">int</span>
-        <span class="nx">want</span>   <span class="kt">bool</span>
-    <span class="p">}</span><span class="p">{</span>
-        <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Valid ID&#34;</span><span class="p">,</span>
-            <span class="nx">userID</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="nx">want</span><span class="p">:</span>   <span class="kc">true</span><span class="p">,</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Zero ID&#34;</span><span class="p">,</span>
-            <span class="nx">userID</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="nx">want</span><span class="p">:</span>   <span class="kc">false</span><span class="p">,</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="p">{</span>
-            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Non-existent ID&#34;</span><span class="p">,</span>
-            <span class="nx">userID</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="nx">want</span><span class="p">:</span>   <span class="kc">false</span><span class="p">,</span>
-        <span class="p">}</span><span class="p">,</span>
-    <span class="p">}</span>
-
-    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
-        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Call the newTestDB() helper function to get a connection pool to
-</span><span class="c1"></span>            <span class="c1">// our test database. Calling this here -- inside t.Run() -- means
-</span><span class="c1"></span>            <span class="c1">// that fresh database tables and data will be set up and torn down
-</span><span class="c1"></span>            <span class="c1">// for each sub-test.
-</span><span class="c1"></span>            <span class="nx">db</span> <span class="o">:=</span> <span class="nf">newTestDB</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
-
-            <span class="c1">// Create a new instance of the UserModel.
-</span><span class="c1"></span>            <span class="nx">m</span> <span class="o">:=</span> <span class="nx">UserModel</span><span class="p">{</span><span class="nx">db</span><span class="p">}</span>
-
-            <span class="c1">// Call the UserModel.Exists() method and check that the return
-</span><span class="c1"></span>            <span class="c1">// value and error match the expected values for the sub-test.
-</span><span class="c1"></span>            <span class="nx">exists</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">userID</span><span class="p">)</span>
-
-            <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">exists</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
-            <span class="nx">assert</span><span class="p">.</span><span class="nf">NilError</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-        <span class="p">}</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span></pre>
-</figure>
-
-<p>If you run this test, then everything should pass without any problems.</p>
-
-<figure class="code bash">
-<pre>$ go test -v ./internal/models
-<samp>=== RUN   TestUserModelExists
-=== RUN   TestUserModelExists/Valid_ID
-=== RUN   TestUserModelExists/Zero_ID
-=== RUN   TestUserModelExists/Non-existent_ID
---- PASS: TestUserModelExists (1.02s)
-    --- PASS: TestUserModelExists/Valid_ID (0.33s)
-    --- PASS: TestUserModelExists/Zero_ID (0.29s)
-    --- PASS: TestUserModelExists/Non-existent_ID (0.40s)
-PASS
-ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
-</figure>
-
-<p>The last line in the test output here is worth a mention. The total runtime for this test (1.023 seconds in my case) is much longer than for our previous tests &mdash; all of which took a few milliseconds to run. This big increase in runtime is primarily due to the large number of database operations that we needed to make during the tests.</p>
-
-<p>While 1 second is a totally acceptable time to wait for this test in isolation, if you&rsquo;re running hundreds of different integration tests against your database you might end up routinely waiting minutes &mdash; rather than seconds &mdash; for your tests to finish.</p>
-
-<h3 id="skipping-long-running-tests">Skipping long-running tests</h3>
-
-<p>When your tests take a long time, you might decide that you want to skip specific long-running tests under certain circumstances. For example, you might decide to only run your integration tests before committing a change, instead of more frequently during development.</p>
-
-<p>A common and idiomatic way to skip long-running tests is to use the <a href="https://pkg.go.dev/testing/#Short"><code>testing.Short()</code></a> function to check for the presence of a <code>-short</code> flag in your <code>go test</code> command, and then call the <a href="https://pkg.go.dev/testing#T.Skip"><code>t.Skip()</code></a> method to skip the test if the flag is present.</p>
-
-<p>Let&rsquo;s quickly update <code>TestUserModelExists</code> to do this <em>before running its actual tests</em>, like so:</p>
-
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users_test.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -324,9 +241,57 @@ ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>And then you can try running all the tests for the project with the <code>-short</code> flag enabled. The output should look similar to this:</p>
+<p>اگر این تست را اجرا کنید، همه چیز باید بدون هیچ مشکلی عبور کند.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./internal/models
+<samp>=== RUN   TestUserModelExists
+=== RUN   TestUserModelExists/Valid_ID
+=== RUN   TestUserModelExists/Zero_ID
+=== RUN   TestUserModelExists/Non-existent_ID
+--- PASS: TestUserModelExists (1.02s)
+    --- PASS: TestUserModelExists/Valid_ID (0.33s)
+    --- PASS: TestUserModelExists/Zero_ID (0.29s)
+    --- PASS: TestUserModelExists/Non-existent_ID (0.40s)
+PASS
+ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
+</figure>
+
+<p>خط آخر در خروجی تست اینجا ارزش ذکر دارد. زمان اجرای کل این تست (در مورد من 1.023 ثانیه) بسیار طولانی‌تر از تست‌های قبلی ما است &mdash; همه آنها چند میلی‌ثانیه طول کشیدند. این افزایش بزرگ در زمان اجرا عمدتاً به دلیل تعداد زیادی از عملیات پایگاه داده است که در طول تست‌ها نیاز داشتیم انجام دهیم.</p>
+
+<p>در حالی که 1 ثانیه زمان کاملاً قابل قبولی برای انتظار برای این تست به تنهایی است، اگر صدها تست یکپارچه‌سازی مختلف را در برابر پایگاه داده خود اجرا کنید، ممکن است به طور معمول منتظر دقیقه‌ها &mdash; به جای ثانیه‌ها &mdash; برای اتمام تست‌های خود باشید.</p>
+
+<h3 id="skipping-long-running-tests">رد کردن تست‌های طولانی مدت</h3>
+
+<p>وقتی تست‌های شما زمان زیادی می‌برند، ممکن است تصمیم بگیرید که می‌خواهید تست‌های خاصی را تحت شرایط خاصی رد کنید. به عنوان مثال، ممکن است تصمیم بگیرید که فقط تست‌های یکپارچه‌سازی خود را قبل از تعهد یک تغییر اجرا کنید، به جای اینکه بیشتر در طول توسعه اجرا کنید.</p>
+
+<p>یک روش رایج و ایدئومیک برای رد کردن تست‌های طولانی مدت استفاده از تابع <a href="https://pkg.go.dev/testing/#Short"><code>testing.Short()</code></a> برای بررسی وجود یک پرچم <code>-short</code> در فرمان <code>go test</code> شما است، و سپس متد <a href="https://pkg.go.dev/testing#T.Skip"><code>t.Skip()</code></a> را برای رد کردن تست اگر پرچم وجود دارد، فراخوانی کنید.</p>
+
+<p>بیایید سریعاً <code>TestUserModelExists</code> را به این صورت به‌روزرسانی کنیم <em>قبل از اجرای تست‌های واقعی آن</em>، به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/users_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Skip the test if the &#34;-short&#34; flag is provided when running the test.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">testing</span><span class="p">.</span><span class="nf">Short</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="s">&#34;models: skipping integration test&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و سپس می‌توانید سعی کنید تمام تست‌های پروژه را با پرچم <code>-short</code> فعال اجرا کنید. خروجی باید شبیه به این باشد:</p>
+
+<figure class="code bash" dir="ltr">
 <pre>$ go test -v -short ./...
 <samp>=== RUN   TestPing
 --- PASS: TestPing (0.00s)
@@ -386,21 +351,21 @@ ok      snippetbox.alexedwards.net/internal/models      0.003s
 ?       snippetbox.alexedwards.net/ui   [no test files]</samp></pre>
 </figure>
 
-<p>Notice the <code>SKIP</code> annotation in the output above? This confirms that Go skipped our <code>TestUserModelExists</code> test during this run.</p>
+<p>آیا متوجه علامت <code>SKIP</code> در خروجی بالا شدید؟ این تأیید می‌کند که Go تست <code>TestUserModelExists</code> ما را در طول این اجرا رد کرده است.</p>
 
-<p>If you like, feel free to run this again without the <code>-short</code> flag, and you should see that the <code>TestUserModelExists</code> test is executed as normal.</p>
+<p>اگر دوست دارید، می‌توانید این را دوباره بدون پرچم <code>-short</code> اجرا کنید، و باید ببینید که تست <code>TestUserModelExists</code> به طور عادی اجرا می‌شود.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="13.06-testing-html-forms.html">Previous</a>
+					&lsaquo; <a href="13.06-testing-html-forms.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="13.08-profiling-test-coverage.html">Next</a> &rsaquo;
+					<a href="13.08-profiling-test-coverage.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
