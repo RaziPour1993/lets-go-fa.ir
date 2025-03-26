@@ -9,45 +9,43 @@
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; جاسازی فایل</span>
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; File embedding</span>
-						
-					
 				</div>
 				<div>
-					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="12.01-embedding-static-files.html">Next</a> &rsaquo;
+					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="12.01-embedding-static-files.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 12.</div>
-			<h1 id="file-embedding">File embedding</h1>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۲.</div>
+			<h1 id="file-embedding">جاسازی فایل</h1>
 
-<p>The Go standard library includes an <a href="https://pkg.go.dev/embed/"><code>embed</code></a> package, which makes it possible to <em>embed external files into your Go program itself</em>.</p>
+<p>کتابخانه استاندارد Go شامل یک بسته <a href="https://pkg.go.dev/embed/"><code>embed</code></a> است که امکان <em>جاسازی فایل‌های خارجی در برنامه Go شما</em> را فراهم می‌کند.</p>
 
-<p>Using the <code>embed</code> package opens up the opportunity to create Go programs which are self-contained and have everything that they need to run <em>as part of the compiled binary executable</em>. In turn, that makes it easier to deploy or distribute your web application.</p>
+<p>استفاده از بسته <code>embed</code> این فرصت را فراهم می‌کند تا برنامه‌های Go ایجاد کنید که خودکفا هستند و همه چیزهایی که برای اجرا نیاز دارند <em>به عنوان بخشی از فایل اجرایی کامپایل شده</em> دارند. این امر باعث می‌شود که استقرار یا توزیع برنامه وب شما آسان‌تر شود.</p>
 
-<p>In this section of the book, we&rsquo;ll update our application so that it embeds the files from our <code>ui</code> directory &mdash; starting with the static CSS, JavaScript and image files, and then moving on to the HTML templates.</p>
+<p>در این بخش از کتاب، برنامه خود را به‌روزرسانی خواهیم کرد تا فایل‌های موجود در دایرکتوری <code>ui</code> را جاسازی کند &mdash; با فایل‌های استاتیک CSS، JavaScript و تصویر شروع می‌کنیم و سپس به قالب‌های HTML می‌پردازیم.</p>
 
-<p>Let&rsquo;s jump straight in and explain how to use it.</p>
+<p>بیایید مستقیماً وارد شویم و توضیح دهیم که چگونه از آن استفاده کنیم.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">Previous</a>
+					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="12.01-embedding-static-files.html">Next</a> &rsaquo;
+					<a href="12.01-embedding-static-files.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
