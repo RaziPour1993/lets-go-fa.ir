@@ -9,34 +9,34 @@
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">Server and security improvements</a> &rsaquo; The http.Server struct</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; ساختار http.Server</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="09.00-server-and-security-improvements.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="09.02-the-server-error-log.html">Next</a> &rsaquo;
+					&lsaquo; <a href="09.00-server-and-security-improvements.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="09.02-the-server-error-log.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 9.1.</div>
-			<h2 id="the-http-server-struct">The http.Server struct</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 9.1.</div>
+			<h2 id="the-http-server-struct">ساختار http.Server</h2>
 
-<p>So far in this book we&rsquo;ve been using the <code>http.ListenAndServe()</code> shortcut function to start our server.</p>
+<p>تا کنون در این کتاب از تابع میانبر <code>http.ListenAndServe()</code> برای راه‌اندازی سرور خود استفاده کرده‌ایم.</p>
 
-<p>Although <code>http.ListenAndServe()</code> is very useful in short examples and tutorials, in real-world applications it&rsquo;s more common to manually create and use a <a href="https://pkg.go.dev/net/http#Server"><code>http.Server</code></a> struct instead. Doing this opens up the opportunity to customize the behavior of your server, which is exactly that we&rsquo;ll be doing in this section of the book.</p>
+<p>اگرچه <code>http.ListenAndServe()</code> در مثال‌ها و آموزش‌های کوتاه بسیار مفید است، در برنامه‌های واقعی معمولاً به صورت دستی یک ساختار <a href="https://pkg.go.dev/net/http#Server"><code>http.Server</code></a> ایجاد و استفاده می‌شود. انجام این کار امکان سفارشی‌سازی رفتار سرور شما را فراهم می‌کند، که دقیقاً همان چیزی است که در این بخش از کتاب انجام خواهیم داد.</p>
 
-<p>So in preparation for that, let&rsquo;s quickly update our <code>main.go</code> file to stop using the <code>http.ListenAndServe()</code> shortcut, and manually create and use a <code>http.Server</code> struct instead.</p>
+<p>بنابراین برای آماده‌سازی برای آن، بیایید به سرعت فایل <code>main.go</code> خود را به‌روزرسانی کنیم تا از میانبر <code>http.ListenAndServe()</code> استفاده نکنیم و به جای آن به صورت دستی یک ساختار <code>http.Server</code> ایجاد و استفاده کنیم.</p>
 
-<figure class="code go">
-<figcaption>File: cmd/web/main.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File:  cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
@@ -94,19 +94,19 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>This is a small change which doesn&rsquo;t affect our application behavior (yet!), but it sets us up nicely for the work to come.</p>
+<p>این یک تغییر کوچک است که هنوز بر رفتار برنامه ما تأثیر نمی‌گذارد، اما ما را به خوبی برای کارهای آینده آماده می‌کند.</p>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="09.00-server-and-security-improvements.html">Previous</a>
+					&lsaquo; <a href="09.00-server-and-security-improvements.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="09.02-the-server-error-log.html">Next</a> &rsaquo;
+					<a href="09.02-the-server-error-log.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
