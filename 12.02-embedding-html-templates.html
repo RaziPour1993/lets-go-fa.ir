@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Embedding HTML templates &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="12.00-file-embedding.html">جاسازی فایل</a> &rsaquo; جاسازی قالب‌های HTML</span>
+						
+				</div>
+				<div>
+					&lsaquo; <a href="12.01-embedding-static-files.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.00-testing.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۲.۲.</div>
+			<h2 id="embedding-html-templates">جاسازی قالب‌های HTML</h2>
+
+<p>سپس برنامه خود را به‌روزرسانی کنیم تا حافظه پنهان قالب از فایل‌های قالب HTML جاسازی شده استفاده کند، به جای اینکه آنها را از دیسک سخت شما در زمان اجرا بخواند.</p>
+
+<p>به فایل <code>ui/efs.go</code> برگردید و آن را به‌روزرسانی کنید تا <code>ui.Files</code> محتوای دایرکتوری <code>ui/html</code> (که شامل قالب‌های ما است) را نیز جاسازی کند. به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: ui/efs.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">ui</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;embed&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">//go:embed &#34;html&#34; &#34;static&#34; 
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+<p>سپس باید تابع <code>newTemplateCache()</code> در <code>cmd/web/templates.go</code> را به‌روزرسانی کنیم تا قالب‌ها را از <code>ui.Files</code> بخواند. برای انجام این کار، باید از چند ویژگی خاص که Go برای کار با سیستم‌های فایل جاسازی شده دارد، استفاده کنیم:</p>
+
+<ul>
+<li>تابع <a href="https://pkg.go.dev/io/fs#Glob"><code>fs.Glob()</code></a> یک برش از مسیرهای فایل را که با یک الگوی گلوب مطابقت دارند، برمی‌گرداند. این اساساً همان تابع <code>filepath.Glob()</code> است که قبلاً در کتاب استفاده کردیم، با این تفاوت که بر روی سیستم‌های فایل جاسازی شده کار می‌کند.</li>
+<li>متد <a href="https://pkg.go.dev/html/template#Template.ParseFS"><code>Template.ParseFS()</code></a> می‌تواند برای تجزیه قالب‌های HTML از یک سیستم فایل جاسازی شده به یک مجموعه قالب استفاده شود. این اساساً جایگزینی برای <em>هر دو</em> متد <code>Template.ParseFiles()</code> و <code>Template.ParseGlob()</code> است که قبلاً استفاده کردیم. <code>Template.ParseFiles()</code> همچنین یک <em>تابع واریادیک</em> است که به شما امکان می‌دهد چندین قالب را در یک فراخوانی به <code>ParseFiles()</code> تجزیه کنید.</li>
+</ul>
+
+<p>بیایید این‌ها را در فایل <code>cmd/web/templates.go</code> خود به کار ببریم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;io/fs&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;path/filepath&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/ui&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">cache</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">{</span><span class="p">}</span>
+
+    <span class="c1">// Use fs.Glob() to get a slice of all filepaths in the ui.Files embedded
+</span><span class="c1"></span>    <span class="c1">// filesystem which match the pattern &#39;html/pages/*.tmpl&#39;. This essentially
+</span><span class="c1"></span>    <span class="c1">// gives us a slice of all the &#39;page&#39; templates for the application, just
+</span><span class="c1"></span>    <span class="c1">// like before.
+</span><span class="c1"></span>    <span class="nx">pages</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">fs</span><span class="p">.</span><span class="nf">Glob</span><span class="p">(</span><span class="nx">ui</span><span class="p">.</span><span class="nx">Files</span><span class="p">,</span> <span class="s">&#34;html/pages/*.tmpl&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">page</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">pages</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Base</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+
+        <span class="c1">// Create a slice containing the filepath patterns for the templates we
+</span><span class="c1"></span>        <span class="c1">// want to parse.
+</span><span class="c1"></span>        <span class="nx">patterns</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span>
+            <span class="s">&#34;html/base.tmpl&#34;</span><span class="p">,</span>
+            <span class="s">&#34;html/partials/*.tmpl&#34;</span><span class="p">,</span>
+            <span class="nx">page</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Use ParseFS() instead of ParseFiles() to parse the template files 
+</span><span class="c1"></span>        <span class="c1">// from the ui.Files embedded filesystem.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span><span class="p">.</span><span class="nf">Funcs</span><span class="p">(</span><span class="nx">functions</span><span class="p">)</span><span class="p">.</span><span class="nf">ParseFS</span><span class="p">(</span><span class="nx">ui</span><span class="p">.</span><span class="nx">Files</span><span class="p">,</span> <span class="nx">patterns</span><span class="o">...</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">=</span> <span class="nx">ts</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">cache</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>حالا که این کار انجام شد، هنگامی که برنامه ما به یک باینری کامپایل می‌شود، همه فایل‌های رابط کاربری که برای اجرا نیاز دارد را در خود خواهد داشت.</p>
+
+<p>می‌توانید این را به سرعت با ساخت یک باینری اجرایی در دایرکتوری <code>/tmp</code>، کپی کردن گواهینامه‌های TLS و اجرای باینری امتحان کنید. به این صورت:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go build -o /tmp/web ./cmd/web/
+$ cp -r ./tls /tmp/
+$ cd /tmp/
+$ ./web 
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
+</figure>
+
+<p>و دوباره، باید بتوانید به <a href="https://localhost:4000/"><code>https://localhost:4000</code></a> در مرورگر خود مراجعه کنید و همه چیز باید به درستی کار کند &mdash; با وجود اینکه باینری در مکانی قرار دارد که به فایل‌های اصلی رابط کاربری روی دیسک دسترسی ندارد.</p>
+
+<figure class="img">
+<img src="assets/img/12.02-01.png" alt="12.02-01.png" />
+</figure>
+
+<aside class="important"><p>
+<strong>توجه:</strong> اگر می‌خواهید درباره ساخت باینری‌ها و استقرار برنامه‌ها بیشتر بدانید، اطلاعات و توضیحات بیشتری در <a href="https://lets-go-further.alexedwards.net/">Let&rsquo;s Go Further</a> موجود است.
+</p></aside>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="12.01-embedding-static-files.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="13.00-testing.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "12.01-embedding-static-files.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.00-testing.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

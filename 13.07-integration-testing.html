@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>تست یکپارچه‌سازی &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست یکپارچه‌سازی</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.06-testing-html-forms.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.08-profiling-test-coverage.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۳.۷.</div>
+
+			<h2 id="integration-testing">تست یکپارچه‌سازی</h2>
+
+<p>اجرای تست‌های انتها به انتها با وابستگی‌های شبیه‌سازی شده کار خوبی است، اما می‌توانیم اعتماد به برنامه خود را حتی بیشتر کنیم اگر اطمینان حاصل کنیم که مدل‌های واقعی پایگاه داده MySQL ما همانطور که انتظار می‌رود کار می‌کنند.</p>
+
+<p>برای انجام این کار می‌توانیم <dfn>تست‌های یکپارچه‌سازی</dfn> را در برابر نسخه آزمایشی پایگاه داده MySQL خود اجرا کنیم، که <em>پایگاه داده تولیدی ما را شبیه‌سازی می‌کند</em> اما فقط برای اهداف آزمایشی وجود دارد.</p>
+
+<p>به عنوان یک نمایش، در این فصل یک تست یکپارچه‌سازی را تنظیم خواهیم کرد تا اطمینان حاصل کنیم که متد <code>models.UserModel.Exists()</code> ما به درستی کار می‌کند.</p>
+
+<h3 id="test-database-setup-and-teardown">راه‌اندازی و تخریب پایگاه داده آزمایشی</h3>
+
+<p>اولین قدم ایجاد نسخه آزمایشی پایگاه داده MySQL ما است.</p>
+
+<p>اگر در حال دنبال کردن هستید، از پنجره ترمینال خود به MySQL به عنوان کاربر <code>root</code> متصل شوید و دستورات SQL زیر را برای ایجاد یک پایگاه داده جدید <code>test_snippetbox</code> و کاربر <code>test_web</code> اجرا کنید:</p>
+
+<figure class="code sql" dir="ltr">
+<pre><span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">test_snippetbox</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">utf8mb4</span> <span class="k">COLLATE</span> <span class="n">utf8mb4_unicode_ci</span><span class="p">;</span></pre>
+</figure>
+
+<figure class="code sql" dir="ltr">
+<pre><span class="k">CREATE</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
+<span class="k">GRANT</span> <span class="k">CREATE</span><span class="p">,</span> <span class="k">DROP</span><span class="p">,</span> <span class="k">ALTER</span><span class="p">,</span> <span class="k">INDEX</span><span class="p">,</span> <span class="k">SELECT</span><span class="p">,</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">test_snippetbox</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;</span><span class="s1">pass</span><span class="s1">&#39;</span><span class="p">;</span></pre>
+</figure>
+
+<p>پس از انجام این کار، بیایید دو اسکریپت SQL ایجاد کنیم:</p>
+
+<ol>
+<li><p>یک <dfn>اسکریپت راه‌اندازی</dfn> برای ایجاد جداول پایگاه داده (به طوری که پایگاه داده تولیدی ما را شبیه‌سازی کنند) و وارد کردن مجموعه‌ای از داده‌های آزمایشی که می‌توانیم در تست‌های خود با آن کار کنیم.</p></li>
+
+<li><p>یک <dfn>اسکریپت تخریب</dfn> که جداول و داده‌های پایگاه داده را حذف می‌کند.</p></li>
+</ol>
+
+<p>ایده این است که این اسکریپت‌ها را در ابتدای هر تست یکپارچه‌سازی و در پایان آن فراخوانی کنیم، به طوری که پایگاه داده آزمایشی هر بار به طور کامل بازنشانی شود. این کمک می‌کند تا اطمینان حاصل شود که هر تغییری که در طول یک تست ایجاد می‌کنیم به نتایج تست دیگری نشت نمی‌کند و تأثیر نمی‌گذارد.</p>
+
+<p>بیایید این اسکریپت‌ها را در یک دایرکتوری جدید <code>internal/models/testdata</code> ایجاد کنیم:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ mkdir internal/models/testdata
+$ touch internal/models/testdata/setup.sql
+$ touch internal/models/testdata/teardown.sql</pre>
+</figure>
+
+<figure class="code sql" dir="ltr">
+<figcaption>File: internal/models/testdata/setup.sql</figcaption>
+<pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">snippets</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+    <span class="n">title</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">content</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">expires</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_snippets_created</span> <span class="k">ON</span> <span class="n">snippets</span><span class="p">(</span><span class="n">created</span><span class="p">)</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+    <span class="n">name</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">email</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">hashed_password</span> <span class="nb">CHAR</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="k">ADD</span> <span class="k">CONSTRAINT</span> <span class="n">users_uc_email</span> <span class="k">UNIQUE</span> <span class="p">(</span><span class="n">email</span><span class="p">)</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">users</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">hashed_password</span><span class="p">,</span> <span class="n">created</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span>
+    <span class="s1">&#39;</span><span class="s1">Alice Jones</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">alice@example.com</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">$2a$12$NuTjWXm3KKntReFwyBVHyuf/to.HEwTy.eS206TNfkGfr6HzGJSWG</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">2022-01-01 09:18:24</span><span class="s1">&#39;</span>
+<span class="p">)</span><span class="p">;</span></pre>
+</figure>
+
+<figure class="code sql" dir="ltr">
+<figcaption>File: internal/models/testdata/teardown.sql</figcaption>
+<pre><span class="k">DROP</span> <span class="k">TABLE</span> <span class="n">users</span><span class="p">;</span>
+
+<span class="k">DROP</span> <span class="k">TABLE</span> <span class="n">snippets</span><span class="p">;</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> ابزار Go هر دایرکتوری به نام <code>testdata</code> را نادیده می‌گیرد، بنابراین این اسکریپت‌ها هنگام کامپایل برنامه شما نادیده گرفته می‌شوند. به عنوان یک نکته جانبی، همچنین هر دایرکتوری یا فایلی که نام آن با کاراکتر <code>_</code> یا <code>.</code> شروع می‌شود را نیز نادیده می‌گیرد.
+</p></aside>
+
+<p>خوب، حالا که اسکریپت‌ها را در جای خود داریم، بیایید یک فایل جدید برای نگهداری برخی از توابع کمکی برای تست‌های یکپارچه‌سازی خود ایجاد کنیم:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch internal/models/testutils_test.go</pre>
+</figure>
+
+<p>در این فایل بیایید یک تابع کمکی <code>newTestDB()</code> ایجاد کنیم که:</p>
+
+<ul>
+<li>یک استخر اتصال <code>*sql.DB</code> جدید برای پایگاه داده آزمایشی ایجاد می‌کند؛</li>
+<li>اسکریپت <code>setup.sql</code> را برای ایجاد جداول پایگاه داده و داده‌های آزمایشی اجرا می‌کند؛</li>
+<li>یک تابع 'پاکسازی' ثبت می‌کند که اسکریپت <code>teardown.sql</code> را اجرا می‌کند و استخر اتصال را می‌بندد.</li>
+</ul>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/testutils_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+    <span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">newTestDB</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
+    <span class="c1">// Establish a sql.DB connection pool for our test database. Because our
+</span><span class="c1"></span>    <span class="c1">// setup and teardown scripts contains multiple SQL statements, we need
+</span><span class="c1"></span>    <span class="c1">// to use the &#34;multiStatements=true&#34; parameter in our DSN. This instructs
+</span><span class="c1"></span>    <span class="c1">// our MySQL database driver to support executing multiple SQL statements
+</span><span class="c1"></span>    <span class="c1">// in one db.Exec() call.
+</span><span class="c1"></span>    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="s">&#34;test_web:pass@/test_snippetbox?parseTime=true&amp;multiStatements=true&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Read the setup SQL script from the file and execute the statements, closing
+</span><span class="c1"></span>    <span class="c1">// the connection pool and calling t.Fatal() in the event of an error.
+</span><span class="c1"></span>    <span class="nx">script</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="s">&#34;./testdata/setup.sql&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">script</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use t.Cleanup() to register a function *which will automatically be
+</span><span class="c1"></span>    <span class="c1">// called by Go when the current test (or sub-test) which calls newTestDB() 
+</span><span class="c1"></span>    <span class="c1">// has finished*. In this function we read and execute the teardown script, 
+</span><span class="c1"></span>    <span class="c1">// and close the database connection pool.
+</span><span class="c1"></span>    <span class="nx">t</span><span class="p">.</span><span class="nf">Cleanup</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+        <span class="nx">script</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="s">&#34;./testdata/teardown.sql&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">script</span><span class="p">)</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span><span class="p">)</span>
+
+    <span class="c1">// Return the database connection pool.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">db</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>نکته مهمی که باید از اینجا بگیرید این است:</p>
+
+<p><em>هر زمان که این تابع <code>newTestDB()</code> را در یک تست (یا زیرتست) فراخوانی کنیم، اسکریپت راه‌اندازی را در برابر پایگاه داده آزمایشی اجرا خواهد کرد. و هنگامی که تست یا زیرتست به پایان می‌رسد، تابع پاکسازی به طور خودکار اجرا می‌شود و اسکریپت تخریب اجرا خواهد شد.</em></p>
+
+<h3 id="testing-the-usermodel-exists-method">تست متد UserModel.Exists</h3>
+
+<p>حالا که کارهای مقدماتی انجام شده است، آماده‌ایم تا واقعاً تست یکپارچه‌سازی خود را برای متد <code>models.UserModel.Exists()</code> بنویسیم.</p>
+
+<p>ما می‌دانیم که اسکریپت <code>setup.sql</code> ما یک جدول <code>users</code> ایجاد می‌کند که حاوی یک رکورد است (که باید شناسه کاربر <code>1</code> و آدرس ایمیل <code>alice@example.com</code> داشته باشد). بنابراین می‌خواهیم تست کنیم که:</p>
+
+<ul>
+<li>فراخوانی <code>models.UserModel.Exists(1)</code> یک مقدار بولی <code>true</code> و یک مقدار خطای <code>nil</code> برمی‌گرداند.</li>
+<li>فراخوانی <code>models.UserModel.Exists()</code> با هر شناسه کاربر دیگری یک مقدار بولی <code>false</code> و یک مقدار خطای <code>nil</code> برمی‌گرداند.</li>
+</ul>
+
+<p>بیایید ابتدا به بسته <code>internal/assert</code> خود برویم و یک <code>NilError()</code> جدید ایجاد کنیم، که از آن برای بررسی اینکه مقدار خطا <code>nil</code> است استفاده خواهیم کرد. به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/assert/assert.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">assert</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">NilError</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">actual</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Helper</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got: %v; expected: nil&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>سپس بیایید طبق کنوانسیون‌های Go یک فایل جدید <code>users_test.go</code> برای تست خود ایجاد کنیم، مستقیماً در کنار کدی که تست می‌شود:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch internal/models/users_test.go</pre>
+</figure>
+
+<p>و یک تست <code>TestUserModelExists</code> حاوی کد زیر اضافه کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/users_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Skip the test if the &#34;-short&#34; flag is provided when running the test.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">testing</span><span class="p">.</span><span class="nf">Short</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="s">&#34;models: skipping integration test&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر این تست را اجرا کنید، همه چیز باید بدون هیچ مشکلی عبور کند.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./internal/models
+<samp>=== RUN   TestUserModelExists
+=== RUN   TestUserModelExists/Valid_ID
+=== RUN   TestUserModelExists/Zero_ID
+=== RUN   TestUserModelExists/Non-existent_ID
+--- PASS: TestUserModelExists (1.02s)
+    --- PASS: TestUserModelExists/Valid_ID (0.33s)
+    --- PASS: TestUserModelExists/Zero_ID (0.29s)
+    --- PASS: TestUserModelExists/Non-existent_ID (0.40s)
+PASS
+ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
+</figure>
+
+<p>خط آخر در خروجی تست اینجا ارزش ذکر دارد. زمان اجرای کل این تست (در مورد من 1.023 ثانیه) بسیار طولانی‌تر از تست‌های قبلی ما است &mdash; همه آنها چند میلی‌ثانیه طول کشیدند. این افزایش بزرگ در زمان اجرا عمدتاً به دلیل تعداد زیادی از عملیات پایگاه داده است که در طول تست‌ها نیاز داشتیم انجام دهیم.</p>
+
+<p>در حالی که 1 ثانیه زمان کاملاً قابل قبولی برای انتظار برای این تست به تنهایی است، اگر صدها تست یکپارچه‌سازی مختلف را در برابر پایگاه داده خود اجرا کنید، ممکن است به طور معمول منتظر دقیقه‌ها &mdash; به جای ثانیه‌ها &mdash; برای اتمام تست‌های خود باشید.</p>
+
+<h3 id="skipping-long-running-tests">رد کردن تست‌های طولانی مدت</h3>
+
+<p>وقتی تست‌های شما زمان زیادی می‌برند، ممکن است تصمیم بگیرید که می‌خواهید تست‌های خاصی را تحت شرایط خاصی رد کنید. به عنوان مثال، ممکن است تصمیم بگیرید که فقط تست‌های یکپارچه‌سازی خود را قبل از تعهد یک تغییر اجرا کنید، به جای اینکه بیشتر در طول توسعه اجرا کنید.</p>
+
+<p>یک روش رایج و ایدئومیک برای رد کردن تست‌های طولانی مدت استفاده از تابع <a href="https://pkg.go.dev/testing/#Short"><code>testing.Short()</code></a> برای بررسی وجود یک پرچم <code>-short</code> در فرمان <code>go test</code> شما است، و سپس متد <a href="https://pkg.go.dev/testing#T.Skip"><code>t.Skip()</code></a> را برای رد کردن تست اگر پرچم وجود دارد، فراخوانی کنید.</p>
+
+<p>بیایید سریعاً <code>TestUserModelExists</code> را به این صورت به‌روزرسانی کنیم <em>قبل از اجرای تست‌های واقعی آن</em>، به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/users_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Skip the test if the &#34;-short&#34; flag is provided when running the test.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">testing</span><span class="p">.</span><span class="nf">Short</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="s">&#34;models: skipping integration test&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و سپس می‌توانید سعی کنید تمام تست‌های پروژه را با پرچم <code>-short</code> فعال اجرا کنید. خروجی باید شبیه به این باشد:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v -short ./...
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+=== RUN   TestSnippetView
+=== RUN   TestSnippetView/Valid_ID
+=== RUN   TestSnippetView/Non-existent_ID
+=== RUN   TestSnippetView/Negative_ID
+=== RUN   TestSnippetView/Decimal_ID
+=== RUN   TestSnippetView/String_ID
+=== RUN   TestSnippetView/Empty_ID
+--- PASS: TestSnippetView (0.01s)
+    --- PASS: TestSnippetView/Valid_ID (0.00s)
+    --- PASS: TestSnippetView/Non-existent_ID (0.00s)
+    --- PASS: TestSnippetView/Negative_ID (0.00s)
+    --- PASS: TestSnippetView/Decimal_ID (0.00s)
+    --- PASS: TestSnippetView/String_ID (0.00s)
+    --- PASS: TestSnippetView/Empty_ID (0.00s)
+=== RUN   TestUserSignup
+=== RUN   TestUserSignup/Valid_submission
+=== RUN   TestUserSignup/Invalid_CSRF_Token
+=== RUN   TestUserSignup/Empty_name
+=== RUN   TestUserSignup/Empty_email
+=== RUN   TestUserSignup/Empty_password
+=== RUN   TestUserSignup/Invalid_email
+=== RUN   TestUserSignup/Short_password
+=== RUN   TestUserSignup/Long_password
+=== RUN   TestUserSignup/Duplicate_email
+--- PASS: TestUserSignup (0.01s)
+    --- PASS: TestUserSignup/Valid_submission (0.00s)
+    --- PASS: TestUserSignup/Invalid_CSRF_Token (0.00s)
+    --- PASS: TestUserSignup/Empty_name (0.00s)
+    --- PASS: TestUserSignup/Empty_email (0.00s)
+    --- PASS: TestUserSignup/Empty_password (0.00s)
+    --- PASS: TestUserSignup/Invalid_email (0.00s)
+    --- PASS: TestUserSignup/Short_password (0.00s)
+    --- PASS: TestUserSignup/Long_password (0.00s)
+    --- PASS: TestUserSignup/Duplicate_email (0.00s)
+=== RUN   TestCommonHeaders
+--- PASS: TestCommonHeaders (0.00s)
+=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.023s
+=== RUN   TestUserModelExists
+    users_test.go:10: models: skipping integration test
+--- SKIP: TestUserModelExists (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/internal/models      0.003s
+?       snippetbox.alexedwards.net/internal/models/mocks        [no test files]
+?       snippetbox.alexedwards.net/internal/validator   [no test files]
+?       snippetbox.alexedwards.net/ui   [no test files]</samp></pre>
+</figure>
+
+<p>آیا متوجه علامت <code>SKIP</code> در خروجی بالا شدید؟ این تأیید می‌کند که Go تست <code>TestUserModelExists</code> ما را در طول این اجرا رد کرده است.</p>
+
+<p>اگر دوست دارید، می‌توانید این را دوباره بدون پرچم <code>-short</code> اجرا کنید، و باید ببینید که تست <code>TestUserModelExists</code> به طور عادی اجرا می‌شود.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.06-testing-html-forms.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="13.08-profiling-test-coverage.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.06-testing-html-forms.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.08-profiling-test-coverage.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

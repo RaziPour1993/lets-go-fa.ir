@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fa">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; اضافه کردن حالت دیباگ</span>
+				</div>
+				<div>
+					&lsaquo; <a href="16.01-add-an-about-page-to-the-application.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="16.03-test-the-snippetcreate-method.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۶.۲.</div>
+			<h2 id="add-a-debug-mode">اضافه کردن حالت دیباگ</h2>
+
+<p>اگر از فریم‌ورک‌های وب برای زبان‌های دیگر مانند Django یا Laravel استفاده کرده‌اید، احتمالاً با ایده‌ی حالت «دیباگ» آشنا هستید که در آن خطاهای دقیق به جای پیام عمومی <code>"خطای داخلی سرور"</code> به کاربر نمایش داده می‌شود.</p>
+
+<p>هدف شما در این تمرین این است که یک حالت «دیباگ» مشابه برای برنامه خود تنظیم کنید که با استفاده از فلگ <code>-debug</code> به صورت زیر فعال شود:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go run ./cmd/web -debug</pre>
+</figure>
+
+<p>هنگام اجرای برنامه در حالت دیباگ، هرگونه خطاهای دقیق و ردیابی استک باید در مرورگر نمایش داده شود، مشابه این:</p>
+
+<figure class="img">
+<img src="assets/img/16.02-01.png" alt="16.02-01.png" />
+</figure>
+
+<h4 id="step-1">مرحله ۱</h4>
+
+<p>یک فلگ خط فرمان جدید با نام <code>debug</code> و مقدار پیش‌فرض <code>false</code> ایجاد کنید. سپس مقدار این فلگ خط فرمان را از طریق ساختار <code>application</code> در دسترس هندلرهای خود قرار دهید.</p>
+
+<p>نکته: تابع <code>flag.Bool()</code> برای این کار مناسب‌ترین است.</p>
+
+<p><a href="#17.02-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
+
+<h4 id="step-2">مرحله ۲</h4>
+
+<p>به فایل <code>cmd/web/helpers.go</code> بروید و تابع کمکی <code>serverError()</code> را به‌روزرسانی کنید تا در صورت تنظیم فلگ <code>debug</code>، یک پیام خطا و ردیابی استک دقیق در پاسخ HTTP رندر کند. در غیر این صورت، پیام خطای عمومی را به صورت عادی ارسال کنید. می‌توانید ردیابی استک را با استفاده از تابع <code>debug.Stack()</code> دریافت کنید.</p>
+
+<p><a href="#17.02-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
+
+<h4 id="step-3">مرحله ۳</h4>
+
+<p>تغییرات را امتحان کنید. برنامه را اجرا کنید و با استفاده از DSN بدون پارامتر <code>parseTime=true</code> یک خطای زمان اجرا ایجاد کنید:</p>
+
+<figure class="code bash">
+<pre>$ go run ./cmd/web/ -debug -dsn=web:pass@/snippetbox</pre>
+</figure>
+
+<p>بازدید از <a href="https://localhost:4000/"><code>https://localhost:4000/</code></a> باید منجر به پاسخی مانند این شود:</p>
+
+<figure class="img">
+<img src="assets/img/16.02-01.png" alt="16.02-01.png" />
+</figure>
+
+<p>اجرای مجدد برنامه بدون فلگ <code>-debug</code> باید منجر به پیام عمومی <code>"خطای داخلی سرور"</code> شود.</p>
+
+<h3 id="suggested-code">کد پیشنهادی</h3>
+
+<h4 id="17.02-suggested-code-for-step-1">کد پیشنهادی برای مرحله ۱</h4>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">debug</span>          <span class="kt">bool</span> <span class="c1">// Add a new debug field.
+</span><span class="c1"></span>    <span class="nx">logger</span>        <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span>       <span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModelInterface</span>
+    <span class="nx">users</span>          <span class="nx">models</span><span class="p">.</span><span class="nx">UserModelInterface</span>
+    <span class="nx">templateCache</span>  <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span>
+    <span class="nx">formDecoder</span>    <span class="o">*</span><span class="nx">form</span><span class="p">.</span><span class="nx">Decoder</span>
+    <span class="nx">sessionManager</span> <span class="o">*</span><span class="nx">scs</span><span class="p">.</span><span class="nx">SessionManager</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
+    <span class="c1">// Create a new debug flag with the default value of false.
+</span><span class="c1"></span>    <span class="nx">debug</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="s">&#34;debug&#34;</span><span class="p">,</span> <span class="kc">false</span><span class="p">,</span> <span class="s">&#34;Enable debug mode&#34;</span><span class="p">)</span>
+    <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">openDB</span><span class="p">(</span><span class="o">*</span><span class="nx">dsn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">templateCache</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">formDecoder</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">sessionManager</span> <span class="o">:=</span> <span class="nx">scs</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Store</span> <span class="p">=</span> <span class="nx">mysqlstore</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">db</span><span class="p">)</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Lifetime</span> <span class="p">=</span> <span class="mi">12</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Hour</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Cookie</span><span class="p">.</span><span class="nx">Secure</span> <span class="p">=</span> <span class="kc">true</span>
+
+    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">debug</span><span class="p">:</span>          <span class="o">*</span><span class="nx">debug</span><span class="p">,</span> <span class="c1">// Add the debug flag value to the application struct.
+</span><span class="c1"></span>        <span class="nx">logger</span><span class="p">:</span>         <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>       <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">users</span><span class="p">:</span>          <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">UserModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">templateCache</span><span class="p">:</span>  <span class="nx">templateCache</span><span class="p">,</span>
+        <span class="nx">formDecoder</span><span class="p">:</span>    <span class="nx">formDecoder</span><span class="p">,</span>
+        <span class="nx">sessionManager</span><span class="p">:</span> <span class="nx">sessionManager</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+        <span class="nx">CurvePreferences</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="nx">tls</span><span class="p">.</span><span class="nx">CurveID</span><span class="p">{</span><span class="nx">tls</span><span class="p">.</span><span class="nx">X25519</span><span class="p">,</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">CurveP256</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>         <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span>      <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">ErrorLog</span><span class="p">:</span>     <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">TLSConfig</span><span class="p">:</span>    <span class="nx">tlsConfig</span><span class="p">,</span>
+        <span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">,</span>
+        <span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+        <span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">&#34;./tls/cert.pem&#34;</span><span class="p">,</span> <span class="s">&#34;./tls/key.pem&#34;</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<h4 id="17.02-suggested-code-for-step-2">کد پیشنهادی برای مرحله ۲</h4>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre>
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="p">(</span>
+        <span class="nx">method</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Method</span>
+        <span class="nx">uri</span>    <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nf">RequestURI</span><span class="p">(</span><span class="p">)</span>
+        <span class="nx">trace</span>  <span class="p">=</span> <span class="nb">string</span><span class="p">(</span><span class="nx">debug</span><span class="p">.</span><span class="nf">Stack</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;method&#34;</span><span class="p">,</span> <span class="nx">method</span><span class="p">,</span> <span class="s">&#34;uri&#34;</span><span class="p">,</span> <span class="nx">uri</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nx">app</span><span class="p">.</span><span class="nx">debug</span> <span class="p">{</span>
+        <span class="nx">body</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s\n%s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">trace</span><span class="p">)</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StatusText</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="16.01-add-an-about-page-to-the-application.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="16.03-test-the-snippetcreate-method.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					case 37:
+						window.location.href = "16.01-add-an-about-page-to-the-application.html";
+						break;
+					case 39:
+						window.location.href = "16.03-test-the-snippetcreate-method.html";
+						break;
+				}
+			};
+		</script>
+	</body>
+</html>
+

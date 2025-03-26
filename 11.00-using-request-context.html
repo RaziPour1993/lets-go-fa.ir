@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Using request context &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; استفاده از زمینه درخواست</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="10.07-csrf-protection.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="11.01-how-request-context-works.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter" dir="rtl">فصل 11.</div>
+			<h1 id="using-request-context" dir="rtl">استفاده از زمینه درخواست</h1>
+
+<p dir="rtl">در حال حاضر منطق ما برای احراز هویت کاربر شامل بررسی این است که آیا مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های جلسه آنها وجود دارد یا خیر، به این صورت:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p dir="rtl">ما می‌توانیم این بررسی را با پرس و جو از جدول <code>users</code> در پایگاه داده خود قوی‌تر کنیم تا مطمئن شویم که مقدار <code>&quot;authenticatedUserID&quot;</code> یک مقدار واقعی و معتبر است (یعنی ما حساب کاربر را از زمانی که آخرین بار وارد شده‌اند حذف نکرده‌ایم).</p>
+
+<p dir="rtl">اما یک مشکل جزئی در انجام این بررسی اضافی پایگاه داده وجود دارد.</p>
+
+<p dir="rtl">کمک‌کننده <code>isAuthenticated()</code> ما می‌تواند به طور بالقوه چندین بار در هر چرخه درخواست فراخوانی شود. در حال حاضر ما از آن دو بار استفاده می‌کنیم &mdash; یک بار در میان‌افزار <code>requireAuthentication()</code> و دوباره در کمک‌کننده <code>newTemplateData()</code>. بنابراین، اگر از کمک‌کننده <code>isAuthenticated()</code> مستقیماً به پایگاه داده پرس و جو کنیم، در هر درخواست، سفرهای رفت و برگشت تکراری به پایگاه داده خواهیم داشت. و این خیلی کارآمد نیست.</p>
+
+<p dir="rtl">رویکرد بهتر این است که این بررسی را در برخی از میان‌افزارها انجام دهیم تا تعیین کنیم که آیا درخواست فعلی از یک کاربر احراز هویت شده است یا خیر، و سپس آن اطلاعات را به همه هندلرهای بعدی در زنجیره منتقل کنیم.</p>
+
+<p dir="rtl">پس چگونه این کار را انجام دهیم؟ وارد <dfn>زمینه درخواست</dfn> شوید.</p>
+
+<p dir="rtl">در این بخش یاد خواهید گرفت:</p>
+
+<ul dir="rtl">
+<li><a href="11.01-how-request-context-works.html">زمینه درخواست چیست</a>، چگونه از آن استفاده کنید و چه زمانی مناسب است از آن استفاده کنید.</li>
+<li>چگونه از زمینه درخواست در عمل استفاده کنید تا اطلاعات مربوط به کاربر فعلی را بین هندلرهای خود منتقل کنید.</li>
+</ul>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.07-csrf-protection.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="11.01-how-request-context-works.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.07-csrf-protection.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "11.01-how-request-context-works.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

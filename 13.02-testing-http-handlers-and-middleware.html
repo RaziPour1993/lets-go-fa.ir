@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Testing HTTP handlers and middleware &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body dir="rtl">
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست هندلرها و میان‌افزارهای HTTP</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.01-unit-testing-and-sub-tests.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.03-end-to-end-testing.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل 13.2.</div>
+			<h2 id="testing-http-handlers-and-middleware">تست هندلرها و میان‌افزارهای HTTP</h2>
+
+<p>بیایید به سراغ تکنیک‌های خاصی برای تست واحد هندلرهای HTTP شما برویم.</p>
+
+<p>تمام هندلرهایی که تا کنون برای این پروژه نوشته‌ایم کمی پیچیده برای تست هستند و برای معرفی چیزها ترجیح می‌دهم با چیزی ساده‌تر شروع کنم.</p>
+
+<p>بنابراین، اگر همراه هستید، به فایل <code>handlers.go</code> خود بروید و یک تابع هندلر <code>ping</code> جدید ایجاد کنید که یک کد وضعیت <code>200 OK</code> و یک بدنه پاسخ <code>"OK"</code> برمی‌گرداند. این نوع هندلری است که ممکن است بخواهید برای بررسی وضعیت یا نظارت بر زمان کارکرد سرور خود پیاده‌سازی کنید.</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">ping</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">"OK"</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>در این فصل یک تست واحد <code>TestPing</code> جدید ایجاد خواهیم کرد که:</p>
+
+<ul>
+<li>بررسی می‌کند که کد وضعیت پاسخ نوشته شده توسط هندلر <code>ping</code> <code>200</code> است.</li>
+<li>بررسی می‌کند که بدنه پاسخ نوشته شده توسط هندلر <code>ping</code> <code>"OK"</code> است.</li>
+</ul>
+
+<h3 id="recording-responses">ضبط پاسخ‌ها</h3>
+
+<p>Go ابزارهای مفیدی در بسته <a href="https://pkg.go.dev/net/http/httptest"><code>net/http/httptest</code></a> برای کمک به تست هندلرهای HTTP شما فراهم می‌کند.</p>
+
+<p>یکی از این ابزارها نوع <a href="https://pkg.go.dev/net/http/httptest/#ResponseRecorder"><code>httptest.ResponseRecorder</code></a> است. این اساساً یک پیاده‌سازی از <code>http.ResponseWriter</code> است که کد وضعیت پاسخ، هدرها و بدنه را ضبط می‌کند به جای اینکه واقعاً آنها را به یک اتصال HTTP بنویسد.</p>
+
+<p>بنابراین یک راه آسان برای تست واحد هندلرهای شما این است که یک <code>httptest.ResponseRecorder</code> جدید ایجاد کنید، آن را به تابع هندلر پاس دهید و سپس بعد از بازگشت هندلر آن را دوباره بررسی کنید.</p>
+
+<p>بیایید دقیقاً همین کار را برای تست تابع هندلر <code>ping</code> انجام دهیم.</p>
+
+<p>ابتدا، طبق کنوانسیون‌های Go، یک فایل <code>handlers_test.go</code> جدید ایجاد کنید تا تست را نگه دارد&hellip;</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch cmd/web/handlers_test.go</pre>
+</figure>
+
+<p>و سپس کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"bytes"</span>
+    <span class="s">"io"</span>
+    <span class="s">"net/http"</span>
+    <span class="s">"net/http/httptest"</span>
+    <span class="s">"testing"</span>
+
+    <span class="s">"snippetbox.alexedwards.net/internal/assert"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestPing</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Initialize a new httptest.ResponseRecorder.
+</span><span class="c1"></span>    <span class="nx">rr</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewRecorder</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a new dummy http.Request.
+</span><span class="c1"></span>    <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">MethodGet</span><span class="p">,</span> <span class="s">"/"</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Call the ping handler function, passing in the
+</span><span class="c1"></span>    <span class="c1">// httptest.ResponseRecorder and http.Request.
+</span><span class="c1"></span>    <span class="nf">ping</span><span class="p">(</span><span class="nx">rr</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+
+    <span class="c1">// Call the Result() method on the http.ResponseRecorder to get the
+</span><span class="c1"></span>    <span class="c1">// http.Response generated by the ping handler.
+</span><span class="c1"></span>    <span class="nx">rs</span> <span class="o">:=</span> <span class="nx">rr</span><span class="p">.</span><span class="nf">Result</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Check that the status code written by the ping handler was 200.
+</span><span class="c1"></span>    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
+   
+    <span class="c1">// And we can check that the response body written by the ping handler
+</span><span class="c1"></span>    <span class="c1">// equals "OK".
+</span><span class="c1"></span>    <span class="k">defer</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">body</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">body</span> <span class="p">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span>
+
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span><span class="p">,</span> <span class="s">"OK"</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> در کد بالا ما از تابع <a href="https://pkg.go.dev/testing/#T.Fatal"><code>t.Fatal()</code></a> در چند جا برای مدیریت موقعیت‌هایی که خطای غیرمنتظره‌ای در کد تست ما وجود دارد استفاده می‌کنیم. وقتی فراخوانی می‌شود، <code>t.Fatal()</code> تست را به عنوان شکست‌خورده علامت‌گذاری می‌کند، خطا را ثبت می‌کند و سپس اجرای <em>تست فعلی</em> (یا زیرتست) را به طور کامل متوقف می‌کند.</p>
+
+<p>به طور معمول باید <code>t.Fatal()</code> را در موقعیت‌هایی فراخوانی کنید که ادامه تست فعلی منطقی نیست &mdash; مانند خطا در یک مرحله راه‌اندازی، یا جایی که یک خطای غیرمنتظره از یک تابع کتابخانه استاندارد Go به این معنی است که نمی‌توانید با تست ادامه دهید.
+</p></aside>
+
+<p>خوب، فایل را ذخیره کنید، سپس دوباره <code>go test</code> را با پرچم verbose اجرا کنید. به این صورت:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./cmd/web/
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
+</figure>
+
+<p>بنابراین این خوب به نظر می‌رسد. می‌توانیم ببینیم که تست جدید <code>TestPing</code> ما در حال اجرا است و بدون هیچ مشکلی پاس می‌شود.</p>
+
+<h3 id="testing-middleware">تست میان‌افزار</h3>
+
+<p>همچنین می‌توان از همان الگوی کلی برای تست واحد میان‌افزارهای خود استفاده کرد.</p>
+
+<p>ما این را با ایجاد یک تست <code>TestCommonHeaders</code> برای میان‌افزار <code>commonHeaders()</code> که <a href="06.02-setting-common-headers.html">قبلاً در کتاب</a> ساخته‌ایم، نشان خواهیم داد. به عنوان بخشی از این تست می‌خواهیم بررسی کنیم که:</p>
+
+<ul>
+<li>میان‌افزار <code>commonHeaders()</code> تمام هدرهای مورد انتظار را بر روی پاسخ HTTP تنظیم می‌کند.</li>
+<li>میان‌افزار <code>commonHeaders()</code> به درستی هندلر بعدی در زنجیره را فراخوانی می‌کند.</li>
+</ul>
+
+<p>ابتدا باید یک فایل <code>cmd/web/middleware_test.go</code> ایجاد کنید تا تست را نگه دارد:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch cmd/web/middleware_test.go</pre>
+</figure>
+
+<p>و سپس کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/middleware_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"bytes"</span>
+    <span class="s">"io"</span>
+    <span class="s">"net/http"</span>
+    <span class="s">"net/http/httptest"</span>
+    <span class="s">"testing"</span>
+
+    <span class="s">"snippetbox.alexedwards.net/internal/assert"</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestCommonHeaders</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Initialize a new httptest.ResponseRecorder and dummy http.Request.
+</span><span class="c1"></span>    <span class="nx">rr</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewRecorder</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">MethodGet</span><span class="p">,</span> <span class="s">"/"</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Create a mock HTTP handler that we can pass to our commonHeaders
+</span><span class="c1"></span>    <span class="c1">// middleware, which writes a 200 status code and an "OK" response body.
+</span><span class="c1"></span>    <span class="nx">next</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">"OK"</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+
+    <span class="c1">// Pass the mock HTTP handler to our commonHeaders middleware. Because
+</span><span class="c1"></span>    <span class="c1">// commonHeaders *returns* a http.Handler we can call its ServeHTTP()
+</span><span class="c1"></span>    <span class="c1">// method, passing in the http.ResponseRecorder and dummy http.Request to
+</span><span class="c1"></span>    <span class="c1">// execute it.
+</span><span class="c1"></span>    <span class="nf">commonHeaders</span><span class="p">(</span><span class="nx">next</span><span class="p">)</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">rr</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+
+    <span class="c1">// Call the Result() method on the http.ResponseRecorder to get the results
+</span><span class="c1"></span>    <span class="c1">// of the test.
+</span><span class="c1"></span>    <span class="nx">rs</span> <span class="o">:=</span> <span class="nx">rr</span><span class="p">.</span><span class="nf">Result</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly set the Content-Security-Policy
+</span><span class="c1"></span>    <span class="c1">// header on the response.
+</span><span class="c1"></span>    <span class="nx">expectedValue</span> <span class="o">:=</span> <span class="s">"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com"</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"Content-Security-Policy"</span><span class="p">)</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly set the Referrer-Policy
+</span><span class="c1"></span>    <span class="c1">// header on the response.
+</span><span class="c1"></span>    <span class="nx">expectedValue</span> <span class="p">=</span> <span class="s">"origin-when-cross-origin"</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"Referrer-Policy"</span><span class="p">)</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly set the X-Content-Type-Options
+</span><span class="c1"></span>    <span class="c1">// header on the response.
+</span><span class="c1"></span>    <span class="nx">expectedValue</span> <span class="p">=</span> <span class="s">"nosniff"</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"X-Content-Type-Options"</span><span class="p">)</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly set the X-Frame-Options header
+</span><span class="c1"></span>    <span class="c1">// on the response.
+</span><span class="c1"></span>    <span class="nx">expectedValue</span> <span class="p">=</span> <span class="s">"deny"</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"X-Frame-Options"</span><span class="p">)</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly set the X-XSS-Protection header
+</span><span class="c1"></span>    <span class="c1">// on the response
+</span><span class="c1"></span>    <span class="nx">expectedValue</span> <span class="p">=</span> <span class="s">"0"</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"X-XSS-Protection"</span><span class="p">)</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly set the Server header on the 
+</span><span class="c1"></span>    <span class="c1">// response.
+</span><span class="c1"></span>    <span class="nx">expectedValue</span> <span class="p">=</span> <span class="s">"Go"</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">"Server"</span><span class="p">)</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+
+    <span class="c1">// Check that the middleware has correctly called the next handler in line
+</span><span class="c1"></span>    <span class="c1">// and the response status code and body are as expected.
+</span><span class="c1"></span>    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
+
+    <span class="k">defer</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">body</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">body</span> <span class="p">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span>
+    
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span><span class="p">,</span> <span class="s">"OK"</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر اکنون تست‌ها را اجرا کنید، باید ببینید که تست <code>TestCommonHeaders</code> بدون هیچ مشکلی پاس می‌شود.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./cmd/web/
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+=== RUN   TestCommonHeaders
+--- PASS: TestCommonHeaders (0.00s)
+=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
+</figure>
+
+<p>بنابراین، به طور خلاصه، یک راه سریع و آسان برای تست واحد هندلرها و میان‌افزارهای HTTP شما این است که به سادگی آنها را با استفاده از نوع <code>httptest.ResponseRecorder</code> فراخوانی کنید. سپس می‌توانید کد وضعیت، هدرها و بدنه پاسخ ضبط شده را بررسی کنید تا مطمئن شوید که آنها به درستی کار می‌کنند.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.01-unit-testing-and-sub-tests.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="13.03-end-to-end-testing.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.01-unit-testing-and-sub-tests.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.03-end-to-end-testing.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

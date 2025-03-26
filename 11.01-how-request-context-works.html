@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>How request context works &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			body {
+				direction: rtl;
+				text-align: right;
+			}
+			.code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">استفاده از زمینه درخواست</a> &rsaquo; چگونه زمینه درخواست کار می‌کند</span>
+				</div>
+				<div>
+					&lsaquo; <a href="11.00-using-request-context.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="11.02-request-context-for-authentication-authorization.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۱.۱.</div>
+			<h2 id="how-request-context-works">چگونه زمینه درخواست کار می‌کند</h2>
+
+<p>هر <code>http.Request</code> که میان‌افزار و هندلرهای ما پردازش می‌کنند، یک شیء <a href="https://pkg.go.dev/context/#Context"><code>context.Context</code></a> در خود دارد که می‌توانیم از آن برای ذخیره اطلاعات در طول عمر درخواست استفاده کنیم.</p>
+
+<p>همانطور که قبلاً اشاره کردم، در یک برنامه وب یک مورد استفاده رایج برای این است که اطلاعات را بین قطعات میان‌افزار و هندلرهای دیگر خود منتقل کنید.</p>
+
+<p>در مورد ما، می‌خواهیم از آن برای بررسی اینکه آیا یک کاربر احراز هویت شده است در برخی از میان‌افزارها استفاده کنیم، و اگر آنها احراز هویت شده‌اند، این اطلاعات را برای همه میان‌افزارها و هندلرهای دیگر خود در دسترس قرار دهیم.</p>
+
+<p>بیایید با کمی تئوری شروع کنیم و نحو کار با زمینه درخواست را توضیح دهیم. سپس، در فصل بعدی، دوباره کمی عملی‌تر خواهیم شد و نشان خواهیم داد که چگونه می‌توان آن را به طور عملی در برنامه خود استفاده کرد.</p>
+
+<h3 id="the-request-context-syntax">نحو زمینه درخواست</h3>
+
+<p>کد پایه برای افزودن اطلاعات به زمینه یک درخواست به این صورت است:</p>
+
+<figure class="code go">
+<pre><span class="c1">// Where r is a *http.Request...
+</span><span class="c1"></span><span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">"isAuthenticated"</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span></pre>
+</figure>
+
+<p>بیایید این را خط به خط بررسی کنیم.</p>
+
+<ul>
+<li>ابتدا، از روش <code>r.Context()</code> برای بازیابی زمینه <em>موجود</em> از یک درخواست استفاده می‌کنیم و آن را به متغیر <code>ctx</code> اختصاص می‌دهیم.</li>
+<li>سپس از روش <code>context.WithValue()</code> برای ایجاد یک <em>نسخه جدید</em> از زمینه موجود استفاده می‌کنیم که شامل کلید <code>"isAuthenticated"</code> و مقداری از <code>true</code> است.</li>
+<li>سپس در نهایت از روش <code>r.WithContext()</code> برای ایجاد یک <em>نسخه</em> از درخواست که شامل زمینه جدید ما است، استفاده می‌کنیم.</li>
+</ul>
+
+<aside class="important"><p>
+<strong>مهم:</strong> توجه کنید که ما در واقع زمینه یک درخواست را به‌روزرسانی نمی‌کنیم. آنچه که انجام می‌دهیم <em>ایجاد یک نسخه جدید</em> از شیء <code>http.Request</code> با زمینه جدید ما در آن است.
+</p></aside>
+
+<p>همچنین باید اشاره کنم که، برای وضوح، آن قطعه کد را کمی بیشتر از آنچه که نیاز بود، مفصل کردم. معمولاً به این صورت نوشته می‌شود:</p>
+
+<figure class="code go">
+<pre><span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">"isAuthenticated"</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span></pre>
+</figure>
+
+<p>پس اینگونه است که داده‌ها را به زمینه یک درخواست اضافه می‌کنید. اما چگونه می‌توان آن را دوباره بازیابی کرد؟</p>
+
+<p>نکته مهمی که باید توضیح دهم این است که، در پشت صحنه، مقادیر زمینه درخواست با نوع <code>any</code> ذخیره می‌شوند. و این بدان معناست که، پس از بازیابی آنها از زمینه، باید آنها را به نوع اصلی خود قبل از استفاده از آنها تبدیل کنید.</p>
+
+<p>برای بازیابی یک مقدار باید از روش <code>r.Context().Value()</code> استفاده کنیم، به این صورت:</p>
+
+<figure class="code go">
+<pre><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"isAuthenticated"</span><span class="p">)</span><span class="p">.</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">"could not convert value to bool"</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h3 id="avoiding-key-collisions">اجتناب از برخورد کلیدها</h3>
+
+<p>در نمونه‌های کد بالا، من از رشته <code>"isAuthenticated"</code> به عنوان کلید برای ذخیره و بازیابی داده‌ها از زمینه یک درخواست استفاده کرده‌ام. اما این توصیه نمی‌شود زیرا خطر این وجود دارد که بسته‌های شخص ثالث دیگری که توسط برنامه شما استفاده می‌شوند نیز بخواهند داده‌ها را با استفاده از کلید <code>"isAuthenticated"</code> ذخیره کنند — و این باعث برخورد نام‌گذاری می‌شود.</p>
+
+<p>برای اجتناب از این، بهتر است نوع سفارشی خود را ایجاد کنید که می‌توانید از آن برای کلیدهای زمینه خود استفاده کنید. با گسترش کد نمونه ما، بهتر است چیزی شبیه به این انجام دهید:</p>
+
+<figure class="code go">
+<pre><span class="c1">// Declare a custom "contextKey" type for your context keys.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">contextKey</span> <span class="kt">string</span>
+
+<span class="c1">// Create a constant with the type contextKey that we can use.
+</span><span class="c1"></span><span class="kd">const</span> <span class="nx">isAuthenticatedContextKey</span> <span class="p">=</span> <span class="nf">contextKey</span><span class="p">(</span><span class="s">"isAuthenticated"</span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Set the value in the request context, using our isAuthenticatedContextKey 
+</span><span class="c1"></span><span class="c1">// constant as the key.
+</span><span class="c1"></span><span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">isAuthenticatedContextKey</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Retrieve the value from the request context using our constant as the key.
+</span><span class="c1"></span><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="nx">isAuthenticatedContextKey</span><span class="p">)</span><span class="p">.</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">"could not convert value to bool"</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="11.00-using-request-context.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="11.02-request-context-for-authentication-authorization.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "11.00-using-request-context.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "11.02-request-context-for-authentication-authorization.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

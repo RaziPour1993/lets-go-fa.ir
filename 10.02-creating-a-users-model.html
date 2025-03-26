@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Creating a users model &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ایجاد مدل کاربران</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="10.01-routes-setup.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="10.03-user-signup-and-password-encryption.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 10.2.</div>
+			<h2 id="creating-a-users-model">ایجاد مدل کاربران</h2>
+
+<p>اکنون که مسیرها تنظیم شده‌اند، باید یک جدول جدید <code>users</code> در پایگاه داده ایجاد کنیم و یک مدل پایگاه داده برای دسترسی به آن ایجاد کنیم.</p>
+
+<p>ابتدا با استفاده از کاربر <code>root</code> از پنجره ترمینال خود به MySQL متصل شوید و دستور SQL زیر را برای تنظیم جدول <code>users</code> اجرا کنید:</p>
+
+<figure class="code sql" dir="ltr">
+<pre><span class="n">USE</span> <span class="n">snippetbox</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+    <span class="n">name</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">email</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">hashed_password</span> <span class="nb">CHAR</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="k">ADD</span> <span class="k">CONSTRAINT</span> <span class="n">users_uc_email</span> <span class="k">UNIQUE</span> <span class="p">(</span><span class="n">email</span><span class="p">)</span><span class="p">;</span></pre>
+</figure>
+
+<p>چند نکته در مورد این جدول وجود دارد:</p>
+
+<ul>
+<li><p>فیلد <code>id</code> یک فیلد عدد صحیح خودافزایشی و کلید اصلی جدول است. این بدان معناست که مقادیر شناسه کاربر به صورت اعداد صحیح مثبت منحصر به فرد (1، 2، 3 و غیره) تضمین می‌شوند.</p></li>
+
+<li><p>نوع فیلد <code>hashed_password</code> <code>CHAR(60)</code> است. این به این دلیل است که ما هش‌های bcrypt از رمزهای عبور کاربران را در پایگاه داده ذخیره خواهیم کرد &mdash; نه خود رمزها &mdash; و هش‌ها همیشه دقیقاً 60 کاراکتر طول دارند.</p></li>
+
+<li><p>ما همچنین یک محدودیت <code>UNIQUE</code> بر روی ستون <code>email</code> اضافه کرده‌ایم و آن را <code>users_uc_email</code> نامگذاری کرده‌ایم. این محدودیت تضمین می‌کند که ما با دو کاربر که آدرس ایمیل یکسانی دارند مواجه نخواهیم شد. اگر سعی کنیم رکوردی را در این جدول با ایمیل تکراری وارد کنیم، MySQL یک خطای <a href="https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html#error_er_dup_entry"><code>ERROR 1062: ER_DUP_ENTRY</code></a> پرتاب خواهد کرد.</p></li>
+</ul>
+
+<h3 id="building-the-model-in-go">ساخت مدل در Go</h3>
+
+<p>سپس بیایید یک مدل تنظیم کنیم تا بتوانیم به راحتی با جدول جدید <code>users</code> کار کنیم. ما همان الگویی را که قبلاً در کتاب برای مدل‌سازی دسترسی به جدول <code>snippets</code> استفاده کرده‌ایم، دنبال خواهیم کرد، بنابراین امیدواریم که این کار آشنا و ساده باشد.</p>
+
+<p>ابتدا فایل <code>internal/models/errors.go</code> را که قبلاً ایجاد کرده‌اید باز کنید و چند نوع خطای جدید تعریف کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/errors.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;errors&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="p">(</span>
+    <span class="nx">ErrNoRecord</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;models: no matching record found&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Add a new ErrInvalidCredentials error. We&#39;ll use this later if a user
+</span><span class="c1"></span>    <span class="c1">// tries to login with an incorrect email address or password.
+</span><span class="c1"></span>    <span class="nx">ErrInvalidCredentials</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;models: invalid credentials&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Add a new ErrDuplicateEmail error. We&#39;ll use this later if a user
+</span><span class="c1"></span>    <span class="c1">// tries to signup with an email address that&#39;s already in use.
+</span><span class="c1"></span>    <span class="nx">ErrDuplicateEmail</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;models: duplicate email&#34;</span><span class="p">)</span>
+<span class="p">)</span></pre>
+</figure>
+
+<p>سپس یک فایل جدید در <code>internal/models/users.go</code> ایجاد کنید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch internal/models/users.go</pre>
+</figure>
+
+<p>&hellip;و یک ساختار جدید <code>User</code> (برای نگهداری داده‌های یک کاربر خاص) و یک ساختار <code>UserModel</code> (با برخی متدهای جایگزین برای تعامل با پایگاه داده ما) تعریف کنید. به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/users.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Define a new User struct. Notice how the field names and types align
+</span><span class="c1"></span><span class="c1">// with the columns in the database &#34;users&#34; table?
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">User</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">ID</span>             <span class="kt">int</span>
+    <span class="nx">Name</span>           <span class="kt">string</span>
+    <span class="nx">Email</span>          <span class="kt">string</span>
+    <span class="nx">HashedPassword</span> <span class="p">[</span><span class="p">]</span><span class="kt">byte</span>
+    <span class="nx">Created</span>        <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+<span class="p">}</span>
+
+<span class="c1">// Define a new UserModel struct which wraps a database connection pool.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">UserModel</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">DB</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span>
+<span class="p">}</span>
+
+<span class="c1">// We&#39;ll use the Insert method to add a new record to the &#34;users&#34; table.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Insert</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">// We&#39;ll use the Authenticate method to verify whether a user exists with
+</span><span class="c1"></span><span class="c1">// the provided email address and password. This will return the relevant
+</span><span class="c1"></span><span class="c1">// user ID if they do.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Authenticate</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">// We&#39;ll use the Exists method to check if a user exists with a specific ID.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Exists</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">bool</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>مرحله نهایی اضافه کردن یک فیلد جدید به ساختار <code>application</code> است تا بتوانیم این مدل را در دسترس هندلرهای خود قرار دهیم. فایل <code>main.go</code> را به صورت زیر به‌روزرسانی کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Add a new users field to the application struct.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">logger</span>        <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span>       <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span>
+    <span class="nx">users</span>          <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">UserModel</span>
+    <span class="nx">templateCache</span>  <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span>
+    <span class="nx">formDecoder</span>    <span class="o">*</span><span class="nx">form</span><span class="p">.</span><span class="nx">Decoder</span>
+    <span class="nx">sessionManager</span> <span class="o">*</span><span class="nx">scs</span><span class="p">.</span><span class="nx">SessionManager</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    
+    <span class="o">...</span>
+
+    <span class="c1">// Initialize a models.UserModel instance and add it to the application
+</span><span class="c1"></span>    <span class="c1">// dependencies.
+</span><span class="c1"></span>    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>         <span class="nx">logger</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>       <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">users</span><span class="p">:</span>          <span class="o">&amp;</span><span class="nx">models</span><span class="p">.</span><span class="nx">UserModel</span><span class="p">{</span><span class="nx">DB</span><span class="p">:</span> <span class="nx">db</span><span class="p">}</span><span class="p">,</span>
+        <span class="nx">templateCache</span><span class="p">:</span>  <span class="nx">templateCache</span><span class="p">,</span>
+        <span class="nx">formDecoder</span><span class="p">:</span>    <span class="nx">formDecoder</span><span class="p">,</span>
+        <span class="nx">sessionManager</span><span class="p">:</span> <span class="nx">sessionManager</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+        <span class="nx">CurvePreferences</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="nx">tls</span><span class="p">.</span><span class="nx">CurveID</span><span class="p">{</span><span class="nx">tls</span><span class="p">.</span><span class="nx">X25519</span><span class="p">,</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">CurveP256</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>         <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span>      <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">ErrorLog</span><span class="p">:</span>     <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">TLSConfig</span><span class="p">:</span>    <span class="nx">tlsConfig</span><span class="p">,</span>
+        <span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">,</span>
+        <span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+        <span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">&#34;./tls/cert.pem&#34;</span><span class="p">,</span> <span class="s">&#34;./tls/key.pem&#34;</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>اطمینان حاصل کنید که همه فایل‌ها ذخیره شده‌اند، سپس برنامه را اجرا کنید. در این مرحله باید متوجه شوید که بدون هیچ مشکلی کامپایل می‌شود.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.01-routes-setup.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="10.03-user-signup-and-password-encryption.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.01-routes-setup.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.03-user-signup-and-password-encryption.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

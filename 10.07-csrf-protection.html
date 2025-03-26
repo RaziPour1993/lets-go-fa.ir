@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>CSRF protection &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code {
+				direction: ltr;
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; محافظت در برابر CSRF</span>
+				</div>
+				<div>
+					&lsaquo; <a href="10.06-user-authorization.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="11.00-using-request-context.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 10.7.</div>
+			<h2 id="csrf-protection">محافظت در برابر CSRF</h2>
+
+<p>در این فصل به بررسی نحوه محافظت از برنامه خود در برابر حملات <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html">جعل درخواست بین‌سایتی</a> (CSRF) می‌پردازیم.</p>
+
+<p>اگر با اصول CSRF آشنا نیستید، این نوعی حمله است که در آن یک وب‌سایت مخرب درخواست‌های HTTP تغییر وضعیت را به وب‌سایت شما ارسال می‌کند. توضیح عالی از حمله CSRF پایه می‌تواند <a href="http://www.gnucitizen.org/blog/csrf-demystified/">اینجا یافت شود</a>.</p>
+
+<p>در برنامه ما، خطر اصلی این است:</p>
+
+<ul dir="rtl">
+<li><p>یک کاربر وارد برنامه ما می‌شود. کوکی جلسه ما برای 12 ساعت تنظیم شده است، بنابراین حتی اگر کاربر از برنامه خارج شود، وارد باقی می‌ماند.</p></li>
+
+<li><p>سپس کاربر به وب‌سایت دیگری می‌رود که حاوی کد مخربی است که یک درخواست بین‌سایتی به نقطه پایانی <code>POST /snippet/create</code> ما ارسال می‌کند تا یک قطعه جدید به پایگاه داده ما اضافه کند. کوکی جلسه کاربر برای برنامه ما همراه با این درخواست ارسال می‌شود.</p></li>
+
+<li><p>از آنجا که درخواست شامل کوکی جلسه است، برنامه ما درخواست را به عنوان یک کاربر وارد شده تفسیر می‌کند و آن را با امتیازات آن کاربر پردازش می‌کند. بنابراین کاملاً ناشناخته برای کاربر، یک قطعه جدید به پایگاه داده ما اضافه می‌شود.</p></li>
+</ul>
+
+<p>علاوه بر حملات CSRF 'سنتی' مانند بالا (که در آن یک درخواست با امتیازات یک کاربر وارد شده پردازش می‌شود)، برنامه شما ممکن است در معرض خطر حملات <a href="https://stackoverflow.com/questions/6412813/do-login-forms-need-tokens-against-csrf-attacks">ورود و خروج</a> CSRF نیز باشد.</p>
+
+<h3 id="samesite-cookies">کوکی‌های SameSite</h3>
+
+<p>یکی از راه‌های کاهش خطر حملات CSRF این است که مطمئن شویم که ویژگی <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#samesite-cookie-attribute"><code>SameSite</code></a> به درستی بر روی کوکی جلسه ما تنظیم شده است.</p>
+
+<p>به طور پیش‌فرض، بسته <code>alexedwards/scs</code> که ما استفاده می‌کنیم همیشه <code>SameSite=Lax</code> را بر روی کوکی جلسه تنظیم می‌کند. این بدان معناست که کوکی جلسه <em>ارسال نخواهد شد</em> توسط مرورگر کاربر برای هر درخواست بین‌سایتی با روش‌های HTTP <code>POST</code>، <code>PUT</code> یا <code>DELETE</code>.</p>
+
+<p>تا زمانی که برنامه ما از روش <code>POST</code> برای هر درخواست HTTP تغییر وضعیت استفاده کند (مانند ورود، ثبت‌نام، خروج و ارسال فرم ایجاد قطعه)، این بدان معناست که کوکی جلسه برای این درخواست‌ها ارسال نخواهد شد اگر از یک وب‌سایت دیگر بیایند &mdash; بنابراین حمله CSRF را جلوگیری می‌کند.</p>
+
+<p>با این حال، ویژگی <code>SameSite</code> هنوز نسبتاً جدید است و تنها توسط <a href="https://caniuse.com/#feat=same-site-cookie-attribute">96% از مرورگرها</a> در سراسر جهان به طور کامل پشتیبانی می‌شود. بنابراین، اگرچه این چیزی است که می‌توانیم (و باید) به عنوان یک اقدام دفاعی استفاده کنیم، نمی‌توانیم برای همه کاربران به آن اعتماد کنیم.</p>
+
+<h3 id="token-based-mitigation">کاهش مبتنی بر توکن</h3>
+
+<p>برای کاهش خطر CSRF برای همه کاربران، ما همچنین نیاز به پیاده‌سازی نوعی <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#token-based-mitigation">بررسی توکن</a> داریم. مانند مدیریت جلسه و هش کردن رمز عبور، در این مورد نیز چیزهای زیادی وجود دارد که می‌توانید اشتباه کنید... بنابراین احتمالاً امن‌ترین راه استفاده از یک بسته شخص ثالث آزمایش شده و مطمئن به جای پیاده‌سازی خودتان است.</p>
+
+<p>دو بسته محبوب برای جلوگیری از حملات CSRF در برنامه‌های وب Go <a href="https://github.com/gorilla/csrf"><code>gorilla/csrf</code></a> و <a href="https://github.com/justinas/nosurf"><code>justinas/nosurf</code></a> هستند. هر دو تقریباً همان کار را انجام می‌دهند، با استفاده از الگوی <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie">کوکی دوگانه ارسال</a> برای جلوگیری از حملات. در این الگو، یک <dfn>توکن CSRF</dfn> تصادفی تولید و به کاربر در یک <dfn>کوکی CSRF</dfn> ارسال می‌شود. این توکن CSRF سپس به یک فیلد مخفی در هر فرم HTML که ممکن است در معرض CSRF باشد اضافه می‌شود. هنگامی که فرم ارسال می‌شود، هر دو بسته از یک میان‌افزار برای بررسی اینکه مقدار فیلد مخفی و مقدار کوکی مطابقت دارند استفاده می‌کنند.</p>
+
+<p>از بین دو بسته، ما در این کتاب از <code>justinas/nosurf</code> استفاده خواهیم کرد. من آن را ترجیح می‌دهم زیرا به طور مستقل عمل می‌کند و هیچ وابستگی اضافی ندارد. اگر شما هم دنبال می‌کنید، می‌توانید آخرین نسخه را به این صورت نصب کنید:</p>
+
+<figure class="code bash">
+<pre>$ go get github.com/justinas/nosurf@v1
+<samp>go: downloading github.com/justinas/nosurf v1.1.1
+go get: added github.com/justinas/nosurf v1.1.1</samp></pre>
+</figure>
+
+<h3 id="using-the-nosurf-package">استفاده از بسته nosurf</h3>
+
+<p>برای استفاده از <code>justinas/nosurf</code>، فایل <code>cmd/web/middleware.go</code> خود را باز کنید و یک تابع میان‌افزار جدید <code>noSurf()</code> به این صورت ایجاد کنید:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/middleware.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+
+    <span class="s">&#34;github.com/justinas/nosurf&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Create a NoSurf middleware function which uses a customized CSRF cookie with
+</span><span class="c1"></span><span class="c1">// the Secure, Path and HttpOnly attributes set.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">noSurf</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">csrfHandler</span> <span class="o">:=</span> <span class="nx">nosurf</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">next</span><span class="p">)</span>
+    <span class="nx">csrfHandler</span><span class="p">.</span><span class="nf">SetBaseCookie</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">Cookie</span><span class="p">{</span>
+        <span class="nx">HttpOnly</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nx">Path</span><span class="p">:</span>     <span class="s">&#34;/&#34;</span><span class="p">,</span>
+        <span class="nx">Secure</span><span class="p">:</span>   <span class="kc">true</span><span class="p">,</span>
+    <span class="p">}</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nx">csrfHandler</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>یکی از فرم‌هایی که باید از حملات CSRF محافظت شود، فرم Signup ما است که در بخش <code>nav.tmpl</code> ما قرار دارد و می‌تواند در هر صفحه‌ای از برنامه ما ظاهر شود. بنابراین، به همین دلیل، ما باید از میان‌افزار <code>noSurf()</code> خود در <em>همه</em> مسیرهای برنامه خود استفاده کنیم (به جز <code>GET /static/</code>).</p>
+
+<p>بنابراین، فایل <code>cmd/web/routes.go</code> را به‌روزرسانی کنید تا این میان‌افزار <code>noSurf()</code> را به زنجیره میان‌افزار <code>dynamic</code> که قبلاً ساخته‌ایم اضافه کنید:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+     <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// Use the nosurf middleware on all our &#39;dynamic&#39; routes.
+</span><span class="c1"></span>    <span class="nx">dynamic</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nx">LoadAndSave</span><span class="p">,</span> <span class="nx">noSurf</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignup</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignupPost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogin</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLoginPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">protected</span> <span class="o">:=</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">requireAuthentication</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/logout&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogoutPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>در این مرحله، ممکن است بخواهید برنامه را راه‌اندازی کنید و یکی از فرم‌ها را ارسال کنید. هنگامی که این کار را انجام می‌دهید، درخواست باید توسط میان‌افزار <code>noSurf()</code> متوقف شود و باید یک پاسخ <code>400 Bad Request</code> دریافت کنید.</p>
+
+<figure class="img">
+<img src="assets/img/10.07-01.png" alt="10.07-01.png" />
+</figure>
+
+<p>برای کارکردن ارسال فرم‌ها، باید از تابع <a href="https://pkg.go.dev/github.com/justinas/nosurf?utm_source=godoc#Token"><code>nosurf.Token()</code></a> استفاده کنیم تا توکن CSRF را دریافت کرده و آن را به یک فیلد مخفی <code>csrf_token</code> در هر یک از فرم‌های خود اضافه کنیم. بنابراین گام بعدی این است که یک فیلد جدید <code>CSRFToken</code> به ساختار <code>templateData</code> خود اضافه کنیم:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;path/filepath&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">CurrentYear</span>     <span class="kt">int</span>
+    <span class="nx">Snippet</span>         <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Snippets</span>        <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Form</span>            <span class="nx">any</span>
+    <span class="nx">Flash</span>           <span class="kt">string</span>
+    <span class="nx">IsAuthenticated</span> <span class="kt">bool</span>
+    <span class="nx">CSRFToken</span>       <span class="kt">string</span> <span class="c1">// Add a CSRFToken field.
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>و از آنجا که فرم خروج می‌تواند در هر صفحه‌ای ظاهر شود، منطقی است که توکن CSRF را به طور خودکار از طریق کمک‌کننده <code>newTemplateData()</code> به داده‌های قالب اضافه کنیم. این به این معناست که هر بار که یک صفحه را رندر می‌کنیم، در دسترس قالب‌های ما خواهد بود.</p>
+
+<p>لطفاً فایل <code>cmd/web/helpers.go</code> را به صورت زیر به‌روزرسانی کنید:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;bytes&#34;</span>
+    <span class="s">&#34;errors&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;github.com/go-playground/form/v4&#34;</span>
+    <span class="s">&#34;github.com/justinas/nosurf&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="nx">templateData</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">CurrentYear</span><span class="p">:</span>     <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Year</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Flash</span><span class="p">:</span>           <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">PopString</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">IsAuthenticated</span><span class="p">:</span> <span class="nx">app</span><span class="p">.</span><span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">CSRFToken</span><span class="p">:</span>       <span class="nx">nosurf</span><span class="p">.</span><span class="nf">Token</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="p">,</span> <span class="c1">// Add the CSRF token.
+</span><span class="c1"></span>    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>در نهایت، باید همه فرم‌های برنامه خود را به‌روزرسانی کنیم تا این توکن CSRF را در یک فیلد مخفی شامل کنند.</p>
+
+<p>به این صورت:</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/create.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Create a New Snippet{{end}}
+
+{{define &#34;main&#34;}}
+<span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="c">&lt;!--</span><span class="c"> Include the CSRF token </span><span class="c">--&gt;</span>
+    <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;hidden&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;csrf_token&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.CSRFToken}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Title:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.title}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;title&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Title}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Content:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.content}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">textarea</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;content&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.Form.Content}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">textarea</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Delete in:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.expires}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;365&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">365</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Year
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;7&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">7</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Week
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;radio&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;expires&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;1&#39;</span> <span class="err">{</span><span class="err">{</span><span class="na">if</span> <span class="err">(</span><span class="na">eq</span> <span class="err">.</span><span class="na">Form</span><span class="err">.</span><span class="na">Expires</span> <span class="na">1</span><span class="err">)</span><span class="err">}</span><span class="err">}</span><span class="na">checked</span><span class="err">{</span><span class="err">{</span><span class="na">end</span><span class="err">}</span><span class="err">}</span><span class="p"></span><span class="p">&gt;</span> One Day
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;submit&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;Publish snippet&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/login.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Login{{end}}
+
+{{define &#34;main&#34;}}
+<span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/login&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span> <span class="na">novalidate</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="c">&lt;!--</span><span class="c"> Include the CSRF token </span><span class="c">--&gt;</span>
+    <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;hidden&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;csrf_token&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.CSRFToken}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    {{range .Form.NonFieldErrors}}
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {{end}}
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Email:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.email}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;email&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;email&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Email}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Password:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.password}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;password&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;password&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;submit&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;Login&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<figure class="code html">
+<figcaption>File: ui/html/pages/signup.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Signup{{end}}
+
+{{define &#34;main&#34;}}
+<span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/signup&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span> <span class="na">novalidate</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="c">&lt;!--</span><span class="c"> Include the CSRF token </span><span class="c">--&gt;</span>
+    <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;hidden&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;csrf_token&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.CSRFToken}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Name:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.name}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;name&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Name}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Email:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.email}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;email&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;email&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Email}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Password:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.password}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;password&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;password&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;submit&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;Signup&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<figure class="code html">
+<figcaption>File: ui/html/partials/nav.tmpl</figcaption>
+<pre>{{define &#34;nav&#34;}}
+<span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Home<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+         {{if .IsAuthenticated}}
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span><span class="p"></span><span class="p">&gt;</span>Create snippet<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        {{if .IsAuthenticated}}
+            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/logout&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
+                <span class="c">&lt;!--</span><span class="c"> Include the CSRF token </span><span class="c">--&gt;</span>
+                <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;hidden&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;csrf_token&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.CSRFToken}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="nt">button</span><span class="p"></span><span class="p">&gt;</span>Signup<span class="p">&lt;</span><span class="p">/</span><span class="nt">button</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+        {{else}}
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/signup&#39;</span><span class="p"></span><span class="p">&gt;</span>Signup<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/login&#39;</span><span class="p"></span><span class="p">&gt;</span>Login<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">nav</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>برنامه را دوباره اجرا کنید و سپس <em>نمایش منبع</em> یکی از فرم‌ها را مشاهده کنید. باید ببینید که اکنون یک توکن CSRF در یک فیلد مخفی شامل شده است، به این صورت.</p>
+
+<figure class="img">
+<img src="assets/img/10.07-02.png" alt="10.07-02.png" />
+</figure>
+
+<p>و اگر سعی کنید فرم‌ها را ارسال کنید، باید دوباره به درستی کار کنند.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="samesite-strict-setting">تنظیم 'Strict' برای SameSite</h4>
+
+<p>اگر می‌خواهید، می‌توانید کوکی جلسه را به جای (پیش‌فرض) <code>SameSite=Lax</code> به تنظیم <code>SameSite=Strict</code> تغییر دهید. به این صورت:</p>
+
+<figure class="code go">
+<pre><span class="nx">sessionManager</span> <span class="o">:=</span> <span class="nx">scs</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Cookie</span><span class="p">.</span><span class="nx">SameSite</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">SameSiteStrictMode</span></pre>
+</figure>
+
+<p>اما مهم است که بدانید استفاده از <code>SameSite=Strict</code> باعث می‌شود که کوکی جلسه توسط مرورگر کاربر برای <em>همه</em> استفاده‌های بین‌سایتی &mdash; از جمله درخواست‌های <a href="https://datatracker.ietf.org/doc/html/rfc7231#section-4.2.1">ایمن</a> با روش‌های HTTP مانند <code>GET</code> و <code>HEAD</code> ارسال نشود.</p>
+
+<p>در حالی که این ممکن است حتی امن‌تر به نظر برسد (و هست!)، نقطه ضعف این است که کوکی جلسه زمانی که کاربر روی یک لینک به برنامه شما از یک وب‌سایت دیگر کلیک می‌کند، ارسال نمی‌شود. به نوبه خود، این بدان معناست که برنامه شما در ابتدا کاربر را به عنوان 'وارد نشده' در نظر می‌گیرد حتی اگر یک جلسه فعال حاوی مقدار <code>&quot;authenticatedUserID&quot;</code> داشته باشد.</p>
+
+<p>بنابراین اگر برنامه شما به طور بالقوه دارای وب‌سایت‌های دیگری است که به آن لینک می‌دهند (یا لینک‌هایی به آن در ایمیل‌ها یا خدمات پیام‌رسانی خصوصی به اشتراک گذاشته می‌شود)، <code>SameSite=Lax</code> به طور کلی تنظیم مناسب‌تری است.</p>
+
+<h4 id="samesite-cookies-and-tls-1-3">کوکی‌های SameSite و TLS 1.3</h4>
+
+<p>در اوایل این فصل گفتم که نمی‌توانیم به تنهایی به ویژگی کوکی <code>SameSite</code> برای جلوگیری از حملات CSRF اعتماد کنیم، زیرا توسط همه مرورگرها به طور کامل پشتیبانی نمی‌شود.</p>
+
+<p>اما یک <a href="https://security.stackexchange.com/a/249636">استثنا</a> برای این قانون وجود دارد، به دلیل این که هیچ مرورگری وجود ندارد <em>که از TLS 1.3 پشتیبانی کند و <u>از</u> کوکی‌های <code>SameSite</code> پشتیبانی نکند</em>.</p>
+
+<p>به عبارت دیگر، اگر شما TLS 1.3 را به عنوان نسخه حداقل پشتیبانی شده در پیکربندی TLS سرور خود تنظیم کنید، سپس همه مرورگرهایی که قادر به استفاده از برنامه شما هستند از کوکی‌های <code>SameSite</code> پشتیبانی خواهند کرد.</p>
+
+<figure class="code go">
+<pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+    <span class="nx">MinVersion</span><span class="p">:</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">VersionTLS13</span><span class="p">,</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>تا زمانی که فقط درخواست‌های HTTPS را به برنامه خود اجازه دهید و TLS 1.3 را به عنوان نسخه حداقل TLS اعمال کنید، نیازی به انجام هیچ کاهش اضافی در برابر حملات CSRF ندارید (مانند استفاده از بسته <code>justinas/nosurf</code>). فقط مطمئن شوید که همیشه:</p>
+
+<ul dir="rtl">
+<li>تنظیم <code>SameSite=Lax</code> یا <code>SameSite=Strict</code> را بر روی کوکی جلسه اعمال کنید؛ و</li>
+<li>از روش‌های HTTP <code>POST</code>، <code>PUT</code> یا <code>DELETE</code> برای هر درخواست تغییر وضعیت استفاده کنید.</li>
+</ul>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.06-user-authorization.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="11.00-using-request-context.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.06-user-authorization.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "11.00-using-request-context.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

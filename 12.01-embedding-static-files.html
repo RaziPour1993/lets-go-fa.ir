@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Embedding static files &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="12.00-file-embedding.html">جاسازی فایل</a> &rsaquo; جاسازی فایل‌های استاتیک</span>
+						
+				</div>
+				<div>
+					&lsaquo; <a href="12.00-file-embedding.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="12.02-embedding-html-templates.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۲.۱.</div>
+			<h2 id="embedding-static-files">جاسازی فایل‌های استاتیک</h2>
+
+<p>اگر در حال دنبال کردن هستید، اولین کاری که باید انجام دهید ایجاد یک فایل جدید <code>ui/efs.go</code> است:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch ui/efs.go</pre>
+</figure>
+
+<p>سپس کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: ui/efs.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">ui</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;embed&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">//go:embed &#34;static&#34;
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+<p>خط مهم در اینجا <code>//go:embed &quot;static&quot;</code> است.</p>
+
+<p>این به نظر یک نظر می‌آید، اما در واقع یک <em>دستورالعمل نظر خاص</em> است. هنگامی که برنامه ما کامپایل می‌شود (به عنوان بخشی از <code>go build</code> یا <code>go run</code>، این دستورالعمل نظر به Go دستور می‌دهد تا فایل‌های موجود در پوشه <code>ui/static</code> ما را در یک <em>سیستم فایل جاسازی شده</em> که توسط متغیر جهانی <code>Files</code> ارجاع داده می‌شود، ذخیره کند.</p>
+
+<p>چند جزئیات مهم در مورد این وجود دارد که باید توضیح دهیم.</p>
+
+<ul>
+<li><p>دستورالعمل نظر باید <em>بلافاصله بالای</em> متغیری که می‌خواهید فایل‌های جاسازی شده را در آن ذخیره کنید، قرار گیرد.</p></li>
+
+<li><p>دستورالعمل دارای فرمت <code>go:embed &quot;&lt;path&gt;&quot;</code> است. مسیر نسبت به فایل <code>.go</code> حاوی دستورالعمل است، بنابراین &mdash; در مورد ما &mdash; <code>go:embed &quot;static&quot;</code> دایرکتوری <code>ui/static</code> را از پروژه ما جاسازی می‌کند.</p></li>
+
+<li><p>شما فقط می‌توانید از دستورالعمل <code>go:embed</code> بر روی متغیرهای جهانی در سطح بسته استفاده کنید، نه در داخل توابع یا متدها. اگر سعی کنید از آن در داخل یک تابع یا متد استفاده کنید، در زمان کامپایل خطای <code>&quot;go:embed cannot apply to var inside func&quot;</code> را دریافت خواهید کرد.</p></li>
+
+<li><p>مسیرها نمی‌توانند شامل <code>.</code> یا <code>..</code> باشند، و نمی‌توانند با <code>/</code> شروع یا پایان یابند. این اساساً شما را به جاسازی فایل‌ها یا دایرکتوری‌هایی که در همان دایرکتوری فایل <code>.go</code> حاوی دستورالعمل <code>go:embed</code> هستند، محدود می‌کند.</p></li>
+
+<li><p>سیستم فایل جاسازی شده <em>همیشه</em> در دایرکتوری که حاوی دستورالعمل <code>go:embed</code> است، ریشه دارد. بنابراین، در مثال بالا، متغیر <code>Files</code> ما حاوی یک سیستم فایل جاسازی شده <a href="https://pkg.go.dev/embed/#FS"><code>embed.FS</code></a> است و ریشه آن سیستم فایل دایرکتوری <code>ui</code> ما است.</p></li>
+</ul>
+
+<h3 id="using-the-embedded-static-files">استفاده از فایل‌های استاتیک جاسازی شده</h3>
+
+<p>حالا بیایید برنامه خود را تغییر دهیم تا فایل‌های استاتیک CSS، JavaScript و تصویر ما را از سیستم فایل جاسازی شده ارائه دهد &mdash; به جای خواندن آنها از دیسک در زمان اجرا.</p>
+
+<p>فایل <code>cmd/web/routes.go</code> خود را باز کنید و آن را به صورت زیر به‌روزرسانی کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;net/http&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/ui&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>
+    <span class="s">&#34;github.com/justinas/alice&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+     <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Use the http.FileServerFS() function to create a HTTP handler which 
+</span><span class="c1"></span>    <span class="c1">// serves the embedded files in ui.Files. It&#39;s important to note that our 
+</span><span class="c1"></span>    <span class="c1">// static files are contained in the &#34;static&#34; folder of the ui.Files
+</span><span class="c1"></span>    <span class="c1">// embedded filesystem. So, for example, our CSS stylesheet is located at
+</span><span class="c1"></span>    <span class="c1">// &#34;static/css/main.css&#34;. This means that we no longer need to strip the
+</span><span class="c1"></span>    <span class="c1">// prefix from the request URL -- any requests that start with /static/ can
+</span><span class="c1"></span>    <span class="c1">// just be passed directly to the file server and the corresponding static
+</span><span class="c1"></span>    <span class="c1">// file will be served (so long as it exists).
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServerFS</span><span class="p">(</span><span class="nx">ui</span><span class="p">.</span><span class="nx">Files</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">dynamic</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nx">LoadAndSave</span><span class="p">,</span> <span class="nx">noSurf</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">authenticate</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignup</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignupPost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogin</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLoginPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">protected</span> <span class="o">:=</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">requireAuthentication</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/logout&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogoutPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر این تغییرات را ذخیره کنید و سپس برنامه را مجدداً راه‌اندازی کنید، باید متوجه شوید که همه چیز به درستی کامپایل و اجرا می‌شود. هنگامی که به <a href="https://localhost:4000/"><code>https://localhost:4000</code></a> در مرورگر خود مراجعه می‌کنید، فایل‌های استاتیک باید از سیستم فایل جاسازی شده ارائه شوند و همه چیز باید به صورت عادی نمایش داده شود.</p>
+
+<figure class="img">
+<img src="assets/img/12.01-01.png" alt="12.01-01.png" />
+</figure>
+
+<p>اگر می‌خواهید، می‌توانید مستقیماً به فایل‌های استاتیک بروید تا بررسی کنید که هنوز در دسترس هستند. به عنوان مثال، مراجعه به <a href="https://localhost:4000/static/css/main.css"><code>https://localhost:4000/static/css/main.css</code></a> باید استایل شیت CSS برای صفحه وب را از سیستم فایل جاسازی شده نمایش دهد.</p>
+
+<figure class="img">
+<img src="assets/img/12.01-02.png" alt="12.01-02.png" />
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="multiple-paths">مسیرهای متعدد</h4>
+
+<p>کاملاً درست است که مسیرهای متعددی را در یک دستورالعمل جاسازی مشخص کنید. به عنوان مثال، می‌توانیم به صورت جداگانه دایرکتوری‌های <code>ui/static/css</code>، <code>ui/static/img</code> و <code>ui/static/js</code> را به صورت زیر جاسازی کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="c1">//go:embed &#34;static/css&#34; &#34;static/img&#34; &#34;static/js&#34; 
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+<aside class="important"><p>
+<strong>مهم:</strong> جداکننده مسیر در الگوهای مسیر جاسازی باید همیشه یک اسلش <code>/</code> باشد، حتی در ماشین‌های ویندوزی.
+</p></aside>
+
+<h4 id="embedding-specific-files">جاسازی فایل‌های خاص</h4>
+
+<p>در ابتدای فصل به این موضوع اشاره کردم، اما ممکن است که یک مسیر جاسازی به یک <em>فایل خاص</em> اشاره کند. جاسازی فقط به دایرکتوری‌ها محدود نمی‌شود.</p>
+
+<p>به عنوان مثال، فرض کنیم که دایرکتوری <code>ui/static/css</code> ما شامل برخی از دارایی‌های اضافی است که نمی‌خواهیم جاسازی کنیم، مانند فایل‌های <a href="https://www.keycdn.com/blog/sass-vs-less">Sass یا Less</a>. در این صورت، می‌توانیم فقط فایل <code>ui/static/css/main.css</code> را به صورت زیر جاسازی کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="c1">//go:embed &#34;static/css/main.css&#34; &#34;static/img&#34; &#34;static/js&#34; 
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+<h4 id="wildcard-paths">مسیرهای وایلدکارد</h4>
+
+<p>کاراکتر <code>*</code> می‌تواند به عنوان یک &lsquo;وایلدکارد&rsquo; در یک مسیر جاسازی استفاده شود. با ادامه مثال بالا، می‌توانیم دستورالعمل جاسازی را به گونه‌ای بازنویسی کنیم که فقط فایل‌های <code>.css</code> زیر <code>ui/static/css</code> جاسازی شوند:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="c1">//go:embed &#34;static/css/*.css&#34; &#34;static/img&#34; &#34;static/js&#34; 
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+<p>مرتبط با آن، اگر از مسیر وایلدکارد <code>&quot;*&quot;</code> بدون هیچ گونه مشخصه‌ای استفاده کنید، مانند این:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="c1">//go:embed &#34;*&#34;
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+<p>&hellip; سپس همه چیز در دایرکتوری فعلی جاسازی می‌شود، از جمله فایل <code>.go</code> که خود دستورالعمل جاسازی را دارد! بیشتر اوقات نمی‌خواهید این کار را انجام دهید، بنابراین معمولاً به صورت صریح زیر دایرکتوری‌ها یا فایل‌های خاص را جاسازی می‌کنید.</p>
+
+<h4 id="the-all-prefix">پیشوند all</h4>
+
+<p>در نهایت، اگر مسیری به یک دایرکتوری باشد، همه فایل‌های آن دایرکتوری به صورت بازگشتی جاسازی می‌شوند &mdash; <em>به جز</em> فایل‌هایی که نام آنها با کاراکترهای <code>.</code> یا <code>_</code> شروع می‌شود. اگر می‌خواهید آن فایل‌ها را نیز شامل کنید، باید از پیشوند <code>all:</code> در ابتدای مسیر استفاده کنید.</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="c1">//go:embed &#34;all:static&#34;
+</span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="12.00-file-embedding.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="12.02-embedding-html-templates.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "12.00-file-embedding.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "12.02-embedding-html-templates.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

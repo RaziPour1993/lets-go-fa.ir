@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; اضافه کردن صفحه 'درباره' به برنامه</span>
+				</div>
+				<div>
+					&lsaquo; <a href="16.00-guided-exercises.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="16.02-add-a-debug-mode.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۶.۱.</div>
+			<h2 id="add-an-about-page-to-the-application">اضافه کردن صفحه 'درباره' به برنامه</h2>
+
+<p>هدف شما در این تمرین اضافه کردن یک صفحه جدید 'درباره' به برنامه است. این صفحه باید به مسیر <code>GET /about</code> متصل شود و برای کاربران احراز هویت شده و نشده در دسترس باشد و به این شکل به نظر برسد:</p>
+
+<figure class="img">
+<img src="assets/img/16.01-01.png" alt="16.01-01.png" />
+</figure>
+
+<h4 id="step-1">مرحله ۱</h4>
+
+<p>یک مسیر <code>GET /about</code> ایجاد کنید که به یک هندلر جدید <code>about</code> متصل شود. به این فکر کنید که کدام استک میان‌افزار برای استفاده در این مسیر مناسب است.</p>
+
+<p><a href="#17.01-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
+
+<h4 id="step-2">مرحله ۲</h4>
+
+<p>یک فایل جدید <code>ui/html/pages/about.tmpl</code> ایجاد کنید و الگوی مشابهی که برای صفحات دیگر برنامه استفاده کرده‌ایم را دنبال کنید. یک عنوان، سرصفحه و مقداری متن جایگزین برای صفحه 'درباره' اضافه کنید.</p>
+
+<p><a href="#17.01-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
+
+<h4 id="step-3">مرحله ۳</h4>
+
+<p>نوار ناوبری اصلی برنامه را به‌روزرسانی کنید تا شامل یک لینک به صفحه جدید 'درباره' باشد (لینک باید برای همه کاربران، صرف نظر از اینکه وارد شده‌اند یا نه، قابل مشاهده باشد).</p>
+
+<p><a href="#17.01-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
+
+<h4 id="step-4">مرحله ۴</h4>
+
+<p>هندلر <code>about</code> را به‌روزرسانی کنید تا فایل <code>about.tmpl</code> که به تازگی ایجاد کرده‌اید را رندر کند. سپس بررسی کنید که صفحه جدید و ناوبری با بازدید از <a href="https://localhost:4000/about"><code>https://localhost:4000/about</code></a> در مرورگر شما کار می‌کند.</p>
+
+<p><a href="#17.01-suggested-code-for-step-4">نمایش کد پیشنهادی</a></p>
+
+<h3 id="suggested-code">کد پیشنهادی</h3>
+
+<h4 id="17.01-suggested-code-for-step-1">کد پیشنهادی برای مرحله ۱</h4>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">about</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Some code will go here later...
+</span><span class="c1"></span><span class="p">}</span></pre>
+</figure>
+
+<h4 id="17.01-suggested-code-for-step-2">کد پیشنهادی برای مرحله ۲</h4>
+
+<figure class="code html" dir="ltr">
+<figcaption>File: ui/html/pages/about.tmpl</figcaption>
+<pre>
+{{define &#34;title&#34;}}About{{end}}
+
+{{define &#34;main&#34;}}
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p"></span><span class="p">&gt;</span>About<span class="p">&lt;</span><span class="p">/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at mauris dignissim,
+    consectetur tellus in, fringilla ante. Pellentesque habitant morbi tristique senectus
+    et netus et malesuada fames ac turpis egestas. Sed dignissim hendrerit scelerisque.<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>Praesent a dignissim arcu. Cras a metus sagittis, pellentesque odio sit amet,
+    lacinia velit. In hac habitasse platea dictumst. <span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<h4 id="17.01-suggested-code-for-step-3">کد پیشنهادی برای مرحله ۳</h4>
+
+<figure class="code html" dir="ltr">
+<figcaption>File: ui/html/partials/nav.tmpl</figcaption>
+<pre>{{define &#34;nav&#34;}}
+<span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Home<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> Include a new link, visible to all users </span><span class="c">--&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/about&#39;</span><span class="p"></span><span class="p">&gt;</span>About<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+         {{if .IsAuthenticated}}
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span><span class="p"></span><span class="p">&gt;</span>Create snippet<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        {{if .IsAuthenticated}}
+            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/logout&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;hidden&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;csrf_token&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.CSRFToken}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="nt">button</span><span class="p"></span><span class="p">&gt;</span>Logout<span class="p">&lt;</span><span class="p">/</span><span class="nt">button</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+        {{else}}
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/signup&#39;</span><span class="p"></span><span class="p">&gt;</span>Signup<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/login&#39;</span><span class="p"></span><span class="p">&gt;</span>Login<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">nav</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<h4 id="17.01-suggested-code-for-step-4">کد پیشنهادی برای مرحله ۴</h4>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">about</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;about.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="16.00-guided-exercises.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="16.02-add-a-debug-mode.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					case 37:
+						window.location.href = "16.00-guided-exercises.html";
+						break;
+					case 39:
+						window.location.href = "16.02-add-a-debug-mode.html";
+						break;
+				}
+			};
+		</script>
+	</body>
+</html>
+

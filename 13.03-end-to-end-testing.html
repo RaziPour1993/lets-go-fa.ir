@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>تست انتها به انتها &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست انتها به انتها</span>
+				</div>
+				<div>
+					&lsaquo; <a href="13.02-testing-http-handlers-and-middleware.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.04-customizing-how-tests-run.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 13.3.</div>
+			<h2 id="end-to-end-testing">تست انتها به انتها</h2>
+
+<p>در فصل گذشته الگوی کلی برای نحوه تست واحد هندلرهای HTTP شما به صورت مجزا را بررسی کردیم.</p>
+
+<p>اما &mdash; بیشتر اوقات &mdash; هندلرهای HTTP شما <em>در واقع به صورت مجزا استفاده نمی‌شوند</em>. بنابراین در این فصل قصد داریم توضیح دهیم که چگونه می‌توان تست‌های <dfn>انتها به انتها</dfn> را بر روی برنامه وب خود اجرا کرد که شامل مسیریابی، میان‌افزار و هندلرهای شما باشد. در بیشتر موارد، تست انتها به انتها باید به شما اطمینان بیشتری بدهد که برنامه شما به درستی کار می‌کند نسبت به تست واحد به صورت مجزا.</p>
+
+<p>برای نشان دادن این موضوع، ما تابع <code>TestPing</code> خود را به گونه‌ای تطبیق خواهیم داد که یک تست انتها به انتها بر روی کد ما اجرا کند. به طور خاص، ما می‌خواهیم تست اطمینان حاصل کند که یک درخواست <code>GET /ping</code> به برنامه ما تابع هندلر <code>ping</code> را فراخوانی می‌کند و منجر به یک کد وضعیت <code>200 OK</code> و بدنه پاسخ <code>&quot;OK&quot;</code> می‌شود.</p>
+
+<p>اساساً، ما می‌خواهیم اطمینان حاصل کنیم که برنامه ما یک مسیر مانند این دارد:</p>
+
+<table>
+<thead>
+<tr>
+<th>الگوی مسیر</th>
+<th>هندلر</th>
+<th>عمل</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>&hellip;</td>
+<td>&hellip;</td>
+<td>&hellip;</td>
+</tr>
+
+<tr>
+<td>GET /ping</td>
+<td>ping</td>
+<td>بازگشت یک پاسخ 200 OK</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="using-httptest-server">استفاده از httptest.Server</h3>
+
+<p>کلید تست انتها به انتها برنامه ما تابع <a href="https://pkg.go.dev/net/http/httptest/#NewTLSServer"><code>httptest.NewTLSServer()</code></a> است که یک نمونه <a href="https://pkg.go.dev/net/http/httptest/#Server"><code>httptest.Server</code></a> را راه‌اندازی می‌کند که می‌توانیم درخواست‌های HTTPS به آن ارسال کنیم.</p>
+
+<p>الگوی کلی کمی پیچیده است که به صورت مقدماتی توضیح داده شود، بنابراین احتمالاً بهتر است ابتدا با نوشتن کد نشان دهیم و سپس جزئیات را توضیح دهیم.</p>
+
+<p>با این ذهنیت، به فایل <code>handlers_test.go</code> خود برگردید و تست <code>TestPing</code> را به گونه‌ای به‌روزرسانی کنید که به این شکل باشد:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;bytes&#34;</span>
+    <span class="s">&#34;io&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;net/http/httptest&#34;</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestPing</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Create a new instance of our application struct. For now, this just
+</span><span class="c1"></span>    <span class="c1">// contains a structured logger (which discards anything written to it).
+</span><span class="c1"></span>    <span class="nx">app</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">Discard</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// We then use the httptest.NewTLSServer() function to create a new test
+</span><span class="c1"></span>    <span class="c1">// server, passing in the value returned by our app.routes() method as the
+</span><span class="c1"></span>    <span class="c1">// handler for the server. This starts up a HTTPS server which listens on a
+</span><span class="c1"></span>    <span class="c1">// randomly-chosen port of your local machine for the duration of the test.
+</span><span class="c1"></span>    <span class="c1">// Notice that we defer a call to ts.Close() so that the server is shutdown
+</span><span class="c1"></span>    <span class="c1">// when the test finishes.
+</span><span class="c1"></span>    <span class="nx">ts</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewTLSServer</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// The network address that the test server is listening on is contained in
+</span><span class="c1"></span>    <span class="c1">// the ts.URL field. We can  use this along with the ts.Client().Get() method
+</span><span class="c1"></span>    <span class="c1">// to make a GET /ping request against the test server. This returns a
+</span><span class="c1"></span>    <span class="c1">// http.Response struct containing the response.
+</span><span class="c1"></span>    <span class="nx">rs</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">ts</span><span class="p">.</span><span class="nx">URL</span> <span class="o">+</span> <span class="s">&#34;/ping&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// We can then check the value of the response status code and body using
+</span><span class="c1"></span>    <span class="c1">// the same pattern as before.
+</span><span class="c1"></span>    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
+
+    <span class="k">defer</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">body</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">body</span> <span class="p">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span>
+
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;OK&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>چند نکته در مورد این کد وجود دارد که باید به آن‌ها اشاره کرد و بحث کرد.</p>
+
+<ul>
+<li><p>هنگامی که <code>httptest.NewTLSServer()</code> را برای راه‌اندازی سرور تست فراخوانی می‌کنیم، باید یک <code>http.Handler</code> به عنوان پارامتر ارسال کنیم &mdash; و این هندلر هر بار که سرور تست یک درخواست HTTPS دریافت می‌کند، فراخوانی می‌شود. در مورد ما، ما مقدار بازگشتی از متد <code>app.routes()</code> خود را ارسال کرده‌ایم، به این معنی که یک درخواست به سرور تست از <em>تمام مسیرها، میان‌افزارها و هندلرهای واقعی برنامه ما</em> استفاده خواهد کرد.</p>
+
+<p>این یک مزیت بزرگ از کاری است که ما <a href="03.05-isolating-the-application-routes.html">قبلاً در کتاب</a> انجام دادیم تا تمام مسیریابی برنامه خود را در متد <code>app.routes()</code> جدا کنیم.</p></li>
+
+<li><p>اگر در حال تست یک سرور HTTP (نه HTTPS) هستید، باید از تابع <a href="https://pkg.go.dev/net/http/httptest/#NewServer"><code>httptest.NewServer()</code></a> برای ایجاد سرور تست استفاده کنید.</p></li>
+
+<li><p>متد <a href="https://pkg.go.dev/net/http/httptest/#Server.Client"><code>ts.Client()</code></a> <em>کلاینت سرور تست</em> را برمی‌گرداند &mdash; که نوع <a href="https://pkg.go.dev/net/http/#Client"><code>http.Client</code></a> دارد &mdash; و ما باید همیشه از این کلاینت برای ارسال درخواست‌ها به سرور تست استفاده کنیم. امکان پیکربندی کلاینت برای تنظیم رفتار آن وجود دارد، و ما در پایان این فصل توضیح خواهیم داد که چگونه این کار را انجام دهیم.</p></li>
+
+<li><p>ممکن است بپرسید چرا ما فیلد <code>logger</code> ساختار <code>application</code> خود را تنظیم کرده‌ایم، اما هیچ‌یک از فیلدهای دیگر را نه. دلیل این است که logger توسط میان‌افزارهای <code>logRequest</code> و <code>recoverPanic</code> که در هر مسیر برنامه ما استفاده می‌شوند، نیاز است. تلاش برای اجرای این تست بدون تنظیم این دو وابستگی منجر به یک panic خواهد شد.</p></li>
+</ul>
+
+<p>به هر حال، بیایید تست جدید را امتحان کنیم:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test ./cmd/web/
+<samp>--- FAIL: TestPing (0.00s)
+    handlers_test.go:41: got 404; want 200
+    handlers_test.go:51: got: Not Found; want: OK
+FAIL
+FAIL    snippetbox.alexedwards.net/cmd/web      0.007s
+FAIL</samp></pre>
+</figure>
+
+<p>اگر شما هم دنبال می‌کنید، باید در این نقطه یک شکست دریافت کنید.</p>
+
+<p>ما می‌توانیم از خروجی تست ببینیم که پاسخ از درخواست <code>GET /ping</code> ما یک کد وضعیت <code>404</code> دارد، نه <code>200</code> که انتظار داشتیم. و این به این دلیل است که ما هنوز یک مسیر <code>GET /ping</code> را با روتر خود ثبت نکرده‌ایم.</p>
+
+<p>بیایید اکنون این را درست کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServerFS</span><span class="p">(</span><span class="nx">ui</span><span class="p">.</span><span class="nx">Files</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// Add a new GET /ping route.
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /ping&#34;</span><span class="p">,</span> <span class="nx">ping</span><span class="p">)</span>
+
+    <span class="nx">dynamic</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nx">LoadAndSave</span><span class="p">,</span> <span class="nx">noSurf</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">authenticate</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignup</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignupPost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogin</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLoginPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">protected</span> <span class="o">:=</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">requireAuthentication</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/logout&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogoutPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و اگر دوباره تست‌ها را اجرا کنید، همه چیز باید اکنون پاس شود.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test ./cmd/web/
+<samp>ok      snippetbox.alexedwards.net/cmd/web    0.008s</samp></pre>
+</figure>
+
+<h3 id="using-test-helpers">استفاده از کمک‌کننده‌های تست</h3>
+
+<p>تست <code>TestPing</code> ما اکنون به خوبی کار می‌کند. اما فرصت خوبی وجود دارد که بخشی از این کد را به توابع کمکی تقسیم کنیم، که می‌توانیم به عنوان تست‌های انتها به انتهای بیشتری به پروژه خود اضافه کنیم، از آن‌ها استفاده کنیم.</p>
+
+<p>هیچ قانون سخت و سریعی در مورد جایی که باید متدهای کمکی برای تست‌ها قرار داده شود وجود ندارد. اگر یک کمک‌کننده فقط در یک فایل خاص <code>*_test.go</code> استفاده می‌شود، احتمالاً منطقی است که آن را به صورت درون‌خطی در آن فایل در کنار تست‌های خود قرار دهید. در انتهای دیگر طیف، اگر قصد دارید یک کمک‌کننده را در تست‌های چندین بسته استفاده کنید، ممکن است بخواهید آن را در یک بسته قابل استفاده مجدد به نام <code>internal/testutils</code> (یا مشابه) قرار دهید که می‌تواند توسط فایل‌های تست شما وارد شود.</p>
+
+<p>در مورد ما، کمک‌کننده‌ها برای تست کد در سراسر بسته <code>cmd/web</code> ما استفاده خواهند شد اما در جای دیگری نه، بنابراین به نظر می‌رسد منطقی است که آن‌ها را در یک فایل جدید <code>cmd/web/testutils_test.go</code> قرار دهیم.</p>
+
+<p>اگر شما هم دنبال می‌کنید، لطفاً اکنون این را ایجاد کنید&hellip;</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch cmd/web/testutils_test.go</pre>
+</figure>
+
+<p>و سپس کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/testutils_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;bytes&#34;</span>
+    <span class="s">&#34;io&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;net/http/cookiejar&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;net/http/httptest&#34;</span>
+    <span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="c1">// Create a newTestApplication helper which returns an instance of our
+</span><span class="c1"></span><span class="c1">// application struct containing mocked dependencies.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="o">*</span><span class="nx">application</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">Discard</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Define a custom testServer type which embeds a httptest.Server instance.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">testServer</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="o">*</span><span class="nx">httptest</span><span class="p">.</span><span class="nx">Server</span>
+<span class="p">}</span>
+
+<span class="c1">// Create a newTestServer helper which initalizes and returns a new instance
+</span><span class="c1"></span><span class="c1">// of our custom testServer type.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">h</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="o">*</span><span class="nx">testServer</span> <span class="p">{</span>
+    <span class="nx">ts</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewTLSServer</span><span class="p">(</span><span class="nx">h</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a new cookie jar.
+</span><span class="c1"></span>    <span class="nx">jar</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cookiejar</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="kc">nil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Add the cookie jar to the test server client. Any response cookies will
+</span><span class="c1"></span>    <span class="c1">// now be stored and sent with subsequent requests when using this client.
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nx">Jar</span> <span class="p">=</span> <span class="nx">jar</span>
+
+    <span class="c1">// Disable redirect-following for the test server client by setting a custom
+</span><span class="c1"></span>    <span class="c1">// CheckRedirect function. This function will be called whenever a 3xx
+</span><span class="c1"></span>    <span class="c1">// response is received by the client, and by always returning a
+</span><span class="c1"></span>    <span class="c1">// http.ErrUseLastResponse error it forces the client to immediately return
+</span><span class="c1"></span>    <span class="c1">// the received response.
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nx">CheckRedirect</span> <span class="p">=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">via</span> <span class="p">[</span><span class="p">]</span><span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ErrUseLastResponse</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">testServer</span><span class="p">{</span><span class="nx">ts</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Implement a get() method on our custom testServer type. This makes a GET
+</span><span class="c1"></span><span class="c1">// request to a given url path using the test server client, and returns the 
+</span><span class="c1"></span><span class="c1">// response status code, headers and body.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">ts</span> <span class="o">*</span><span class="nx">testServer</span><span class="p">)</span> <span class="nf">get</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">urlPath</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Header</span><span class="p">,</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">rs</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="nx">ts</span><span class="p">.</span><span class="nx">URL</span> <span class="o">+</span> <span class="nx">urlPath</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">defer</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">body</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadAll</span><span class="p">(</span><span class="nx">rs</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">body</span> <span class="p">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.02-testing-http-handlers-and-middleware.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="13.04-customizing-how-tests-run.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.02-testing-http-handlers-and-middleware.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.04-customizing-how-tests-run.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

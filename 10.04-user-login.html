@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>User login &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ورود کاربر</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="10.05-user-logout.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 10.4.</div>
+			<h2 id="user-login">ورود کاربر</h2>
+
+<p>در این فصل قصد داریم روی ایجاد صفحه ورود کاربر برای برنامه خود تمرکز کنیم.</p>
+
+<p>قبل از اینکه به بخش اصلی این کار بپردازیم، بیایید به سرعت به بسته <code>internal/validator</code> که قبلاً ساخته‌ایم نگاهی بیندازیم و آن را به‌روزرسانی کنیم تا از خطاهای اعتبارسنجی <em>که به یک فیلد خاص فرم مرتبط نیستند</em> پشتیبانی کند.</p>
+
+<p>ما از این بعداً در فصل استفاده خواهیم کرد تا به کاربر یک پیام عمومی "<em>آدرس ایمیل یا رمز عبور شما اشتباه است</em>" نشان دهیم اگر ورود آنها ناموفق باشد، زیرا این کار <a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses">امن‌تر</a> از بیان صریح دلیل شکست ورود است.</p>
+
+<p>لطفاً فایل <code>internal/validator/validator.go</code> خود را به صورت زیر به‌روزرسانی کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/validator/validator.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">validator</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Add a new NonFieldErrors []string field to the struct, which we will use to 
+</span><span class="c1"></span><span class="c1">// hold any validation errors which are not related to a specific form field.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">Validator</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">NonFieldErrors</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span>
+    <span class="nx">FieldErrors</span>    <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="c1">// Update the Valid() method to also check that the NonFieldErrors slice is
+</span><span class="c1"></span><span class="c1">// empty.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">FieldErrors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="nb">len</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">NonFieldErrors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="c1">// Create an AddNonFieldError() helper for adding error messages to the new
+</span><span class="c1"></span><span class="c1">// NonFieldErrors slice.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">Validator</span><span class="p">)</span> <span class="nf">AddNonFieldError</span><span class="p">(</span><span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">v</span><span class="p">.</span><span class="nx">NonFieldErrors</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">NonFieldErrors</span><span class="p">,</span> <span class="nx">message</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>بعد، بیایید یک قالب جدید <code>ui/html/pages/login.tmpl</code> ایجاد کنیم که حاوی نشانه‌گذاری برای صفحه ورود ما باشد. ما از همان الگوی نمایش خطاهای اعتبارسنجی و نمایش مجدد داده‌ها که برای صفحه ثبت‌نام خود استفاده کردیم، پیروی خواهیم کرد.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch ui/html/pages/login.tmpl</pre>
+</figure>
+
+<figure class="code html" dir="ltr">
+<figcaption>File: ui/html/pages/login.tmpl</figcaption>
+<pre>{{define &#34;title&#34;}}Login{{end}}
+
+{{define &#34;main&#34;}}
+<span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/login&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span> <span class="na">novalidate</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="c">&lt;!--</span><span class="c"> Notice that here we are looping over the NonFieldErrors and displaying
+</span><span class="c">    them, if any exist </span><span class="c">--&gt;</span>
+    {{range .Form.NonFieldErrors}}
+        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    {{end}}
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Email:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.email}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;email&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;email&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;{{.Form.Email}}&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">label</span><span class="p"></span><span class="p">&gt;</span>Password:<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{with .Form.FieldErrors.password}}
+            <span class="p">&lt;</span><span class="nt">label</span> <span class="na">class</span><span class="o">=</span><span class="s">&#39;error&#39;</span><span class="p"></span><span class="p">&gt;</span>{{.}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">label</span><span class="p">&gt;</span>
+        {{end}}
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;password&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;password&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;submit&#39;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#39;Login&#39;</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>سپس به فایل <code>cmd/web/handlers.go</code> خود بروید و یک ساختار جدید <code>userLoginForm</code> ایجاد کنید (برای نمایش و نگهداری داده‌های فرم)، و handler <code>userLogin</code> خود را برای نمایش صفحه ورود تطبیق دهید.</p>
+
+<p>به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Create a new userLoginForm struct.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">userLoginForm</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Email</span>               <span class="kt">string</span> <span class="s">`</span><span class="s">form:&#34;email&#34;</span><span class="s">`</span>
+    <span class="nx">Password</span>            <span class="kt">string</span> <span class="s">`</span><span class="s">form:&#34;password&#34;</span><span class="s">`</span>
+    <span class="nx">validator</span><span class="p">.</span><span class="nx">Validator</span> <span class="s">`</span><span class="s">form:&#34;-&#34;</span><span class="s">`</span>
+<span class="p">}</span>
+
+<span class="c1">// Update the handler so it displays the login page.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userLogin</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">userLoginForm</span><span class="p">{</span><span class="p">}</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;login.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>اگر برنامه را اجرا کنید و به <a href="https://localhost:4000/user/login"><code>https://localhost:4000/user/login</code></a> بروید، اکنون باید صفحه ورود را به این شکل ببینید:</p>
+
+<figure class="img">
+<img src="assets/img/10.04-01.png" alt="10.04-01.png" />
+</figure>
+
+<h3 id="verifying-the-user-details">تأیید جزئیات کاربر</h3>
+
+<p>گام بعدی بخش جالب است: <em>چگونه می‌توانیم تأیید کنیم که ایمیل و رمز عبور ارسال شده توسط کاربر صحیح است؟</em></p>
+
+<p>بخش اصلی این منطق تأیید در متد <code>UserModel.Authenticate()</code> مدل کاربر ما انجام خواهد شد. به طور خاص، ما به دو چیز نیاز داریم:</p>
+
+<ol>
+<li><p>ابتدا باید رمز عبور هش شده مرتبط با آدرس ایمیل را از جدول MySQL <code>users</code> بازیابی کنیم. اگر ایمیل در پایگاه داده وجود نداشته باشد، خطای <code>ErrInvalidCredentials</code> را که قبلاً ساخته‌ایم برمی‌گردانیم.</p></li>
+
+<li><p>در غیر این صورت، می‌خواهیم رمز عبور هش شده از جدول <code>users</code> را با رمز عبور متنی که کاربر هنگام ورود ارائه کرده است مقایسه کنیم. اگر آنها مطابقت نداشته باشند، می‌خواهیم دوباره خطای <code>ErrInvalidCredentials</code> را برگردانیم. اما اگر مطابقت داشته باشند، می‌خواهیم مقدار <code>id</code> کاربر را از پایگاه داده برگردانیم.</p></li>
+</ol>
+
+<p>بیایید دقیقاً این کار را انجام دهیم. کد زیر را به فایل <code>internal/models/users.go</code> خود اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/users.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Authenticate</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Retrieve the id and hashed password associated with the given email. If
+</span><span class="c1"></span>    <span class="c1">// no matching email exists we return the ErrInvalidCredentials error.
+</span><span class="c1"></span>    <span class="kd">var</span> <span class="nx">id</span> <span class="kt">int</span>
+    <span class="kd">var</span> <span class="nx">hashedPassword</span> <span class="p">[</span><span class="p">]</span><span class="kt">byte</span>
+
+    <span class="nx">stmt</span> <span class="o">:=</span> <span class="s">&#34;SELECT id, hashed_password FROM users WHERE email = ?&#34;</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">QueryRow</span><span class="p">(</span><span class="nx">stmt</span><span class="p">,</span> <span class="nx">email</span><span class="p">)</span><span class="p">.</span><span class="nf">Scan</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">id</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">hashedPassword</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">sql</span><span class="p">.</span><span class="nx">ErrNoRows</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">ErrInvalidCredentials</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Check whether the hashed password and plain-text password provided match.
+</span><span class="c1"></span>    <span class="c1">// If they don&#39;t, we return the ErrInvalidCredentials error.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">bcrypt</span><span class="p">.</span><span class="nf">CompareHashAndPassword</span><span class="p">(</span><span class="nx">hashedPassword</span><span class="p">,</span> <span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">password</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">bcrypt</span><span class="p">.</span><span class="nx">ErrMismatchedHashAndPassword</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">ErrInvalidCredentials</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Otherwise, the password is correct. Return the user ID.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">id</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>گام بعدی ما شامل به‌روزرسانی handler <code>userLoginPost</code> است تا داده‌های فرم ورود ارسال شده را تجزیه کند و این متد <code>UserModel.Authenticate()</code> را فراخوانی کند.</p>
+
+<p>اگر جزئیات ورود معتبر باشند، سپس می‌خواهیم <code>id</code> کاربر را به داده‌های جلسه آنها اضافه کنیم تا &mdash; برای درخواست‌های آینده &mdash; بدانیم که آنها با موفقیت احراز هویت شده‌اند و کدام کاربر هستند.</p>
+
+<p>به فایل <code>handlers.go</code> خود بروید و آن را به صورت زیر به‌روزرسانی کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userLoginPost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Decode the form data into the userLoginForm struct.
+</span><span class="c1"></span>    <span class="kd">var</span> <span class="nx">form</span> <span class="nx">userLoginForm</span>
+
+    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">decodePostForm</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">form</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Do some validation checks on the form. We check that both email and
+</span><span class="c1"></span>    <span class="c1">// password are provided, and also check the format of the email address as
+</span><span class="c1"></span>    <span class="c1">// a UX-nicety (in case the user makes a typo).
+</span><span class="c1"></span>    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Email</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;email&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">Matches</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Email</span><span class="p">,</span> <span class="nx">validator</span><span class="p">.</span><span class="nx">EmailRX</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;email&#34;</span><span class="p">,</span> <span class="s">&#34;This field must be a valid email address&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Password</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;password&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+        <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;login.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Check whether the credentials are valid. If they&#39;re not, add a generic
+</span><span class="c1"></span>    <span class="c1">// non-field error message and re-display the login page.
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nf">Authenticate</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Email</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Password</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrInvalidCredentials</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">form</span><span class="p">.</span><span class="nf">AddNonFieldError</span><span class="p">(</span><span class="s">&#34;Email or password is incorrect&#34;</span><span class="p">)</span>
+
+            <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+            <span class="nx">data</span><span class="p">.</span><span class="nx">Form</span> <span class="p">=</span> <span class="nx">form</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">,</span> <span class="s">&#34;login.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use the RenewToken() method on the current session to change the session
+</span><span class="c1"></span>    <span class="c1">// ID. It&#39;s good practice to generate a new session ID when the 
+</span><span class="c1"></span>    <span class="c1">// authentication state or privilege levels changes for the user (e.g. login
+</span><span class="c1"></span>    <span class="c1">// and logout operations).
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="p">=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">RenewToken</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Add the ID of the current user to the session, so that they are now
+</span><span class="c1"></span>    <span class="c1">// &#39;logged in&#39;.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span>
+
+    <span class="c1">// Redirect the user to the create snippet page.
+</span><span class="c1"></span>    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> متد <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.RenewToken"><code>SessionManager.RenewToken()</code></a> که در کد بالا استفاده می‌کنیم، شناسه جلسه کاربر فعلی را تغییر می‌دهد <em>اما هر داده‌ای که با جلسه مرتبط است را حفظ می‌کند</em>. این کار قبل از ورود به سیستم برای کاهش خطر حمله تثبیت جلسه، یک عمل خوب است. برای اطلاعات بیشتر و پس‌زمینه در این مورد، لطفاً به <a href="https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change">برگه تقلب مدیریت جلسه OWASP</a> مراجعه کنید.
+</p></aside>
+
+<p>بسیار خوب، بیایید این را امتحان کنیم!</p>
+
+<p>برنامه را مجدداً راه‌اندازی کنید و سعی کنید برخی از اعتبارنامه‌های کاربر نامعتبر را ارسال کنید&hellip;</p>
+
+<figure class="img">
+<img src="assets/img/10.04-02.png" alt="10.04-02.png" />
+</figure>
+
+<p>باید یک پیام خطای اعتبارسنجی غیر فیلدی دریافت کنید که به این شکل است:</p>
+
+<figure class="img">
+<img src="assets/img/10.04-03.png" alt="10.04-03.png" />
+</figure>
+
+<p>اما وقتی برخی از اعتبارنامه‌های صحیح را وارد می‌کنید (از آدرس ایمیل و رمز عبور برای کاربری که در فصل قبلی ایجاد کرده‌اید استفاده کنید)، برنامه باید شما را وارد کند و به صفحه ایجاد قطعه هدایت کند، به این صورت:</p>
+
+<figure class="img">
+<img src="assets/img/10.04-04.png" alt="10.04-04.png" />
+</figure>
+
+<figure class="img">
+<img src="assets/img/10.04-05.png" alt="10.04-05.png" />
+</figure>
+
+<p>ما در دو فصل گذشته کارهای زیادی انجام داده‌ایم، بنابراین بیایید به سرعت بررسی کنیم که وضعیت چگونه است.</p>
+
+<ul>
+<li><p>کاربران اکنون می‌توانند با استفاده از فرم <code>GET /user/signup</code> در سایت <em>ثبت‌نام</em> کنند. ما جزئیات کاربران ثبت‌نام شده (از جمله نسخه هش شده رمز عبور آنها) را در جدول <code>users</code> پایگاه داده خود ذخیره می‌کنیم.</p></li>
+
+<li><p>کاربران ثبت‌نام شده سپس می‌توانند با استفاده از فرم <code>GET /user/login</code> برای ارائه آدرس ایمیل و رمز عبور خود <em>احراز هویت</em> کنند. اگر این موارد با جزئیات یک کاربر ثبت‌نام شده مطابقت داشته باشد، ما آنها را به عنوان احراز هویت موفقیت‌آمیز می‌دانیم و مقدار <code>&quot;authenticatedUserID&quot;</code> مربوطه را به داده‌های جلسه آنها اضافه می‌کنیم.</p></li>
+</ul>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="10.05-user-logout.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.03-user-signup-and-password-encryption.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.05-user-logout.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>تست واحد و زیرتست‌ها &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Unit testing and sub-tests</span>
+				</div>
+				<div>
+					&lsaquo; <a href="13.00-testing.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.02-testing-http-handlers-and-middleware.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 13.1.</div>
+			<h2 id="unit-testing-and-sub-tests">تست واحد و زیرتست‌ها</h2>
+
+<p>در این فصل، ما یک تست واحد ایجاد خواهیم کرد تا مطمئن شویم که تابع <code>humanDate()</code> (که در فصل <a href="05.06-custom-template-functions.html">توابع قالب سفارشی</a> ایجاد کردیم) مقادیر <code>time.Time</code> را در قالب دقیق مورد نظر ما خروجی می‌دهد.</p>
+
+<p>اگر به یاد نمی‌آورید، تابع <code>humanDate()</code> به این شکل است:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">t</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="s">&#34;02 Jan 2006 at 15:04&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>دلیل اینکه می‌خواهم با تست این تابع شروع کنم این است که تابع ساده‌ای است. ما می‌توانیم نحو و الگوهای پایه برای نوشتن تست‌ها را بدون گرفتار شدن در <em>عملکرد</em>ی که در حال تست آن هستیم، بررسی کنیم.</p>
+
+<h3 id="creating-a-unit-test">ایجاد یک تست واحد</h3>
+
+<p>بیایید مستقیماً وارد شویم و یک <dfn>تست واحد</dfn> برای این تابع ایجاد کنیم.</p>
+
+<p>در Go، معمولاً تست‌های خود را در فایل‌های <code>*_test.go</code> می‌نویسید که مستقیماً در کنار کدی که در حال تست آن هستید قرار دارند. بنابراین، در این مورد، اولین کاری که انجام خواهیم داد ایجاد یک فایل جدید <code>cmd/web/templates_test.go</code> برای نگهداری تست است:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ touch cmd/web/templates_test.go</pre>
+</figure>
+
+<p>و سپس می‌توانیم یک تست واحد جدید برای تابع <code>humanDate</code> به این شکل ایجاد کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestHumanDate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Initialize a new time.Time object and pass it to the humanDate function.
+</span><span class="c1"></span>    <span class="nx">tm</span> <span class="o">:=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">UTC</span><span class="p">)</span>
+    <span class="nx">hd</span> <span class="o">:=</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">tm</span><span class="p">)</span>
+
+    <span class="c1">// Check that the output from the humanDate function is in the format we
+</span><span class="c1"></span>    <span class="c1">// expect. If it isn&#39;t what we expect, use the t.Errorf() function to
+</span><span class="c1"></span>    <span class="c1">// indicate that the test has failed and log the expected and actual
+</span><span class="c1"></span>    <span class="c1">// values.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">hd</span> <span class="o">!=</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got %q; want %q&#34;</span><span class="p">,</span> <span class="nx">hd</span><span class="p">,</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>این الگو، الگوی پایه‌ای است که برای تقریباً تمام تست‌هایی که در Go می‌نویسید استفاده خواهید کرد. نکات مهمی که باید به خاطر بسپارید عبارتند از:</p>
+
+<ul>
+<li><p>تست فقط کد معمولی Go است که تابع <code>humanDate()</code> را فراخوانی می‌کند و بررسی می‌کند که نتیجه با آنچه انتظار داریم مطابقت دارد.</p></li>
+
+<li><p>تست‌های واحد شما در یک تابع معمولی Go با امضای <code>func(*testing.T)</code> قرار دارند.</p></li>
+
+<li><p>برای اینکه یک تست واحد معتبر باشد، نام این تابع <em>باید</em> با کلمه <code>Test</code> شروع شود. معمولاً این نام سپس با نام تابع، متد یا نوعی که در حال تست آن هستید دنبال می‌شود تا به وضوح نشان دهد <em>چه</em> چیزی در حال تست است.</p></li>
+
+<li><p>می‌توانید از تابع <a href="https://pkg.go.dev/testing/#T.Errorf"><code>t.Errorf()</code></a> برای علامت‌گذاری یک تست به عنوان <em>ناموفق</em> و ثبت یک پیام توصیفی درباره شکست استفاده کنید. مهم است که توجه داشته باشید که فراخوانی <code>t.Errorf()</code> <em>اجرای تست شما را متوقف نمی‌کند</em> &mdash; پس از فراخوانی آن، Go به اجرای هر کد تست باقی‌مانده به صورت عادی ادامه خواهد داد.</p></li>
+</ul>
+
+<p>بیایید این را امتحان کنیم. فایل را ذخیره کنید، سپس از دستور <code>go test</code> برای اجرای تمام تست‌ها در بسته <code>cmd/web</code> ما به این شکل استفاده کنید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test ./cmd/web
+<samp>ok      snippetbox.alexedwards.net/cmd/web    0.005s</samp></pre>
+</figure>
+
+<p>بنابراین، این چیز خوبی است. <code>ok</code> در این خروجی نشان می‌دهد که تمام تست‌ها در بسته (فعلاً، فقط تست <code>TestHumanDate()</code> ما) بدون هیچ مشکلی گذرانده شده‌اند.</p>
+
+<p>اگر جزئیات بیشتری می‌خواهید، می‌توانید دقیقاً ببینید که کدام تست‌ها در حال اجرا هستند با استفاده از پرچم <code>-v</code> برای دریافت خروجی <em>مفصل</em>:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./cmd/web
+<samp>=== RUN   TestHumanDate
+--- PASS: TestHumanDate (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web    0.007s</samp></pre>
+</figure>
+
+<h3 id="table-driven-tests">تست‌های مبتنی بر جدول</h3>
+
+<p>بیایید اکنون تابع <code>TestHumanDate()</code> خود را گسترش دهیم تا برخی موارد <dfn>تست</dfn> اضافی را پوشش دهیم. به طور خاص، ما قصد داریم آن را به‌روزرسانی کنیم تا همچنین بررسی کند که:</p>
+
+<ol>
+<li><p>اگر ورودی به <code>humanDate()</code> زمان <a href="https://pkg.go.dev/time/#Time.IsZero">صفر</a> باشد، سپس رشته خالی <code>&quot;&quot;</code> را برمی‌گرداند.</p></li>
+
+<li><p>خروجی از تابع <code>humanDate()</code> همیشه از منطقه زمانی UTC استفاده می‌کند.</p></li>
+</ol>
+
+<p>در Go، یک روش ایدئال برای اجرای چندین مورد تست استفاده از <dfn>تست‌های مبتنی بر جدول</dfn> است.</p>
+
+<p>اساساً، ایده پشت تست‌های مبتنی بر جدول این است که یک &lsquo;جدول&rsquo; از موارد تست حاوی ورودی‌ها و خروجی‌های مورد انتظار ایجاد کنید و سپس بر روی این‌ها حلقه بزنید و هر مورد تست را در یک <dfn>زیرتست</dfn> اجرا کنید. چندین روش برای تنظیم این وجود دارد، اما یک روش معمول این است که موارد تست خود را در یک برش از ساختارهای ناشناس تعریف کنید.</p>
+
+<p>من نشان خواهم داد:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestHumanDate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Create a slice of anonymous structs containing the test case name,
+</span><span class="c1"></span>    <span class="c1">// input to our humanDate() function (the tm field), and expected output
+</span><span class="c1"></span>    <span class="c1">// (the want field).
+</span><span class="c1"></span>    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="kt">string</span>
+        <span class="nx">tm</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+        <span class="nx">want</span> <span class="kt">string</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;UTC&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">UTC</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Empty&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">{</span><span class="p">}</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;CET&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nf">FixedZone</span><span class="p">(</span><span class="s">&#34;CET&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 09:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Loop over the test cases.
+</span><span class="c1"></span>    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="c1">// Use the t.Run() function to run a sub-test for each test case. The
+</span><span class="c1"></span>        <span class="c1">// first parameter to this is the name of the test (which is used to
+</span><span class="c1"></span>        <span class="c1">// identify the sub-test in any log output) and the second parameter is
+</span><span class="c1"></span>        <span class="c1">// and anonymous function containing the actual test for each case.
+</span><span class="c1"></span>        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">hd</span> <span class="o">:=</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">tm</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nx">hd</span> <span class="o">!=</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span> <span class="p">{</span>
+                <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got %q; want %q&#34;</span><span class="p">,</span> <span class="nx">hd</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>توجه:</strong> در مورد سوم تست، ما از CET (زمان اروپای مرکزی) به عنوان منطقه زمانی استفاده می‌کنیم که یک ساعت جلوتر از UTC است. بنابراین ما می‌خواهیم خروجی از <code>humanDate()</code> (که باید در UTC باشد) <code>17 Mar 2024 at 09:15</code> باشد، نه <code>17 Mar 2024 at 10:15</code>.
+</p></aside>
+
+<p>خوب، بیایید این را اجرا کنیم و ببینیم چه اتفاقی می‌افتد:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./cmd/web
+<samp>=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+    templates_test.go:44: got &#34;01 Jan 0001 at 00:00&#34;; want &#34;&#34;
+=== RUN   TestHumanDate/CET
+    templates_test.go:44: got &#34;17 Mar 2024 at 10:15&#34;; want &#34;17 Mar 2024 at 09:15&#34;
+--- FAIL: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- FAIL: TestHumanDate/Empty (0.00s)
+    --- FAIL: TestHumanDate/CET (0.00s)
+FAIL
+FAIL    snippetbox.alexedwards.net/cmd/web      0.003s
+FAIL</samp></pre>
+</figure>
+
+<p>بنابراین در اینجا می‌توانیم خروجی فردی برای هر یک از زیرتست‌های خود را ببینیم. همانطور که ممکن است حدس زده باشید، مورد اول تست ما گذشت اما تست‌های <code>Empty</code> و <code>CET</code> هر دو شکست خوردند. توجه کنید که &mdash; برای موارد تست ناموفق &mdash; ما پیام شکست مربوطه و نام فایل و شماره خط را در خروجی دریافت می‌کنیم؟</p>
+
+<p>بیایید به تابع <code>humanDate()</code> خود برگردیم و آن را به‌روزرسانی کنیم تا این دو مشکل را برطرف کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="c1">// Return the empty string if time has the zero value.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">t</span><span class="p">.</span><span class="nf">IsZero</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">&#34;&#34;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Convert the time to UTC before formatting it.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">t</span><span class="p">.</span><span class="nf">UTC</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="s">&#34;02 Jan 2006 at 15:04&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>و هنگامی که دوباره تست‌ها را اجرا کنید، همه چیز باید اکنون بگذرد.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./cmd/web
+<samp>=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
+</figure>
+
+<h3 id="helpers-for-test-assertions">کمک‌کننده‌ها برای ادعاهای تست</h3>
+
+<p>همانطور که قبلاً در کتاب به طور مختصر اشاره کردم، در فصل‌های بعدی ما تعداد زیادی <em>ادعای تست</em> خواهیم نوشت که یک تغییر از این الگو هستند:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="k">if</span> <span class="nx">actualValue</span> <span class="o">!=</span> <span class="nx">expectedValue</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got %v; want %v&#34;</span><span class="p">,</span> <span class="nx">actualValue</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>بیایید به سرعت این کد را به یک تابع کمک‌کننده انتزاع کنیم.</p>
+
+<p>اگر در حال دنبال کردن هستید، بروید و یک بسته جدید <code>internal/assert</code> ایجاد کنید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ mkdir internal/assert
+$ touch internal/assert/assert.go</pre>
+</figure>
+
+<p>و سپس کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/assert/assert.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">assert</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">Equal</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">actual</span><span class="p">,</span> <span class="nx">expected</span> <span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Helper</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got: %v; want: %v&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">,</span> <span class="nx">expected</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>توجه کنید که <code>Equal()</code> یک <em>تابع عمومی</em> است؟ این به این معنی است که ما قادر خواهیم بود از آن استفاده کنیم بدون توجه به اینکه نوع مقادیر <code>actual</code> و <code>expected</code> چیست. تا زمانی که هر دو <code>actual</code> و <code>expected</code> نوع <em>یکسانی</em> داشته باشند و بتوانند با استفاده از عملگر <code>!=</code> مقایسه شوند (برای مثال، هر دو مقادیر <code>string</code> یا هر دو مقادیر <code>int</code> باشند) کد تست ما باید کامپایل شود و به خوبی کار کند وقتی که <code>Equal()</code> را فراخوانی می‌کنیم.</p>
+
+<aside class="note"><p>
+<strong>توجه:</strong> تابع <a href="https://pkg.go.dev/testing#T.Helper"><code>t.Helper()</code></a> که در کد بالا استفاده می‌کنیم به اجراگر تست Go نشان می‌دهد که تابع <code>Equal()</code> ما یک کمک‌کننده تست است. این به این معنی است که وقتی <code>t.Errorf()</code> از تابع <code>Equal()</code> ما فراخوانی می‌شود، اجراگر تست Go نام فایل و شماره خط کدی که <code>Equal()</code> ما را فراخوانی کرده است را در خروجی گزارش خواهد کرد.
+</p></aside>
+
+<p>با این کار، ما می‌توانیم تست <code>TestHumanDate()</code> خود را به این شکل ساده کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestHumanDate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="kt">string</span>
+        <span class="nx">tm</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+        <span class="nx">want</span> <span class="kt">string</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;UTC&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">UTC</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Empty&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">{</span><span class="p">}</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;CET&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nf">FixedZone</span><span class="p">(</span><span class="s">&#34;CET&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 09:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">hd</span> <span class="o">:=</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">tm</span><span class="p">)</span>
+
+            <span class="c1">// Use the new assert.Equal() helper to compare the expected and 
+</span><span class="c1"></span>            <span class="c1">// actual values.
+</span><span class="c1"></span>            <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">hd</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="sub-tests-without-a-table-of-test-cases">زیرتست‌ها بدون جدول موارد تست</h4>
+
+<p>مهم است که اشاره کنیم که نیازی نیست که زیرتست‌ها را همراه با تست‌های مبتنی بر جدول (مانند آنچه تا کنون در این فصل انجام داده‌ایم) استفاده کنید. اجرای زیرتست‌ها با فراخوانی <code>t.Run()</code> به صورت متوالی در توابع تست شما کاملاً معتبر است، مشابه این:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="kd">func</span> <span class="nf">TestExample</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Example sub-test 1&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Do a test.
+</span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
+
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Example sub-test 2&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Do another test.
+</span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
+
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Example sub-test 3&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// And another...
+</span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.00-testing.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="13.02-testing-http-handlers-and-middleware.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.00-testing.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.02-testing-http-handlers-and-middleware.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

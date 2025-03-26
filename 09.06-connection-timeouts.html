@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Connection timeouts &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
+				text-align: left;
+				direction: ltr;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; زمان‌های قطع اتصال</span>
+				</div>
+				<div>
+					&lsaquo; <a href="09.05-configuring-https-settings.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="10.00-user-authentication.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 9.6.</div>
+			<h2 id="connection-timeouts">زمان‌های قطع اتصال</h2>
+
+<p>بیایید لحظه‌ای برای بهبود پایداری سرورمان با افزودن برخی تنظیمات زمان قطع اتصال، مانند زیر، وقت بگذاریم:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+    <span class="o">...</span>
+    
+    <span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
+        <span class="nx">CurvePreferences</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span><span class="nx">tls</span><span class="p">.</span><span class="nx">CurveID</span><span class="p">{</span><span class="nx">tls</span><span class="p">.</span><span class="nx">X25519</span><span class="p">,</span> <span class="nx">tls</span><span class="p">.</span><span class="nx">CurveP256</span><span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+        <span class="nx">Addr</span><span class="p">:</span>      <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+        <span class="nx">Handler</span><span class="p">:</span>   <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">ErrorLog</span><span class="p">:</span>  <span class="nx">slog</span><span class="p">.</span><span class="nf">NewLogLogger</span><span class="p">(</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Handler</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelError</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">TLSConfig</span><span class="p">:</span> <span class="nx">tlsConfig</span><span class="p">,</span>
+        <span class="c1">// Add Idle, Read and Write timeouts to the server.
+</span><span class="c1"></span>        <span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="nx">time</span><span class="p">.</span><span class="nx">Minute</span><span class="p">,</span>
+        <span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+        <span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">10</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="nx">srv</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
+
+    <span class="nx">err</span> <span class="p">=</span> <span class="nx">srv</span><span class="p">.</span><span class="nf">ListenAndServeTLS</span><span class="p">(</span><span class="s">&#34;./tls/cert.pem&#34;</span><span class="p">,</span> <span class="s">&#34;./tls/key.pem&#34;</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">os</span><span class="p">.</span><span class="nf">Exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>هر سه این زمان‌های قطع اتصال &mdash; <code>IdleTimeout</code>, <code>ReadTimeout</code> و <code>WriteTimeout</code> &mdash; تنظیمات سراسری سرور هستند که بر روی اتصال زیرین عمل می‌کنند و به همه درخواست‌ها بدون توجه به هندلر یا URL آنها اعمال می‌شوند.</p>
+
+<h3 id="the-idletimeout-setting">تنظیم IdleTimeout</h3>
+
+<p>به طور پیش‌فرض، Go <a href="https://en.wikipedia.org/wiki/HTTP_persistent_connection">اتصالات پایدار</a> را بر روی همه اتصالات پذیرفته شده فعال می‌کند. این به کاهش تأخیر (به ویژه برای اتصالات HTTPS) کمک می‌کند زیرا یک کلاینت می‌تواند از همان اتصال برای چندین درخواست بدون نیاز به تکرار دست‌دهی TLS استفاده کند.</p>
+
+<p>به طور پیش‌فرض، اتصالات پایدار به طور خودکار پس از چند دقیقه بسته می‌شوند (زمان دقیق <a href="https://github.com/golang/go/issues/23459#issuecomment-374777402">بسته به سیستم‌عامل شما</a> دارد). این به پاکسازی اتصالاتی که کاربر به طور غیرمنتظره‌ای ناپدید شده است کمک می‌کند &mdash; مثلاً به دلیل قطع برق در سمت کلاینت.</p>
+
+<p>هیچ راهی برای <em>افزایش</em> این پیش‌فرض وجود ندارد (مگر اینکه خودتان یک <code>net.Listener</code> بنویسید)، اما می‌توانید آن را از طریق تنظیم <code>IdleTimeout</code> <em>کاهش</em> دهید. در مورد ما، <code>IdleTimeout</code> را به 1 دقیقه تنظیم کرده‌ایم، به این معنی که همه اتصالات پایدار به طور خودکار پس از 1 دقیقه عدم فعالیت بسته می‌شوند.</p>
+
+<h3 id="the-readtimeout-setting">تنظیم ReadTimeout</h3>
+
+<p>در کد ما، تنظیم <code>ReadTimeout</code> را به 5 ثانیه تنظیم کرده‌ایم. این به این معنی است که اگر هدرها یا بدنه درخواست هنوز 5 ثانیه پس از پذیرش درخواست در حال خواندن باشند، Go اتصال زیرین را می‌بندد. از آنجا که این یک بسته شدن 'سخت' بر روی اتصال است، کاربر هیچ پاسخی HTTP(S) دریافت نخواهد کرد.</p>
+
+<p>تنظیم یک دوره کوتاه <code>ReadTimeout</code> به کاهش خطر از حملات کلاینت‌های کند &mdash; مانند <a href="https://en.wikipedia.org/wiki/Slowloris_(computer_security)">Slowloris</a> &mdash; که می‌توانند در غیر این صورت یک اتصال را به طور نامحدود با ارسال درخواست‌های ناقص و ناتمام HTTP(S) باز نگه دارند، کمک می‌کند.</p>
+
+<aside class="important"><p>
+<strong>مهم:</strong> اگر <code>ReadTimeout</code> را تنظیم کنید اما <code>IdleTimeout</code> را تنظیم نکنید، <code>IdleTimeout</code> به طور پیش‌فرض از همان تنظیم <code>ReadTimeout</code> استفاده خواهد کرد. به عنوان مثال، اگر <code>ReadTimeout</code> را به 3 ثانیه تنظیم کنید، این اثر جانبی وجود دارد که همه اتصالات پایدار نیز پس از 3 ثانیه عدم فعالیت بسته خواهند شد. به طور کلی، توصیه من این است که از هرگونه ابهام جلوگیری کنید و همیشه یک مقدار <code>IdleTimeout</code> صریح برای سرور خود تنظیم کنید.
+</p></aside>
+
+<h3 id="the-writetimeout-setting">تنظیم WriteTimeout</h3>
+
+<p>تنظیم <code>WriteTimeout</code> اتصال زیرین را می‌بندد اگر سرور ما تلاش کند پس از یک دوره معین (در کد ما، 10 ثانیه) به اتصال بنویسد. اما این بسته به پروتکل مورد استفاده کمی متفاوت عمل می‌کند.</p>
+
+<ul>
+<li><p>برای اتصالات HTTP، اگر داده‌ای بیش از 10 ثانیه پس از پایان <em>خواندن هدر درخواست</em> به اتصال نوشته شود، Go اتصال زیرین را به جای نوشتن داده‌ها می‌بندد.</p></li>
+
+<li><p>برای اتصالات HTTPS، اگر داده‌ای بیش از 10 ثانیه پس از <em>پذیرش اولیه درخواست</em> به اتصال نوشته شود، Go اتصال زیرین را به جای نوشتن داده‌ها می‌بندد. این به این معنی است که اگر از HTTPS استفاده می‌کنید (مانند ما)، منطقی است که <code>WriteTimeout</code> را به مقداری بیشتر از <code>ReadTimeout</code> تنظیم کنید.</p></li>
+</ul>
+
+<p>مهم است که به خاطر داشته باشید که نوشتن‌هایی که توسط یک هندلر انجام می‌شود، بافر شده و به عنوان یک واحد زمانی که هندلر بازمی‌گردد به اتصال نوشته می‌شوند. بنابراین، ایده <code>WriteTimeout</code> به طور کلی <em>جلوگیری از هندلرهای طولانی‌مدت</em> نیست، بلکه جلوگیری از این است که داده‌هایی که هندلر بازمی‌گرداند، بیش از حد طول بکشد تا نوشته شود.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="the-readheadertimeout-setting">تنظیم ReadHeaderTimeout</h4>
+
+<p><code>http.Server</code> همچنین یک تنظیم <code>ReadHeaderTimeout</code> ارائه می‌دهد که ما در برنامه خود از آن استفاده نکرده‌ایم. این به روشی مشابه <code>ReadTimeout</code> عمل می‌کند، به جز اینکه به خواندن هدرهای HTTP(S) اعمال می‌شود. بنابراین، اگر <code>ReadHeaderTimeout</code> را به 3 ثانیه تنظیم کنید، یک اتصال بسته خواهد شد اگر هدرهای درخواست هنوز 3 ثانیه پس از پذیرش درخواست در حال خواندن باشند. با این حال، خواندن بدنه درخواست می‌تواند پس از گذشت 3 ثانیه ادامه یابد، بدون اینکه اتصال بسته شود.</p>
+
+<p>این می‌تواند مفید باشد اگر بخواهید یک محدودیت سراسری برای خواندن هدرهای درخواست اعمال کنید، اما بخواهید زمان‌های قطع اتصال مختلفی را در مسیرهای مختلف برای خواندن بدنه درخواست پیاده‌سازی کنید (احتمالاً با استفاده از <a href="https://pkg.go.dev/net/http/#TimeoutHandler"><code>http.TimeoutHandler()</code></a> میان‌افزار).</p>
+
+<p>برای برنامه وب Snippetbox ما هیچ عملیاتی وجود ندارد که نیاز به زمان‌های قطع اتصال خواندن در مسیرهای مختلف داشته باشد &mdash; خواندن هدرها و بدنه‌های درخواست برای همه مسیرهای ما باید به راحتی در 5 ثانیه کامل شود، بنابراین ما به استفاده از <code>ReadTimeout</code> ادامه خواهیم داد.</p>
+
+<h4 id="the-maxheaderbytes-setting">تنظیم MaxHeaderBytes</h4>
+
+<p><code>http.Server</code> شامل یک فیلد <code>MaxHeaderBytes</code> است که می‌توانید از آن برای کنترل حداکثر تعداد بایتی که سرور هنگام تجزیه هدرهای درخواست می‌خواند، استفاده کنید. به طور پیش‌فرض، Go حداکثر طول هدر 1 مگابایت را مجاز می‌داند.</p>
+
+<p>اگر می‌خواهید حداکثر طول هدر را به 0.5 مگابایت محدود کنید، به عنوان مثال، می‌توانید بنویسید:</p>
+
+<figure class="code go">
+<pre><span class="nx">srv</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+    <span class="nx">Addr</span><span class="p">:</span>           <span class="o">*</span><span class="nx">addr</span><span class="p">,</span>
+    <span class="nx">MaxHeaderBytes</span><span class="p">:</span> <span class="mi">524288</span><span class="p">,</span>
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر <code>MaxHeaderBytes</code> تجاوز کند، کاربر به طور خودکار یک پاسخ <code>431 Request Header Fields Too Large</code> دریافت خواهد کرد.</p>
+
+<p>اینجا یک نکته وجود دارد: Go <em>همیشه</em> <a href="https://github.com/golang/go/blob/4b36e129f865f802eb87f7aa2b25e3297c5d8cfd/src/net/http/server.go#L871">4096 بایت اضافی</a> فضای سر به عددی که تنظیم کرده‌اید اضافه می‌کند. اگر نیاز دارید که <code>MaxHeaderBytes</code> یک عدد دقیق یا بسیار کم باشد، باید این را در نظر بگیرید.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.05-configuring-https-settings.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="10.00-user-authentication.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.05-configuring-https-settings.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.00-user-authentication.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

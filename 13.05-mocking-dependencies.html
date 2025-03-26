@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>شبیه‌سازی وابستگی‌ها &mdash; Let's Go</title> 
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; شبیه‌سازی وابستگی‌ها</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.04-customizing-how-tests-run.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.06-testing-html-forms.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 13.5.</div>
+			<h2 id="mocking-dependencies">شبیه‌سازی وابستگی‌ها</h2>
+
+<p>اکنون که برخی الگوهای کلی برای تست برنامه وب خود را توضیح داده‌ایم، در این فصل قصد داریم کمی جدی‌تر شویم و برخی تست‌ها را برای مسیر <code>GET /snippet/view/{id}</code> بنویسیم.</p>
+
+<p>اما ابتدا، بیایید درباره وابستگی‌ها صحبت کنیم.</p>
+
+<p>در طول این پروژه، ما وابستگی‌ها را از طریق ساختار <code>application</code> به هندلرها تزریق کرده‌ایم، که در حال حاضر به این شکل است:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">logger</span>        <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span>       <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModel</span>
+    <span class="nx">users</span>          <span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">UserModel</span>
+    <span class="nx">templateCache</span>  <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span>
+    <span class="nx">formDecoder</span>    <span class="o">*</span><span class="nx">form</span><span class="p">.</span><span class="nx">Decoder</span>
+    <span class="nx">sessionManager</span> <span class="o">*</span><span class="nx">scs</span><span class="p">.</span><span class="nx">SessionManager</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>هنگام تست، گاهی اوقات منطقی است که این وابستگی‌ها را <dfn>شبیه‌سازی</dfn> کنیم به جای اینکه از همان‌هایی که در برنامه تولیدی خود استفاده می‌کنیم، استفاده کنیم.</p>
+
+<p>برای مثال، در فصل قبلی ما وابستگی <code>logger</code> را با یک لاگر که پیام‌ها را به <code>io.Discard</code> می‌نویسد، شبیه‌سازی کردیم، به جای <code>os.Stdout</code> و جریان مانند آنچه در برنامه تولیدی خود انجام می‌دهیم:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="kd">func</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="o">*</span><span class="nx">application</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">Discard</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>دلیل شبیه‌سازی این و نوشتن به <code>io.Discard</code> این است که از پر شدن خروجی تست ما با پیام‌های لاگ غیرضروری هنگام اجرای <code>go test -v</code> (با حالت verbose فعال) جلوگیری کنیم.</p>
+
+<aside class="note"><p>
+<strong>توجه:</strong> بسته به پیش‌زمینه و تجربه برنامه‌نویسی شما، ممکن است این لاگر را <em>شبیه‌سازی</em> ندانید. ممکن است آن را <em>جعلی</em>، <em>استاب</em> یا چیز دیگری بنامید. اما نام آن واقعاً مهم نیست &mdash; و افراد مختلف <a href="https://en.wikipedia.org/wiki/Mock_object#Mocks,_fakes,_and_stubs">آن‌ها را به نام‌های مختلفی می‌نامند</a>. آنچه مهم این است که ما از چیزی استفاده می‌کنیم که <em>همان رابطی را که یک شیء تولیدی دارد، برای هدف تست ارائه می‌دهد</em>.
+</p></aside>
+
+<p>دو وابستگی دیگر که منطقی است آن‌ها را شبیه‌سازی کنیم، مدل‌های پایگاه داده <code>models.SnippetModel</code> و <code>models.UserModel</code> هستند. با ایجاد شبیه‌سازی‌های این‌ها، می‌توانیم رفتار هندلرهای خود را <em>بدون</em> نیاز به راه‌اندازی یک نمونه تست کامل از پایگاه داده MySQL تست کنیم.</p>
+
+<h3 id="mocking-the-database-models">شبیه‌سازی مدل‌های پایگاه داده</h3>
+
+<p>اگر در حال دنبال کردن هستید، یک بسته جدید <code>internal/models/mocks</code> ایجاد کنید که شامل فایل‌های <code>snippets.go</code> و <code>user.go</code> برای نگهداری شبیه‌سازی‌های مدل پایگاه داده باشد، به این صورت:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ mkdir internal/models/mocks
+$ touch internal/models/mocks/snippets.go
+$ touch internal/models/mocks/users.go</pre>
+</figure>
+
+<p>بیایید با ایجاد یک شبیه‌سازی از <code>models.SnippetModel</code> خود شروع کنیم. برای انجام این کار، قصد داریم یک ساختار ساده ایجاد کنیم که همان متدهای مدل تولیدی <code>models.SnippetModel</code> را پیاده‌سازی کند، اما متدها داده‌های ثابت و جعلی را برگردانند.</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/mocks/snippets.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">mocks</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"time"</span>
+
+    <span class="s">"snippetbox.alexedwards.net/internal/models"</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="nx">mockSnippet</span> <span class="p">=</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span><span class="p">{</span>
+    <span class="nx">ID</span><span class="p">:</span>      <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">Title</span><span class="p">:</span>   <span class="s">"An old silent pond"</span><span class="p">,</span>
+    <span class="nx">Content</span><span class="p">:</span> <span class="s">"An old silent pond..."</span><span class="p">,</span>
+    <span class="nx">Created</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="nx">Expires</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">SnippetModel</span> <span class="kd">struct</span><span class="p">{</span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">expires</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">2</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="nx">id</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nx">mockSnippet</span><span class="p">,</span> <span class="kc">nil</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Latest</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span><span class="p">{</span><span class="nx">mockSnippet</span><span class="p">}</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و بیایید همین کار را برای <code>models.UserModel</code> خود انجام دهیم، به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/mocks/users.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">mocks</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"snippetbox.alexedwards.net/internal/models"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">UserModel</span> <span class="kd">struct</span><span class="p">{</span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Insert</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="nx">email</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s">"dupe@example.com"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrDuplicateEmail</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">nil</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Authenticate</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">email</span> <span class="o">==</span> <span class="s">"alice@example.com"</span> <span class="o">&&</span> <span class="nx">password</span> <span class="o">==</span> <span class="s">"pa$$word"</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">nil</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrInvalidCredentials</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">UserModel</span><span class="p">)</span> <span class="nf">Exists</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">bool</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="nx">id</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="p">,</span> <span class="kc">nil</span>
+    <span class="k">default</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="p">,</span> <span class="kc">nil</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h3 id="initializing-the-mocks">راه‌اندازی شبیه‌سازی‌ها</h3>
+
+<p>برای مرحله بعدی در ساخت، بیایید به فایل <code>testutils_test.go</code> برگردیم و تابع <code>newTestApplication()</code> را به‌روزرسانی کنیم تا یک ساختار <code>application</code> با تمام وابستگی‌های لازم برای تست ایجاد کند.</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/testutils_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"bytes"</span>
+    <span class="s">"io"</span>
+    <span class="s">"log/slog"</span>
+    <span class="s">"net/http"</span>
+    <span class="s">"net/http/cookiejar"</span>
+    <span class="s">"net/http/httptest"</span>
+    <span class="s">"testing"</span>
+    <span class="s">"time"</span> <span class="c1">// New import
+</span><span class="c1"></span>
+    <span class="s">"snippetbox.alexedwards.net/internal/models/mocks"</span> <span class="c1">// New import
+</span><span class="c1"></span>
+    <span class="s">"github.com/alexedwards/scs/v2"</span>    <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">"github.com/go-playground/form/v4"</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="o">*</span><span class="nx">application</span> <span class="p">{</span>
+    <span class="c1">// Create an instance of the template cache.
+</span><span class="c1"></span>    <span class="nx">templateCache</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// And a form decoder.
+</span><span class="c1"></span>    <span class="nx">formDecoder</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// And a session manager instance. Note that we use the same settings as
+</span><span class="c1"></span>    <span class="c1">// production, except that we *don&#39;t* set a Store for the session manager.
+</span><span class="c1"></span>    <span class="c1">// If no store is set, the SCS package will default to using a transient
+</span><span class="c1"></span>    <span class="c1">// in-memory store, which is ideal for testing purposes.
+</span><span class="c1"></span>    <span class="nx">sessionManager</span> <span class="o">:=</span> <span class="nx">scs</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="p">)</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Lifetime</span> <span class="p">=</span> <span class="mi">12</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Hour</span>
+    <span class="nx">sessionManager</span><span class="p">.</span><span class="nx">Cookie</span><span class="p">.</span><span class="nx">Secure</span> <span class="p">=</span> <span class="kc">true</span>
+
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">application</span><span class="p">{</span>
+        <span class="nx">logger</span><span class="p">:</span>         <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">io</span><span class="p">.</span><span class="nx">Discard</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">snippets</span><span class="p">:</span>       <span class="o">&amp;</span><span class="nx">mocks</span><span class="p">.</span><span class="nx">SnippetModel</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="c1">// Use the mock.
+</span><span class="c1"></span>        <span class="nx">users</span><span class="p">:</span>          <span class="o">&amp;</span><span class="nx">mocks</span><span class="p">.</span><span class="nx">UserModel</span><span class="p">{</span><span class="p">}</span><span class="p">,</span>    <span class="c1">// Use the mock.
+</span><span class="c1"></span>        <span class="nx">templateCache</span><span class="p">:</span>  <span class="nx">templateCache</span><span class="p">,</span>
+        <span class="nx">formDecoder</span><span class="p">:</span>    <span class="nx">formDecoder</span><span class="p">,</span>
+        <span class="nx">sessionManager</span><span class="p">:</span> <span class="nx">sessionManager</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>اگر اکنون سعی کنید تست‌ها را اجرا کنید، با خطاهای زیر کامپایل نمی‌شود:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test ./cmd/web
+<samp># snippetbox.alexedwards.net/cmd/web [snippetbox.alexedwards.net/cmd/web.test]
+cmd/web/testutils_test.go:40:19: cannot use &amp;mocks.SnippetModel{} (value of type *mocks.SnippetModel) as type *models.SnippetModel in struct literal
+cmd/web/testutils_test.go:41:19: cannot use &amp;mocks.UserModel{} (value of type *mocks.UserModel) as type *models.UserModel in struct literal
+FAIL    snippetbox.alexedwards.net/cmd/web [build failed]
+FAIL</samp></pre>
+</figure>
+
+<p>این اتفاق می‌افتد زیرا ساختار <code>application</code> ما انتظار دارد که اشاره‌گرهایی به نمونه‌های <code>models.SnippetModel</code> و <code>models.UserModel</code> داشته باشد، اما ما سعی داریم از اشاره‌گرهایی به نمونه‌های <code>mocks.SnippetModel</code> و <code>mocks.UserModel</code> استفاده کنیم.</p>
+
+<p>راه‌حل ایدیوماتیک برای این مشکل این است که ساختار <code>application</code> خود را تغییر دهیم تا از <dfn>رابط‌ها</dfn> استفاده کند که هم مدل‌های پایگاه داده شبیه‌سازی شده و هم تولیدی ما را برآورده می‌کنند.</p>
+
+<aside class="hint"><p>
+<strong>نکته:</strong> اگر با ایده <em>رابط‌ها</em> در Go آشنا نیستید، یک مقدمه در <a href="https://www.alexedwards.net/blog/interfaces-explained">این پست وبلاگ</a> وجود دارد که توصیه می‌کنم بخوانید.
+</p></aside>
+
+<p>برای انجام این کار، بیایید به فایل <code>internal/models/snippets.go</code> برگردیم و یک نوع رابط جدید <code>SnippetModelInterface</code> ایجاد کنیم که <em>متدهایی را که ساختار واقعی <code>SnippetModel</code> ما دارد، توصیف کند</em>.</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/snippets.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"database/sql"</span>
+    <span class="s">"errors"</span>
+    <span class="s">"time"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">SnippetModelInterface</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">content</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">expires</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+    <span class="nf">Get</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+    <span class="nf">Latest</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>و بیایید همین کار را برای ساختار <code>UserModel</code> خود نیز انجام دهیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/models/users.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"database/sql"</span>
+    <span class="s">"errors"</span>
+    <span class="s">"strings"</span>
+    <span class="s">"time"</span>
+
+    <span class="s">"github.com/go-sql-driver/mysql"</span>
+    <span class="s">"golang.org/x/crypto/bcrypt"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">UserModelInterface</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">Insert</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">error</span>
+    <span class="nf">Authenticate</span><span class="p">(</span><span class="nx">email</span><span class="p">,</span> <span class="nx">password</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+    <span class="nf">Exists</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="kt">bool</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>اکنون که آن نوع‌های رابط را تعریف کرده‌ایم، بیایید ساختار <code>application</code> خود را به‌روزرسانی کنیم تا از آن‌ها به جای انواع <code>SnippetModel</code> و <code>UserModel</code> استفاده کند. به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"crypto/tls"</span>
+    <span class="s">"database/sql"</span>
+    <span class="s">"flag"</span>
+    <span class="s">"html/template"</span>
+    <span class="s">"log/slog"</span>
+    <span class="s">"net/http"</span>
+    <span class="s">"os"</span>
+    <span class="s">"time"</span>
+
+    <span class="s">"snippetbox.alexedwards.net/internal/models"</span>
+
+    <span class="s">"github.com/alexedwards/scs/mysqlstore"</span>
+    <span class="s">"github.com/alexedwards/scs/v2"</span>
+    <span class="s">"github.com/go-playground/form/v4"</span>
+    <span class="nx">_</span> <span class="s">"github.com/go-sql-driver/mysql"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">application</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">logger</span>        <span class="o">*</span><span class="nx">slog</span><span class="p">.</span><span class="nx">Logger</span>
+    <span class="nx">snippets</span>       <span class="nx">models</span><span class="p">.</span><span class="nx">SnippetModelInterface</span> <span class="c1">// Use our new interface type.
+</span><span class="c1"></span>    <span class="nx">users</span>          <span class="nx">models</span><span class="p">.</span><span class="nx">UserModelInterface</span>    <span class="c1">// Use our new interface type.
+</span><span class="c1"></span>    <span class="nx">templateCache</span>  <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span>
+    <span class="nx">formDecoder</span>    <span class="o">*</span><span class="nx">form</span><span class="p">.</span><span class="nx">Decoder</span>
+    <span class="nx">sessionManager</span> <span class="o">*</span><span class="nx">scs</span><span class="p">.</span><span class="nx">SessionManager</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>و اگر دوباره سعی کنید تست‌ها را اجرا کنید، همه چیز باید به درستی کار کند.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test ./cmd/web/
+<samp>ok      snippetbox.alexedwards.net/cmd/web      0.008s</samp></pre>
+</figure>
+
+<p>بیایید لحظه‌ای مکث کنیم و به آنچه که انجام داده‌ایم فکر کنیم.</p>
+
+<p>ما ساختار <code>application</code> را به‌روزرسانی کرده‌ایم تا به جای اینکه فیلدهای <code>snippets</code> و <code>users</code> دارای انواع <code>*models.SnippetModel</code> و <code>*models.UserModel</code> باشند، <em>رابط‌ها</em> باشند.</p>
+
+<p>تا زمانی که یک نوع متدهای لازم برای برآورده کردن رابط را داشته باشد، می‌توانیم از آن‌ها در ساختار <code>application</code> خود استفاده کنیم. هم مدل‌های پایگاه داده واقعی ما (مانند <code>models.SnippetModel</code>) و هم مدل‌های پایگاه داده شبیه‌سازی شده (مانند <code>mocks.SnippetModel</code>) رابط‌ها را برآورده می‌کنند، بنابراین اکنون می‌توانیم از آن‌ها به صورت متناوب استفاده کنیم.</p>
+
+<h3 id="testing-the-snippetview-handler">تست هندلر snippetView</h3>
+
+<p>با این همه اکنون تنظیم شده، بیایید به نوشتن یک تست انتها به انتها برای هندلر <code>snippetView</code> خود که از این وابستگی‌های شبیه‌سازی شده استفاده می‌کند، بپردازیم.</p>
+
+<p>به عنوان بخشی از این تست، کد در هندلر <code>snippetView</code> ما متد <code>mock.SnippetModel.Get()</code> را فراخوانی خواهد کرد. فقط برای یادآوری، این متد مدل شبیه‌سازی شده یک <code>models.ErrNoRecord</code> را برمی‌گرداند <em>مگر</em> اینکه شناسه اسنیپت <code>1</code> باشد &mdash; که در آن صورت اسنیپت شبیه‌سازی شده زیر را برمی‌گرداند:</p>
+
+<figure class="code go" dir="ltr">
+<pre><span class="kd">var</span> <span class="nx">mockSnippet</span> <span class="p">=</span> <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span><span class="p">{</span>
+    <span class="nx">ID</span><span class="p">:</span>      <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">Title</span><span class="p">:</span>   <span class="s">"An old silent pond"</span><span class="p">,</span>
+    <span class="nx">Content</span><span class="p">:</span> <span class="s">"An old silent pond..."</span><span class="p">,</span>
+    <span class="nx">Created</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+    <span class="nx">Expires</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>بنابراین به طور خاص، می‌خواهیم تست کنیم که:</p>
+
+<ol>
+<li>برای درخواست <code>GET /snippet/view/1</code> یک پاسخ <code>200 OK</code> با اسنیپت شبیه‌سازی شده مربوطه <em>در</em> بدنه پاسخ HTML دریافت می‌کنیم.</li>
+<li>برای تمام درخواست‌های دیگر به <code>GET /snippet/view/*</code> باید یک پاسخ <code>404 Not Found</code> دریافت کنیم.</li>
+</ol>
+
+<p>برای بخش اول اینجا، می‌خواهیم بررسی کنیم که بدنه درخواست <em>حاوی</em> محتوای خاصی است، به جای اینکه دقیقاً برابر با آن باشد. بیایید سریعاً یک تابع جدید <code>StringContains()</code> به بسته <code>assert</code> خود اضافه کنیم تا در این مورد کمک کند:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: internal/assert/assert.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">assert</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"strings"</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">"testing"</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">StringContains</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">actual</span><span class="p">,</span> <span class="nx">expectedSubstring</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Helper</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">!</span><span class="nx">strings</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="nx">actual</span><span class="p">,</span> <span class="nx">expectedSubstring</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">"got: %q; expected to contain: %q"</span><span class="p">,</span> <span class="nx">actual</span><span class="p">,</span> <span class="nx">expectedSubstring</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و سپس فایل <code>cmd/web/handlers_test.go</code> را باز کنید و یک تست جدید <code>TestSnippetView</code> ایجاد کنید به این صورت:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">TestSnippetView</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Create a new instance of our application struct which uses the mocked
+</span><span class="c1"></span>    <span class="c1">// dependencies.
+</span><span class="c1"></span>    <span class="nx">app</span> <span class="o">:=</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+
+    <span class="c1">// Establish a new test server for running end-to-end tests.
+</span><span class="c1"></span>    <span class="nx">ts</span> <span class="o">:=</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="c1">// Set up some table-driven tests to check the responses sent by our
+</span><span class="c1"></span>    <span class="c1">// application for different URLs.
+</span><span class="c1"></span>    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span>     <span class="kt">string</span>
+        <span class="nx">urlPath</span>  <span class="kt">string</span>
+        <span class="nx">wantCode</span> <span class="kt">int</span>
+        <span class="nx">wantBody</span> <span class="kt">string</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>     <span class="s">"Valid ID"</span><span class="p">,</span>
+            <span class="nx">urlPath</span><span class="p">:</span>  <span class="s">"/snippet/view/1"</span><span class="p">,</span>
+            <span class="nx">wantCode</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span>
+            <span class="nx">wantBody</span><span class="p">:</span> <span class="s">"An old silent pond..."</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>     <span class="s">"Non-existent ID"</span><span class="p">,</span>
+            <span class="nx">urlPath</span><span class="p">:</span>  <span class="s">"/snippet/view/2"</span><span class="p">,</span>
+            <span class="nx">wantCode</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>     <span class="s">"Negative ID"</span><span class="p">,</span>
+            <span class="nx">urlPath</span><span class="p">:</span>  <span class="s">"/snippet/view/-1"</span><span class="p">,</span>
+            <span class="nx">wantCode</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>     <span class="s">"Decimal ID"</span><span class="p">,</span>
+            <span class="nx">urlPath</span><span class="p">:</span>  <span class="s">"/snippet/view/1.23"</span><span class="p">,</span>
+            <span class="nx">wantCode</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>     <span class="s">"String ID"</span><span class="p">,</span>
+            <span class="nx">urlPath</span><span class="p">:</span>  <span class="s">"/snippet/view/foo"</span><span class="p">,</span>
+            <span class="nx">wantCode</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>     <span class="s">"Empty ID"</span><span class="p">,</span>
+            <span class="nx">urlPath</span><span class="p">:</span>  <span class="s">"/snippet/view/"</span><span class="p">,</span>
+            <span class="nx">wantCode</span><span class="p">:</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">code</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">body</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">urlPath</span><span class="p">)</span>
+
+            <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantCode</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantBody</span> <span class="o">!=</span> <span class="s">""</span> <span class="p">{</span>
+                <span class="nx">assert</span><span class="p">.</span><span class="nf">StringContains</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">wantBody</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر دوباره تست‌ها را با پرچم <code>-v</code> فعال اجرا کنید، باید اکنون تست‌های فرعی جدید و موفق <code>TestSnippetView</code> را در خروجی ببینید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test -v ./cmd/web/
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+=== RUN   TestSnippetView
+=== RUN   TestSnippetView/Valid_ID
+=== RUN   TestSnippetView/Non-existent_ID
+=== RUN   TestSnippetView/Negative_ID
+=== RUN   TestSnippetView/Decimal_ID
+=== RUN   TestSnippetView/String_ID
+=== RUN   TestSnippetView/Empty_ID
+--- PASS: TestSnippetView (0.01s)
+    --- PASS: TestSnippetView/Valid_ID (0.00s)
+    --- PASS: TestSnippetView/Non-existent_ID (0.00s)
+    --- PASS: TestSnippetView/Negative_ID (0.00s)
+    --- PASS: TestSnippetView/Decimal_ID (0.00s)
+    --- PASS: TestSnippetView/String_ID (0.00s)
+    --- PASS: TestSnippetView/Empty_ID (0.00s)
+=== RUN   TestCommonHeaders
+--- PASS: TestCommonHeaders (0.00s)
+=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.015s</samp></pre>
+</figure>
+
+<p>به عنوان یک نکته جانبی، توجه کنید که چگونه نام‌های تست‌های فرعی به صورت استاندارد شده‌اند؟ Go به طور خودکار هر فضای خالی در نام تست فرعی را با یک زیرخط جایگزین می‌کند (و هر کاراکتر غیرقابل چاپ نیز در خروجی تست فرار می‌کند).</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.04-customizing-how-tests-run.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="13.06-testing-html-forms.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.04-customizing-how-tests-run.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.06-testing-html-forms.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

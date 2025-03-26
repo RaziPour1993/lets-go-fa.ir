@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Generating a self-signed TLS certificate &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+		<style>
+			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
+				text-align: left;
+			}
+		</style>
+	</head>
+	<body>
+		<header dir="rtl">
+			<div class="wrapper">
+				<div>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; تولید یک گواهی TLS خودامضا</span>
+				</div>
+				<div>
+					&lsaquo; <a href="09.02-the-server-error-log.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="09.04-running-a-https-server.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 9.3.</div>
+			<h2 id="generating-a-self-signed-tls-certificate">تولید یک گواهی TLS خودامضا</h2>
+
+<p>بیایید توجه خود را به استفاده از HTTPS (به جای HTTP ساده) برای همه درخواست‌ها و پاسخ‌ها در برنامه خود معطوف کنیم.</p>
+
+<p>HTTPS اساساً HTTP است که از طریق یک اتصال TLS (<em>امنیت لایه حمل و نقل</em>) ارسال می‌شود. مزیت این کار این است که ترافیک HTTPS رمزگذاری و امضا می‌شود، که به حفظ حریم خصوصی و یکپارچگی آن در حین انتقال کمک می‌کند.</p>
+
+<aside class="note"><p>
+<strong>توجه:</strong> اگر با این اصطلاح آشنا نیستید، TLS اساساً نسخه مدرن SSL (<em>لایه سوکت‌های امن</em>) است. SSL اکنون به دلیل نگرانی‌های امنیتی به طور رسمی منسوخ شده است، اما نام آن همچنان در ذهن عمومی باقی مانده و اغلب به صورت متقابل با TLS استفاده می‌شود. برای وضوح و دقت، ما در طول این کتاب از اصطلاح TLS استفاده خواهیم کرد.
+</p></aside>
+
+<p>قبل از اینکه سرور ما بتواند از HTTPS استفاده کند، باید یک <em>گواهی TLS</em> تولید کنیم.</p>
+
+<p>برای سرورهای تولیدی، توصیه می‌کنم از <a href="https://letsencrypt.org/">Let's Encrypt</a> برای ایجاد گواهی‌های TLS خود استفاده کنید، اما برای اهداف توسعه، ساده‌ترین کار این است که یک <em>گواهی خودامضا</em> تولید کنید.</p>
+
+<p>یک گواهی خودامضا همانند یک گواهی TLS معمولی است، به جز اینکه به صورت رمزنگاری توسط یک مرجع گواهی معتبر امضا نشده است. این بدان معناست که مرورگر وب شما در اولین استفاده از آن هشدار می‌دهد، اما با این حال ترافیک HTTPS را به درستی رمزگذاری می‌کند و برای اهداف توسعه و آزمایش مناسب است.</p>
+
+<p>خوشبختانه، بسته <code>crypto/tls</code> در کتابخانه استاندارد Go شامل یک ابزار <code>generate_cert.go</code> است که می‌توانیم از آن برای ایجاد آسان گواهی خودامضا استفاده کنیم.</p>
+
+<p>اگر در حال دنبال کردن هستید، ابتدا یک دایرکتوری جدید به نام <code>tls</code> در ریشه مخزن پروژه خود ایجاد کنید تا گواهی را نگه دارد و به آن تغییر مکان دهید:</p>
+
+<figure class="code bash">
+<pre>$ cd $HOME/code/snippetbox
+$ mkdir tls
+$ cd tls</pre>
+</figure>
+
+<p>برای اجرای ابزار <code>generate_cert.go</code>، باید مکان نصب کد منبع کتابخانه استاندارد Go را در رایانه خود بدانید. اگر از لینوکس، macOS یا FreeBSD استفاده می‌کنید و دستورالعمل‌های نصب رسمی را دنبال کرده‌اید، فایل <code>generate_cert.go</code> باید در مسیر <code>/usr/local/go/src/crypto/tls</code> قرار داشته باشد.</p>
+
+<p>اگر از macOS استفاده می‌کنید و Go را با استفاده از Homebrew نصب کرده‌اید، فایل احتمالاً در مسیر <code>/usr/local/Cellar/go/&lt;version&gt;/libexec/src/crypto/tls/generate_cert.go</code> یا مسیری مشابه قرار دارد.</p>
+
+<p>پس از اینکه مکان آن را پیدا کردید، می‌توانید ابزار <code>generate_cert.go</code> را به این صورت اجرا کنید:</p>
+
+<figure class="code bash">
+<pre>$ go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+<samp>2024/03/18 11:29:23 wrote cert.pem
+2024/03/18 11:29:23 wrote key.pem</samp></pre>
+</figure>
+
+<p>در پشت صحنه، این دستور <code>generate_cert.go</code> در دو مرحله کار می‌کند:</p>
+
+<ol>
+<li><p>ابتدا یک جفت کلید RSA <a href="https://www.fastly.com/blog/key-size-for-tls">2048 بیتی</a> تولید می‌کند، که یک <a href="https://en.wikipedia.org/wiki/Public-key_cryptography">کلید عمومی و کلید خصوصی</a> به صورت رمزنگاری امن است.</p></li>
+
+<li><p>سپس کلید خصوصی را در یک فایل <code>key.pem</code> ذخیره می‌کند و یک گواهی TLS خودامضا برای میزبان <code>localhost</code> تولید می‌کند که شامل کلید عمومی است &mdash; که آن را در یک فایل <code>cert.pem</code> ذخیره می‌کند. هم کلید خصوصی و هم گواهی به صورت PEM کدگذاری شده‌اند، که فرمت استاندارد استفاده شده توسط اکثر پیاده‌سازی‌های TLS است.</p></li>
+</ol>
+
+<p>مخزن پروژه شما اکنون باید چیزی شبیه به این باشد:</p>
+
+<figure class="img">
+<img src="assets/img/09.01-01.png" alt="09.01-01.png" />
+</figure>
+
+<p>و این تمام است! ما اکنون یک گواهی TLS خودامضا (و کلید خصوصی مربوطه) داریم که می‌توانیم در طول توسعه استفاده کنیم.</p>
+
+<hr />
+
+<h3 id="additional-information">اطلاعات اضافی</h3>
+
+<h4 id="the-mkcert-tool">ابزار mkcert</h4>
+
+<p>به عنوان جایگزینی برای ابزار <code>generate_cert.go</code>، ممکن است بخواهید از <a href="https://github.com/FiloSottile/mkcert">mkcert</a> برای تولید گواهی‌های TLS استفاده کنید. اگرچه این کار نیاز به تنظیمات اضافی دارد، اما این مزیت را دارد که گواهی‌های تولید شده <em>به صورت محلی معتبر</em> هستند &mdash; به این معنی که می‌توانید از آنها برای آزمایش و توسعه بدون دریافت هشدارهای امنیتی در مرورگر وب خود استفاده کنید.</p>
+
+		</main>
+		<footer dir="rtl">
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.02-the-server-error-log.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="09.04-running-a-https-server.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.02-the-server-error-log.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "09.04-running-a-https-server.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
