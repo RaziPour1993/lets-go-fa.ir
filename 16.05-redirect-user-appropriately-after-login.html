@@ -8,48 +8,46 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body>
+	<body dir="rtl">
 		<header>
 			<div class="wrapper">
 				<div>
 					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">Guided exercises</a> &rsaquo; Redirect user appropriately after login</span>
-						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرینات راهنما</a> &rsaquo; هدایت کاربر به درستی پس از ورود به سیستم</span>
 					
 				</div>
 				<div>
-					&lsaquo; <a href="16.04-add-an-account-page-to-the-application.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="16.06-implement-a-change-password-feature.html">Next</a> &rsaquo;
+					&lsaquo; <a href="16.04-add-an-account-page-to-the-application.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="16.06-implement-a-change-password-feature.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 16.5.</div>
-			<h2 id="redirect-user-appropriately-after-login">Redirect user appropriately after login</h2>
+			<div class="chapter">فصل 16.5.</div>
+			<h2 id="redirect-user-appropriately-after-login">هدایت کاربر به درستی پس از ورود به سیستم</h2>
 
-<p>If an unauthenticated user tries to visit <code>GET /account/view</code> they will be redirected to the login page. Then after logging in successfully, they will be redirected to the <code>GET /snippet/create</code> form. This is awkward and confusing for the user, as they end up on a different page to where they originally wanted to go.</p>
+<p>اگر یک کاربر غیرمجاز سعی کند به <code>GET /account/view</code> دسترسی پیدا کند، به صفحه ورود هدایت می‌شود. سپس پس از ورود موفقیت‌آمیز، به فرم <code>GET /snippet/create</code> هدایت می‌شود. این برای کاربر گیج‌کننده و نامناسب است، زیرا در صفحه‌ای متفاوت از جایی که در ابتدا می‌خواستند بروند، قرار می‌گیرند.</p>
 
-<p>Your goal in this exercise is to update the application so that users are redirected to the page they were originally trying to visit after logging in.</p>
+<p>هدف شما در این تمرین این است که برنامه را به‌روزرسانی کنید تا کاربران پس از ورود به صفحه‌ای که در ابتدا می‌خواستند به آن بروند، هدایت شوند.</p>
 
-<h4 id="step-1">Step 1</h4>
+<h4 id="step-1">مرحله 1</h4>
 
-<p>Update the <code>requireAuthentication()</code> middleware so that, before an unauthenticated user is redirected to the login page, the URL path that they are trying to visit is added to their session data.</p>
+<p>میان‌افزار <code>requireAuthentication()</code> را به‌روزرسانی کنید تا قبل از اینکه یک کاربر غیرمجاز به صفحه ورود هدایت شود، مسیر URL که سعی در دسترسی به آن دارند به داده‌های جلسه آن‌ها اضافه شود.</p>
 
-<p><a href="#17.05-suggested-code-for-step-1">Show suggested code</a></p>
+<p><a href="#17.05-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">Step 2</h4>
+<h4 id="step-2">مرحله 2</h4>
 
-<p>Update the <code>userLogin</code> handler to check the user&rsquo;s session for a URL path after they successfully log in. If one exists, remove it from the session data and redirect the user to that URL path. Otherwise, default to redirecting the user to <code>/snippet/create</code>.</p>
+<p>مدیریت‌کننده <code>userLogin</code> را به‌روزرسانی کنید تا پس از ورود موفقیت‌آمیز کاربر، داده‌های جلسه کاربر را برای مسیر URL بررسی کند. اگر وجود دارد، آن را از داده‌های جلسه حذف کرده و کاربر را به آن مسیر URL هدایت کنید. در غیر این صورت، به‌طور پیش‌فرض کاربر را به <code>/snippet/create</code> هدایت کنید.</p>
 
-<p><a href="#17.05-suggested-code-for-step-2">Show suggested code</a></p>
+<p><a href="#17.05-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
-<h3 id="suggested-code">Suggested code</h3>
+<h3 id="suggested-code">کد پیشنهادی</h3>
 
-<h4 id="17.05-suggested-code-for-step-1">Suggested code for step 1</h4>
+<h4 id="17.05-suggested-code-for-step-1">کد پیشنهادی برای مرحله 1</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/middleware.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -74,9 +72,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<h4 id="17.05-suggested-code-for-step-2">Suggested code for step 2</h4>
+<h4 id="17.05-suggested-code-for-step-2">کد پیشنهادی برای مرحله 2</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -145,13 +143,13 @@
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="16.04-add-an-account-page-to-the-application.html">Previous</a>
+					&lsaquo; <a href="16.04-add-an-account-page-to-the-application.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="16.06-implement-a-change-password-feature.html">Next</a> &rsaquo;
+					<a href="16.06-implement-a-change-password-feature.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
