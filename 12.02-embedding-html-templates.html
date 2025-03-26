@@ -9,31 +9,29 @@
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="12.00-file-embedding.html">جاسازی فایل</a> &rsaquo; جاسازی قالب‌های HTML</span>
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="12.00-file-embedding.html">File embedding</a> &rsaquo; Embedding HTML templates</span>
-						
-					
 				</div>
 				<div>
-					&lsaquo; <a href="12.01-embedding-static-files.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="13.00-testing.html">Next</a> &rsaquo;
+					&lsaquo; <a href="12.01-embedding-static-files.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="13.00-testing.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 12.2.</div>
-			<h2 id="embedding-html-templates">Embedding HTML templates</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۲.۲.</div>
+			<h2 id="embedding-html-templates">جاسازی قالب‌های HTML</h2>
 
-<p>Next let&rsquo;s update our application so that the template cache uses embedded HTML template files, instead reading them from your hard disk at runtime.</p>
+<p>سپس برنامه خود را به‌روزرسانی کنیم تا حافظه پنهان قالب از فایل‌های قالب HTML جاسازی شده استفاده کند، به جای اینکه آنها را از دیسک سخت شما در زمان اجرا بخواند.</p>
 
-<p>Head back to the <code>ui/efs.go</code> file, and update it so that <code>ui.Files</code>  embeds the contents of the <code>ui/html</code> directory (which contains our templates) too. Like so:</p>
+<p>به فایل <code>ui/efs.go</code> برگردید و آن را به‌روزرسانی کنید تا <code>ui.Files</code> محتوای دایرکتوری <code>ui/html</code> (که شامل قالب‌های ما است) را نیز جاسازی کند. به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: ui/efs.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">ui</span>
 
@@ -45,16 +43,16 @@
 </span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
 </figure>
 
-<p>Then we need to update the <code>newTemplateCache()</code> function in <code>cmd/web/templates.go</code> so that it reads the templates from <code>ui.Files</code>. To do this, we&rsquo;ll need to leverage a couple of the special features that Go has for working with embedded filesystems:</p>
+<p>سپس باید تابع <code>newTemplateCache()</code> در <code>cmd/web/templates.go</code> را به‌روزرسانی کنیم تا قالب‌ها را از <code>ui.Files</code> بخواند. برای انجام این کار، باید از چند ویژگی خاص که Go برای کار با سیستم‌های فایل جاسازی شده دارد، استفاده کنیم:</p>
 
 <ul>
-<li>The <a href="https://pkg.go.dev/io/fs#Glob"><code>fs.Glob()</code></a> function returns a slice of filepaths matching a glob pattern. It&rsquo;s effectively the same as the <code>filepath.Glob()</code> function that we used earlier in the book, except that it works on embedded filesystems.</li>
-<li>The <a href="https://pkg.go.dev/html/template#Template.ParseFS"><code>Template.ParseFS()</code></a> method can be used to parse the HTML templates from an embedded filesystem into a template set. This is effectively a replacement for <em>both</em> the <code>Template.ParseFiles()</code> and <code>Template.ParseGlob()</code> methods that we used earlier. <code>Template.ParseFiles()</code> is also a <em>variadic function</em>, which allows you to parse multiple templates in a single call to <code>ParseFiles()</code>.</li>
+<li>تابع <a href="https://pkg.go.dev/io/fs#Glob"><code>fs.Glob()</code></a> یک برش از مسیرهای فایل را که با یک الگوی گلوب مطابقت دارند، برمی‌گرداند. این اساساً همان تابع <code>filepath.Glob()</code> است که قبلاً در کتاب استفاده کردیم، با این تفاوت که بر روی سیستم‌های فایل جاسازی شده کار می‌کند.</li>
+<li>متد <a href="https://pkg.go.dev/html/template#Template.ParseFS"><code>Template.ParseFS()</code></a> می‌تواند برای تجزیه قالب‌های HTML از یک سیستم فایل جاسازی شده به یک مجموعه قالب استفاده شود. این اساساً جایگزینی برای <em>هر دو</em> متد <code>Template.ParseFiles()</code> و <code>Template.ParseGlob()</code> است که قبلاً استفاده کردیم. <code>Template.ParseFiles()</code> همچنین یک <em>تابع واریادیک</em> است که به شما امکان می‌دهد چندین قالب را در یک فراخوانی به <code>ParseFiles()</code> تجزیه کنید.</li>
 </ul>
 
-<p>Let&rsquo;s put these to use in our <code>cmd/web/templates.go</code> file:</p>
+<p>بیایید این‌ها را در فایل <code>cmd/web/templates.go</code> خود به کار ببریم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -107,11 +105,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Now that this is done, when our application is built into a binary it will contain all the UI files that it needs to run.</p>
+<p>حالا که این کار انجام شد، هنگامی که برنامه ما به یک باینری کامپایل می‌شود، همه فایل‌های رابط کاربری که برای اجرا نیاز دارد را در خود خواهد داشت.</p>
 
-<p>You can try this out quickly by building an executable binary in your <code>/tmp</code> directory, copying over the TLS certificates, and running the binary. Like so:</p>
+<p>می‌توانید این را به سرعت با ساخت یک باینری اجرایی در دایرکتوری <code>/tmp</code>، کپی کردن گواهینامه‌های TLS و اجرای باینری امتحان کنید. به این صورت:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go build -o /tmp/web ./cmd/web/
 $ cp -r ./tls /tmp/
 $ cd /tmp/
@@ -119,27 +117,27 @@ $ ./web
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
 </figure>
 
-<p>And again, you should be able to visit <a href="https://localhost:4000/"><code>https://localhost:4000</code></a> in your browser and everything should work correctly &mdash; despite the binary being in a location where it does not have access to the original UI files on disk.</p>
+<p>و دوباره، باید بتوانید به <a href="https://localhost:4000/"><code>https://localhost:4000</code></a> در مرورگر خود مراجعه کنید و همه چیز باید به درستی کار کند &mdash; با وجود اینکه باینری در مکانی قرار دارد که به فایل‌های اصلی رابط کاربری روی دیسک دسترسی ندارد.</p>
 
 <figure class="img">
 <img src="assets/img/12.02-01.png" alt="12.02-01.png" />
 </figure>
 
 <aside class="important"><p>
-<strong>Note:</strong> If you&rsquo;d like to learn about building binaries and deploying applications, there is a lot more information and detailed explanation available in <a href="https://lets-go-further.alexedwards.net/">Let&rsquo;s Go Further</a>.
+<strong>توجه:</strong> اگر می‌خواهید درباره ساخت باینری‌ها و استقرار برنامه‌ها بیشتر بدانید، اطلاعات و توضیحات بیشتری در <a href="https://lets-go-further.alexedwards.net/">Let&rsquo;s Go Further</a> موجود است.
 </p></aside>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="12.01-embedding-static-files.html">Previous</a>
+					&lsaquo; <a href="12.01-embedding-static-files.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="13.00-testing.html">Next</a> &rsaquo;
+					<a href="13.00-testing.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
