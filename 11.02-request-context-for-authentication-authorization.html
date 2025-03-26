@@ -8,32 +8,32 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body>
+	<body dir="rtl">
 		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">Using request context</a> &rsaquo; Request context for authentication/authorization</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">استفاده از زمینه درخواست</a> &rsaquo; زمینه درخواست برای احراز هویت/مجوز</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="11.01-how-request-context-works.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="12.00-file-embedding.html">Next</a> &rsaquo;
+					&lsaquo; <a href="11.01-how-request-context-works.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="12.00-file-embedding.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">Chapter 11.2.</div>
-			<h2 id="request-context-for-authentication-authorization">Request context for authentication/authorization</h2>
+			<div class="chapter">فصل 11.2.</div>
+			<h2 id="request-context-for-authentication-authorization">زمینه درخواست برای احراز هویت/مجوز</h2>
 
-<p>So, with those explanations out of the way, let&rsquo;s start to use the request context functionality in our application.</p>
+<p>بنابراین، با توضیحات فوق، بیایید از قابلیت زمینه درخواست در برنامه خود استفاده کنیم.</p>
 
-<p>We&rsquo;ll begin by heading back to our <code>internal/models/users.go</code> file and fleshing out the <code>UserModel.Exists()</code> method, so that it returns <code>true</code> if a user with a specific ID exists in our <code>users</code> table, and <code>false</code> otherwise. Like so:</p>
+<p>ما با بازگشت به فایل <code>internal/models/users.go</code> و تکمیل متد <code>UserModel.Exists()</code> شروع می‌کنیم، به طوری که اگر کاربری با شناسه خاصی در جدول <code>users</code> وجود داشته باشد، <code>true</code> برگرداند و در غیر این صورت <code>false</code>. به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -49,13 +49,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>Then let&rsquo;s create a new <code>cmd/web/context.go</code> file. In this file we&rsquo;ll define a custom <code>contextKey</code> type and an <code>isAuthenticatedContextKey</code> variable, so that we have a unique key we can use to store and retrieve the authentication status from a request context (without the risk of naming collisions).</p>
+<p>سپس بیایید یک فایل جدید <code>cmd/web/context.go</code> ایجاد کنیم. در این فایل، یک نوع سفارشی <code>contextKey</code> و یک متغیر <code>isAuthenticatedContextKey</code> تعریف می‌کنیم، به طوری که یک کلید منحصر به فرد برای ذخیره و بازیابی وضعیت احراز هویت از زمینه درخواست داشته باشیم (بدون خطر برخورد نام).</p>
 
-<figure class="code bash">
+<figure class="code bash" style="text-align: left;">
 <pre>$ touch cmd/web/context.go</pre>
 </figure>
 
-<figure class="code go">
+<figure class="code go" style="text-align: left;">
 <figcaption>File: cmd/web/context.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -64,17 +64,17 @@
 <span class="kd">const</span> <span class="nx">isAuthenticatedContextKey</span> <span class="p">=</span> <span class="nf">contextKey</span><span class="p">(</span><span class="s">&#34;isAuthenticated&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>And now for the exciting part. Let&rsquo;s create a new <code>authenticate()</code> middleware method which:</p>
+<p>و اکنون برای بخش هیجان‌انگیز. بیایید یک متد میان‌افزار جدید <code>authenticate()</code> ایجاد کنیم که:</p>
 
 <ol>
-<li>Retrieves the user&rsquo;s ID from their session data.</li>
-<li>Checks the database to see if the ID corresponds to a valid user using the <code>UserModel.Exists()</code> method.</li>
-<li>Updates the request context to include an <code>isAuthenticatedContextKey</code> key with the value <code>true</code>.</li>
+<li>شناسه کاربر را از داده‌های جلسه او بازیابی می‌کند.</li>
+<li>پایگاه داده را بررسی می‌کند تا ببیند آیا شناسه با یک کاربر معتبر مطابقت دارد یا خیر، با استفاده از متد <code>UserModel.Exists()</code>.</li>
+<li>زمینه درخواست را به‌روزرسانی می‌کند تا شامل یک کلید <code>isAuthenticatedContextKey</code> با مقدار <code>true</code> باشد.</li>
 </ol>
 
-<p>Here&rsquo;s the code:</p>
+<p>در اینجا کد آمده است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/middleware.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -92,7 +92,7 @@
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// Retrieve the authenticatedUserID value from the session using the
 </span><span class="c1"></span>        <span class="c1">// GetInt() method. This will return the zero value for an int (0) if no
-</span><span class="c1"></span>        <span class="c1">// &#34;authenticatedUserID&#34; value is in the session -- in which case we
+</span><span class="c1"></span>        <span class="c1">// "authenticatedUserID" value is in the session -- in which case we
 </span><span class="c1"></span>        <span class="c1">// call the next handler in the chain as normal and return.
 </span><span class="c1"></span>        <span class="nx">id</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">GetInt</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nx">id</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
@@ -123,16 +123,16 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>The important thing to emphasize here is the following difference:</p>
+<p>نکته مهمی که باید در اینجا تأکید کرد، تفاوت زیر است:</p>
 
 <ul>
-<li>When we <em>don&rsquo;t</em> have a valid authenticated user, we pass the original and unchanged <code>*http.Request</code> to the next handler in the chain.</li>
-<li>When we <em>do</em> have a valid authenticated user, we create a copy of the request with a <code>isAuthenticatedContextKey</code> key and <code>true</code> value stored in the request context. We then pass this copy of <code>*http.Request</code> to the next handler in the chain.</li>
+<li>وقتی کاربر معتبر نداریم، درخواست اصلی و بدون تغییر <code>*http.Request</code> را به هندلر بعدی در زنجیره می‌فرستیم.</li>
+<li>وقتی کاربر معتبر داریم، یک نسخه از درخواست با یک کلید <code>isAuthenticatedContextKey</code> و مقدار <code>true</code> در زمینه درخواست ایجاد می‌کنیم. سپس این نسخه از <code>*http.Request</code> را به هندلر بعدی در زنجیره می‌فرستیم.</li>
 </ul>
 
-<p>Alright, let&rsquo;s update the <code>cmd/web/routes.go</code> file to include the <code>authenticate()</code> middleware in our <code>dynamic</code> middleware chain:</p>
+<p>خوب، بیایید فایل <code>cmd/web/routes.go</code> را به‌روزرسانی کنیم تا میان‌افزار <code>authenticate()</code> را در زنجیره میان‌افزار <code>dynamic</code> قرار دهیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -165,11 +165,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>The last thing that we need to do is update our <code>isAuthenticated()</code> helper, so that instead of checking the session data it now checks the request context to determine if a user is authenticated or not.</p>
+<p>آخرین کاری که باید انجام دهیم این است که کمک‌کننده <code>isAuthenticated()</code> خود را به‌روزرسانی کنیم، به طوری که به جای بررسی داده‌های جلسه، اکنون زمینه درخواست را بررسی کند تا تعیین کند که آیا کاربر احراز هویت شده است یا خیر.</p>
 
-<p>We can do this like so:</p>
+<p>می‌توانیم این کار را به این صورت انجام دهیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -185,46 +185,46 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>It&rsquo;s important to point out here that if there isn&rsquo;t a value in the request context with the <code>isAuthenticatedContextKey</code> key, or the underlying value isn&rsquo;t a <code>bool</code>, then this type assertion will fail. In that case we take a &lsquo;safe&rsquo; fall back and return false (i.e we assume that the user isn&rsquo;t authenticated).</p>
+<p>نکته مهمی که باید در اینجا اشاره کرد این است که اگر در زمینه درخواست با کلید <code>isAuthenticatedContextKey</code> مقداری وجود نداشته باشد، یا مقدار زیرین یک <code>bool</code> نباشد، این تأیید نوع شکست خواهد خورد. در این صورت، ما یک بازگشت ایمن انجام می‌دهیم و <code>false</code> برمی‌گردانیم (یعنی فرض می‌کنیم که کاربر احراز هویت نشده است).</p>
 
-<p>If you like, try running the application again. It should compile correctly and if you log in as a certain user and browse around the application should work exactly as before.</p>
+<p>اگر دوست دارید، برنامه را دوباره اجرا کنید. باید به درستی کامپایل شود و اگر به عنوان یک کاربر خاص وارد شوید و در برنامه مرور کنید، باید دقیقاً مانند قبل کار کند.</p>
 
-<p>Then, if you want, open MySQL and delete the record for the user that you&rsquo;re logged in as from the database. For example:</p>
+<p>سپس، اگر می‌خواهید، MySQL را باز کنید و رکورد کاربری که به عنوان آن وارد شده‌اید را از پایگاه داده حذف کنید. برای مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" style="text-align: left;">
 <pre>mysql&gt; USE snippetbox;
 mysql&gt; DELETE FROM users WHERE email = &#39;bob@example.com&#39;;</pre>
 </figure>
 
-<p>And when you go back to your browser and refresh the page, the application is now smart enough to recognize that the user has been deleted, and you&rsquo;ll find yourself treated as an unauthenticated (logged-out) user.</p>
+<p>و وقتی به مرورگر خود برگردید و صفحه را تازه کنید، برنامه اکنون به اندازه کافی هوشمند است که تشخیص دهد کاربر حذف شده است و شما به عنوان یک کاربر غیرمعتبر (خارج شده) رفتار خواهید شد.</p>
 
 <hr />
 
-<h3 id="additional-information">Additional information</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="misusing-request-context">Misusing request context</h4>
+<h4 id="misusing-request-context">استفاده نادرست از زمینه درخواست</h4>
 
-<p>It&rsquo;s important to emphasize that request context should only be used to store information relevant to the lifetime of a specific request. The Go documentation for <code>context.Context</code> warns:</p>
+<p>مهم است که تأکید کنیم که زمینه درخواست باید فقط برای ذخیره اطلاعات مربوط به طول عمر یک درخواست خاص استفاده شود. مستندات Go برای <code>context.Context</code> هشدار می‌دهد:</p>
 
 <blockquote>
-<p>Use context Values only for request-scoped data that transits processes and APIs.</p>
+<p>از مقادیر زمینه فقط برای داده‌های محدود به درخواست که از فرآیندها و API‌ها عبور می‌کنند، استفاده کنید.</p>
 </blockquote>
 
-<p>That means you should not use it to pass dependencies that exist <em>outside of the lifetime of a request</em> &mdash;  like loggers, template caches and your database connection pool &mdash; to your middleware and handlers.</p>
+<p>این بدان معناست که نباید از آن برای انتقال وابستگی‌هایی که <em>خارج از طول عمر یک درخواست</em> وجود دارند &mdash; مانند لاگرها، کش‌های قالب و استخر اتصال پایگاه داده شما &mdash; به میان‌افزار و هندلرهای خود استفاده کنید.</p>
 
-<p>For reasons of type-safety and clarity of code, it&rsquo;s almost always better to make these dependencies available to your handlers explicitly, by either making your handlers methods against an <code>application</code> struct (like we have in this book) or passing them in a closure (like in <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">this Gist</a>).</p>
+<p>به دلایل ایمنی نوع و وضوح کد، تقریباً همیشه بهتر است این وابستگی‌ها را به‌طور صریح در دسترس هندلرهای خود قرار دهید، با این که یا هندلرهای خود را به عنوان متدهایی در برابر یک ساختار <code>application</code> (مانند آنچه در این کتاب داریم) یا با انتقال آنها در یک بسته (مانند <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">این Gist</a>) قرار دهید.</p>
 
 		</main>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="11.01-how-request-context-works.html">Previous</a>
+					&lsaquo; <a href="11.01-how-request-context-works.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="12.00-file-embedding.html">Next</a> &rsaquo;
+					<a href="12.00-file-embedding.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
