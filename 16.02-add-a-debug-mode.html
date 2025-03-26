@@ -1,83 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Add a debug mode &mdash; Let's Go</title>
+		<title>Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					
-						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">Guided exercises</a> &rsaquo; Add a debug mode</span>
-						
-					
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; اضافه کردن حالت دیباگ</span>
 				</div>
 				<div>
-					&lsaquo; <a href="16.01-add-an-about-page-to-the-application.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="16.03-test-the-snippetcreate-method.html">Next</a> &rsaquo;
+					&lsaquo; <a href="16.01-add-an-about-page-to-the-application.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="16.03-test-the-snippetcreate-method.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 16.2.</div>
-			<h2 id="add-a-debug-mode">Add a debug mode</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل ۱۶.۲.</div>
+			<h2 id="add-a-debug-mode">اضافه کردن حالت دیباگ</h2>
 
-<p>If you&rsquo;ve used web frameworks for other languages, like Django or Laravel, then you might be familiar with the idea of a &lsquo;debug&rsquo; mode where detailed errors are displayed to the user in a HTTP response instead of a generic <code>&quot;Internal Server Error&quot;</code> message.</p>
+<p>اگر از فریم‌ورک‌های وب برای زبان‌های دیگر مانند Django یا Laravel استفاده کرده‌اید، احتمالاً با ایده‌ی حالت «دیباگ» آشنا هستید که در آن خطاهای دقیق به جای پیام عمومی <code>"خطای داخلی سرور"</code> به کاربر نمایش داده می‌شود.</p>
 
-<p>You goal in this exercise is to set up a similar &lsquo;debug mode&rsquo; for our application, which can be enabled by using the <code>-debug</code> flag like so:</p>
+<p>هدف شما در این تمرین این است که یک حالت «دیباگ» مشابه برای برنامه خود تنظیم کنید که با استفاده از فلگ <code>-debug</code> به صورت زیر فعال شود:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web -debug</pre>
 </figure>
 
-<p>When running in debug mode, any detailed errors and stack traces should be displayed in the browser similar to this:</p>
+<p>هنگام اجرای برنامه در حالت دیباگ، هرگونه خطاهای دقیق و ردیابی استک باید در مرورگر نمایش داده شود، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/16.02-01.png" alt="16.02-01.png" />
 </figure>
 
-<h4 id="step-1">Step 1</h4>
+<h4 id="step-1">مرحله ۱</h4>
 
-<p>Create a new command line flag with the name <code>debug</code> and a default value of <code>false</code>. Then make the value from this command-line flag available to your handlers via the <code>application</code> struct.</p>
+<p>یک فلگ خط فرمان جدید با نام <code>debug</code> و مقدار پیش‌فرض <code>false</code> ایجاد کنید. سپس مقدار این فلگ خط فرمان را از طریق ساختار <code>application</code> در دسترس هندلرهای خود قرار دهید.</p>
 
-<p>Hint: The <code>flag.Bool()</code> function is the most appropriate for this task.</p>
+<p>نکته: تابع <code>flag.Bool()</code> برای این کار مناسب‌ترین است.</p>
 
-<p><a href="#17.02-suggested-code-for-step-1">Show suggested code</a></p>
+<p><a href="#17.02-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">Step 2</h4>
+<h4 id="step-2">مرحله ۲</h4>
 
-<p>Go to the <code>cmd/web/helpers.go</code> file and update the <code>serverError()</code> helper so that it renders a detailed error message and stack trace in a HTTP response if &mdash; and only if &mdash; the <code>debug</code> flag has been set. Otherwise send a generic error message as normal. You can get the stack trace using the <code>debug.Stack()</code> function.</p>
+<p>به فایل <code>cmd/web/helpers.go</code> بروید و تابع کمکی <code>serverError()</code> را به‌روزرسانی کنید تا در صورت تنظیم فلگ <code>debug</code>، یک پیام خطا و ردیابی استک دقیق در پاسخ HTTP رندر کند. در غیر این صورت، پیام خطای عمومی را به صورت عادی ارسال کنید. می‌توانید ردیابی استک را با استفاده از تابع <code>debug.Stack()</code> دریافت کنید.</p>
 
-<p><a href="#17.02-suggested-code-for-step-2">Show suggested code</a></p>
+<p><a href="#17.02-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-3">Step 3</h4>
+<h4 id="step-3">مرحله ۳</h4>
 
-<p>Try out the change. Run the application and force a runtime error by using a DSN <em>without</em> the <code>parseTime=true</code> parameter:</p>
+<p>تغییرات را امتحان کنید. برنامه را اجرا کنید و با استفاده از DSN بدون پارامتر <code>parseTime=true</code> یک خطای زمان اجرا ایجاد کنید:</p>
 
 <figure class="code bash">
 <pre>$ go run ./cmd/web/ -debug -dsn=web:pass@/snippetbox</pre>
 </figure>
 
-<p>Visiting <a href="https://localhost:4000/"><code>https://localhost:4000/</code></a> should result in a response like this:</p>
+<p>بازدید از <a href="https://localhost:4000/"><code>https://localhost:4000/</code></a> باید منجر به پاسخی مانند این شود:</p>
 
 <figure class="img">
 <img src="assets/img/16.02-01.png" alt="16.02-01.png" />
 </figure>
 
-<p>Running the application again <em>without</em> the <code>-debug</code> flag should result in a generic <code>&quot;Internal Server Error&quot;</code> message.</p>
+<p>اجرای مجدد برنامه بدون فلگ <code>-debug</code> باید منجر به پیام عمومی <code>"خطای داخلی سرور"</code> شود.</p>
 
-<h3 id="suggested-code">Suggested code</h3>
+<h3 id="suggested-code">کد پیشنهادی</h3>
 
-<h4 id="17.02-suggested-code-for-step-1">Suggested code for step 1</h4>
+<h4 id="17.02-suggested-code-for-step-1">کد پیشنهادی برای مرحله ۱</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -156,9 +152,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<h4 id="17.02-suggested-code-for-step-2">Suggested code for step 2</h4>
+<h4 id="17.02-suggested-code-for-step-2">کد پیشنهادی برای مرحله ۲</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -185,16 +181,16 @@
 </figure>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="16.01-add-an-about-page-to-the-application.html">Previous</a>
+					&lsaquo; <a href="16.01-add-an-about-page-to-the-application.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="16.03-test-the-snippetcreate-method.html">Next</a> &rsaquo;
+					<a href="16.03-test-the-snippetcreate-method.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
@@ -202,16 +198,12 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
-					
 					case 37:
 						window.location.href = "16.01-add-an-about-page-to-the-application.html";
 						break;
-						
-					
 					case 39:
 						window.location.href = "16.03-test-the-snippetcreate-method.html";
 						break;
-						
 				}
 			};
 		</script>
