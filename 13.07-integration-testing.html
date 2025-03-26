@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Integration testing &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Integration testing</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.06-testing-html-forms.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="13.08-profiling-test-coverage.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 13.7.</div>
+			<h2 id="integration-testing">Integration testing</h2>
+
+<p>Running end-to-end tests with mocked dependencies is a good thing to do, but we could improve confidence in our application even more if we also verify that our real MySQL database models are working as expected.</p>
+
+<p>To do this we can run <dfn>integration tests</dfn> against a test version our MySQL database, which <em>mimics our production database</em> but exists for testing purposes only.</p>
+
+<p>As a demonstration, in this chapter we&rsquo;ll setup an integration test to ensure that our <code>models.UserModel.Exists()</code> method is working correctly.</p>
+
+<h3 id="test-database-setup-and-teardown">Test database setup and teardown</h3>
+
+<p>The first step is to create the test version of our MySQL database.</p>
+
+<p>If you&rsquo;re following along, connect to MySQL from your terminal window as the <code>root</code> user and execute the following SQL statements to create a new <code>test_snippetbox</code> database and <code>test_web</code> user:</p>
+
+<figure class="code sql">
+<pre><span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">test_snippetbox</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">utf8mb4</span> <span class="k">COLLATE</span> <span class="n">utf8mb4_unicode_ci</span><span class="p">;</span></pre>
+</figure>
+
+<figure class="code sql">
+<pre><span class="k">CREATE</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
+<span class="k">GRANT</span> <span class="k">CREATE</span><span class="p">,</span> <span class="k">DROP</span><span class="p">,</span> <span class="k">ALTER</span><span class="p">,</span> <span class="k">INDEX</span><span class="p">,</span> <span class="k">SELECT</span><span class="p">,</span> <span class="k">INSERT</span><span class="p">,</span> <span class="k">UPDATE</span><span class="p">,</span> <span class="k">DELETE</span> <span class="k">ON</span> <span class="n">test_snippetbox</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span><span class="p">;</span>
+<span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;</span><span class="s1">pass</span><span class="s1">&#39;</span><span class="p">;</span></pre>
+</figure>
+
+<p>Once that&rsquo;s done, let&rsquo;s make two SQL scripts:</p>
+
+<ol>
+<li><p>A <dfn>setup script</dfn> to create the database tables (so that they mimic our production database) and insert a known set of test data than we can work with in our tests.</p></li>
+
+<li><p>A <dfn>teardown script</dfn> which drops the database tables and data.</p></li>
+</ol>
+
+<p>The idea is that we&rsquo;ll call these scripts at the start and end of each integration test, so that the test database is fully reset each time. This helps ensure that any changes we make during one test are not &lsquo;leaking&rsquo; and affecting the results of another test.</p>
+
+<p>Let&rsquo;s go ahead and create these scripts in a new <code>internal/models/testdata</code> directory like so:</p>
+
+<figure class="code bash">
+<pre>$ mkdir internal/models/testdata
+$ touch internal/models/testdata/setup.sql
+$ touch internal/models/testdata/teardown.sql</pre>
+</figure>
+
+<figure class="code sql">
+<figcaption>File: internal/models/testdata/setup.sql</figcaption>
+<pre><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">snippets</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+    <span class="n">title</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">content</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">expires</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_snippets_created</span> <span class="k">ON</span> <span class="n">snippets</span><span class="p">(</span><span class="n">created</span><span class="p">)</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="p">(</span>
+    <span class="n">id</span> <span class="nb">INTEGER</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+    <span class="n">name</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">email</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">hashed_password</span> <span class="nb">CHAR</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+    <span class="n">created</span> <span class="n">DATETIME</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">)</span><span class="p">;</span>
+
+<span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="k">ADD</span> <span class="k">CONSTRAINT</span> <span class="n">users_uc_email</span> <span class="k">UNIQUE</span> <span class="p">(</span><span class="n">email</span><span class="p">)</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">users</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">hashed_password</span><span class="p">,</span> <span class="n">created</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span>
+    <span class="s1">&#39;</span><span class="s1">Alice Jones</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">alice@example.com</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">$2a$12$NuTjWXm3KKntReFwyBVHyuf/to.HEwTy.eS206TNfkGfr6HzGJSWG</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;</span><span class="s1">2022-01-01 09:18:24</span><span class="s1">&#39;</span>
+<span class="p">)</span><span class="p">;</span></pre>
+</figure>
+
+<figure class="code sql">
+<figcaption>File: internal/models/testdata/teardown.sql</figcaption>
+<pre><span class="k">DROP</span> <span class="k">TABLE</span> <span class="n">users</span><span class="p">;</span>
+
+<span class="k">DROP</span> <span class="k">TABLE</span> <span class="n">snippets</span><span class="p">;</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> The Go tool ignores any directories called <code>testdata</code>, so these scripts will be ignored when compiling your application. As an aside, it also ignores any directories or files which have names that begin with an <code>_</code> or <code>.</code> character too.
+</p></aside>
+
+<p>Alright, now that we&rsquo;ve got the scripts in place, let&rsquo;s make a new file to hold some helper functions for our integration tests:</p>
+
+<figure class="code bash">
+<pre>$ touch internal/models/testutils_test.go</pre>
+</figure>
+
+<p>In this file let&rsquo;s create a <code>newTestDB()</code> helper function which:</p>
+
+<ul>
+<li>Creates a new <code>*sql.DB</code> connection pool for the test database;</li>
+<li>Executes the <code>setup.sql</code> script to create the database tables and dummy data;</li>
+<li>Register a &lsquo;cleanup&rsquo; function which executes the <code>teardown.sql</code> script and closes the connection pool.</li>
+</ul>
+
+<figure class="code go">
+<figcaption>File: internal/models/testutils_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+    <span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">newTestDB</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="o">*</span><span class="nx">sql</span><span class="p">.</span><span class="nx">DB</span> <span class="p">{</span>
+    <span class="c1">// Establish a sql.DB connection pool for our test database. Because our
+</span><span class="c1"></span>    <span class="c1">// setup and teardown scripts contains multiple SQL statements, we need
+</span><span class="c1"></span>    <span class="c1">// to use the &#34;multiStatements=true&#34; parameter in our DSN. This instructs
+</span><span class="c1"></span>    <span class="c1">// our MySQL database driver to support executing multiple SQL statements
+</span><span class="c1"></span>    <span class="c1">// in one db.Exec() call.
+</span><span class="c1"></span>    <span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">sql</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;mysql&#34;</span><span class="p">,</span> <span class="s">&#34;test_web:pass@/test_snippetbox?parseTime=true&amp;multiStatements=true&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Read the setup SQL script from the file and execute the statements, closing
+</span><span class="c1"></span>    <span class="c1">// the connection pool and calling t.Fatal() in the event of an error.
+</span><span class="c1"></span>    <span class="nx">script</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="s">&#34;./testdata/setup.sql&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">script</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Use t.Cleanup() to register a function *which will automatically be
+</span><span class="c1"></span>    <span class="c1">// called by Go when the current test (or sub-test) which calls newTestDB() 
+</span><span class="c1"></span>    <span class="c1">// has finished*. In this function we read and execute the teardown script, 
+</span><span class="c1"></span>    <span class="c1">// and close the database connection pool.
+</span><span class="c1"></span>    <span class="nx">t</span><span class="p">.</span><span class="nf">Cleanup</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">defer</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+        <span class="nx">script</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="s">&#34;./testdata/teardown.sql&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">script</span><span class="p">)</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span><span class="p">)</span>
+
+    <span class="c1">// Return the database connection pool.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">db</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>The important thing to take away here is this:</p>
+
+<p><em>Whenever we call this <code>newTestDB()</code> function inside a test (or sub-test) it will run the setup script against the test database. And when the test or sub-test finishes, the cleanup function will automatically be executed and the teardown script will be run.</em></p>
+
+<h3 id="testing-the-usermodel-exists-method">Testing the UserModel.Exists method</h3>
+
+<p>Now that the preparatory work is done, we&rsquo;re ready to actually write our integration test for the <code>models.UserModel.Exists()</code> method.</p>
+
+<p>We know that our <code>setup.sql</code> script creates a <code>users</code> table containing one record (which should have the user ID <code>1</code> and email address <code>alice@example.com</code>). So we want to test that:</p>
+
+<ul>
+<li>Calling <code>models.UserModel.Exists(1)</code> returns a <code>true</code> boolean value and a <code>nil</code> error value.</li>
+<li>Calling <code>models.UserModel.Exists()</code> with any other user ID returns a <code>false</code> boolean value and a <code>nil</code> error value.</li>
+</ul>
+
+<p>Let&rsquo;s first head to our <code>internal/assert</code> package and create a new <code>NilError()</code> assertion, which we will use to check that an error value is <code>nil</code>. Like so:</p>
+
+<figure class="code go">
+<figcaption>File: internal/assert/assert.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">assert</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">NilError</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">actual</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Helper</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got: %v; expected: nil&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Then let&rsquo;s follow the Go conventions and create a new <code>users_test.go</code> file for our test, directly alongside the code being tested:</p>
+
+<figure class="code bash">
+<pre>$ touch internal/models/users_test.go</pre>
+</figure>
+
+<p>And add a <code>TestUserModelExists</code> test containing the following code:</p>
+
+<figure class="code go">
+<figcaption>File: internal/models/users_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Set up a suite of table-driven tests and expected results.
+</span><span class="c1"></span>    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span>   <span class="kt">string</span>
+        <span class="nx">userID</span> <span class="kt">int</span>
+        <span class="nx">want</span>   <span class="kt">bool</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Valid ID&#34;</span><span class="p">,</span>
+            <span class="nx">userID</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span>   <span class="kc">true</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Zero ID&#34;</span><span class="p">,</span>
+            <span class="nx">userID</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span>   <span class="kc">false</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Non-existent ID&#34;</span><span class="p">,</span>
+            <span class="nx">userID</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span>   <span class="kc">false</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Call the newTestDB() helper function to get a connection pool to
+</span><span class="c1"></span>            <span class="c1">// our test database. Calling this here -- inside t.Run() -- means
+</span><span class="c1"></span>            <span class="c1">// that fresh database tables and data will be set up and torn down
+</span><span class="c1"></span>            <span class="c1">// for each sub-test.
+</span><span class="c1"></span>            <span class="nx">db</span> <span class="o">:=</span> <span class="nf">newTestDB</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+
+            <span class="c1">// Create a new instance of the UserModel.
+</span><span class="c1"></span>            <span class="nx">m</span> <span class="o">:=</span> <span class="nx">UserModel</span><span class="p">{</span><span class="nx">db</span><span class="p">}</span>
+
+            <span class="c1">// Call the UserModel.Exists() method and check that the return
+</span><span class="c1"></span>            <span class="c1">// value and error match the expected values for the sub-test.
+</span><span class="c1"></span>            <span class="nx">exists</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">userID</span><span class="p">)</span>
+
+            <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">exists</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
+            <span class="nx">assert</span><span class="p">.</span><span class="nf">NilError</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>If you run this test, then everything should pass without any problems.</p>
+
+<figure class="code bash">
+<pre>$ go test -v ./internal/models
+<samp>=== RUN   TestUserModelExists
+=== RUN   TestUserModelExists/Valid_ID
+=== RUN   TestUserModelExists/Zero_ID
+=== RUN   TestUserModelExists/Non-existent_ID
+--- PASS: TestUserModelExists (1.02s)
+    --- PASS: TestUserModelExists/Valid_ID (0.33s)
+    --- PASS: TestUserModelExists/Zero_ID (0.29s)
+    --- PASS: TestUserModelExists/Non-existent_ID (0.40s)
+PASS
+ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
+</figure>
+
+<p>The last line in the test output here is worth a mention. The total runtime for this test (1.023 seconds in my case) is much longer than for our previous tests &mdash; all of which took a few milliseconds to run. This big increase in runtime is primarily due to the large number of database operations that we needed to make during the tests.</p>
+
+<p>While 1 second is a totally acceptable time to wait for this test in isolation, if you&rsquo;re running hundreds of different integration tests against your database you might end up routinely waiting minutes &mdash; rather than seconds &mdash; for your tests to finish.</p>
+
+<h3 id="skipping-long-running-tests">Skipping long-running tests</h3>
+
+<p>When your tests take a long time, you might decide that you want to skip specific long-running tests under certain circumstances. For example, you might decide to only run your integration tests before committing a change, instead of more frequently during development.</p>
+
+<p>A common and idiomatic way to skip long-running tests is to use the <a href="https://pkg.go.dev/testing/#Short"><code>testing.Short()</code></a> function to check for the presence of a <code>-short</code> flag in your <code>go test</code> command, and then call the <a href="https://pkg.go.dev/testing#T.Skip"><code>t.Skip()</code></a> method to skip the test if the flag is present.</p>
+
+<p>Let&rsquo;s quickly update <code>TestUserModelExists</code> to do this <em>before running its actual tests</em>, like so:</p>
+
+<figure class="code go">
+<figcaption>File: internal/models/users_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">models</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Skip the test if the &#34;-short&#34; flag is provided when running the test.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">testing</span><span class="p">.</span><span class="nf">Short</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="s">&#34;models: skipping integration test&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>And then you can try running all the tests for the project with the <code>-short</code> flag enabled. The output should look similar to this:</p>
+
+<figure class="code bash">
+<pre>$ go test -v -short ./...
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+=== RUN   TestSnippetView
+=== RUN   TestSnippetView/Valid_ID
+=== RUN   TestSnippetView/Non-existent_ID
+=== RUN   TestSnippetView/Negative_ID
+=== RUN   TestSnippetView/Decimal_ID
+=== RUN   TestSnippetView/String_ID
+=== RUN   TestSnippetView/Empty_ID
+--- PASS: TestSnippetView (0.01s)
+    --- PASS: TestSnippetView/Valid_ID (0.00s)
+    --- PASS: TestSnippetView/Non-existent_ID (0.00s)
+    --- PASS: TestSnippetView/Negative_ID (0.00s)
+    --- PASS: TestSnippetView/Decimal_ID (0.00s)
+    --- PASS: TestSnippetView/String_ID (0.00s)
+    --- PASS: TestSnippetView/Empty_ID (0.00s)
+=== RUN   TestUserSignup
+=== RUN   TestUserSignup/Valid_submission
+=== RUN   TestUserSignup/Invalid_CSRF_Token
+=== RUN   TestUserSignup/Empty_name
+=== RUN   TestUserSignup/Empty_email
+=== RUN   TestUserSignup/Empty_password
+=== RUN   TestUserSignup/Invalid_email
+=== RUN   TestUserSignup/Short_password
+=== RUN   TestUserSignup/Long_password
+=== RUN   TestUserSignup/Duplicate_email
+--- PASS: TestUserSignup (0.01s)
+    --- PASS: TestUserSignup/Valid_submission (0.00s)
+    --- PASS: TestUserSignup/Invalid_CSRF_Token (0.00s)
+    --- PASS: TestUserSignup/Empty_name (0.00s)
+    --- PASS: TestUserSignup/Empty_email (0.00s)
+    --- PASS: TestUserSignup/Empty_password (0.00s)
+    --- PASS: TestUserSignup/Invalid_email (0.00s)
+    --- PASS: TestUserSignup/Short_password (0.00s)
+    --- PASS: TestUserSignup/Long_password (0.00s)
+    --- PASS: TestUserSignup/Duplicate_email (0.00s)
+=== RUN   TestCommonHeaders
+--- PASS: TestCommonHeaders (0.00s)
+=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.023s
+=== RUN   TestUserModelExists
+    users_test.go:10: models: skipping integration test
+--- SKIP: TestUserModelExists (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/internal/models      0.003s
+?       snippetbox.alexedwards.net/internal/models/mocks        [no test files]
+?       snippetbox.alexedwards.net/internal/validator   [no test files]
+?       snippetbox.alexedwards.net/ui   [no test files]</samp></pre>
+</figure>
+
+<p>Notice the <code>SKIP</code> annotation in the output above? This confirms that Go skipped our <code>TestUserModelExists</code> test during this run.</p>
+
+<p>If you like, feel free to run this again without the <code>-short</code> flag, and you should see that the <code>TestUserModelExists</code> test is executed as normal.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.06-testing-html-forms.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="13.08-profiling-test-coverage.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.06-testing-html-forms.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.08-profiling-test-coverage.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

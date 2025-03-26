@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Customizing how tests run &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Customizing how tests run</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.03-end-to-end-testing.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="13.05-mocking-dependencies.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 13.4.</div>
+			<h2 id="customizing-how-tests-run">Customizing how tests run</h2>
+
+<p>Before we continue adding more tests to our application, I want to take a quick break and talk about a few of the useful flags and options that are available to customize how your tests run.</p>
+
+<h3 id="controlling-which-tests-are-run">Controlling which tests are run</h3>
+
+<p>So far in this book we&rsquo;ve been running the tests in a specific package (the <code>cmd/web</code> package) like so:</p>
+
+<figure class="code bash">
+<pre>$ go test ./cmd/web</pre>
+</figure>
+
+<p>But it&rsquo;s also possible to run  <em>all</em> the tests in your current project by using the <code>./...</code> wildcard pattern. In our case, we can use it to run all tests in our project like this:</p>
+
+<figure class="code bash">
+<pre>$ go test ./...
+<samp>ok      snippetbox.alexedwards.net/cmd/web      0.007s
+?       snippetbox.alexedwards.net/internal/models      [no test files]
+?       snippetbox.alexedwards.net/internal/validator   [no test files]
+?       snippetbox.alexedwards.net/ui   [no test files]</samp></pre>
+</figure>
+
+<p>Or going in the other direction, it&rsquo;s possible to only run specific tests by using the <code>-run</code> flag. This allows you to specify a regular expression &mdash; and only tests with a name that matches the regular expression will be run.</p>
+
+<p>For example, we could opt to run only the <code>TestPing</code> test as follows:</p>
+
+<figure class="code bash">
+<pre>$ go test -v -run=&#34;^TestPing$&#34; ./cmd/web/
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.008s</samp></pre>
+</figure>
+
+<p>And you can even use the <code>-run</code> flag to limit testing to some specific sub-tests using the format <code>{test regexp}/{sub-test regexp}</code>. For example to run the <code>UTC</code> sub-test of our <code>TestHumanDate</code> test we could do this:</p>
+
+<figure class="code bash">
+<pre>$ go test -v -run=&#34;^TestHumanDate$/^UTC$&#34; ./cmd/web
+<samp>=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web    0.003s</samp></pre>
+</figure>
+
+<p>In contrast, you can prevent specific tests from running by using the <code>-skip</code> flag. Like the <code>-run</code> flag we just looked at, this allows you to specify a regular expression and any tests with a name that matches the regular expression <em>won&rsquo;t</em> be run. For example, to skip the <code>TestHumanDate</code> test:</p>
+
+<figure class="code bash">
+<pre>$ go test -v -skip=&#34;^TestHumanDate$&#34; ./cmd/web/
+<samp>=== RUN   TestPing
+--- PASS: TestPing (0.00s)
+=== RUN   TestCommonHeaders
+--- PASS: TestCommonHeaders (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.006s</samp></pre>
+</figure>
+
+<h3 id="test-caching">Test caching</h3>
+
+<p>You&rsquo;ve perhaps noticed by now that if you run exactly the same test twice &mdash; without making any changes to the package that you&rsquo;re testing &mdash; then a <em>cached</em> version of the test result is shown (indicated by the <code>(cached)</code> annotation next to the package name).</p>
+
+<figure class="code bash">
+<pre>$ go test ./cmd/web
+<samp>ok      snippetbox.alexedwards.net/cmd/web      (cached)</samp></pre>
+</figure>
+
+<p>In most cases, the caching of test results is really useful (especially for large codebases) because it helps reduce the total test runtime. But if you want force your tests to run in full (and avoid the cache) you can use the <code>-count=1</code> flag:</p>
+
+<figure class="code bash">
+<pre>$ go test -count=1 ./cmd/web </pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> The <code>count</code> flag is used to tell <code>go test</code> <em>how many times you want to execute each test</em>.  It&rsquo;s a <em>non-cacheable</em> flag, which means that any time you use it <code>go test</code> will neither read or write the test results to the cache. So using <code>count=1</code> is a bit of a trick to avoid the cache without otherwise affecting how your tests run.
+</p></aside>
+
+<p>Alternatively, you can clear cached results for all tests with the <code>go clean</code> command:</p>
+
+<figure class="code bash">
+<pre>$ go clean -testcache   </pre>
+</figure>
+
+<h3 id="fast-failure">Fast failure</h3>
+
+<p>As I mentioned briefly a couple of chapters ago, when you use the <code>t.Errorf()</code> function to mark a test as failed, it doesn&rsquo;t cause <code>go test</code> to immediately exit. All your other tests (and sub-tests) will continue to be run after a failure.</p>
+
+<p>If you would prefer to terminate the tests immediately after the first failure you can use the <code>-failfast</code> flag:</p>
+
+<figure class="code bash">
+<pre>$ go test -failfast ./cmd/web</pre>
+</figure>
+
+<p>It&rsquo;s important to note that the <code>-failfast</code> flag only stops tests <em>in the package that had the failure</em>. If you are running tests in multiple packages (for example by using <code>go test ./...</code>), then the tests in the other packages <a href="https://github.com/golang/go/issues/33038">will continue to run</a>.</p>
+
+<h3 id="parallel-testing">Parallel testing</h3>
+
+<p>By default, the <code>go test</code> command executes all tests in a serial manner, one after another. When you have a small number of tests (like we do) and the runtime is very fast, this is absolutely fine.</p>
+
+<p>But if you have hundreds or thousands of tests the total run time can start adding up to something more meaningful. And in that scenario, you may save yourself some time by running the tests in parallel.</p>
+
+<p>You can indicate that it&rsquo;s OK for a test to be run concurrently alongside other tests by calling the <code>t.Parallel()</code> function at the start of the test. For example:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">TestPing</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Parallel</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="o">...</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>It&rsquo;s important to note here that:</p>
+
+<ul>
+<li><p>Tests marked using <code>t.Parallel()</code> will be run in parallel with &mdash; <em>and only with</em> &mdash; other parallel tests.</p></li>
+
+<li><p>By default, the maximum number of tests that will be run simultaneously is the current value of <a href="https://pkg.go.dev/runtime/#pkg-constants">GOMAXPROCS</a>. You can override this by setting a specific value via the <code>-parallel</code> flag. For example:</p>
+
+<figure class="code bash">
+<pre>$ go test -parallel=4 ./...</pre>
+</figure>
+</li>
+
+<li><p>Not all tests are suitable to be run in parallel. For example, if you have an integration test which requires a database table to be in a specific known state, then you wouldn&rsquo;t want to run it in parallel with other tests that manipulate the same database table.</p></li>
+</ul>
+
+<h3 id="enabling-the-race-detector">Enabling the race detector</h3>
+
+<p>The <code>go test</code> command includes a <code>-race</code> flag which enables Go&rsquo;s <a href="https://golang.org/doc/articles/race_detector.html">race detector</a> when running tests.</p>
+
+<p>If the code you&rsquo;re testing leverages concurrency, or you&rsquo;re running tests in parallel, enabling this can be a good idea to help to flag up race conditions that exist in your application. You can use it like so:</p>
+
+<figure class="code bash">
+<pre>$ go test -race ./cmd/web/</pre>
+</figure>
+
+<p>You should be aware that the race detector is limited in its usefulness&hellip; it&rsquo;s just a tool that flags data races if and when they are identified at runtime during testing. It doesn&rsquo;t carry out static analysis of your codebase, and a clear run doesn&rsquo;t <em>ensure</em> that your code is free of race conditions.</p>
+
+<p>Enabling the race detector will also increase the overall running time of your tests. So if you&rsquo;re running tests very frequently as part of a TDD workflow, you may prefer to use the <code>-race</code> flag during pre-commit test runs only.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.03-end-to-end-testing.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="13.05-mocking-dependencies.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.03-end-to-end-testing.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.05-mocking-dependencies.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

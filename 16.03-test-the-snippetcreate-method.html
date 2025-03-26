@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Test the snippetCreate handler &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">Guided exercises</a> &rsaquo; Test the snippetCreate handler</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="16.02-add-a-debug-mode.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="16.04-add-an-account-page-to-the-application.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 16.3.</div>
+			<h2 id="test-the-snippetcreate-handler">Test the snippetCreate handler</h2>
+
+<p>Your goal in this exercise is to create an end-to-end test for the <code>GET /snippet/create</code> route. Specifically, you want to test that:</p>
+
+<ul>
+<li>Unauthenticated users are redirected to the login form.</li>
+<li>Authenticated users are shown the form to create a new snippet.</li>
+</ul>
+
+<h4 id="step-1">Step 1</h4>
+
+<p>Create a new <code>TestSnippetCreate</code> test in your <code>cmd/web/handlers_test.go</code> file. In this test, use the pattern and helpers from the <a href="13.03-end-to-end-testing.html">end-to-end testing chapter</a> to initialize a new test server using the application routes and mocked dependencies.</p>
+
+<p><a href="#17.03-suggested-code-for-step-1">Show suggested code</a></p>
+
+<h4 id="step-2">Step 2</h4>
+
+<p>Create a sub-test with the name <code>&quot;Unauthenticated&quot;</code>. In this sub-test, make a  <code>GET /snippet/create</code> request against the test server as an unauthenticated user. Verify that the response has the status code <code>303</code> and a <code>Location: /user/login</code> header. Again, reuse the helpers that we made in the end-to-end testing chapter.</p>
+
+<p><a href="#17.03-suggested-code-for-step-2">Show suggested code</a></p>
+
+<h4 id="step-3">Step 3</h4>
+
+<p>Create another sub-test with the name <code>&quot;Authenticated</code>&rdquo;. In this sub-test, mimic the workflow of logging in as a user to authenticate. Specifically, you&rsquo;ll need to make a <code>GET /user/login</code> request, extract the CSRF token from the response body, then make a <code>POST /user/login</code> request using the credentials in the mock user model (email of <code>&quot;alice@example.com&quot;</code>, password of <code>&quot;pa$$word&quot;</code>).</p>
+
+<p>Then once you&rsquo;ve authenticated, make a <code>GET /snippet/create</code> request and verify that you receive the status code <code>200</code> and an HTML body including the text <code>&lt;form action='/snippet/create' method='POST'&gt;</code>.</p>
+
+<p><a href="#17.03-suggested-code-for-step-3">Show suggested code</a></p>
+
+<h3 id="suggested-code">Suggested code</h3>
+
+<h4 id="17.03-suggested-code-for-step-1">Suggested code for step 1</h4>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre>
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">TestSnippetCreate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">app</span> <span class="o">:=</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+    <span class="nx">ts</span> <span class="o">:=</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h4 id="17.03-suggested-code-for-step-2">Suggested code for step 2</h4>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre>
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">TestSnippetCreate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">app</span> <span class="o">:=</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+    <span class="nx">ts</span> <span class="o">:=</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Unauthenticated&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">code</span><span class="p">,</span> <span class="nx">headers</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/snippet/create&#34;</span><span class="p">)</span>
+        
+        <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span>  <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+        <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">headers</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;Location&#34;</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;/user/login&#34;</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<figure class="code bash">
+<pre>$  go test -v -run=TestSnippetCreate ./cmd/web/
+<samp>=== RUN   TestSnippetCreate
+=== RUN   TestSnippetCreate/Unauthenticated
+--- PASS: TestSnippetCreate (0.01s)
+    --- PASS: TestSnippetCreate/Unauthenticated (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
+</figure>
+
+<h4 id="17.03-suggested-code-for-step-3">Suggested code for step 3</h4>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre>
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">TestSnippetCreate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">app</span> <span class="o">:=</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+    <span class="nx">ts</span> <span class="o">:=</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Unauthenticated&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">code</span><span class="p">,</span> <span class="nx">headers</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/snippet/create&#34;</span><span class="p">)</span>
+        
+        <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span>  <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+        <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">headers</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;Location&#34;</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;/user/login&#34;</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+    
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Authenticated&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Make a GET /user/login request and extract the CSRF token from the
+</span><span class="c1"></span>        <span class="c1">// response.
+</span><span class="c1"></span>        <span class="nx">_</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">body</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/user/login&#34;</span><span class="p">)</span>
+        <span class="nx">csrfToken</span> <span class="o">:=</span> <span class="nf">extractCSRFToken</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">)</span>
+
+        <span class="c1">// Make a POST /user/login request using the extracted CSRF token and
+</span><span class="c1"></span>        <span class="c1">// credentials from our the mock user model.
+</span><span class="c1"></span>        <span class="nx">form</span> <span class="o">:=</span> <span class="nx">url</span><span class="p">.</span><span class="nx">Values</span><span class="p">{</span><span class="p">}</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;email&#34;</span><span class="p">,</span> <span class="s">&#34;alice@example.com&#34;</span><span class="p">)</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;password&#34;</span><span class="p">,</span> <span class="s">&#34;pa$$word&#34;</span><span class="p">)</span>
+        <span class="nx">form</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;csrf_token&#34;</span><span class="p">,</span> <span class="nx">csrfToken</span><span class="p">)</span>
+        <span class="nx">ts</span><span class="p">.</span><span class="nf">postForm</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/user/login&#34;</span><span class="p">,</span> <span class="nx">form</span><span class="p">)</span>
+
+        <span class="c1">// Then check that the authenticated user is shown the create snippet
+</span><span class="c1"></span>        <span class="c1">// form.
+</span><span class="c1"></span>        <span class="nx">code</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">body</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/snippet/create&#34;</span><span class="p">)</span>
+        
+        <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span>  <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
+        <span class="nx">assert</span><span class="p">.</span><span class="nf">StringContains</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="s">&#34;&lt;form action=&#39;/snippet/create&#39; method=&#39;POST&#39;&gt;&#34;</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<figure class="code bash">
+<pre>$ go test -v -run=TestSnippetCreate ./cmd/web/
+<samp>=== RUN   TestSnippetCreate
+=== RUN   TestSnippetCreate/Unauthenticated
+=== RUN   TestSnippetCreate/Authenticated
+--- PASS: TestSnippetCreate (0.01s)
+    --- PASS: TestSnippetCreate/Unauthenticated (0.00s)
+    --- PASS: TestSnippetCreate/Authenticated (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.012s</samp></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="16.02-add-a-debug-mode.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="16.04-add-an-account-page-to-the-application.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "16.02-add-a-debug-mode.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "16.04-add-an-account-page-to-the-application.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Profiling test coverage &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Profiling test coverage</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.07-integration-testing.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="14.00-conclusion.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 13.8.</div>
+			<h2 id="profiling-test-coverage">Profiling test coverage</h2>
+
+<p>A great feature of the <code>go test</code> tool is the metrics and visualizations that it provides for <dfn>test coverage</dfn>.</p>
+
+<p>Go ahead and try running the tests in our project using the <code>-cover</code> flag like so:</p>
+
+<figure class="code bash">
+<pre>$ go test -cover ./...
+<samp>?       snippetbox.alexedwards.net/ui	[no test files]
+ok      snippetbox.alexedwards.net/cmd/web	0.013s          coverage: 45.7% of statements
+        snippetbox.alexedwards.net/internal/models/mocks    coverage: 0.0% of statements
+        snippetbox.alexedwards.net/internal/validator       coverage: 0.0% of statements
+        snippetbox.alexedwards.net/internal/assert          coverage: 0.0% of statements
+ok      snippetbox.alexedwards.net/internal/models	0.128s  coverage: 11.3% of statements</samp></pre>
+</figure>
+
+<p>From the results here we can see that 46.9% of the statements in our <code>cmd/web</code> package are executed during our tests, and for our <code>internal/models</code> package the figure is 11.3%.</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> Your numbers may be slightly different depending on the exact version of the book you&rsquo;re reading, or any adaptations you&rsquo;ve made to the code as you&rsquo;ve been following along.
+</p></aside>
+
+<p>We can get a more detailed breakdown of test coverage <em>by method and function</em> by using the <code>-coverprofile</code> flag like so:</p>
+
+<figure class="code bash">
+<pre>$ go test -coverprofile=/tmp/profile.out ./...</pre>
+</figure>
+
+<p>This will execute your tests as normal and &mdash; if all your tests pass &mdash; it will then write a <dfn>coverage profile</dfn> to a specific location. In the example above, we&rsquo;ve instructed it to write the profile to <code>/tmp/profile.out</code>.</p>
+
+<p>You can then view the coverage profile by using the <code>go tool cover</code> command like so:</p>
+
+<figure class="code bash">
+<pre>$ go tool cover -func=/tmp/profile.out
+<samp>snippetbox.alexedwards.net/cmd/web/handlers.go:15:          home                    0.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:31:          snippetView             92.9%
+snippetbox.alexedwards.net/cmd/web/handlers.go:62:          snippetCreate           0.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:88:          snippetCreatePost       0.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:131:         userSignup              100.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:137:         userSignupPost          88.5%
+snippetbox.alexedwards.net/cmd/web/handlers.go:192:         userLogin               0.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:198:         userLoginPost           0.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:256:         userLogoutPost          0.0%
+snippetbox.alexedwards.net/cmd/web/handlers.go:277:         ping                    100.0%
+snippetbox.alexedwards.net/cmd/web/helpers.go:17:           serverError             0.0%
+snippetbox.alexedwards.net/cmd/web/helpers.go:30:           clientError             100.0%
+snippetbox.alexedwards.net/cmd/web/helpers.go:37:           notFound                100.0%
+snippetbox.alexedwards.net/cmd/web/helpers.go:41:           render                  58.3%
+snippetbox.alexedwards.net/cmd/web/helpers.go:62:           newTemplateData         100.0%
+snippetbox.alexedwards.net/cmd/web/helpers.go:73:           decodePostForm          50.0%
+snippetbox.alexedwards.net/cmd/web/helpers.go:102:          isAuthenticated         75.0%
+snippetbox.alexedwards.net/cmd/web/main.go:35:              main                    0.0%
+snippetbox.alexedwards.net/cmd/web/main.go:100:             openDB                  0.0%
+snippetbox.alexedwards.net/cmd/web/middleware.go:11:        commonHeaders           100.0%
+snippetbox.alexedwards.net/cmd/web/middleware.go:26:        logRequest              100.0%
+snippetbox.alexedwards.net/cmd/web/middleware.go:41:        recoverPanic            66.7%
+snippetbox.alexedwards.net/cmd/web/middleware.go:61:        requireAuthentication   16.7%
+snippetbox.alexedwards.net/cmd/web/middleware.go:83:        noSurf                  100.0%
+snippetbox.alexedwards.net/cmd/web/middleware.go:94:        authenticate            38.5%
+snippetbox.alexedwards.net/cmd/web/routes.go:12:            routes                  100.0%
+snippetbox.alexedwards.net/cmd/web/templates.go:23:         humanDate               100.0%
+snippetbox.alexedwards.net/cmd/web/templates.go:40:         newTemplateCache        83.3%
+snippetbox.alexedwards.net/internal/models/snippets.go:31:  Insert                  0.0%
+snippetbox.alexedwards.net/internal/models/snippets.go:60:  Get                     0.0%
+snippetbox.alexedwards.net/internal/models/snippets.go:97:  Latest                  0.0%
+snippetbox.alexedwards.net/internal/models/users.go:34:     Insert                  0.0%
+snippetbox.alexedwards.net/internal/models/users.go:66:     Authenticate            0.0%
+snippetbox.alexedwards.net/internal/models/users.go:98:     Exists                  100.0%
+total:                                                      (statements)            38.1%</samp></pre>
+</figure>
+
+<p>An alternative and more visual way to view the coverage profile is to use the <code>-html</code> flag instead of <code>-func</code>.</p>
+
+<figure class="code bash">
+<pre>$ go tool cover -html=/tmp/profile.out</pre>
+</figure>
+
+<p>This will open a browser window containing a navigable and highlighted representation of your code, similar to this:</p>
+
+<figure class="img">
+<img src="assets/img/13.08-01.png" alt="13.08-01.png" />
+</figure>
+
+<p>The statements which get executed during your tests are colored green, and those that are not executed are colored red. This makes it easy to see exactly what code is currently covered by your tests (unless you have red-green color blindness).</p>
+
+<p>You can take this a step further and use the <code>-covermode=count</code> option when running <code>go test</code> like so:</p>
+
+<figure class="code bash">
+<pre>$ go test -covermode=count -coverprofile=/tmp/profile.out ./...
+$ go tool cover -html=/tmp/profile.out</pre>
+</figure>
+
+<p>Instead of just highlighting the statements in green and red, using <code>-covermode=count</code> makes the coverage profile record the exact <em>number of times</em> that each statement is executed during the tests.</p>
+
+<p>When viewed in the browser, statements which are executed more frequently are then shown in a more saturated shade of green, similar to this:</p>
+
+<figure class="img">
+<img src="assets/img/13.08-02.png" alt="13.08-02.png" />
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> If you&rsquo;re running some of your tests in parallel, you should use the <code>-covermode=atomic</code> flag (instead of <code>-covermode=count</code>) to ensure an accurate count.
+</p></aside>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.07-integration-testing.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="14.00-conclusion.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.07-integration-testing.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "14.00-conclusion.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

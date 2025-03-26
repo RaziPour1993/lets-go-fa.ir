@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>File embedding &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; File embedding</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="12.01-embedding-static-files.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 12.</div>
+			<h1 id="file-embedding">File embedding</h1>
+
+<p>The Go standard library includes an <a href="https://pkg.go.dev/embed/"><code>embed</code></a> package, which makes it possible to <em>embed external files into your Go program itself</em>.</p>
+
+<p>Using the <code>embed</code> package opens up the opportunity to create Go programs which are self-contained and have everything that they need to run <em>as part of the compiled binary executable</em>. In turn, that makes it easier to deploy or distribute your web application.</p>
+
+<p>In this section of the book, we&rsquo;ll update our application so that it embeds the files from our <code>ui</code> directory &mdash; starting with the static CSS, JavaScript and image files, and then moving on to the HTML templates.</p>
+
+<p>Let&rsquo;s jump straight in and explain how to use it.</p>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="12.01-embedding-static-files.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "11.02-request-context-for-authentication-authorization.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "12.01-embedding-static-files.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

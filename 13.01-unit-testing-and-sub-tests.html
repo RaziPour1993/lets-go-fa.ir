@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Unit testing and sub-tests &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Unit testing and sub-tests</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="13.00-testing.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="13.02-testing-http-handlers-and-middleware.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 13.1.</div>
+			<h2 id="unit-testing-and-sub-tests">Unit testing and sub-tests</h2>
+
+<p>In this chapter we&rsquo;ll create a unit test to make sure that our <code>humanDate()</code> function (which we made back in the <a href="05.06-custom-template-functions.html">custom template functions</a> chapter) is outputting <code>time.Time</code> values in the exact format that we want.</p>
+
+<p>If you can&rsquo;t remember, the <code>humanDate()</code> function looks like this:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">t</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="s">&#34;02 Jan 2006 at 15:04&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>The reason that I want to start by testing this is because it&rsquo;s a simple function. We can explore the basic syntax and patterns for writing tests without getting too caught-up in <em>the functionality</em> that we&rsquo;re testing.</p>
+
+<h3 id="creating-a-unit-test">Creating a unit test</h3>
+
+<p>Let&rsquo;s jump straight in and create a <dfn>unit test</dfn> for this function.</p>
+
+<p>In Go, it&rsquo;s standard practice to write your tests in <code>*_test.go</code> files which live directly alongside the code that you&rsquo;re testing. So, in this case, the first thing that we&rsquo;re going to do is create a new <code>cmd/web/templates_test.go</code> file to hold the test:</p>
+
+<figure class="code bash">
+<pre>$ touch cmd/web/templates_test.go</pre>
+</figure>
+
+<p>And then we can create a new unit test for the <code>humanDate</code> function like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestHumanDate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Initialize a new time.Time object and pass it to the humanDate function.
+</span><span class="c1"></span>    <span class="nx">tm</span> <span class="o">:=</span> <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">UTC</span><span class="p">)</span>
+    <span class="nx">hd</span> <span class="o">:=</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">tm</span><span class="p">)</span>
+
+    <span class="c1">// Check that the output from the humanDate function is in the format we
+</span><span class="c1"></span>    <span class="c1">// expect. If it isn&#39;t what we expect, use the t.Errorf() function to
+</span><span class="c1"></span>    <span class="c1">// indicate that the test has failed and log the expected and actual
+</span><span class="c1"></span>    <span class="c1">// values.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">hd</span> <span class="o">!=</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got %q; want %q&#34;</span><span class="p">,</span> <span class="nx">hd</span><span class="p">,</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>This pattern is the basic one that you&rsquo;ll use for nearly all tests that you write in Go. The important things to take away are:</p>
+
+<ul>
+<li><p>The test is just regular Go code, which calls the <code>humanDate()</code> function and checks that the result matches what we expect.</p></li>
+
+<li><p>Your unit tests are contained in a normal Go function with the signature <code>func(*testing.T)</code>.</p></li>
+
+<li><p>To be a valid unit test, the name of this function <em>must</em> begin with the word <code>Test</code>. Typically this is then followed by the name of the function, method or type that you&rsquo;re testing to help make it obvious at a glance <em>what</em> is being tested.</p></li>
+
+<li><p>You can use the <a href="https://pkg.go.dev/testing/#T.Errorf"><code>t.Errorf()</code></a> function to mark a test as <em>failed</em> and log a descriptive message about the failure. It&rsquo;s important to note that calling <code>t.Errorf()</code> <em>doesn&rsquo;t stop execution of your test</em> &mdash; after you call it Go will continue executing any remaining test code as normal.</p></li>
+</ul>
+
+<p>Let&rsquo;s try this out. Save the file, then use the <code>go test</code> command to run all the tests in our <code>cmd/web</code> package like so:</p>
+
+<figure class="code bash">
+<pre>$ go test ./cmd/web
+<samp>ok      snippetbox.alexedwards.net/cmd/web    0.005s</samp></pre>
+</figure>
+
+<p>So, this is good stuff. The <code>ok</code> in this output indicates that all tests in the package (for now, only our <code>TestHumanDate()</code> test) passed without any problems.</p>
+
+<p>If you want more detail, you can see exactly which tests are being run by using the <code>-v</code> flag to get the <em>verbose</em> output:</p>
+
+<figure class="code bash">
+<pre>$ go test -v ./cmd/web
+<samp>=== RUN   TestHumanDate
+--- PASS: TestHumanDate (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web    0.007s</samp></pre>
+</figure>
+
+<h3 id="table-driven-tests">Table-driven tests</h3>
+
+<p>Let&rsquo;s now expand our <code>TestHumanDate()</code> function to cover some additional <dfn>test cases</dfn>. Specifically, we&rsquo;re going to update it to also check that:</p>
+
+<ol>
+<li><p>If the input to <code>humanDate()</code> is the <a href="https://pkg.go.dev/time/#Time.IsZero">zero time</a>, then it returns the empty string <code>&quot;&quot;</code>.</p></li>
+
+<li><p>The output from the <code>humanDate()</code> function always uses the UTC time zone.</p></li>
+</ol>
+
+<p>In Go, an idiomatic way to run multiple test cases is to use <dfn>table-driven tests</dfn>.</p>
+
+<p>Essentially, the idea behind table-driven tests is to create a &lsquo;table&rsquo; of test cases containing the inputs and expected outputs, and to then loop over these, running each test case in a <dfn>sub-test</dfn>. There are a few ways you could set this up, but a common approach is to define your test cases in an slice of anonymous structs.</p>
+
+<p>I&rsquo;ll demonstrate:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestHumanDate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Create a slice of anonymous structs containing the test case name,
+</span><span class="c1"></span>    <span class="c1">// input to our humanDate() function (the tm field), and expected output
+</span><span class="c1"></span>    <span class="c1">// (the want field).
+</span><span class="c1"></span>    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="kt">string</span>
+        <span class="nx">tm</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+        <span class="nx">want</span> <span class="kt">string</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;UTC&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">UTC</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Empty&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">{</span><span class="p">}</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;CET&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nf">FixedZone</span><span class="p">(</span><span class="s">&#34;CET&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 09:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Loop over the test cases.
+</span><span class="c1"></span>    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="c1">// Use the t.Run() function to run a sub-test for each test case. The
+</span><span class="c1"></span>        <span class="c1">// first parameter to this is the name of the test (which is used to
+</span><span class="c1"></span>        <span class="c1">// identify the sub-test in any log output) and the second parameter is
+</span><span class="c1"></span>        <span class="c1">// and anonymous function containing the actual test for each case.
+</span><span class="c1"></span>        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">hd</span> <span class="o">:=</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">tm</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nx">hd</span> <span class="o">!=</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span> <span class="p">{</span>
+                <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got %q; want %q&#34;</span><span class="p">,</span> <span class="nx">hd</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<aside class="note"><p>
+<strong>Note:</strong> In the third test case we&rsquo;re using CET (Central European Time) as the time zone, which is one hour ahead of UTC. So we want the output from <code>humanDate()</code> (which should be in UTC) to be <code>17 Mar 2024 at 09:15</code>, not <code>17 Mar 2024 at 10:15</code>.
+</p></aside>
+
+<p>OK, let&rsquo;s run this and see what happens:</p>
+
+<figure class="code bash">
+<pre>$ go test -v ./cmd/web
+<samp>=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+    templates_test.go:44: got &#34;01 Jan 0001 at 00:00&#34;; want &#34;&#34;
+=== RUN   TestHumanDate/CET
+    templates_test.go:44: got &#34;17 Mar 2024 at 10:15&#34;; want &#34;17 Mar 2024 at 09:15&#34;
+--- FAIL: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- FAIL: TestHumanDate/Empty (0.00s)
+    --- FAIL: TestHumanDate/CET (0.00s)
+FAIL
+FAIL    snippetbox.alexedwards.net/cmd/web      0.003s
+FAIL</samp></pre>
+</figure>
+
+<p>So here we can see the individual output for each of our sub-tests. As you might have guessed, our first test case passed but the <code>Empty</code> and <code>CET</code>  tests both failed. Notice how &mdash; for the failed test cases &mdash; we get the relevant failure message and filename and line number in the output?</p>
+
+<p>Let&rsquo;s head back to our <code>humanDate()</code> function and update it to fix these two problems:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="c1">// Return the empty string if time has the zero value.
+</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">t</span><span class="p">.</span><span class="nf">IsZero</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">&#34;&#34;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Convert the time to UTC before formatting it.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">t</span><span class="p">.</span><span class="nf">UTC</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Format</span><span class="p">(</span><span class="s">&#34;02 Jan 2006 at 15:04&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>And when you re-run the tests everything should now pass.</p>
+
+<figure class="code bash">
+<pre>$ go test -v ./cmd/web
+<samp>=== RUN   TestHumanDate
+=== RUN   TestHumanDate/UTC
+=== RUN   TestHumanDate/Empty
+=== RUN   TestHumanDate/CET
+--- PASS: TestHumanDate (0.00s)
+    --- PASS: TestHumanDate/UTC (0.00s)
+    --- PASS: TestHumanDate/Empty (0.00s)
+    --- PASS: TestHumanDate/CET (0.00s)
+PASS
+ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
+</figure>
+
+<h3 id="helpers-for-test-assertions">Helpers for test assertions</h3>
+
+<p>As I mentioned briefly earlier in the book, over the next few chapters we&rsquo;ll be writing a lot of <em>test assertions</em> that are a variation of this pattern:</p>
+
+<figure class="code go">
+<pre><span class="k">if</span> <span class="nx">actualValue</span> <span class="o">!=</span> <span class="nx">expectedValue</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got %v; want %v&#34;</span><span class="p">,</span> <span class="nx">actualValue</span><span class="p">,</span> <span class="nx">expectedValue</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Let&rsquo;s quickly abstract this code into a helper function.</p>
+
+<p>If you&rsquo;re following along, go ahead and create a new <code>internal/assert</code> package:</p>
+
+<figure class="code bash">
+<pre>$ mkdir internal/assert
+$ touch internal/assert/assert.go</pre>
+</figure>
+
+<p>And then add the following code:</p>
+
+<figure class="code go">
+<figcaption>File: internal/assert/assert.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">assert</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nx">Equal</span><span class="p">[</span><span class="nx">T</span> <span class="nx">comparable</span><span class="p">]</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">actual</span><span class="p">,</span> <span class="nx">expected</span> <span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Helper</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nx">actual</span> <span class="o">!=</span> <span class="nx">expected</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;got: %v; want: %v&#34;</span><span class="p">,</span> <span class="nx">actual</span><span class="p">,</span> <span class="nx">expected</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Notice how <code>Equal()</code> is a <em>generic function</em>? This means that we&rsquo;ll be able to use it irrespective of what the type of the <code>actual</code> and <code>expected</code> values is. So long as both <code>actual</code> and <code>expected</code> have the <em>same</em> type and can be compared using the <code>!=</code> operator (for example, they are both <code>string</code> values, or both <code>int</code> values) our test code should compile and work fine when we call <code>Equal()</code>.</p>
+
+<aside class="note"><p>
+<strong>Note:</strong> The <a href="https://pkg.go.dev/testing#T.Helper"><code>t.Helper()</code></a> function that we&rsquo;re using in the code above indicates to the Go test runner that our <code>Equal()</code> function is a test helper. This means that when <code>t.Errorf()</code> is called from our <code>Equal()</code> function, the Go test runner will report the filename and line number of the code <em>which called</em> our <code>Equal()</code> function in the output.
+</p></aside>
+
+<p>With that in place, we can simplify our <code>TestHumanDate()</code> test like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;testing&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span><span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestHumanDate</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="kt">string</span>
+        <span class="nx">tm</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span>
+        <span class="nx">want</span> <span class="kt">string</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;UTC&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nx">UTC</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 10:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;Empty&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">{</span><span class="p">}</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span> <span class="s">&#34;CET&#34;</span><span class="p">,</span>
+            <span class="nx">tm</span><span class="p">:</span>   <span class="nx">time</span><span class="p">.</span><span class="nf">Date</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">time</span><span class="p">.</span><span class="nf">FixedZone</span><span class="p">(</span><span class="s">&#34;CET&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span><span class="p">)</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span> <span class="s">&#34;17 Mar 2024 at 09:15&#34;</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">hd</span> <span class="o">:=</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">tm</span><span class="p">)</span>
+
+            <span class="c1">// Use the new assert.Equal() helper to compare the expected and 
+</span><span class="c1"></span>            <span class="c1">// actual values.
+</span><span class="c1"></span>            <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">hd</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="sub-tests-without-a-table-of-test-cases">Sub-tests without a table of test cases</h4>
+
+<p>It&rsquo;s important to point out that you don&rsquo;t need to use sub-tests in conjunction with table-driven tests (like we have done so far in this chapter). It&rsquo;s perfectly valid to execute sub-tests by calling <code>t.Run()</code> consecutively in your test functions, similar to this:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="nf">TestExample</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Example sub-test 1&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Do a test.
+</span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
+
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Example sub-test 2&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Do another test.
+</span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
+
+    <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="s">&#34;Example sub-test 3&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// And another...
+</span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="13.00-testing.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="13.02-testing-http-handlers-and-middleware.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "13.00-testing.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "13.02-testing-http-handlers-and-middleware.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
