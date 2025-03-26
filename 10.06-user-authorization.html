@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>User authorization &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">User authentication</a> &rsaquo; User authorization</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="10.05-user-logout.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="10.07-csrf-protection.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 10.6.</div>
+			<h2 id="user-authorization">User authorization</h2>
+
+<p>Being able to authenticate the users of our application is all well and good, but now we need to do something useful with that information. In this chapter we&rsquo;ll introduce some <em>authorization</em> checks so that:</p>
+
+<ol>
+<li>Only authenticated (i.e. logged in) users can create a new snippet; and</li>
+<li>The contents of the navigation bar changes depending on whether a user is authenticated (logged in) or not. Specifically:
+
+<ul>
+<li>Authenticated users should see links to &lsquo;Home&rsquo;, &lsquo;Create snippet&rsquo; and &lsquo;Logout&rsquo;.</li>
+<li>Unauthenticated users should see links to &lsquo;Home&rsquo;, &lsquo;Signup&rsquo; and &lsquo;Login&rsquo;.</li>
+</ul></li>
+</ol>
+
+<p>As I mentioned briefly in the previous chapter, we can check whether a request is being made by an authenticated user or not by checking for the existence of an <code>&quot;authenticatedUserID&quot;</code> value in their session data.</p>
+
+<p>So let&rsquo;s start with that. Open the <code>cmd/web/helpers.go</code> file and add an <code>isAuthenticated()</code> helper function to return the authentication status like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Return true if the current request is from an authenticated user, otherwise
+</span><span class="c1"></span><span class="c1">// return false.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>That&rsquo;s neat. We can now check whether or not the request is coming from an authenticated (logged in) user by simply calling this <code>isAuthenticated()</code> helper.</p>
+
+<p>The next step is to find a way to pass this information to our HTML templates, so that we can toggle the contents of the navigation bar appropriately.</p>
+
+<p>There are two parts to this. First, we&rsquo;ll need to add a new <code>IsAuthenticated</code> field to our <code>templateData</code> struct:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;path/filepath&#34;</span>
+    <span class="s">&#34;time&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">CurrentYear</span>     <span class="kt">int</span>
+    <span class="nx">Snippet</span>         <span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Snippets</span>        <span class="p">[</span><span class="p">]</span><span class="nx">models</span><span class="p">.</span><span class="nx">Snippet</span>
+    <span class="nx">Form</span>            <span class="nx">any</span>
+    <span class="nx">Flash</span>           <span class="kt">string</span>
+    <span class="nx">IsAuthenticated</span> <span class="kt">bool</span> <span class="c1">// Add an IsAuthenticated field to the templateData struct.
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>And the second step is to update our <code>newTemplateData()</code> helper so that this information is automatically added to the <code>templateData</code> struct every time we render a template. Like so:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/helpers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="nx">templateData</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">templateData</span><span class="p">{</span>
+        <span class="nx">CurrentYear</span><span class="p">:</span>     <span class="nx">time</span><span class="p">.</span><span class="nf">Now</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Year</span><span class="p">(</span><span class="p">)</span><span class="p">,</span>
+        <span class="nx">Flash</span><span class="p">:</span>           <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">PopString</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">)</span><span class="p">,</span>
+        <span class="c1">// Add the authentication status to the template data.
+</span><span class="c1"></span>        <span class="nx">IsAuthenticated</span><span class="p">:</span> <span class="nx">app</span><span class="p">.</span><span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>Once that&rsquo;s done, we can update the <code>ui/html/partials/nav.tmpl</code> file to toggle the navigation links using the <code>{{if .IsAuthenticated}}</code> action like so:</p>
+
+<figure class="code html">
+<figcaption>File: ui/html/partials/nav.tmpl</figcaption>
+<pre>{{define &#34;nav&#34;}}
+<span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Home<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> Toggle the link based on authentication status </span><span class="c">--&gt;</span>
+        {{if .IsAuthenticated}}
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span><span class="p"></span><span class="p">&gt;</span>Create snippet<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
+        <span class="c">&lt;!--</span><span class="c"> Toggle the links based on authentication status </span><span class="c">--&gt;</span>
+        {{if .IsAuthenticated}}
+            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/logout&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="nt">button</span><span class="p"></span><span class="p">&gt;</span>Logout<span class="p">&lt;</span><span class="p">/</span><span class="nt">button</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
+        {{else}}
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/signup&#39;</span><span class="p"></span><span class="p">&gt;</span>Signup<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/login&#39;</span><span class="p"></span><span class="p">&gt;</span>Login<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        {{end}}
+    <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="p">/</span><span class="nt">nav</span><span class="p">&gt;</span>
+{{end}}</pre>
+</figure>
+
+<p>Save all the files and try running the application now. If you&rsquo;re not currently logged in, your application homepage should look like this:</p>
+
+<figure class="img">
+<img src="assets/img/10.06-01.png" alt="10.06-01.png" />
+</figure>
+
+<p>Otherwise &mdash; if you are logged in &mdash; your homepage should look like this:</p>
+
+<figure class="img">
+<img src="assets/img/10.06-02.png" alt="10.06-02.png" />
+</figure>
+
+<p>Feel free to have a play around with this, and try logging in and out until you&rsquo;re confident that the navigation bar is being changed as you would expect.</p>
+
+<h3 id="restricting-access">Restricting access</h3>
+
+<p>As it stands, we&rsquo;re hiding the &lsquo;Create snippet&rsquo; navigation link for any user that isn&rsquo;t logged in. But an unauthenticated user could still create a new snippet by visiting the <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> page directly.</p>
+
+<p>Let&rsquo;s fix that, so that if an unauthenticated user tries to visit any routes with the URL path <code>/snippet/create</code> they are redirected to <code>/user/login</code> instead.</p>
+
+<p>The simplest way to do this is via some middleware. Open the <code>cmd/web/middleware.go</code> file and create a new <code>requireAuthentication()</code> middleware function, following the same pattern that we used <a href="06.01-how-middleware-works.html">earlier in the book</a>:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/middleware.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">requireAuthentication</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// If the user is not authenticated, redirect them to the login page and
+</span><span class="c1"></span>        <span class="c1">// return from the middleware chain so that no subsequent handlers in
+</span><span class="c1"></span>        <span class="c1">// the chain are executed.
+</span><span class="c1"></span>        <span class="k">if</span> <span class="p">!</span><span class="nx">app</span><span class="p">.</span><span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="s">&#34;/user/login&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Otherwise set the &#34;Cache-Control: no-store&#34; header so that pages
+</span><span class="c1"></span>        <span class="c1">// require authentication are not stored in the users browser cache (or
+</span><span class="c1"></span>        <span class="c1">// other intermediary cache).
+</span><span class="c1"></span>        <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">,</span> <span class="s">&#34;no-store&#34;</span><span class="p">)</span>
+
+        <span class="c1">// And call the next handler in the chain.
+</span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>We can now add this middleware to our <code>cmd/web/routes.go</code> file to protect specific routes.</p>
+
+<p>In our case we&rsquo;ll want to protect the <code>GET /snippet/create</code> and <code>POST /snippet/create</code> routes. And there&rsquo;s not much point logging out a user if they&rsquo;re not logged in, so it makes sense to use it on the <code>POST /user/logout</code> route as well.</p>
+
+<p>To help with this, let&rsquo;s rearrange our application routes into two &lsquo;groups&rsquo;.</p>
+
+<p>The first group will contain our &lsquo;unprotected&rsquo; routes and use our existing <code>dynamic</code> middleware chain. The second group will contain our &lsquo;protected&rsquo; routes and will use a new <code>protected</code> middleware chain &mdash; consisting of the <code>dynamic</code> middleware chain <em>plus</em> our new <code>requireAuthentication()</code> middleware.</p>
+
+<p>Like this:</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// Unprotected application routes using the &#34;dynamic&#34; middleware chain.
+</span><span class="c1"></span>    <span class="nx">dynamic</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nx">LoadAndSave</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignup</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignupPost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogin</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLoginPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="c1">// Protected (authenticated-only) application routes, using a new &#34;protected&#34;
+</span><span class="c1"></span>    <span class="c1">// middleware chain which includes the requireAuthentication middleware.
+</span><span class="c1"></span>    <span class="nx">protected</span> <span class="o">:=</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">requireAuthentication</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/logout&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogoutPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Save the files, restart the application and make sure that you&rsquo;re logged out.</p>
+
+<p>Then try visiting <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> directly in your browser. You should find that you get immediately redirected to the login form instead.</p>
+
+<p>If you like, you can also confirm with curl that unauthenticated users are redirected for the <code>POST /snippet/create</code> route too:</p>
+
+<figure class="code bash">
+<pre>$ curl -ki -d &#34;&#34; https://localhost:4000/snippet/create
+<samp>HTTP/2 303 
+content-security-policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
+location: /user/login
+referrer-policy: origin-when-cross-origin
+server: Go
+vary: Cookie
+x-content-type-options: nosniff
+x-frame-options: deny
+x-xss-protection: 0
+content-length: 0
+date: Wed, 18 Mar 2024 11:29:23 GMT</samp></pre>
+</figure>
+
+<hr />
+
+<h3 id="additional-information">Additional information</h3>
+
+<h4 id="without-using-alice">Without using alice</h4>
+
+<p>If you&rsquo;re not using the <code>justinas/alice</code> package to manage your middleware that&rsquo;s OK &mdash; you can manually wrap your handlers like this instead:</p>
+
+<figure class="code go">
+<pre><span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">requireAuthentication</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.05-user-logout.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="10.07-csrf-protection.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.05-user-logout.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.07-csrf-protection.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

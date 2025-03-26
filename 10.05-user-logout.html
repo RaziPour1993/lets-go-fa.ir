@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>User logout &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">User authentication</a> &rsaquo; User logout</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="10.04-user-login.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="10.06-user-authorization.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 10.5.</div>
+			<h2 id="user-logout">User logout</h2>
+
+<p>This brings us nicely to logging out a user. Implementing the user logout is straightforward in comparison to the signup and login &mdash; essentially all we need to do is remove the <code>&quot;authenticatedUserID&quot;</code> value from their session.</p>
+
+<p>At the same time it&rsquo;s good practice to renew the session ID again, and we&rsquo;ll also add a flash message to the session data to confirm to the user that they&rsquo;ve been logged out.</p>
+
+<p>Let&rsquo;s update the <code>userLogoutPost</code> handler to do exactly that.</p>
+
+<figure class="code go">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userLogoutPost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Use the RenewToken() method on the current session to change the session
+</span><span class="c1"></span>    <span class="c1">// ID again.
+</span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">RenewToken</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Remove the authenticatedUserID from the session data so that the user is
+</span><span class="c1"></span>    <span class="c1">// &#39;logged out&#39;.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Add a flash message to the session to confirm to the user that they&#39;ve been
+</span><span class="c1"></span>    <span class="c1">// logged out.
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">,</span> <span class="s">&#34;You&#39;ve been logged out successfully!&#34;</span><span class="p">)</span>
+
+    <span class="c1">// Redirect the user to the application home page.
+</span><span class="c1"></span>    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>Save the file and restart the application. If you now click the &lsquo;Logout&rsquo; link in the navigation bar you should be logged out and redirected to the homepage like so:</p>
+
+<figure class="img">
+<img src="assets/img/10.05-01.png" alt="10.05-01.png" />
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.04-user-login.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="10.06-user-authorization.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.04-user-login.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.06-user-authorization.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

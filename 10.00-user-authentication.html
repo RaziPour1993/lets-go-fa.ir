@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>User authentication &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; User authentication</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="09.06-connection-timeouts.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="10.01-routes-setup.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 10.</div>
+			<h1 id="user-authentication">User authentication</h1>
+
+<p>In this section of the book we&rsquo;re going to add some user authentication functionality to our application, so that only registered, logged-in users can create new snippets. Non-logged-in users will still be able to view the snippets, and will also be able to sign up for an account.</p>
+
+<p>The workflow will look like this:</p>
+
+<ol>
+<li><p>A user will register by visiting a form at <code>/user/signup</code> and entering their name, email address and password. We&rsquo;ll store this information in a new <code>users</code> database table (which we&rsquo;ll create in a moment).</p></li>
+
+<li><p>A user will log in by visiting a form at <code>/user/login</code> and entering their email address and password.</p></li>
+
+<li><p>We will then check the database to see if the email and password they entered match one of the users in the <code>users</code> table. If there&rsquo;s a match, the user has <em>authenticated</em> successfully and we add the relevant <code>id</code> value for the user to their session data, using the key <code>&quot;authenticatedUserID&quot;</code>.</p></li>
+
+<li><p>When we receive any subsequent requests, we can check the user&rsquo;s session data for a <code>&quot;authenticatedUserID&quot;</code> value. If it exists, we know that the user has already successfully logged in. We can keep checking this until the session expires, when the user will need to log in again. If there&rsquo;s no <code>&quot;authenticatedUserID&quot;</code> in the session, we know that the user is not logged in.</p></li>
+</ol>
+
+<p>In many ways, a lot of the content in this section is just putting together the things that we&rsquo;ve already learned in a different way. So it&rsquo;s a good litmus test of your understanding and a reminder of some key concepts.</p>
+
+<p>You&rsquo;ll learn:</p>
+
+<ul>
+<li>How to implement basic <a href="10.03-user-signup-and-password-encryption.html">signup</a>, <a href="10.04-user-login.html">login</a> and <a href="10.05-user-logout.html">logout</a> functionality for users.</li>
+<li>A secure approach to encrypting and <a href="10.03-user-signup-and-password-encryption.html">storing user passwords</a> in your database.</li>
+<li>A solid and straightforward approach to <a href="10.06-user-authorization.html">verifying that a user is logged in</a> using middleware and sessions.</li>
+<li>How to <a href="10.07-csrf-protection.html">prevent cross-site request forgery</a> (CSRF) attacks.</li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="09.06-connection-timeouts.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="10.01-routes-setup.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "09.06-connection-timeouts.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "10.01-routes-setup.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
