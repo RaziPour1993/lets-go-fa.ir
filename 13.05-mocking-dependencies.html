@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>شبیه‌سازی وابستگی‌ها &mdash; Let's Go</title> 
+		<title>Let's Go</title> 
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
@@ -61,7 +61,7 @@
 <p>دلیل شبیه‌سازی این و نوشتن به <code>io.Discard</code> این است که از پر شدن خروجی تست ما با پیام‌های لاگ غیرضروری هنگام اجرای <code>go test -v</code> (با حالت verbose فعال) جلوگیری کنیم.</p>
 
 <aside class="note"><p>
-<strong>توجه:</strong> بسته به پیش‌زمینه و تجربه برنامه‌نویسی شما، ممکن است این لاگر را <em>شبیه‌سازی</em> ندانید. ممکن است آن را <em>جعلی</em>، <em>استاب</em> یا چیز دیگری بنامید. اما نام آن واقعاً مهم نیست &mdash; و افراد مختلف <a href="https://en.wikipedia.org/wiki/Mock_object#Mocks,_fakes,_and_stubs">آن‌ها را به نام‌های مختلفی می‌نامند</a>. آنچه مهم این است که ما از چیزی استفاده می‌کنیم که <em>همان رابطی را که یک شیء تولیدی دارد، برای هدف تست ارائه می‌دهد</em>.
+<strong>توجه:</strong> بسته به پیش‌زمینه و تجربه برنامه‌نویسی شما، ممکن است این لاگر را <em>شبیه‌سازی</em> ندانید. ممکن است آن را <em>جعلی</em>، <em>استاب</em> یا چیز دیگری بنامید. اما نام آن واقعاً مهم این است که ما از چیزی استفاده می‌کنیم که <em>همان رابطی را که یک شیء تولیدی دارد، برای هدف تست ارائه می‌دهد</em>.
 </p></aside>
 
 <p>دو وابستگی دیگر که منطقی است آن‌ها را شبیه‌سازی کنیم، مدل‌های پایگاه داده <code>models.SnippetModel</code> و <code>models.UserModel</code> هستند. با ایجاد شبیه‌سازی‌های این‌ها، می‌توانیم رفتار هندلرهای خود را <em>بدون</em> نیاز به راه‌اندازی یک نمونه تست کامل از پایگاه داده MySQL تست کنیم.</p>
@@ -318,11 +318,7 @@ FAIL</samp></pre>
 <samp>ok      snippetbox.alexedwards.net/cmd/web      0.008s</samp></pre>
 </figure>
 
-<p>بیایید لحظه‌ای مکث کنیم و به آنچه که انجام داده‌ایم فکر کنیم.</p>
-
-<p>ما ساختار <code>application</code> را به‌روزرسانی کرده‌ایم تا به جای اینکه فیلدهای <code>snippets</code> و <code>users</code> دارای انواع <code>*models.SnippetModel</code> و <code>*models.UserModel</code> باشند، <em>رابط‌ها</em> باشند.</p>
-
-<p>تا زمانی که یک نوع متدهای لازم برای برآورده کردن رابط را داشته باشد، می‌توانیم از آن‌ها در ساختار <code>application</code> خود استفاده کنیم. هم مدل‌های پایگاه داده واقعی ما (مانند <code>models.SnippetModel</code>) و هم مدل‌های پایگاه داده شبیه‌سازی شده (مانند <code>mocks.SnippetModel</code>) رابط‌ها را برآورده می‌کنند، بنابراین اکنون می‌توانیم از آن‌ها به صورت متناوب استفاده کنیم.</p>
+<p>به عنوان یک نکته جانبی، توجه کنید که چگونه نام‌های تست‌های فرعی به صورت استاندارد شده‌اند؟ Go به طور خودکار هر فضای خالی در نام تست فرعی را با یک زیرخط جایگزین می‌کند (و هر کاراکتر غیرقابل چاپ نیز در خروجی تست فرار می‌کند).</p>
 
 <h3 id="testing-the-snippetview-handler">تست هندلر snippetView</h3>
 
