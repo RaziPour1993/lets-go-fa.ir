@@ -4,36 +4,36 @@
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Profiling test coverage &mdash; Let's Go</title>
+		<title>پروفایل‌سازی پوشش تست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Profiling test coverage</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; پروفایل‌سازی پوشش تست</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="13.07-integration-testing.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="14.00-conclusion.html">Next</a> &rsaquo;
+					&lsaquo; <a href="13.07-integration-testing.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">محتوا</a> &middot;
+					<a href="14.00-conclusion.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 13.8.</div>
-			<h2 id="profiling-test-coverage">Profiling test coverage</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 13.8.</div>
+			<h2 id="profiling-test-coverage">پروفایل‌سازی پوشش تست</h2>
 
-<p>A great feature of the <code>go test</code> tool is the metrics and visualizations that it provides for <dfn>test coverage</dfn>.</p>
+<p dir="rtl">یکی از ویژگی‌های عالی ابزار <code>go test</code>، متریک‌ها و تجسم‌هایی است که برای <dfn>پوشش تست</dfn> ارائه می‌دهد.</p>
 
-<p>Go ahead and try running the tests in our project using the <code>-cover</code> flag like so:</p>
+<p dir="rtl">بروید و تست‌ها را در پروژه ما با استفاده از فلگ <code>-cover</code> به این صورت اجرا کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -cover ./...
 <samp>?       snippetbox.alexedwards.net/ui	[no test files]
 ok      snippetbox.alexedwards.net/cmd/web	0.013s          coverage: 45.7% of statements
@@ -43,23 +43,23 @@ ok      snippetbox.alexedwards.net/cmd/web	0.013s          coverage: 45.7% of st
 ok      snippetbox.alexedwards.net/internal/models	0.128s  coverage: 11.3% of statements</samp></pre>
 </figure>
 
-<p>From the results here we can see that 46.9% of the statements in our <code>cmd/web</code> package are executed during our tests, and for our <code>internal/models</code> package the figure is 11.3%.</p>
+<p dir="rtl">از نتایج اینجا می‌توانیم ببینیم که 46.9% از دستورات در بسته <code>cmd/web</code> ما در طول تست‌ها اجرا می‌شوند، و برای بسته <code>internal/models</code> این رقم 11.3% است.</p>
 
-<aside class="note"><p>
-<strong>Note:</strong> Your numbers may be slightly different depending on the exact version of the book you&rsquo;re reading, or any adaptations you&rsquo;ve made to the code as you&rsquo;ve been following along.
+<aside class="note"><p dir="rtl">
+<strong>توجه:</strong> اعداد شما ممکن است کمی متفاوت باشند بسته به نسخه دقیق کتابی که می‌خوانید، یا هر گونه تطبیقاتی که در کد انجام داده‌اید.
 </p></aside>
 
-<p>We can get a more detailed breakdown of test coverage <em>by method and function</em> by using the <code>-coverprofile</code> flag like so:</p>
+<p dir="rtl">ما می‌توانیم با استفاده از فلگ <code>-coverprofile</code> یک تجزیه و تحلیل دقیق‌تر از پوشش تست <em>توسط روش و تابع</em> دریافت کنیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -coverprofile=/tmp/profile.out ./...</pre>
 </figure>
 
-<p>This will execute your tests as normal and &mdash; if all your tests pass &mdash; it will then write a <dfn>coverage profile</dfn> to a specific location. In the example above, we&rsquo;ve instructed it to write the profile to <code>/tmp/profile.out</code>.</p>
+<p dir="rtl">این تست‌های شما را به صورت عادی اجرا می‌کند و &mdash; اگر همه تست‌های شما پاس شوند &mdash; سپس یک <dfn>پروفایل پوشش</dfn> را به مکان خاصی می‌نویسد. در مثال بالا، ما به آن دستور داده‌ایم که پروفایل را به <code>/tmp/profile.out</code> بنویسد.</p>
 
-<p>You can then view the coverage profile by using the <code>go tool cover</code> command like so:</p>
+<p dir="rtl">سپس می‌توانید پروفایل پوشش را با استفاده از دستور <code>go tool cover</code> به این صورت مشاهده کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go tool cover -func=/tmp/profile.out
 <samp>snippetbox.alexedwards.net/cmd/web/handlers.go:15:          home                    0.0%
 snippetbox.alexedwards.net/cmd/web/handlers.go:31:          snippetView             92.9%
@@ -98,50 +98,50 @@ snippetbox.alexedwards.net/internal/models/users.go:98:     Exists              
 total:                                                      (statements)            38.1%</samp></pre>
 </figure>
 
-<p>An alternative and more visual way to view the coverage profile is to use the <code>-html</code> flag instead of <code>-func</code>.</p>
+<p dir="rtl">یک روش جایگزین و بصری‌تر برای مشاهده پروفایل پوشش استفاده از فلگ <code>-html</code> به جای <code>-func</code> است.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go tool cover -html=/tmp/profile.out</pre>
 </figure>
 
-<p>This will open a browser window containing a navigable and highlighted representation of your code, similar to this:</p>
+<p dir="rtl">این یک پنجره مرورگر حاوی نمایشی قابل پیمایش و برجسته از کد شما باز می‌کند، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/13.08-01.png" alt="13.08-01.png" />
 </figure>
 
-<p>The statements which get executed during your tests are colored green, and those that are not executed are colored red. This makes it easy to see exactly what code is currently covered by your tests (unless you have red-green color blindness).</p>
+<p dir="rtl">دستورات که در طول تست‌های شما اجرا می‌شوند به رنگ سبز و آن‌هایی که اجرا نمی‌شوند به رنگ قرمز هستند. این کار باعث می‌شود که به راحتی ببینید که کدام کد در حال حاضر توسط تست‌های شما پوشش داده شده است (مگر اینکه کوررنگی قرمز-سبز داشته باشید).</p>
 
-<p>You can take this a step further and use the <code>-covermode=count</code> option when running <code>go test</code> like so:</p>
+<p dir="rtl">می‌توانید این کار را یک قدم جلوتر ببرید و از گزینه <code>-covermode=count</code> هنگام اجرای <code>go test</code> به این صورت استفاده کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -covermode=count -coverprofile=/tmp/profile.out ./...
 $ go tool cover -html=/tmp/profile.out</pre>
 </figure>
 
-<p>Instead of just highlighting the statements in green and red, using <code>-covermode=count</code> makes the coverage profile record the exact <em>number of times</em> that each statement is executed during the tests.</p>
+<p dir="rtl">به جای فقط برجسته کردن دستورات به رنگ سبز و قرمز، استفاده از <code>-covermode=count</code> باعث می‌شود که پروفایل پوشش تعداد دقیق <em>دفعاتی که</em> هر دستور در طول تست‌ها اجرا می‌شود را ثبت کند.</p>
 
-<p>When viewed in the browser, statements which are executed more frequently are then shown in a more saturated shade of green, similar to this:</p>
+<p dir="rtl">هنگامی که در مرورگر مشاهده می‌شود، دستورات که بیشتر اجرا می‌شوند در سایه‌ای اشباع‌تر از سبز نشان داده می‌شوند، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/13.08-02.png" alt="13.08-02.png" />
 </figure>
 
-<aside class="note"><p>
-<strong>Note:</strong> If you&rsquo;re running some of your tests in parallel, you should use the <code>-covermode=atomic</code> flag (instead of <code>-covermode=count</code>) to ensure an accurate count.
+<aside class="note"><p dir="rtl">
+<strong>توجه:</strong> اگر برخی از تست‌های خود را به صورت موازی اجرا می‌کنید، باید از فلگ <code>-covermode=atomic</code> (به جای <code>-covermode=count</code>) برای اطمینان از شمارش دقیق استفاده کنید.
 </p></aside>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="13.07-integration-testing.html">Previous</a>
+					&lsaquo; <a href="13.07-integration-testing.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">محتوا</a>
 				</div>
 				<div>
-					<a href="14.00-conclusion.html">Next</a> &rsaquo;
+					<a href="14.00-conclusion.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
