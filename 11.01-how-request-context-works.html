@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>How request context works &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">Using request context</a> &rsaquo; How request context works</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="11.00-using-request-context.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="11.02-request-context-for-authentication-authorization.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 11.1.</div>
+			<h2 id="how-request-context-works">How request context works</h2>
+
+<p>Every <code>http.Request</code> that our middleware and handlers process has a <a href="https://pkg.go.dev/context/#Context"><code>context.Context</code></a> object embedded in it, which we can use to store information during the lifetime of the request.</p>
+
+<p>As I&rsquo;ve already hinted at, in a web application a common use-case for this is to pass information between your pieces of middleware and other handlers.</p>
+
+<p>In our case, we want to use it to check if a user is authenticated once in some middleware, and if they are, then make this information available to all our other middleware and handlers.</p>
+
+<p>Let&rsquo;s start with some theory and explain the syntax for working with request context. Then, in the next chapter, we&rsquo;ll get a bit more concrete again and demonstrate how to practically use it in our application.</p>
+
+<h3 id="the-request-context-syntax">The request context syntax</h3>
+
+<p>The basic code for adding information to a request&rsquo;s context looks like this:</p>
+
+<figure class="code go">
+<pre><span class="c1">// Where r is a *http.Request...
+</span><span class="c1"></span><span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="s">&#34;isAuthenticated&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span></pre>
+</figure>
+
+<p>Let&rsquo;s step through this line-by-line.</p>
+
+<ul>
+<li>First, we use the <code>r.Context()</code> method to retrieve the <em>existing</em> context from a request and assign it to the <code>ctx</code> variable.</li>
+<li>Then we use the <code>context.WithValue()</code> method to create a <em>new copy</em> of the existing context, containing the key <code>&quot;isAuthenticated&quot;</code> and a value of <code>true</code>.</li>
+<li>Then finally we use the <code>r.WithContext()</code> method to create a <em>copy</em> of the request containing our new context.</li>
+</ul>
+
+<aside class="important"><p>
+<strong>Important:</strong> Notice that we don&rsquo;t actually update the context for a request directly. What we&rsquo;re doing is <em>creating a new copy</em> of the <code>http.Request</code> object with our new context in it.
+</p></aside>
+
+<p>I should also point out that, for clarity, I made that code snippet a bit more verbose than it needs to be. It&rsquo;s more typical to write it like this:</p>
+
+<figure class="code go">
+<pre><span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;isAuthenticated&#34;</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span></pre>
+</figure>
+
+<p>So that&rsquo;s how you add data to a request&rsquo;s context. But what about retrieving it again?</p>
+
+<p>The important thing to explain is that, behind the scenes, request context values are stored with the type <code>any</code>. And that means that, after retrieving them from the context, you&rsquo;ll need to assert them to their original type before you use them.</p>
+
+<p>To retrieve a value we need to use the <code>r.Context().Value()</code> method, like so:</p>
+
+<figure class="code go">
+<pre><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">&#34;isAuthenticated&#34;</span><span class="p">)</span><span class="p">.</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;could not convert value to bool&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h3 id="avoiding-key-collisions">Avoiding key collisions</h3>
+
+<p>In the code samples above, I&rsquo;ve used the string <code>&quot;isAuthenticated&quot;</code> as the key for storing and retrieving the data from a request&rsquo;s context. But this isn&rsquo;t recommended because there&rsquo;s a risk that other third-party packages used by your application will also want to store data using the key <code>&quot;isAuthenticated&quot;</code> &mdash; and that would cause a naming collision.</p>
+
+<p>To avoid this, it&rsquo;s good practice to create your own custom type which you can use for your context keys. Extending our sample code, it&rsquo;s much better to do something like this:</p>
+
+<figure class="code go">
+<pre><span class="c1">// Declare a custom &#34;contextKey&#34; type for your context keys.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">contextKey</span> <span class="kt">string</span>
+
+<span class="c1">// Create a constant with the type contextKey that we can use.
+</span><span class="c1"></span><span class="kd">const</span> <span class="nx">isAuthenticatedContextKey</span> <span class="p">=</span> <span class="nf">contextKey</span><span class="p">(</span><span class="s">&#34;isAuthenticated&#34;</span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Set the value in the request context, using our isAuthenticatedContextKey 
+</span><span class="c1"></span><span class="c1">// constant as the key.
+</span><span class="c1"></span><span class="nx">ctx</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">ctx</span> <span class="p">=</span> <span class="nx">context</span><span class="p">.</span><span class="nf">WithValue</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">isAuthenticatedContextKey</span><span class="p">,</span> <span class="kc">true</span><span class="p">)</span>
+<span class="nx">r</span> <span class="p">=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">WithContext</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="c1">// Retrieve the value from the request context using our constant as the key.
+</span><span class="c1"></span><span class="nx">isAuthenticated</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="nx">isAuthenticatedContextKey</span><span class="p">)</span><span class="p">.</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">!</span><span class="nx">ok</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;could not convert value to bool&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="11.00-using-request-context.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="11.02-request-context-for-authentication-authorization.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "11.00-using-request-context.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "11.02-request-context-for-authentication-authorization.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+

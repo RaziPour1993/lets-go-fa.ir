@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="x-ua-compatible" content="ie=edge">
+		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+		<title>Using request context &mdash; Let's Go</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
+	</head>
+	<body>
+		<header>
+			<div class="wrapper">
+				<div>
+					
+						
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; Using request context</span>
+						
+					
+				</div>
+				<div>
+					&lsaquo; <a href="10.07-csrf-protection.html">Previous</a>
+					&middot; <a href="00.01-contents.html">Contents</a> &middot;
+					<a href="11.01-how-request-context-works.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</header>
+		<main class="wrapper text">
+			<div class="chapter">Chapter 11.</div>
+			<h1 id="using-request-context">Using request context</h1>
+
+<p>At the moment our logic for authenticating a user consists of simply checking whether a <code>&quot;authenticatedUserID&quot;</code> value exists in their session data, like so:</p>
+
+<figure class="code go">
+<pre><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>We could make this check more robust by querying our <code>users</code> database table to make sure that the <code>&quot;authenticatedUserID&quot;</code> value is a real, valid, value (i.e we haven&rsquo;t deleted the user&rsquo;s account since they last logged in).</p>
+
+<p>But there is a slight problem with doing this additional database check.</p>
+
+<p>Our <code>isAuthenticated()</code> helper can potentially be called multiple times in each request cycle. Currently we use it twice &mdash; once in the <code>requireAuthentication()</code> middleware and again in the <code>newTemplateData()</code> helper. So, if we query the database from the <code>isAuthenticated()</code> helper directly, we would end up making duplicated round-trips to the database during every request. And that&rsquo;s not very efficient.</p>
+
+<p>A better approach would be to carry out this check in some middleware to determine whether the current request is from an authenticated user or not, and then pass that information down to all subsequent handlers in the chain.</p>
+
+<p>So how do we do this? Enter <dfn>request context</dfn>.</p>
+
+<p>In this section you&rsquo;ll learn:</p>
+
+<ul>
+<li><a href="11.01-how-request-context-works.html">What request context is</a>, how to use it, and when it is appropriate to use it.</li>
+<li>How to <a href="11.02-request-context-for-authentication-authorization.html">use request context in practice</a> to pass information about the current user between your handlers.</li>
+</ul>
+
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="10.07-csrf-protection.html">Previous</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">Contents</a>
+				</div>
+				<div>
+					<a href="11.01-how-request-context-works.html">Next</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					
+					case 37:
+						window.location.href = "10.07-csrf-protection.html";
+						break;
+						
+					
+					case 39:
+						window.location.href = "11.01-how-request-context-works.html";
+						break;
+						
+				}
+			};
+		</script>
+	</body>
+</html>
+
