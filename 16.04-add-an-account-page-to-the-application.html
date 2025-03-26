@@ -4,80 +4,80 @@
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Add an 'Account' page to the application &mdash; Let's Go</title>
+		<title>Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header>
+		<header dir="rtl">
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">Guided exercises</a> &rsaquo; Add an 'Account' page to the application</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; اضافه کردن صفحه 'حساب کاربری' به برنامه</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="16.03-test-the-snippetcreate-method.html">Previous</a>
-					&middot; <a href="00.01-contents.html">Contents</a> &middot;
-					<a href="16.05-redirect-user-appropriately-after-login.html">Next</a> &rsaquo;
+					&lsaquo; <a href="16.03-test-the-snippetcreate-method.html">قبلی</a>
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
+					<a href="16.05-redirect-user-appropriately-after-login.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text">
-			<div class="chapter">Chapter 16.4.</div>
-			<h2 id="add-an-account-page-to-the-application">Add an &lsquo;Account&rsquo; page to the application</h2>
+		<main class="wrapper text" dir="rtl">
+			<div class="chapter">فصل 16.4.</div>
+			<h2 id="add-an-account-page-to-the-application">اضافه کردن صفحه 'حساب کاربری' به برنامه</h2>
 
-<p>Your goal for this exercise is to add a new &lsquo;Your Account&rsquo; page to the application. It should be mapped to a new <code>GET /account/view</code> route and display the name, email address, and signup date for the currently authenticated user, similar to this:</p>
+<p>هدف شما در این تمرین اضافه کردن یک صفحه جدید 'حساب کاربری شما' به برنامه است. این صفحه باید به یک مسیر جدید <code>GET /account/view</code> متصل شود و نام، آدرس ایمیل و تاریخ ثبت‌نام کاربر احراز هویت شده فعلی را نمایش دهد، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/16.04-01.png" alt="16.04-01.png" />
 </figure>
 
-<h4 id="step-1">Step 1</h4>
+<h4 id="step-1">مرحله 1</h4>
 
-<p>In the <code>internal/models/users.go</code> file create a new <code>UserModel.Get()</code> method. This should accept the ID of a user as a parameter, and return a <code>User</code> struct containing all the information for this user (<em>except for their hashed password</em>, which we don&rsquo;t need). If no user is found with the ID, it should return an <code>ErrNoRecord</code> error.</p>
+<p>در فایل <code>internal/models/users.go</code> یک متد جدید <code>UserModel.Get()</code> ایجاد کنید. این متد باید شناسه یک کاربر را به عنوان پارامتر بپذیرد و یک ساختار <code>User</code> حاوی تمام اطلاعات این کاربر (به جز رمز عبور هش شده آنها، که نیازی به آن نداریم) را برگرداند. اگر هیچ کاربری با این شناسه پیدا نشد، باید یک خطای <code>ErrNoRecord</code> برگرداند.</p>
 
-<p>Also, update the <code>UserModelInterface</code> type to include this new <code>Get()</code> method, and add a corresponding method to our mock <code>mocks.UserModel</code> so that it continues to satisfy the interface.</p>
+<p>همچنین، نوع <code>UserModelInterface</code> را به‌روزرسانی کنید تا این متد جدید <code>Get()</code> را شامل شود و یک متد متناظر به <code>mocks.UserModel</code> ما اضافه کنید تا همچنان با رابط کاربری سازگار باشد.</p>
 
-<p><a href="#17.04-suggested-code-for-step-1">Show suggested code</a></p>
+<p><a href="#17.04-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">Step 2</h4>
+<h4 id="step-2">مرحله 2</h4>
 
-<p>Create a <code>GET /account/view</code> route which maps to a new <code>accountView</code> handler. The route should be restricted to authenticated users only.</p>
+<p>یک مسیر <code>GET /account/view</code> ایجاد کنید که به یک هندلر جدید <code>accountView</code> متصل شود. این مسیر باید فقط برای کاربران احراز هویت شده محدود شود.</p>
 
-<p><a href="#17.04-suggested-code-for-step-2">Show suggested code</a></p>
+<p><a href="#17.04-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-3">Step 3</h4>
+<h4 id="step-3">مرحله 3</h4>
 
-<p>Update the <code>accountView</code> handler to get the <code>&quot;authenticatedUserID&quot;</code> from the session, fetch the details of the relevant user from the database (using the new <code>UserModel.Get()</code> method), and dump them out in a plain text HTTP response. If no user matching the <code>&quot;authenticatedUserID&quot;</code> from the session could be found, redirect the client to <code>GET /user/login</code> to force re-authentication.</p>
+<p>هندلر <code>accountView</code> را به‌روزرسانی کنید تا <code>"authenticatedUserID"</code> را از جلسه دریافت کند، جزئیات کاربر مربوطه را از پایگاه داده (با استفاده از متد جدید <code>UserModel.Get()</code>) دریافت کند و آنها را در یک پاسخ HTTP متنی ساده نمایش دهد. اگر هیچ کاربری مطابق با <code>"authenticatedUserID"</code> از جلسه پیدا نشد، کاربر را به <code>GET /user/login</code> هدایت کنید تا مجدداً احراز هویت شود.</p>
 
-<p>When you visit <a href="https://localhost:4000/account/view"><code>https://localhost:4000/account/view</code></a> in your browser as an authenticated user, you should get a response similar to this:</p>
+<p>وقتی به عنوان یک کاربر احراز هویت شده به <a href="https://localhost:4000/account/view"><code>https://localhost:4000/account/view</code></a> در مرورگر خود مراجعه می‌کنید، باید پاسخی مشابه این دریافت کنید:</p>
 
 <figure class="img">
 <img src="assets/img/16.04-02.png" alt="16.04-02.png" />
 </figure>
 
-<p><a href="#17.04-suggested-code-for-step-3">Show suggested code</a></p>
+<p><a href="#17.04-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-4">Step 4</h4>
+<h4 id="step-4">مرحله 4</h4>
 
-<p>Create a new <code>ui/html/pages/account.tmpl</code> file which displays the user information in a table. Then update the <code>accountView</code> handler to render this new template, passing through the user&rsquo;s details via the <code>templateData</code> struct.</p>
+<p>یک فایل جدید <code>ui/html/pages/account.tmpl</code> ایجاد کنید که اطلاعات کاربر را در یک جدول نمایش دهد. سپس هندلر <code>accountView</code> را به‌روزرسانی کنید تا این قالب جدید را رندر کند و جزئیات کاربر را از طریق ساختار <code>templateData</code> منتقل کند.</p>
 
-<p><a href="#17.04-suggested-code-for-step-4">Show suggested code</a></p>
+<p><a href="#17.04-suggested-code-for-step-4">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-5">Step 5</h4>
+<h4 id="step-5">مرحله 5</h4>
 
-<p>Additionally, update the main navigation bar for the site to include a link to the view account page (visible to authenticated users only). Then sanity check that the new page and navigation works as expected by visiting <a href="https://localhost:4000/account/view"><code>https://localhost:4000/account/view</code></a> in your browser while logged in.</p>
+<p>علاوه بر این، نوار ناوبری اصلی سایت را به‌روزرسانی کنید تا یک لینک به صفحه مشاهده حساب کاربری (فقط برای کاربران احراز هویت شده قابل مشاهده) اضافه شود. سپس بررسی کنید که صفحه جدید و ناوبری همانطور که انتظار می‌رود کار می‌کند، با مراجعه به <a href="https://localhost:4000/account/view"><code>https://localhost:4000/account/view</code></a> در مرورگر خود در حالی که وارد شده‌اید.</p>
 
-<p><a href="#17.04-suggested-code-for-step-5">Show suggested code</a></p>
+<p><a href="#17.04-suggested-code-for-step-5">نمایش کد پیشنهادی</a></p>
 
-<h3 id="suggested-code">Suggested code</h3>
+<h3 id="suggested-code">کد پیشنهادی</h3>
 
-<h4 id="17.04-suggested-code-for-step-1">Suggested code for step 1</h4>
+<h4 id="17.04-suggested-code-for-step-1">کد پیشنهادی برای مرحله 1</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -110,7 +110,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/mocks/users.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">mocks</span>
 
@@ -138,9 +138,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="17.04-suggested-code-for-step-2">Suggested code for step 2</h4>
+<h4 id="17.04-suggested-code-for-step-2">کد پیشنهادی برای مرحله 2</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -150,7 +150,7 @@
 </span><span class="c1"></span><span class="p">}</span></pre>
 </figure>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -186,9 +186,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="17.04-suggested-code-for-step-3">Suggested code for step 3</h4>
+<h4 id="17.04-suggested-code-for-step-3">کد پیشنهادی برای مرحله 3</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -211,9 +211,9 @@
 </pre>
 </figure>
 
-<h4 id="17.04-suggested-code-for-step-4">Suggested code for step 4</h4>
+<h4 id="17.04-suggested-code-for-step-4">کد پیشنهادی برای مرحله 4</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -232,7 +232,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/account.tmpl</figcaption>
 <pre>
 {{define &#34;title&#34;}}Your Account{{end}}
@@ -258,7 +258,7 @@
 {{end}}</pre>
 </figure>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -284,9 +284,9 @@
 </pre>
 </figure>
 
-<h4 id="17.04-suggested-code-for-step-5">Suggested code for step 5</h4>
+<h4 id="17.04-suggested-code-for-step-5">کد پیشنهادی برای مرحله 5</h4>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/partials/nav.tmpl</figcaption>
 <pre>{{define &#34;nav&#34;}}
 <span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
@@ -315,16 +315,16 @@
 </figure>
 
 		</main>
-		<footer>
+		<footer dir="rtl">
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="16.03-test-the-snippetcreate-method.html">Previous</a>
+					&lsaquo; <a href="16.03-test-the-snippetcreate-method.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">Contents</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					<a href="16.05-redirect-user-appropriately-after-login.html">Next</a> &rsaquo;
+					<a href="16.05-redirect-user-appropriately-after-login.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>
