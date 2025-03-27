@@ -1,0 +1,19 @@
+title: Let's Go - آموزش برنامه‌نویسی Go
+description: آموزش برنامه‌نویسی Go به زبان فارسی
+baseurl: ""
+url: "https://lets-go-fa.ir"
+
+# Build settings
+markdown: kramdown
+theme: jekyll-theme-minimal
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .git/ 
