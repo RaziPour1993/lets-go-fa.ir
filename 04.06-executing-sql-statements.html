@@ -203,35 +203,7 @@ Display a specific snippet with ID 4...</samp></pre>
 <pre><span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;INSERT INTO ... VALUES ($1, $2, $3)&#34;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span></pre>
 </figure>
 
-		</main>
-		<footer>
-			<div class="wrapper">
-				<div>
-					&lsaquo; <a href="04.05-designing-a-database-model.html">قبلی</a>
-				</div>
-				<div>
-					<a href="00.01-contents.html">فهرست</a>
-				</div>
-				<div>
-					<a href="04.07-single-record-sql-queries.html">بعدی</a> &rsaquo;
-				</div>
-			</div>
-		</footer>
-		<script>
-			document.onkeydown = function(evt) {
-				evt = evt || window.event;
-				switch (evt.keyCode) {
-					case 37:
-						window.location.href = "04.05-designing-a-database-model.html";
-						break;
-					case 39:
-						window.location.href = "04.07-single-record-sql-queries.html";
-						break;
-				}
-			};
-		</script>
-
-		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
 
 <table class="glossary">
     <tr>
@@ -262,7 +234,7 @@ Display a specific snippet with ID 4...</samp></pre>
     <tr>
         <td>ورودی غیرقابل اعتماد کاربر</td>
         <td>Untrusted User Input</td>
-        <td>داده‌هایی که از کاربر دریافت می‌شود و باید قبل از استفاده اعتبارسنجی شوند</td>
+        <td>داده‌های ورودی از کاربر که باید قبل از استفاده اعتبارسنجی شوند</td>
     </tr>
     <tr>
         <td>حملات تزریق SQL</td>
@@ -272,19 +244,46 @@ Display a specific snippet with ID 4...</samp></pre>
     <tr>
         <td>دستور آماده</td>
         <td>Prepared Statement</td>
-        <td>کوئری SQL از پیش کامپایل شده که می‌تواند بارها با پارامترهای مختلف اجرا شود</td>
+        <td>یک کوئری SQL از پیش کامپایل شده که با پارامترها اجرا می‌شود</td>
     </tr>
     <tr>
         <td>مقادیر پارامتر</td>
         <td>Parameter Values</td>
-        <td>داده‌های واقعی که جایگزین پارامترهای جایگزین در کوئری می‌شوند</td>
+        <td>داده‌های واقعی که جایگزین پارامترهای جایگزین می‌شوند</td>
     </tr>
     <tr>
         <td>آزادسازی</td>
         <td>Deallocation</td>
-        <td>آزاد کردن منابع سیستمی که توسط یک دستور آماده اشغال شده‌اند</td>
+        <td>فرآیند آزاد کردن منابع سیستم که توسط یک دستور آماده استفاده شده‌اند</td>
     </tr>
 </table>
+		</main>
+		<footer>
+			<div class="wrapper">
+				<div>
+					&lsaquo; <a href="04.05-designing-a-database-model.html">قبلی</a>
+				</div>
+				<div>
+					<a href="00.01-contents.html">فهرست</a>
+				</div>
+				<div>
+					<a href="04.07-single-record-sql-queries.html">بعدی</a> &rsaquo;
+				</div>
+			</div>
+		</footer>
+		<script>
+			document.onkeydown = function(evt) {
+				evt = evt || window.event;
+				switch (evt.keyCode) {
+					case 37:
+						window.location.href = "04.05-designing-a-database-model.html";
+						break;
+					case 39:
+						window.location.href = "04.07-single-record-sql-queries.html";
+						break;
+				}
+			};
+		</script>
 	</body>
 </html>
 
