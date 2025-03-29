@@ -23,17 +23,18 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۹.</div>
-			<h1 id="server-and-security-improvements">بهبودهای سرور و امنیت</h1>
+			<h1 id="server-and-security-improvements">بهبودهای سرور و امنیت (Server and Security Improvements)</h1>
 
-<p>در این بخش از کتاب، ما بر روی بهبودهای سرور HTTP برنامه خود تمرکز خواهیم کرد. شما یاد خواهید گرفت:</p>
+<p>در این فصل، نحوه <dfn>بهبود امنیت (Security Improvements)</dfn> و <dfn>عملکرد سرور (Server Performance)</dfn> را بررسی می‌کنیم. این شامل <dfn>پیکربندی HTTPS (HTTPS Configuration)</dfn>، <dfn>مدیریت خطا (Error Handling)</dfn> و <dfn>زمان‌های انتظار (Timeouts)</dfn> می‌شود.</p>
 
-<ul dir="rtl">
-<li>چگونه تنظیمات سرور را با استفاده از <a href="09.01-the-http-server-struct.html">نوع <code>http.Server</code></a> سفارشی کنید.</li>
-<li>سرور لاگ خطا چیست و چگونه آن را برای استفاده از لاگر ساختاریافته خود پیکربندی کنید.</li>
-<li>چگونه به سرعت و به راحتی <a href="09.03-generating-a-self-signed-tls-certificate.html">یک گواهی TLS خودامضا ایجاد کنید</a>، تنها با استفاده از Go.</li>
-<li>اصول راه‌اندازی برنامه خود به گونه‌ای که تمام درخواست‌ها و پاسخ‌ها <a href="09.04-running-a-https-server.html">به صورت امن از طریق HTTPS ارائه شوند</a>.</li>
-<li><a href="09.05-configuring-https-settings.html">برخی تنظیمات معقول</a> برای تنظیمات پیش‌فرض TLS برای کمک به حفظ امنیت اطلاعات کاربر و عملکرد سریع سرور ما.</li>
-<li>چگونه <a href="09.06-connection-timeouts.html">زمان‌های انتظار اتصال</a> را تنظیم کنید تا تأثیر حملات مشتری کند را کاهش دهید.</li>
+<p>در این فصل خواهیم آموخت:</p>
+
+<ul>
+<li>چگونه <dfn>تنظیمات سرور (Server Settings)</dfn> را با استفاده از <dfn>نوع http.Server (http.Server Type)</dfn> سفارشی کنیم.</li>
+<li>نحوه <dfn>ثبت خطاها (Error Logging)</dfn> و <dfn>مدیریت خطا (Error Handling)</dfn> در سرور.</li>
+<li>چگونه یک <dfn>گواهی TLS خودامضا (Self-Signed TLS Certificate)</dfn> ایجاد کنیم.</li>
+<li>نحوه <dfn>راه‌اندازی HTTPS (HTTPS Setup)</dfn> و <dfn>پیکربندی امن (Secure Configuration)</dfn> آن.</li>
+<li>چگونه <dfn>زمان‌های انتظار اتصال (Connection Timeouts)</dfn> را برای مقابله با <dfn>حملات کند (Slow Attacks)</dfn> تنظیم کنیم.</li>
 </ul>
 
 		</main>
@@ -63,6 +64,65 @@
 				}
 			};
 		</script>
+		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>بهبود امنیت</td>
+        <td>Security Improvements</td>
+        <td>ارتقای سطح امنیت سیستم</td>
+    </tr>
+    <tr>
+        <td>عملکرد سرور</td>
+        <td>Server Performance</td>
+        <td>کارایی و سرعت سرور</td>
+    </tr>
+    <tr>
+        <td>پیکربندی HTTPS</td>
+        <td>HTTPS Configuration</td>
+        <td>تنظیمات ارتباط امن</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>نحوه برخورد با خطاها</td>
+    </tr>
+    <tr>
+        <td>زمان‌های انتظار</td>
+        <td>Timeouts</td>
+        <td>محدودیت‌های زمانی اتصال</td>
+    </tr>
+    <tr>
+        <td>تنظیمات سرور</td>
+        <td>Server Settings</td>
+        <td>پیکربندی‌های سرور</td>
+    </tr>
+    <tr>
+        <td>نوع http.Server</td>
+        <td>http.Server Type</td>
+        <td>ساختار داده سرور HTTP</td>
+    </tr>
+    <tr>
+        <td>ثبت خطاها</td>
+        <td>Error Logging</td>
+        <td>ذخیره و ثبت خطاها</td>
+    </tr>
+    <tr>
+        <td>گواهی TLS خودامضا</td>
+        <td>Self-Signed TLS Certificate</td>
+        <td>گواهی امنیتی تولید شده توسط خود</td>
+    </tr>
+    <tr>
+        <td>راه‌اندازی HTTPS</td>
+        <td>HTTPS Setup</td>
+        <td>پیکربندی ارتباط امن</td>
+    </tr>
+</table>
 	</body>
 </html>
 

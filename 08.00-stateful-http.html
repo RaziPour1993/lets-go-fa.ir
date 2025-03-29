@@ -25,7 +25,17 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۸.</div>
-			<h1 id="stateful-http">HTTP حالت دار</h1>
+			<h1 id="stateful-http">HTTP حالت‌دار (Stateful HTTP)</h1>
+
+<p>در این فصل، نحوه استفاده از <dfn>جلسات (Sessions)</dfn> برای ایجاد <dfn>HTTP حالت‌دار (Stateful HTTP)</dfn> را بررسی می‌کنیم. این به ما امکان می‌دهد <dfn>داده‌های کاربر (User Data)</dfn> را بین <dfn>درخواست‌های HTTP (HTTP Requests)</dfn> مختلف حفظ کنیم.</p>
+
+<p>در این فصل خواهیم آموخت:</p>
+
+<ul>
+<li>چرا <dfn>جلسات (Sessions)</dfn> برای ایجاد <dfn>برنامه‌های وب تعاملی (Interactive Web Applications)</dfn> مهم هستند.</li>
+<li>چگونه <dfn>جلسات (Sessions)</dfn> را در Go پیاده‌سازی کنیم.</li>
+<li>چگونه <dfn>داده‌های جلسه (Session Data)</dfn> را به صورت ایمن ذخیره و بازیابی کنیم.</li>
+</ul>
 
 <p>یک لمس خوب برای بهبود تجربه کاربری ما نمایش یک پیام تأیید یک‌باره است که کاربر پس از افزودن یک قطعه جدید می‌بیند. مانند این:</p>
 
@@ -43,6 +53,65 @@
 <li>چگونه می‌توانید <a href="08.02-setting-up-the-session-manager.html">رفتار جلسه</a> (از جمله زمان‌های انقضا و تنظیمات کوکی) را بر اساس نیازهای برنامه خود سفارشی کنید.</li>
 </ul>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>جلسات</td>
+        <td>Sessions</td>
+        <td>مکانیزمی برای حفظ وضعیت کاربر بین درخواست‌ها</td>
+    </tr>
+    <tr>
+        <td>HTTP حالت‌دار</td>
+        <td>Stateful HTTP</td>
+        <td>حفظ اطلاعات وضعیت بین درخواست‌های HTTP</td>
+    </tr>
+    <tr>
+        <td>داده‌های کاربر</td>
+        <td>User Data</td>
+        <td>اطلاعات مربوط به کاربر در برنامه</td>
+    </tr>
+    <tr>
+        <td>درخواست‌های HTTP</td>
+        <td>HTTP Requests</td>
+        <td>درخواست‌های ارسالی از مرورگر به سرور</td>
+    </tr>
+    <tr>
+        <td>برنامه‌های وب تعاملی</td>
+        <td>Interactive Web Applications</td>
+        <td>برنامه‌های وب با قابلیت تعامل با کاربر</td>
+    </tr>
+    <tr>
+        <td>داده‌های جلسه</td>
+        <td>Session Data</td>
+        <td>اطلاعات ذخیره شده در جلسه کاربر</td>
+    </tr>
+    <tr>
+        <td>مدیریت جلسه</td>
+        <td>Session Management</td>
+        <td>کنترل و مدیریت جلسات کاربران</td>
+    </tr>
+    <tr>
+        <td>امنیت جلسه</td>
+        <td>Session Security</td>
+        <td>حفاظت از داده‌های جلسه</td>
+    </tr>
+    <tr>
+        <td>کوکی‌های جلسه</td>
+        <td>Session Cookies</td>
+        <td>کوکی‌های حاوی شناسه جلسه</td>
+    </tr>
+    <tr>
+        <td>ذخیره‌سازی جلسه</td>
+        <td>Session Storage</td>
+        <td>محل نگهداری داده‌های جلسه</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

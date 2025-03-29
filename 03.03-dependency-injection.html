@@ -14,7 +14,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; تزریق وابستگی</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; تزریق وابستگی (Dependency Injection)</span>
 						
 					
 				</div>
@@ -27,9 +27,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل 3.3.</div>
-			<h2 id="dependency-injection">تزریق وابستگی</h2>
+			<h2 id="dependency-injection">تزریق وابستگی (Dependency Injection)</h2>
 
-<p>اگر فایل <code>handlers.go</code> خود را باز کنید، متوجه خواهید شد که تابع <code>home</code> هنوز از لاگر استاندارد Go برای نوشتن پیام‌های خطا استفاده می‌کند، نه لاگر ساختاری که اکنون می‌خواهیم استفاده کنیم.</p>
+<p>اگر فایل <code>handlers.go</code> خود را باز کنید، متوجه خواهید شد که تابع <code>home</code> هنوز از لاگر استاندارد Go (Standard Go Logger) برای نوشتن پیام‌های خطا استفاده می‌کند، نه لاگر ساختاری (Structured Logger) که اکنون می‌خواهیم استفاده کنیم.</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -208,7 +208,7 @@
 
 <p>می‌دانم که این رویکرد ممکن است کمی پیچیده و پیچیده به نظر برسد، به خصوص زمانی که یک جایگزین این است که به سادگی <code>logger</code> را به یک متغیر جهانی تبدیل کنید. اما با من بمانید. همانطور که برنامه رشد می‌کند و هندلرهای ما شروع به نیاز به وابستگی‌های بیشتری می‌کنند، این الگو ارزش خود را نشان خواهد داد.</p>
 
-<h3 id="adding-a-deliberate-error">افزودن یک خطای عمدی</h3>
+<h3 id="adding-a-deliberate-error">افزودن یک خطای عمدی (Adding a Deliberate Error)</h3>
 
 <p>بیایید این را امتحان کنیم و به سرعت یک خطای عمدی به برنامه خود اضافه کنیم.</p>
 
@@ -235,9 +235,9 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/hom
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی</h3>
+<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
 
-<h4 id="closures-for-dependency-injection">بسته‌ها برای تزریق وابستگی</h4>
+<h4 id="closures-for-dependency-injection">بسته‌ها برای تزریق وابستگی (Closures for Dependency Injection)</h4>
 
 <p>الگویی که ما برای تزریق وابستگی‌ها استفاده می‌کنیم، زمانی که هندلرهای شما در چندین بسته پخش شده‌اند، کار نخواهد کرد. در این صورت، یک رویکرد جایگزین این است که یک بسته <code>config</code> مستقل ایجاد کنید که یک ساختار <code>Application</code> را صادر کند و توابع هندلر شما بر روی این بسته بسته شوند تا یک <em>بسته</em> تشکیل دهند. به طور تقریبی:</p>
 
@@ -280,6 +280,66 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/hom
 </figure>
 
 <p>می‌توانید یک مثال کامل و ملموس‌تر از نحوه استفاده از الگوی بسته را در <a href="https://gist.github.com/letsgofa/5cd712192b4831058b21">این Gist</a> پیدا کنید.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تزریق وابستگی</td>
+        <td>Dependency Injection</td>
+        <td>الگویی برای ارائه وابستگی‌های مورد نیاز یک شیء یا تابع از خارج</td>
+    </tr>
+    <tr>
+        <td>لاگر ساختاری</td>
+        <td>Structured Logger</td>
+        <td>سیستم لاگ‌گیری که داده‌ها را در قالبی ساختاریافته ذخیره می‌کند</td>
+    </tr>
+    <tr>
+        <td>هندلر</td>
+        <td>Handler</td>
+        <td>تابعی که درخواست‌های HTTP را پردازش می‌کند</td>
+    </tr>
+    <tr>
+        <td>متغیر جهانی</td>
+        <td>Global Variable</td>
+        <td>متغیری که در سراسر برنامه قابل دسترسی است</td>
+    </tr>
+    <tr>
+        <td>ساختار برنامه</td>
+        <td>Application Structure</td>
+        <td>ساختار داده‌ای که وابستگی‌های برنامه را نگهداری می‌کند</td>
+    </tr>
+    <tr>
+        <td>متد</td>
+        <td>Method</td>
+        <td>تابعی که روی یک نوع داده خاص تعریف می‌شود</td>
+    </tr>
+    <tr>
+        <td>بسته</td>
+        <td>Package</td>
+        <td>مجموعه‌ای از کدهای مرتبط در Go</td>
+    </tr>
+    <tr>
+        <td>خطای عمدی</td>
+        <td>Deliberate Error</td>
+        <td>خطایی که به صورت عمدی برای آزمایش سیستم ایجاد می‌شود</td>
+    </tr>
+    <tr>
+        <td>وابستگی</td>
+        <td>Dependency</td>
+        <td>منبع یا سرویسی که یک بخش از برنامه به آن نیاز دارد</td>
+    </tr>
+    <tr>
+        <td>تست واحد</td>
+        <td>Unit Testing</td>
+        <td>آزمایش بخش‌های مجزای کد به صورت مستقل</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

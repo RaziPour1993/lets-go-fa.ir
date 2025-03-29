@@ -36,7 +36,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۷.</div>
-			<h1 id="processing-forms">پردازش فرم‌ها</h1>
+			<h1 id="processing-forms">پردازش فرم‌ها (Processing Forms)</h1>
+
+			<p>در این فصل، ما در مورد <dfn>پردازش فرم‌ها (Form Processing)</dfn> صحبت خواهیم کرد - نحوه دریافت و کار با <dfn>داده‌های فرم (Form Data)</dfn> که از طریق <dfn>درخواست‌های HTTP (HTTP Requests)</dfn> به برنامه ما ارسال می‌شوند.</p>
 
 			<p>در این بخش از کتاب، ما بر روی اضافه کردن یک فرم HTML برای ایجاد اسنیپت‌های جدید تمرکز خواهیم کرد. فرم شبیه به این خواهد بود:</p>
 
@@ -50,14 +52,80 @@
 				<li>داده‌های فرم توسط هندلر <code>snippetCreatePost</code> ما اعتبارسنجی می‌شود. اگر خطایی در اعتبارسنجی وجود داشته باشد، فرم با فیلدهای مربوطه برجسته شده مجدداً نمایش داده می‌شود. اگر از بررسی‌های اعتبارسنجی ما عبور کند، داده‌های اسنیپت جدید به پایگاه داده اضافه شده و سپس کاربر به <code>GET /snippet/view/{id}</code> هدایت می‌شود.</li>
 			</ol>
 
-			<p>در این بخش، شما یاد خواهید گرفت:</p>
+			<p>شما یاد خواهید گرفت:</p>
 
 			<ul>
-				<li>چگونه <a href="07.02-parsing-form-data.html">تجزیه و دسترسی</a> به داده‌های فرم ارسال شده در درخواست <code>POST</code> را انجام دهید.</li>
-				<li>برخی تکنیک‌ها برای انجام <a href="07.03-validating-form-data.html">بررسی‌های اعتبارسنجی</a> رایج روی داده‌های فرم.</li>
-				<li>یک <a href="07.04-displaying-errors-and-repopulating-fields.html">الگوی کاربرپسند</a> برای اطلاع‌رسانی خطاهای اعتبارسنجی به کاربر و پر کردن مجدد فیلدهای فرم با داده‌های قبلاً ارسال شده.</li>
-				<li>چگونه با استفاده از توابع کمکی برای پردازش و اعتبارسنجی فرم، <a href="07.05-creating-validation-helpers.html">هندلرهای خود را تمیز نگه دارید</a>.</li>
+				<li>چگونه یک <dfn>فرم HTML (HTML Form)</dfn> ایجاد کنید که به کاربران اجازه می‌دهد <dfn>قطعه‌های کد (Code Snippets)</dfn> جدید را ارسال کنند.</li>
+				<li>چگونه <dfn>تجزیه و دسترسی (Parsing and Accessing)</dfn> به داده‌های فرم ارسال شده در <dfn>درخواست POST (POST Request)</dfn> را انجام دهید.</li>
+				<li>برخی تکنیک‌ها برای انجام <dfn>بررسی‌های اعتبارسنجی (Validation Checks)</dfn> رایج روی داده‌های فرم.</li>
+				<li>یک <dfn>الگوی کاربرپسند (User-Friendly Pattern)</dfn> برای اطلاع‌رسانی <dfn>خطاهای اعتبارسنجی (Validation Errors)</dfn> به کاربر و پر کردن مجدد فیلدهای فرم با داده‌های قبلاً ارسال شده.</li>
+				<li>چگونه با استفاده از <dfn>توابع کمکی (Helper Functions)</dfn> برای پردازش و اعتبارسنجی فرم، هندلرهای خود را تمیز نگه دارید.</li>
 			</ul>
+
+			<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+			<table class="glossary">
+				<tr>
+					<th>اصطلاح فارسی</th>
+					<th>معادل انگلیسی</th>
+					<th>توضیح</th>
+				</tr>
+				<tr>
+					<td>پردازش فرم‌ها</td>
+					<td>Form Processing</td>
+					<td>دریافت و پردازش داده‌های ارسالی از فرم‌های وب</td>
+				</tr>
+				<tr>
+					<td>داده‌های فرم</td>
+					<td>Form Data</td>
+					<td>اطلاعات وارد شده توسط کاربر در فرم</td>
+				</tr>
+				<tr>
+					<td>درخواست‌های HTTP</td>
+					<td>HTTP Requests</td>
+					<td>درخواست‌های ارسالی از مرورگر به سرور</td>
+				</tr>
+				<tr>
+					<td>فرم HTML</td>
+					<td>HTML Form</td>
+					<td>ساختار HTML برای جمع‌آوری داده از کاربر</td>
+				</tr>
+				<tr>
+					<td>قطعه‌های کد</td>
+					<td>Code Snippets</td>
+					<td>بخش‌های کوچک و مستقل کد</td>
+				</tr>
+				<tr>
+					<td>تجزیه و دسترسی</td>
+					<td>Parsing and Accessing</td>
+					<td>خواندن و استخراج داده‌های فرم</td>
+				</tr>
+				<tr>
+					<td>درخواست POST</td>
+					<td>POST Request</td>
+					<td>درخواست HTTP برای ارسال داده به سرور</td>
+				</tr>
+				<tr>
+					<td>بررسی‌های اعتبارسنجی</td>
+					<td>Validation Checks</td>
+					<td>بررسی صحت و اعتبار داده‌های ورودی</td>
+				</tr>
+				<tr>
+					<td>الگوی کاربرپسند</td>
+					<td>User-Friendly Pattern</td>
+					<td>روشی که برای کاربر راحت و قابل درک است</td>
+				</tr>
+				<tr>
+					<td>خطاهای اعتبارسنجی</td>
+					<td>Validation Errors</td>
+					<td>پیام‌های خطا در مورد داده‌های نامعتبر</td>
+				</tr>
+				<tr>
+					<td>توابع کمکی</td>
+					<td>Helper Functions</td>
+					<td>توابعی که عملیات رایج را ساده می‌کنند</td>
+				</tr>
+			</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

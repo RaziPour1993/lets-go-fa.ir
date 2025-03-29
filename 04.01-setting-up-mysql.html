@@ -14,7 +14,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; راه‌اندازی MySQL</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; راه‌اندازی MySQL (Setting Up MySQL)</span>
 						
 					
 				</div>
@@ -27,7 +27,7 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 4.1.</div>
-			<h2 id="setting-up-mysql">راه‌اندازی MySQL</h2>
+			<h2 id="setting-up-mysql">راه‌اندازی MySQL (Setting Up MySQL)</h2>
 
 <p>اگر در حال دنبال کردن هستید، در این مرحله باید MySQL را روی کامپیوتر خود نصب کنید. مستندات رسمی MySQL شامل <a href="https://dev.mysql.com/doc/refman/8.0/en/installing.html">دستورالعمل‌های نصب</a> جامع برای انواع سیستم‌عامل‌ها است، اما اگر از Mac OS استفاده می‌کنید، باید بتوانید آن را با این دستور نصب کنید:</p>
 
@@ -43,7 +43,7 @@
 
 <p>در حین نصب MySQL ممکن است از شما خواسته شود که برای کاربر <code>root</code> رمز عبور تعیین کنید. اگر این کار را انجام دادید، به خاطر داشته باشید که در مرحله بعد به آن نیاز خواهید داشت.</p>
 
-<h3 id="scaffolding-the-database">ایجاد ساختار پایگاه داده</h3>
+<h3 id="scaffolding-the-database">ایجاد ساختار پایگاه داده (Scaffolding the Database)</h3>
 
 <p>پس از نصب MySQL باید بتوانید به عنوان کاربر <code>root</code> از طریق ترمینال به آن متصل شوید. دستور اتصال به نسخه MySQL که نصب کرده‌اید بستگی دارد. برای MySQL 5.7 و جدیدتر باید بتوانید با تایپ این دستور متصل شوید:</p>
 
@@ -60,7 +60,7 @@ Enter password:
 mysql&gt;</pre>
 </figure>
 
-<p>پس از اتصال، اولین کاری که باید انجام دهیم ایجاد یک <dfn>پایگاه داده</dfn> در MySQL برای ذخیره تمام داده‌های پروژه‌مان است. دستورات زیر را در خط فرمان mysql کپی و پیست کنید تا یک پایگاه داده جدید <code>snippetbox</code> با استفاده از کدگذاری UTF8 ایجاد کنید.</p>
+<p>پس از اتصال، اولین کاری که باید انجام دهیم ایجاد یک <dfn>پایگاه داده (Database)</dfn> در MySQL برای ذخیره تمام داده‌های پروژه‌مان است. دستورات زیر را در خط فرمان mysql کپی و پیست کنید تا یک پایگاه داده جدید <code>snippetbox</code> با استفاده از کدگذاری (Encoding) UTF8 ایجاد کنید.</p>
 
 <figure class="code sql" dir="ltr">
 <pre><span class="c1">-- Create a new UTF-8 `snippetbox` database.
@@ -86,7 +86,7 @@ mysql&gt;</pre>
 </span><span class="c1"></span><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_snippets_created</span> <span class="k">ON</span> <span class="n">snippets</span><span class="p">(</span><span class="n">created</span><span class="p">)</span><span class="p">;</span></pre>
 </figure>
 
-<p>هر رکورد در این جدول دارای یک فیلد <code>id</code> عدد صحیح خواهد بود که به عنوان شناسه منحصر به فرد برای متن کوتاه عمل می‌کند. همچنین دارای یک متن کوتاه <code>title</code> خواهد بود و محتوای متن کوتاه در فیلد <code>content</code> ذخیره خواهد شد. همچنین برخی از متادیتاها درباره زمان‌هایی که متن کوتاه <code>ایجاد</code> شده و زمانی که <code>منقضی</code> می‌شود را نگه می‌داریم.</p>
+<p>هر رکورد (Record) در این جدول دارای یک فیلد <code>id</code> عدد صحیح خواهد بود که به عنوان شناسه منحصر به فرد (Unique Identifier) برای متن کوتاه عمل می‌کند. همچنین دارای یک متن کوتاه <code>title</code> خواهد بود و محتوای متن کوتاه در فیلد <code>content</code> ذخیره خواهد شد. همچنین برخی از متادیتاها (Metadata) درباره زمان‌هایی که متن کوتاه <code>ایجاد (Created)</code> شده و زمانی که <code>منقضی (Expires)</code> می‌شود را نگه می‌داریم.</p>
 
 <p>بیایید همچنین برخی از ورودی‌های نمونه را به جدول <code>snippets</code> اضافه کنیم (که در چند فصل بعدی از آن‌ها استفاده خواهیم کرد). من از برخی هایکوهای کوتاه به عنوان محتوای متن‌های کوتاه استفاده می‌کنم، اما واقعاً مهم نیست که چه محتوایی دارند.</p>
 
@@ -114,9 +114,9 @@ mysql&gt;</pre>
 <span class="p">)</span><span class="p">;</span></pre>
 </figure>
 
-<h3 id="creating-a-new-user">ایجاد یک کاربر جدید</h3>
+<h3 id="creating-a-new-user">ایجاد یک کاربر جدید (Creating a New User)</h3>
 
-<p>از نظر امنیتی، ایده خوبی نیست که به عنوان کاربر <code>root</code> از یک برنامه وب به MySQL متصل شوید. در عوض بهتر است یک کاربر پایگاه داده با مجوزهای محدود بر روی پایگاه داده ایجاد کنید.</p>
+<p>از نظر امنیتی، ایده خوبی نیست که به عنوان کاربر <code>root</code> از یک برنامه وب به MySQL متصل شوید. در عوض بهتر است یک کاربر پایگاه داده با مجوزهای محدود (Limited Permissions) بر روی پایگاه داده ایجاد کنید.</p>
 
 <p>بنابراین، در حالی که هنوز به خط فرمان MySQL متصل هستید، دستورات زیر را اجرا کنید تا یک کاربر جدید <code>web</code> با مجوزهای <code>SELECT</code>، <code>INSERT</code>، <code>UPDATE</code> و <code>DELETE</code> فقط بر روی پایگاه داده ایجاد کنید.</p>
 
@@ -129,7 +129,7 @@ mysql&gt;</pre>
 
 <p>پس از انجام این کار، <code>exit</code> را تایپ کنید تا از خط فرمان MySQL خارج شوید.</p>
 
-<h3 id="test-the-new-user">آزمایش کاربر جدید</h3>
+<h3 id="test-the-new-user">آزمایش کاربر جدید (Testing the New User)</h3>
 
 <p>اکنون باید بتوانید به عنوان کاربر <code>web</code> به پایگاه داده <code>snippetbox</code> متصل شوید. هنگامی که از شما خواسته شد، رمز عبوری که به تازگی تعیین کرده‌اید را وارد کنید.</p>
 
@@ -155,6 +155,76 @@ mysql&gt;</pre>
 mysql&gt; DROP TABLE snippets;
 <samp>ERROR 1142 (42000): DROP command denied to user &#39;web&#39;@&#39;localhost&#39; for table &#39;snippets&#39;</samp></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>راه‌اندازی MySQL</td>
+        <td>Setting Up MySQL</td>
+        <td>فرآیند نصب و پیکربندی اولیه پایگاه داده MySQL</td>
+    </tr>
+    <tr>
+        <td>ایجاد ساختار پایگاه داده</td>
+        <td>Scaffolding the Database</td>
+        <td>ایجاد ساختار اولیه پایگاه داده شامل جداول و روابط</td>
+    </tr>
+    <tr>
+        <td>پایگاه داده</td>
+        <td>Database</td>
+        <td>سیستم ذخیره‌سازی سازمان‌یافته داده‌ها</td>
+    </tr>
+    <tr>
+        <td>کدگذاری</td>
+        <td>Encoding</td>
+        <td>روش نمایش کاراکترها در کامپیوتر (مثل UTF8)</td>
+    </tr>
+    <tr>
+        <td>رکورد</td>
+        <td>Record</td>
+        <td>یک ردیف از داده در جدول پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>شناسه منحصر به فرد</td>
+        <td>Unique Identifier</td>
+        <td>مقداری که هر رکورد را به طور منحصر به فرد مشخص می‌کند</td>
+    </tr>
+    <tr>
+        <td>متادیتا</td>
+        <td>Metadata</td>
+        <td>داده‌هایی که اطلاعات درباره داده‌های دیگر را توصیف می‌کنند</td>
+    </tr>
+    <tr>
+        <td>ایجاد</td>
+        <td>Created</td>
+        <td>زمان ایجاد یک رکورد در پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>منقضی</td>
+        <td>Expires</td>
+        <td>زمان انقضای یک رکورد در پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>مجوزهای محدود</td>
+        <td>Limited Permissions</td>
+        <td>دسترسی‌های محدود شده برای عملیات در پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>کاربر ریشه</td>
+        <td>Root User</td>
+        <td>کاربر با بالاترین سطح دسترسی در پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>دستورات SQL</td>
+        <td>SQL Commands</td>
+        <td>دستورات استاندارد برای تعامل با پایگاه داده</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

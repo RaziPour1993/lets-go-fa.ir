@@ -30,112 +30,129 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۷.۳</div>
-			<h2 id="validating-form-data">اعتبارسنجی داده‌های فرم</h2>
+			<h2 id="validating-form-data">اعتبارسنجی داده‌های فرم (Validating Form Data)</h2>
 
-<p>در حال حاضر یک مشکل جدی در کد ما وجود دارد: ما به هیچ وجه ورودی (غیرقابل اعتماد) کاربر از فرم را اعتبارسنجی نمی‌کنیم. ما باید این کار را انجام دهیم تا اطمینان حاصل کنیم که داده‌های فرم موجود هستند، از نوع صحیح هستند و با قوانین کسب و کار ما مطابقت دارند.</p>
+<p>در این بخش، نحوه انجام <dfn>بررسی‌های اعتبارسنجی (Validation Checks)</dfn> روی <dfn>داده‌های فرم (Form Data)</dfn> را بررسی می‌کنیم. برای مثال، می‌خواهیم مطمئن شویم که <dfn>فیلدهای ضروری (Required Fields)</dfn> خالی نیستند و <dfn>محدودیت‌های طول (Length Constraints)</dfn> رعایت شده‌اند.</p>
 
-<p>به طور خاص برای این فرم، ما می‌خواهیم:</p>
-
-<ul>
-<li>بررسی کنیم که فیلدهای <code>title</code> و <code>content</code> خالی نباشند.</li>
-<li>بررسی کنیم که فیلد <code>title</code> بیش از ۱۰۰ کاراکتر نباشد.</li>
-<li>بررسی کنیم که مقدار <code>expires</code> دقیقاً با یکی از مقادیر مجاز ما (<code>1</code>، <code>7</code> یا <code>365</code> روز) مطابقت داشته باشد.</li>
-</ul>
-
-<p>تمام این بررسی‌ها با استفاده از دستورات <code>if</code> و توابع مختلف در پکیج‌های <a href="https://pkg.go.dev/strings/"><code>strings</code></a> و <a href="https://pkg.go.dev/unicode/utf8/"><code>unicode/utf8</code></a> در Go به راحتی قابل پیاده‌سازی هستند.</p>
-
-<p>فایل <code>handlers.go</code> خود را باز کنید و هندلر <code>snippetCreatePost</code> را با قوانین اعتبارسنجی مناسب به شکل زیر به‌روزرسانی کنید:</p>
+<p>برای شروع، بیایید یک <dfn>نوع خطا (Error Type)</dfn> جدید برای نگهداری <dfn>خطاهای اعتبارسنجی (Validation Errors)</dfn> ایجاد کنیم:</p>
 
 <figure class="code go">
-<figcaption>File: cmd/web/handlers.go</figcaption>
+<figcaption>File: cmd/web/validators.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;errors&#34;</span>
-    <span class="s">&#34;fmt&#34;</span>
-    <span class="s">&#34;net/http&#34;</span>
-    <span class="s">&#34;strconv&#34;</span>
-    <span class="s">&#34;strings&#34;</span>      <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">&#34;unicode/utf8&#34;</span> <span class="c1">// New import
-</span><span class="c1"></span>
-    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
-<span class="p">)</span>
+<span class="kn">import</span> <span class="s">&#34;strings&#34;</span>
 
-<span class="o">...</span>
+<span class="c1">// Define a new errors type, which we will use to hold the validation errors for
+</span><span class="c1"></span><span class="c1">// a form. The name of the form field will be used as the key.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">errors</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span>
 
-<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
-        <span class="k">return</span>
+<span class="c1">// Implement an Add() method to add error messages for a given field to the map.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="nx">errors</span><span class="p">)</span> <span class="nf">Add</span><span class="p">(</span><span class="nx">field</span><span class="p">,</span> <span class="nx">message</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">e</span><span class="p">[</span><span class="nx">field</span><span class="p">]</span> <span class="p">=</span> <span class="nx">message</span>
+<span class="p">}</span>
+
+<span class="c1">// Implement a Get() method to retrieve the first error message for a given
+</span><span class="c1"></span><span class="c1">// field from the map.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">e</span> <span class="nx">errors</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">field</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">e</span><span class="p">[</span><span class="nx">field</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1">// Define a new validator type which contains a map of validation errors for our
+</span><span class="c1"></span><span class="c1">// form fields.
+</span><span class="c1"></span><span class="kd">type</span> <span class="nx">validator</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">Errors</span> <span class="nx">errors</span>
+<span class="p">}</span>
+
+<span class="c1">// Create a new validator instance with an empty errors map.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">newValidator</span><span class="p">(</span><span class="p">)</span> <span class="o">*</span><span class="nx">validator</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">validator</span><span class="p">{</span><span class="nx">Errors</span><span class="p">:</span> <span class="nb">make</span><span class="p">(</span><span class="nx">errors</span><span class="p">)</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// Valid() returns true if the errors map doesn't contain any entries.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">validator</span><span class="p">)</span> <span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">v</span><span class="p">.</span><span class="nx">Errors</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">}</span>
+
+<span class="c1">// NotBlank() returns true if a value is not an empty string.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">validator</span><span class="p">)</span> <span class="nf">NotBlank</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&#34;&#34;</span>
+<span class="p">}</span>
+
+<span class="c1">// MaxChars() returns true if a value contains no more than n characters.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">validator</span><span class="p">)</span> <span class="nf">MaxChars</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">n</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nx">n</span>
+<span class="p">}</span>
+
+<span class="c1">// PermittedInt() returns true if a value is in a list of permitted integers.
+</span><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">v</span> <span class="o">*</span><span class="nx">validator</span><span class="p">)</span> <span class="nf">PermittedInt</span><span class="p">(</span><span class="nx">value</span> <span class="kt">int</span><span class="p">,</span> <span class="nx">permittedValues</span> <span class="p">...</span><span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">permittedValues</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="nx">value</span> <span class="o">==</span> <span class="nx">i</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
     <span class="p">}</span>
-
-    <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span>
-    <span class="nx">content</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span>
-
-    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-
-    <span class="c1">// Initialize a map to hold any validation errors for the form fields.
-</span><span class="c1"></span>    <span class="nx">fieldErrors</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">string</span><span class="p">)</span>
-
-    <span class="c1">// Check that the title value is not blank and is not more than 100
-</span><span class="c1"></span>    <span class="c1">// characters long. If it fails either of those checks, add a message to the
-</span><span class="c1"></span>    <span class="c1">// errors map using the field name as the key.
-</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">title</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
-        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;title&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be blank&#34;</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">utf8</span><span class="p">.</span><span class="nf">RuneCountInString</span><span class="p">(</span><span class="nx">title</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">100</span> <span class="p">{</span>
-        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;title&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span>
-    <span class="p">}</span>
-
-    <span class="c1">// Check that the Content value isn&#39;t blank.
-</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">content</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
-        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;content&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field cannot be blank&#34;</span>
-    <span class="p">}</span>
-
-    <span class="c1">// Check the expires value matches one of the permitted values (1, 7 or
-</span><span class="c1"></span>    <span class="c1">// 365).
-</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">expires</span> <span class="o">!=</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="nx">expires</span> <span class="o">!=</span> <span class="mi">7</span> <span class="o">&amp;&amp;</span> <span class="nx">expires</span> <span class="o">!=</span> <span class="mi">365</span> <span class="p">{</span>
-        <span class="nx">fieldErrors</span><span class="p">[</span><span class="s">&#34;expires&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span>
-    <span class="p">}</span>
-
-    <span class="c1">// If there are any errors, dump them in a plain text HTTP response and
-</span><span class="c1"></span>    <span class="c1">// return from the handler.
-</span><span class="c1"></span>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">fieldErrors</span><span class="p">)</span> <span class="p">&gt;</span> <span class="mi">0</span> <span class="p">{</span>
-        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">fieldErrors</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-
-    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expires</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="p">}</span>
-
-    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">false</span>
 <span class="p">}</span></pre>
 </figure>
 
-<aside class="note"><p>
-<strong>نکته:</strong> هنگام بررسی طول فیلد <code>title</code>، ما از تابع <a href="https://pkg.go.dev/unicode/utf8/#RuneCountInString"><code>utf8.RuneCountInString()</code></a> استفاده می‌کنیم - نه از تابع <code>len()</code> در Go. این تعداد <em>نقاط کد یونیکد</em> در عنوان را به جای تعداد بایت‌ها می‌شمارد. برای نشان دادن تفاوت، رشته <code>&quot;Zoë&quot;</code> شامل ۳ نقطه کد یونیکد است، اما به دلیل کاراکتر <code>ë</code> با اوملات، ۴ بایت است.</p></aside>
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
 
-<p>خب، بیایید این را امتحان کنیم! برنامه را مجدداً راه‌اندازی کنید و سعی کنید فرم را با یک عنوان خیلی طولانی و فیلد محتوای خالی ارسال کنید، مانند تصویر زیر...</p>
-
-<figure class="img">
-<img src="assets/img/07.03-01.png" alt="07.03-01.png" />
-</figure>
-
-<p>و باید پیام‌های خطای اعتبارسنجی مناسب را به این شکل ببینید:</p>
-
-<figure class="img">
-<img src="assets/img/07.03-02.png" alt="07.03-02.png" />
-</figure>
-
-<aside class="hint"><p>
-<strong>نکته:</strong> شما می‌توانید الگوهای کد متعددی برای پردازش و اعتبارسنجی انواع مختلف ورودی‌ها را در <a href="https://www.alexedwards.net/blog/validation-snippets-for-go">این پست وبلاگ</a> پیدا کنید.</p></aside>
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>بررسی‌های اعتبارسنجی</td>
+        <td>Validation Checks</td>
+        <td>بررسی صحت و اعتبار داده‌های ورودی</td>
+    </tr>
+    <tr>
+        <td>داده‌های فرم</td>
+        <td>Form Data</td>
+        <td>اطلاعات وارد شده توسط کاربر در فرم</td>
+    </tr>
+    <tr>
+        <td>فیلدهای ضروری</td>
+        <td>Required Fields</td>
+        <td>فیلدهایی که باید حتماً پر شوند</td>
+    </tr>
+    <tr>
+        <td>محدودیت‌های طول</td>
+        <td>Length Constraints</td>
+        <td>محدودیت تعداد کاراکترهای مجاز</td>
+    </tr>
+    <tr>
+        <td>نوع خطا</td>
+        <td>Error Type</td>
+        <td>ساختار داده برای نگهداری خطاها</td>
+    </tr>
+    <tr>
+        <td>خطاهای اعتبارسنجی</td>
+        <td>Validation Errors</td>
+        <td>پیام‌های خطا در مورد داده‌های نامعتبر</td>
+    </tr>
+    <tr>
+        <td>نقشه خطاها</td>
+        <td>Error Map</td>
+        <td>ساختار داده برای ذخیره خطاها</td>
+    </tr>
+    <tr>
+        <td>اعتبارسنج</td>
+        <td>Validator</td>
+        <td>شیء مسئول بررسی اعتبار داده‌ها</td>
+    </tr>
+    <tr>
+        <td>بررسی خالی نبودن</td>
+        <td>Not Blank Check</td>
+        <td>بررسی پر بودن فیلد</td>
+    </tr>
+    <tr>
+        <td>مقادیر مجاز</td>
+        <td>Permitted Values</td>
+        <td>مقادیر قابل قبول برای یک فیلد</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

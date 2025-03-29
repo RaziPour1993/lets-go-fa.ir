@@ -14,7 +14,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html"> حالت دار HTTP</a> &rsaquo; راه‌اندازی مدیر نشست</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html"> حالت دار HTTP</a> &rsaquo; راه‌اندازی مدیر جلسه</span>
 						
 					
 				</div>
@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۸.۲.</div>
-			<h2 id="setting-up-the-session-manager">راه‌اندازی مدیر نشست</h2>
+			<h2 id="setting-up-the-session-manager">راه‌اندازی مدیر جلسه (Setting Up the Session Manager)</h2>
+
+<p>در این بخش، نحوه <dfn>راه‌اندازی مدیر جلسه (Setting Up Session Manager)</dfn> را بررسی می‌کنیم. این شامل <dfn>پیکربندی (Configuration)</dfn> و <dfn>مقداردهی اولیه (Initialization)</dfn> مدیر جلسه می‌شود.</p>
+
+<p>برای شروع، بیایید <dfn>تنظیمات جلسه (Session Settings)</dfn> را در <dfn>ساختار برنامه (Application Structure)</dfn> خود اضافه کنیم:</p>
 
 <p>در این فصل، به اصول راه‌اندازی و استفاده از بسته <code>alexedwards/scs</code> می‌پردازم، اما اگر قصد دارید از آن در یک برنامه تولیدی استفاده کنید، توصیه می‌کنم <a href="https://github.com/alexedwards/scs">مستندات</a> و <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2">مرجع API</a> را مطالعه کنید تا با تمام ویژگی‌های آن آشنا شوید.</p>
 
@@ -206,6 +210,65 @@
 </span></pre>
 </figure>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>راه‌اندازی مدیر جلسه</td>
+        <td>Setting Up Session Manager</td>
+        <td>آماده‌سازی و پیکربندی مدیر جلسه</td>
+    </tr>
+    <tr>
+        <td>پیکربندی</td>
+        <td>Configuration</td>
+        <td>تنظیمات و پارامترهای سیستم</td>
+    </tr>
+    <tr>
+        <td>مقداردهی اولیه</td>
+        <td>Initialization</td>
+        <td>راه‌اندازی اولیه سیستم</td>
+    </tr>
+    <tr>
+        <td>تنظیمات جلسه</td>
+        <td>Session Settings</td>
+        <td>پارامترهای پیکربندی جلسه</td>
+    </tr>
+    <tr>
+        <td>ساختار برنامه</td>
+        <td>Application Structure</td>
+        <td>ساختار و سازماندهی کد برنامه</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار جلسه</td>
+        <td>Session Middleware</td>
+        <td>کد واسط برای مدیریت جلسه</td>
+    </tr>
+    <tr>
+        <td>کوکی‌های جلسه</td>
+        <td>Session Cookies</td>
+        <td>کوکی‌های مربوط به جلسه</td>
+    </tr>
+    <tr>
+        <td>زمان انقضا</td>
+        <td>Expiry Time</td>
+        <td>مدت زمان اعتبار جلسه</td>
+    </tr>
+    <tr>
+        <td>امنیت جلسه</td>
+        <td>Session Security</td>
+        <td>حفاظت از داده‌های جلسه</td>
+    </tr>
+    <tr>
+        <td>مسیریابی</td>
+        <td>Routing</td>
+        <td>هدایت درخواست‌ها به هندلرها</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

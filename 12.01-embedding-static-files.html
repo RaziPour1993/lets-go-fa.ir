@@ -25,7 +25,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۱۲.۱.</div>
-			<h2 id="embedding-static-files">جاسازی فایل‌های استاتیک</h2>
+			<h2 id="embedding-static-files">جاسازی فایل‌های استاتیک (Embedding Static Files)</h2>
+
+<p>در این بخش، نحوه <dfn>جاسازی فایل‌های استاتیک (Embedding Static Files)</dfn> را بررسی می‌کنیم. این شامل <dfn>فایل‌های CSS (CSS Files)</dfn>، <dfn>فایل‌های JavaScript (JavaScript Files)</dfn> و <dfn>تصاویر (Images)</dfn> می‌شود.</p>
+
+<p>با استفاده از <dfn>دستور جاسازی (Embed Directive)</dfn>، می‌توانیم این فایل‌ها را در <dfn>باینری برنامه (Program Binary)</dfn> قرار دهیم.</p>
 
 <p>اگر در حال دنبال کردن هستید، اولین کاری که باید انجام دهید ایجاد یک فایل جدید <code>ui/efs.go</code> است:</p>
 
@@ -182,6 +186,66 @@
 <pre><span class="c1">//go:embed &#34;all:static&#34;
 </span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>جاسازی فایل‌های استاتیک</td>
+        <td>Embedding Static Files</td>
+        <td>قرار دادن فایل‌های ثابت در برنامه</td>
+    </tr>
+    <tr>
+        <td>فایل‌های CSS</td>
+        <td>CSS Files</td>
+        <td>فایل‌های سبک ظاهری</td>
+    </tr>
+    <tr>
+        <td>فایل‌های JavaScript</td>
+        <td>JavaScript Files</td>
+        <td>فایل‌های اسکریپت</td>
+    </tr>
+    <tr>
+        <td>تصاویر</td>
+        <td>Images</td>
+        <td>فایل‌های گرافیکی</td>
+    </tr>
+    <tr>
+        <td>دستور جاسازی</td>
+        <td>Embed Directive</td>
+        <td>دستور برای جاسازی فایل</td>
+    </tr>
+    <tr>
+        <td>باینری برنامه</td>
+        <td>Program Binary</td>
+        <td>فایل اجرایی برنامه</td>
+    </tr>
+    <tr>
+        <td>سرور فایل استاتیک</td>
+        <td>Static File Server</td>
+        <td>سرویس‌دهنده فایل‌های ثابت</td>
+    </tr>
+    <tr>
+        <td>مسیر فایل</td>
+        <td>File Path</td>
+        <td>آدرس فایل در سیستم</td>
+    </tr>
+    <tr>
+        <td>نوع محتوا</td>
+        <td>Content Type</td>
+        <td>نوع داده فایل</td>
+    </tr>
+    <tr>
+        <td>فشرده‌سازی</td>
+        <td>Compression</td>
+        <td>کاهش حجم فایل</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

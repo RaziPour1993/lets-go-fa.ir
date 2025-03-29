@@ -23,7 +23,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 13.3.</div>
-			<h2 id="end-to-end-testing">تست انتها به انتها</h2>
+			<h2 id="end-to-end-testing">تست انتها به انتها (End-to-End Testing)</h2>
+
+<p>در این بخش، نحوه <dfn>تست انتها به انتها (End-to-End Testing)</dfn> را بررسی می‌کنیم. این شامل <dfn>تست یکپارچه (Integration Testing)</dfn> و <dfn>تست سیستم (System Testing)</dfn> می‌شود.</p>
+
+<p>همچنین با <dfn>سرور تست (Test Server)</dfn> و <dfn>پایگاه داده تست (Test Database)</dfn> آشنا خواهیم شد.</p>
 
 <p>در فصل گذشته الگوی کلی برای نحوه تست واحد هندلرهای HTTP شما به صورت مجزا را بررسی کردیم.</p>
 
@@ -199,7 +203,7 @@ FAIL</samp></pre>
 
 <p>هیچ قانون سخت و سریعی در مورد جایی که باید متدهای کمکی برای تست‌ها قرار داده شود وجود ندارد. اگر یک کمک‌کننده فقط در یک فایل خاص <code>*_test.go</code> استفاده می‌شود، احتمالاً منطقی است که آن را به صورت درون‌خطی در آن فایل در کنار تست‌های خود قرار دهید. در انتهای دیگر طیف، اگر قصد دارید یک کمک‌کننده را در تست‌های چندین بسته استفاده کنید، ممکن است بخواهید آن را در یک بسته قابل استفاده مجدد به نام <code>internal/testutils</code> (یا مشابه) قرار دهید که می‌تواند توسط فایل‌های تست شما وارد شود.</p>
 
-<p>در مورد ما، کمک‌کننده‌ها برای تست کد در سراسر بسته <code>cmd/web</code> ما استفاده خواهند شد اما در جای دیگری نه، بنابراین به نظر می‌رسد منطقی است که آن‌ها را در یک فایل جدید <code>cmd/web/testutils_test.go</code> قرار دهیم.</p>
+<p>در مورد ما، کمک‌کننده‌ها برای تست کد در سراسر بسته <code>cmd/web</code> ما استفاده خواهند شد اما در جای دیگری نه، بنابراین به نظر می‌رسد منطقی است که آن‌ها را در یک بسته قابل استفاده مجدد به نام <code>internal/testutils</code> قرار دهیم.</p>
 
 <p>اگر شما هم دنبال می‌کنید، لطفاً اکنون این را ایجاد کنید&hellip;</p>
 
@@ -282,6 +286,66 @@ FAIL</samp></pre>
     <span class="k">return</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">StatusCode</span><span class="p">,</span> <span class="nx">rs</span><span class="p">.</span><span class="nx">Header</span><span class="p">,</span> <span class="nb">string</span><span class="p">(</span><span class="nx">body</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تست انتها به انتها</td>
+        <td>End-to-End Testing</td>
+        <td>آزمایش کامل سیستم</td>
+    </tr>
+    <tr>
+        <td>تست یکپارچه</td>
+        <td>Integration Testing</td>
+        <td>آزمایش تعامل اجزا</td>
+    </tr>
+    <tr>
+        <td>تست سیستم</td>
+        <td>System Testing</td>
+        <td>آزمایش کل سیستم</td>
+    </tr>
+    <tr>
+        <td>سرور تست</td>
+        <td>Test Server</td>
+        <td>سرور برای آزمایش</td>
+    </tr>
+    <tr>
+        <td>پایگاه داده تست</td>
+        <td>Test Database</td>
+        <td>پایگاه داده آزمایشی</td>
+    </tr>
+    <tr>
+        <td>محیط تست</td>
+        <td>Test Environment</td>
+        <td>محیط اجرای آزمایش</td>
+    </tr>
+    <tr>
+        <td>داده‌های تست</td>
+        <td>Test Data</td>
+        <td>داده‌های آزمایشی</td>
+    </tr>
+    <tr>
+        <td>سناریوی تست</td>
+        <td>Test Scenario</td>
+        <td>مراحل اجرای آزمایش</td>
+    </tr>
+    <tr>
+        <td>گزارش تست</td>
+        <td>Test Report</td>
+        <td>نتایج آزمایش</td>
+    </tr>
+    <tr>
+        <td>خطای تست</td>
+        <td>Test Error</td>
+        <td>مشکلات در آزمایش</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

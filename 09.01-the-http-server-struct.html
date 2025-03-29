@@ -27,13 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 9.1.</div>
-			<h2 id="the-http-server-struct">ساختار http.Server</h2>
+			<h2 id="the-http-server-struct">ساختار http.Server (The http.Server Struct)</h2>
 
-<p>تا کنون در این کتاب از تابع میانبر <code>http.ListenAndServe()</code> برای راه‌اندازی سرور خود استفاده کرده‌ایم.</p>
+<p>در این بخش، نحوه استفاده از <dfn>ساختار http.Server (http.Server Struct)</dfn> برای <dfn>پیکربندی سرور (Server Configuration)</dfn> را بررسی می‌کنیم. این ساختار امکان <dfn>تنظیم پارامترها (Parameter Settings)</dfn> و <dfn>رفتار سرور (Server Behavior)</dfn> را فراهم می‌کند.</p>
 
-<p>اگرچه <code>http.ListenAndServe()</code> در مثال‌ها و آموزش‌های کوتاه بسیار مفید است، در برنامه‌های واقعی معمولاً به صورت دستی یک ساختار <a href="https://pkg.go.dev/net/http#Server"><code>http.Server</code></a> ایجاد و استفاده می‌شود. انجام این کار امکان سفارشی‌سازی رفتار سرور شما را فراهم می‌کند، که دقیقاً همان چیزی است که در این بخش از کتاب انجام خواهیم داد.</p>
-
-<p>بنابراین برای آماده‌سازی برای آن، بیایید به سرعت فایل <code>main.go</code> خود را به‌روزرسانی کنیم تا از میانبر <code>http.ListenAndServe()</code> استفاده نکنیم و به جای آن به صورت دستی یک ساختار <code>http.Server</code> ایجاد و استفاده کنیم.</p>
+<p>برای شروع، بیایید <dfn>تنظیمات پایه (Basic Settings)</dfn> سرور را در <dfn>کد اصلی (Main Code)</dfn> خود اضافه کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File:  cmd/web/main.go</figcaption>
@@ -95,6 +93,66 @@
 </figure>
 
 <p>این یک تغییر کوچک است که هنوز بر رفتار برنامه ما تأثیر نمی‌گذارد، اما ما را به خوبی برای کارهای آینده آماده می‌کند.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>ساختار http.Server</td>
+        <td>http.Server Struct</td>
+        <td>ساختار داده برای پیکربندی سرور</td>
+    </tr>
+    <tr>
+        <td>پیکربندی سرور</td>
+        <td>Server Configuration</td>
+        <td>تنظیمات و پارامترهای سرور</td>
+    </tr>
+    <tr>
+        <td>تنظیم پارامترها</td>
+        <td>Parameter Settings</td>
+        <td>تعیین مقادیر پارامترهای سرور</td>
+    </tr>
+    <tr>
+        <td>رفتار سرور</td>
+        <td>Server Behavior</td>
+        <td>نحوه عملکرد سرور</td>
+    </tr>
+    <tr>
+        <td>تنظیمات پایه</td>
+        <td>Basic Settings</td>
+        <td>پیکربندی‌های اولیه و ضروری</td>
+    </tr>
+    <tr>
+        <td>کد اصلی</td>
+        <td>Main Code</td>
+        <td>کد اصلی برنامه</td>
+    </tr>
+    <tr>
+        <td>آدرس شبکه</td>
+        <td>Network Address</td>
+        <td>آدرس و پورت سرور</td>
+    </tr>
+    <tr>
+        <td>مسیریاب</td>
+        <td>Router</td>
+        <td>مدیریت مسیرهای درخواست</td>
+    </tr>
+    <tr>
+        <td>زمان‌سنج</td>
+        <td>Timer</td>
+        <td>محدودیت‌های زمانی</td>
+    </tr>
+    <tr>
+        <td>گزارش‌دهی خطا</td>
+        <td>Error Reporting</td>
+        <td>ثبت و نمایش خطاها</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

@@ -26,7 +26,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 9.5.</div>
-			<h2 id="configuring-https-settings">تنظیمات HTTPS</h2>
+			<h2 id="configuring-https-settings">پیکربندی تنظیمات HTTPS (Configuring HTTPS Settings)</h2>
+
+<p>در این بخش، نحوه <dfn>پیکربندی تنظیمات HTTPS (HTTPS Settings Configuration)</dfn> را بررسی می‌کنیم. این شامل <dfn>تنظیمات امنیتی (Security Settings)</dfn> و <dfn>بهینه‌سازی عملکرد (Performance Optimization)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید <dfn>پیکربندی TLS (TLS Configuration)</dfn> را در <dfn>کد برنامه (Application Code)</dfn> خود اضافه کنیم:</p>
 
 <p>Go تنظیمات پیش‌فرض خوبی برای سرور HTTPS خود دارد، اما می‌توان نحوه عملکرد سرور را بهینه و سفارشی کرد.</p>
 
@@ -186,6 +190,65 @@ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA              // TLS 1.0, 1.1 and 1.2 connecti
 <strong>مهم:</strong> محدود کردن مجموعه‌های رمزنگاری پشتیبانی شده می‌تواند به این معنا باشد که کاربران با برخی مرورگرهای قدیمی‌تر نمی‌توانند از وب‌سایت شما استفاده کنند. تعادلی بین امنیت و سازگاری با گذشته وجود دارد و تصمیم درست برای شما به فناوری‌هایی که معمولاً توسط کاربران شما استفاده می‌شود بستگی دارد. <a href="https://wiki.mozilla.org/Security/Server_Side_TLS">پیکربندی‌های پیشنهادی</a> موزیلا برای مرورگرهای مدرن، متوسط و قدیمی ممکن است به شما در تصمیم‌گیری کمک کند.
 </p></aside>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>پیکربندی تنظیمات HTTPS</td>
+        <td>HTTPS Settings Configuration</td>
+        <td>تنظیم پارامترهای ارتباط امن</td>
+    </tr>
+    <tr>
+        <td>تنظیمات امنیتی</td>
+        <td>Security Settings</td>
+        <td>پارامترهای مربوط به امنیت</td>
+    </tr>
+    <tr>
+        <td>بهینه‌سازی عملکرد</td>
+        <td>Performance Optimization</td>
+        <td>بهبود کارایی سیستم</td>
+    </tr>
+    <tr>
+        <td>پیکربندی TLS</td>
+        <td>TLS Configuration</td>
+        <td>تنظیمات پروتکل امنیتی</td>
+    </tr>
+    <tr>
+        <td>کد برنامه</td>
+        <td>Application Code</td>
+        <td>کد منبع برنامه</td>
+    </tr>
+    <tr>
+        <td>نسخه TLS</td>
+        <td>TLS Version</td>
+        <td>نسخه پروتکل امنیتی</td>
+    </tr>
+    <tr>
+        <td>رمزنگاری</td>
+        <td>Encryption</td>
+        <td>کدگذاری اطلاعات</td>
+    </tr>
+    <tr>
+        <td>امنیت اتصال</td>
+        <td>Connection Security</td>
+        <td>حفاظت از ارتباطات</td>
+    </tr>
+    <tr>
+        <td>بهینه‌سازی منابع</td>
+        <td>Resource Optimization</td>
+        <td>استفاده بهینه از منابع</td>
+    </tr>
+    <tr>
+        <td>پروتکل‌های امن</td>
+        <td>Secure Protocols</td>
+        <td>پروتکل‌های ارتباطی امن</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

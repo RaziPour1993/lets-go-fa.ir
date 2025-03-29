@@ -23,7 +23,18 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter" dir="rtl">فصل ۱۰.</div>
-			<h1 id="user-authentication" dir="rtl">احراز هویت کاربر</h1>
+			<h1 id="user-authentication">احراز هویت کاربر (User Authentication)</h1>
+
+<p>در این فصل، نحوه پیاده‌سازی <dfn>احراز هویت کاربر (User Authentication)</dfn> را بررسی می‌کنیم. این شامل <dfn>ثبت‌نام (Sign Up)</dfn>، <dfn>ورود (Login)</dfn>، <dfn>خروج (Logout)</dfn> و <dfn>مجوزدهی (Authorization)</dfn> می‌شود.</p>
+
+<p>در این فصل خواهیم آموخت:</p>
+
+<ul>
+<li>چگونه <dfn>مدل کاربر (User Model)</dfn> را در پایگاه داده ایجاد کنیم.</li>
+<li>نحوه <dfn>رمزنگاری رمز عبور (Password Encryption)</dfn> و <dfn>ذخیره‌سازی امن (Secure Storage)</dfn>.</li>
+<li>پیاده‌سازی <dfn>فرآیند ثبت‌نام (Sign Up Process)</dfn> و <dfn>ورود کاربر (User Login)</dfn>.</li>
+<li>محافظت در برابر <dfn>حملات CSRF (CSRF Attacks)</dfn>.</li>
+</ul>
 
 <p dir="rtl">در این بخش از کتاب، قصد داریم به برنامه خود قابلیت احراز هویت کاربر اضافه کنیم، به طوری که تنها کاربران ثبت‌نام شده و وارد شده بتوانند قطعات جدید ایجاد کنند. کاربران غیر وارد شده همچنان قادر به مشاهده قطعات خواهند بود و همچنین می‌توانند برای یک حساب کاربری ثبت‌نام کنند.</p>
 
@@ -49,6 +60,66 @@
 <li>یک روش محکم و ساده برای <a href="10.06-user-authorization.html">تأیید اینکه یک کاربر وارد شده است</a> با استفاده از میان‌افزار و جلسات.</li>
 <li>چگونه از <a href="10.07-csrf-protection.html">حملات جعل درخواست بین‌سایتی</a> (CSRF) جلوگیری کنید.</li>
 </ul>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>احراز هویت کاربر</td>
+        <td>User Authentication</td>
+        <td>فرآیند تأیید هویت کاربران</td>
+    </tr>
+    <tr>
+        <td>ثبت‌نام</td>
+        <td>Sign Up</td>
+        <td>ایجاد حساب کاربری جدید</td>
+    </tr>
+    <tr>
+        <td>ورود</td>
+        <td>Login</td>
+        <td>دسترسی به حساب کاربری</td>
+    </tr>
+    <tr>
+        <td>خروج</td>
+        <td>Logout</td>
+        <td>پایان دادن به نشست کاربری</td>
+    </tr>
+    <tr>
+        <td>مجوزدهی</td>
+        <td>Authorization</td>
+        <td>کنترل دسترسی کاربران</td>
+    </tr>
+    <tr>
+        <td>مدل کاربر</td>
+        <td>User Model</td>
+        <td>ساختار داده کاربر</td>
+    </tr>
+    <tr>
+        <td>رمزنگاری رمز عبور</td>
+        <td>Password Encryption</td>
+        <td>کدگذاری رمز عبور</td>
+    </tr>
+    <tr>
+        <td>ذخیره‌سازی امن</td>
+        <td>Secure Storage</td>
+        <td>نگهداری ایمن اطلاعات</td>
+    </tr>
+    <tr>
+        <td>فرآیند ثبت‌نام</td>
+        <td>Sign Up Process</td>
+        <td>مراحل ایجاد حساب کاربری</td>
+    </tr>
+    <tr>
+        <td>حملات CSRF</td>
+        <td>CSRF Attacks</td>
+        <td>حملات جعل درخواست بین‌سایتی</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

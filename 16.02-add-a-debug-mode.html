@@ -23,17 +23,17 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۱۶.۲.</div>
-			<h2 id="add-a-debug-mode">اضافه کردن حالت دیباگ</h2>
+			<h2 id="add-a-debug-mode">اضافه کردن حالت دیباگ (Adding Debug Mode)</h2>
 
-<p>اگر از فریم‌ورک‌های وب برای زبان‌های دیگر مانند Django یا Laravel استفاده کرده‌اید، احتمالاً با ایده‌ی حالت «دیباگ» آشنا هستید که در آن خطاهای دقیق به جای پیام عمومی <code>"خطای داخلی سرور"</code> به کاربر نمایش داده می‌شود.</p>
+<p>اگر از <dfn>فریم‌ورک‌های وب (Web Frameworks)</dfn> برای زبان‌های دیگر مانند Django یا Laravel استفاده کرده‌اید، احتمالاً با ایده‌ی <dfn>حالت دیباگ (Debug Mode)</dfn> آشنا هستید که در آن <dfn>خطاهای دقیق (Detailed Errors)</dfn> به جای <dfn>پیام عمومی (Generic Message)</dfn> <code>"خطای داخلی سرور"</code> به کاربر نمایش داده می‌شود.</p>
 
-<p>هدف شما در این تمرین این است که یک حالت «دیباگ» مشابه برای برنامه خود تنظیم کنید که با استفاده از فلگ <code>-debug</code> به صورت زیر فعال شود:</p>
+<p>هدف شما در این تمرین این است که یک حالت «دیباگ» مشابه برای برنامه خود تنظیم کنید که با استفاده از <dfn>فلگ خط فرمان (Command Line Flag)</dfn> <code>-debug</code> به صورت زیر فعال شود:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web -debug</pre>
 </figure>
 
-<p>هنگام اجرای برنامه در حالت دیباگ، هرگونه خطاهای دقیق و ردیابی استک باید در مرورگر نمایش داده شود، مشابه این:</p>
+<p>هنگام اجرای برنامه در حالت دیباگ، هرگونه <dfn>خطاهای دقیق (Detailed Errors)</dfn> و <dfn>ردیابی استک (Stack Trace)</dfn> باید در مرورگر نمایش داده شود، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/16.02-01.png" alt="16.02-01.png" />
@@ -41,7 +41,7 @@
 
 <h4 id="step-1">مرحله ۱</h4>
 
-<p>یک فلگ خط فرمان جدید با نام <code>debug</code> و مقدار پیش‌فرض <code>false</code> ایجاد کنید. سپس مقدار این فلگ خط فرمان را از طریق ساختار <code>application</code> در دسترس هندلرهای خود قرار دهید.</p>
+<p>یک <dfn>فلگ خط فرمان (Command Line Flag)</dfn> جدید با نام <code>debug</code> و <dfn>مقدار پیش‌فرض (Default Value)</dfn> <code>false</code> ایجاد کنید. سپس مقدار این فلگ خط فرمان را از طریق <dfn>ساختار برنامه (Application Struct)</dfn> در دسترس هندلرهای خود قرار دهید.</p>
 
 <p>نکته: تابع <code>flag.Bool()</code> برای این کار مناسب‌ترین است.</p>
 
@@ -49,7 +49,7 @@
 
 <h4 id="step-2">مرحله ۲</h4>
 
-<p>به فایل <code>cmd/web/helpers.go</code> بروید و تابع کمکی <code>serverError()</code> را به‌روزرسانی کنید تا در صورت تنظیم فلگ <code>debug</code>، یک پیام خطا و ردیابی استک دقیق در پاسخ HTTP رندر کند. در غیر این صورت، پیام خطای عمومی را به صورت عادی ارسال کنید. می‌توانید ردیابی استک را با استفاده از تابع <code>debug.Stack()</code> دریافت کنید.</p>
+<p>به فایل <code>cmd/web/helpers.go</code> بروید و <dfn>تابع کمکی (Helper Function)</dfn> <code>serverError()</code> را به‌روزرسانی کنید تا در صورت تنظیم فلگ <code>debug</code>، یک <dfn>پیام خطا (Error Message)</dfn> و <dfn>ردیابی استک (Stack Trace)</dfn> دقیق در <dfn>پاسخ HTTP (HTTP Response)</dfn> رندر کند. در غیر این صورت، پیام خطای عمومی را به صورت عادی ارسال کنید. می‌توانید ردیابی استک را با استفاده از تابع <code>debug.Stack()</code> دریافت کنید.</p>
 
 <p><a href="#17.02-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
@@ -179,6 +179,71 @@
 
 <span class="o">...</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>حالت دیباگ</td>
+        <td>Debug Mode</td>
+        <td>حالت اشکال‌زدایی برنامه</td>
+    </tr>
+    <tr>
+        <td>فریم‌ورک‌های وب</td>
+        <td>Web Frameworks</td>
+        <td>چارچوب‌های توسعه وب</td>
+    </tr>
+    <tr>
+        <td>خطاهای دقیق</td>
+        <td>Detailed Errors</td>
+        <td>پیام‌های خطای جزئی</td>
+    </tr>
+    <tr>
+        <td>پیام عمومی</td>
+        <td>Generic Message</td>
+        <td>پیام خطای کلی</td>
+    </tr>
+    <tr>
+        <td>فلگ خط فرمان</td>
+        <td>Command Line Flag</td>
+        <td>پارامتر ورودی برنامه</td>
+    </tr>
+    <tr>
+        <td>ردیابی استک</td>
+        <td>Stack Trace</td>
+        <td>مسیر اجرای برنامه</td>
+    </tr>
+    <tr>
+        <td>مقدار پیش‌فرض</td>
+        <td>Default Value</td>
+        <td>مقدار اولیه پارامتر</td>
+    </tr>
+    <tr>
+        <td>ساختار برنامه</td>
+        <td>Application Struct</td>
+        <td>ساختار داده اصلی برنامه</td>
+    </tr>
+    <tr>
+        <td>تابع کمکی</td>
+        <td>Helper Function</td>
+        <td>تابع کمکی برای عملیات رایج</td>
+    </tr>
+    <tr>
+        <td>پیام خطا</td>
+        <td>Error Message</td>
+        <td>توضیح خطای رخ داده</td>
+    </tr>
+    <tr>
+        <td>پاسخ HTTP</td>
+        <td>HTTP Response</td>
+        <td>پاسخ ارسالی به مرورگر</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

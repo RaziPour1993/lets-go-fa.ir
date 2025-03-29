@@ -18,7 +18,7 @@
 		<header dir="rtl">	
 			<div class="wrapper">
 				<div>
-					<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; جداسازی مسیرهای برنامه</span>
+					<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; جداسازی مسیرهای برنامه (Isolating Application Routes)</span>
 				</div>
 				<div>
 					&lsaquo; <a href="03.04-centralized-error-handling.html">قبلی</a>
@@ -29,7 +29,7 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 3.5.</div>
-			<h2 id="isolating-the-application-routes">جداسازی مسیرهای برنامه</h2>
+			<h2 id="isolating-the-application-routes">جداسازی مسیرهای برنامه (Isolating Application Routes)</h2>
 
 <p>در حالی که در حال بازسازی کد خود هستیم، یک تغییر دیگر هم ارزش انجام دادن دارد.</p>
 
@@ -92,10 +92,70 @@
 <p>این بسیار مرتب‌تر است. مسیرهای برنامه ما اکنون در متد <code>app.routes()</code> جدا و کپسوله شده‌اند و مسئولیت‌های تابع <code>main()</code> ما محدود به موارد زیر است:</p>
 
 <ul>
-<li>تجزیه تنظیمات پیکربندی زمان اجرا برای برنامه؛</li>
-<li>ایجاد وابستگی‌ها برای هندلرها؛ و</li>
-<li>اجرای سرور HTTP.</li>
+<li>تجزیه تنظیمات پیکربندی زمان اجرا (Runtime Configuration Settings) برای برنامه؛</li>
+<li>ایجاد وابستگی‌ها (Dependencies) برای هندلرها؛ و</li>
+<li>اجرای سرور HTTP (HTTP Server).</li>
 </ul>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>جداسازی مسیرهای برنامه</td>
+        <td>Isolating Application Routes</td>
+        <td>فرآیند جداسازی و سازماندهی مسیرهای برنامه در یک فایل مستقل</td>
+    </tr>
+    <tr>
+        <td>مسیرهای برنامه</td>
+        <td>Application Routes</td>
+        <td>تعاریف مسیرهای HTTP و هندلرهای مرتبط با آنها</td>
+    </tr>
+    <tr>
+        <td>تنظیمات پیکربندی زمان اجرا</td>
+        <td>Runtime Configuration Settings</td>
+        <td>تنظیمات برنامه که در زمان اجرا قابل تغییر هستند</td>
+    </tr>
+    <tr>
+        <td>وابستگی‌ها</td>
+        <td>Dependencies</td>
+        <td>اجزای مورد نیاز برنامه مانند لاگرها و اتصالات پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>سرور HTTP</td>
+        <td>HTTP Server</td>
+        <td>برنامه‌ای که درخواست‌های HTTP را دریافت و پردازش می‌کند</td>
+    </tr>
+    <tr>
+        <td>کپسوله‌سازی</td>
+        <td>Encapsulation</td>
+        <td>مخفی کردن جزئیات پیاده‌سازی و ارائه یک رابط مشخص</td>
+    </tr>
+    <tr>
+        <td>مسئولیت‌ها</td>
+        <td>Responsibilities</td>
+        <td>وظایف و کارهایی که هر بخش از کد انجام می‌دهد</td>
+    </tr>
+    <tr>
+        <td>فایل مستقل</td>
+        <td>Independent File</td>
+        <td>فایلی که مسئولیت مشخص و مستقلی دارد</td>
+    </tr>
+    <tr>
+        <td>هندلر</td>
+        <td>Handler</td>
+        <td>تابع یا متدی که درخواست‌های HTTP را پردازش می‌کند</td>
+    </tr>
+    <tr>
+        <td>سرور فایل</td>
+        <td>File Server</td>
+        <td>سیستمی که فایل‌های استاتیک را به مرورگر ارائه می‌دهد</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

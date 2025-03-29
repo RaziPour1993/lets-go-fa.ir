@@ -28,7 +28,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; ماژول‌ها و ساخت‌های قابل تکرار</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; ماژول‌ها و ساخت‌های قابل تکرار (Modules and Reproducible Builds)</span>
 						
 					
 				</div>
@@ -41,9 +41,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۴.۳.</div>
-			<h2 id="modules-and-reproducible-builds">ماژول‌ها و ساخت‌های قابل تکرار</h2>
+			<h2 id="modules-and-reproducible-builds">ماژول‌ها و ساخت‌های قابل تکرار (Modules and Reproducible Builds)</h2>
 
-<p>حالا که درایور MySQL نصب شده است، بیایید نگاهی به فایل <code>go.mod</code> بیندازیم (که در همان ابتدای کتاب آن را ایجاد کردیم). شما باید یک بلوک <code>require</code> با دو خط حاوی مسیر و شماره نسخه دقیق پکیج‌هایی که دانلود کردید را ببینید:</p>
+<p>حالا که درایور MySQL نصب شده است، بیایید نگاهی به فایل <code>go.mod</code> بیندازیم (که در همان ابتدای کتاب آن را ایجاد کردیم). شما باید یک بلوک <code>require</code> (نیازمندی‌ها) با دو خط حاوی مسیر و شماره نسخه دقیق پکیج‌هایی که دانلود کردید را ببینید:</p>
 
 <figure class="code plain">
 <figcaption>File: go.mod</figcaption>
@@ -57,9 +57,9 @@ require (
 )</pre>
 </figure>
 
-<p>این خطوط در <code>go.mod</code> اساساً به دستور Go می‌گویند که دقیقاً از کدام نسخه پکیج باید هنگام اجرای دستوری مانند <code>go run</code>، <code>go test</code> یا <code>go build</code> از دایرکتوری پروژه شما استفاده شود.</p>
+<p>این خطوط در <code>go.mod</code> اساساً به دستور Go می‌گویند که دقیقاً از کدام نسخه پکیج (Package Version) باید هنگام اجرای دستوری مانند <code>go run</code>، <code>go test</code> یا <code>go build</code> از دایرکتوری پروژه شما استفاده شود.</p>
 
-<p>این باعث می‌شود که داشتن چندین پروژه روی یک ماشین که از <em>نسخه‌های مختلف یک پکیج</em> استفاده می‌کنند، آسان شود. برای مثال، این پروژه از نسخه <code>v1.8.1</code> درایور MySQL استفاده می‌کند، اما شما می‌توانید کد دیگری روی کامپیوتر خود داشته باشید که از نسخه <code>v1.5.0</code> استفاده می‌کند و این کاملاً قابل قبول است.</p>
+<p>این باعث می‌شود که داشتن چندین پروژه روی یک ماشین که از <em>نسخه‌های مختلف یک پکیج (Different Package Versions)</em> استفاده می‌کنند، آسان شود. برای مثال، این پروژه از نسخه <code>v1.8.1</code> درایور MySQL استفاده می‌کند، اما شما می‌توانید کد دیگری روی کامپیوتر خود داشته باشید که از نسخه <code>v1.5.0</code> استفاده می‌کند و این کاملاً قابل قبول است.</p>
 
 <aside class="note"><p>
 <strong>نکته:</strong> حاشیه‌نویسی <code>// indirect</code> نشان می‌دهد که یک پکیج مستقیماً در هیچ عبارت <code>import</code> در کد شما ظاهر نمی‌شود. در حال حاضر، ما هنوز هیچ کدی ننوشته‌ایم که واقعاً از پکیج‌های <code>github.com/go-sql-driver/mysql</code> یا <code>filippo.io/edwards25519</code> استفاده کند، به همین دلیل هر دو به عنوان وابستگی‌های غیرمستقیم علامت‌گذاری شده‌اند. ما این را در فصل بعدی اصلاح خواهیم کرد.
@@ -108,9 +108,9 @@ github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqw
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی</h3>
+<h3 id="additional-information">اطلاعات تکمیلی (Additional Information)</h3>
 
-<h4 id="upgrading-packages">ارتقای پکیج‌ها</h4>
+<h4 id="upgrading-packages">ارتقای پکیج‌ها (Upgrading Packages)</h4>
 
 <p>پس از اینکه یک پکیج دانلود شد و به فایل <code>go.mod</code> شما اضافه شد، پکیج و نسخه آن 'ثابت' می‌شوند. اما دلایل زیادی وجود دارد که ممکن است بخواهید در آینده از نسخه جدیدتری از یک پکیج استفاده کنید.</p>
 
@@ -126,7 +126,7 @@ github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqw
 <pre>$ go get -u github.com/foo/bar@v2.0.0</pre>
 </figure>
 
-<h4 id="removing-unused-packages">حذف پکیج‌های استفاده نشده</h4>
+<h4 id="removing-unused-packages">حذف پکیج‌های استفاده نشده (Removing Unused Packages)</h4>
 
 <p>گاهی اوقات ممکن است یک پکیج را با <code>go get</code> نصب کنید و بعداً متوجه شوید که دیگر به آن نیاز ندارید. در این صورت دو انتخاب دارید.</p>
 
@@ -173,6 +173,56 @@ github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqw
 				}
 			};
 		</script>
+
+		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>ماژول‌ها</td>
+        <td>Modules</td>
+        <td>واحدهای مستقل کد در Go که شامل مجموعه‌ای از پکیج‌های مرتبط هستند</td>
+    </tr>
+    <tr>
+        <td>ساخت‌های قابل تکرار</td>
+        <td>Reproducible Builds</td>
+        <td>فرآیند ساخت نرم‌افزار که همیشه خروجی یکسانی تولید می‌کند</td>
+    </tr>
+    <tr>
+        <td>نیازمندی‌ها</td>
+        <td>Requirements</td>
+        <td>پکیج‌ها و وابستگی‌هایی که برای اجرای برنامه مورد نیاز هستند</td>
+    </tr>
+    <tr>
+        <td>نسخه پکیج</td>
+        <td>Package Version</td>
+        <td>شماره نسخه مشخص یک پکیج که نشان‌دهنده تغییرات و ویژگی‌های آن است</td>
+    </tr>
+    <tr>
+        <td>وابستگی‌های غیرمستقیم</td>
+        <td>Indirect Dependencies</td>
+        <td>پکیج‌هایی که مستقیماً در کد استفاده نمی‌شوند اما توسط سایر وابستگی‌ها مورد نیاز هستند</td>
+    </tr>
+    <tr>
+        <td>مجموع رمزنگاری شده</td>
+        <td>Cryptographic Checksum</td>
+        <td>مقدار هش که برای تأیید یکپارچگی محتوای پکیج استفاده می‌شود</td>
+    </tr>
+    <tr>
+        <td>ارتقای پکیج‌ها</td>
+        <td>Upgrading Packages</td>
+        <td>فرآیند به‌روزرسانی پکیج‌ها به نسخه‌های جدیدتر</td>
+    </tr>
+    <tr>
+        <td>پکیج‌های استفاده نشده</td>
+        <td>Unused Packages</td>
+        <td>پکیج‌هایی که در پروژه نصب شده‌اند اما دیگر مورد استفاده قرار نمی‌گیرند</td>
+    </tr>
+</table>
 	</body>
 </html>
 

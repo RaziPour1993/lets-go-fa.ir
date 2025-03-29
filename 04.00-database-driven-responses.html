@@ -12,7 +12,7 @@
 		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; پاسخ‌های مبتنی بر پایگاه داده</span>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</span>
 				</div>
 				<div>
 					&lsaquo; <a href="03.05-isolating-the-application-routes.html">قبلی</a>
@@ -23,11 +23,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۴.</div>
-			<h1 id="database-driven-responses">پاسخ‌های مبتنی بر پایگاه داده</h1>
+			<h1 id="database-driven-responses">پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</h1>
 
-<p>برای اینکه برنامه وب Snippetbox ما واقعاً مفید شود، نیاز داریم جایی برای ذخیره (یا <em>پایدارسازی</em>) داده‌های وارد شده توسط کاربران داشته باشیم و توانایی پرس‌وجو از این مخزن داده به صورت پویا در زمان اجرا را داشته باشیم.</p>
+<p>برای اینکه برنامه وب Snippetbox ما واقعاً مفید شود، نیاز داریم جایی برای ذخیره (یا <em>پایدارسازی (Persistence)</em>) داده‌های وارد شده توسط کاربران داشته باشیم و توانایی پرس‌وجو (Query) از این مخزن داده به صورت پویا در زمان اجرا را داشته باشیم.</p>
 
-<p>مخازن داده‌های مختلفی وجود دارند که می‌توانیم برای برنامه خود استفاده کنیم &mdash; هر کدام با مزایا و معایب مختلف &mdash; اما ما پایگاه داده رابطه‌ای محبوب <a href="https://www.mysql.com/">MySQL</a> را انتخاب خواهیم کرد.</p>
+<p>مخازن داده‌های (Data Stores) مختلفی وجود دارند که می‌توانیم برای برنامه خود استفاده کنیم &mdash; هر کدام با مزایا و معایب مختلف &mdash; اما ما پایگاه داده رابطه‌ای (Relational Database) محبوب <a href="https://www.mysql.com/">MySQL</a> را انتخاب خواهیم کرد.</p>
 
 <aside class="note"><p>
 <strong>توجه:</strong> تمام الگوهای کد عمومی در این بخش از کتاب به سایر پایگاه‌های داده مانند PostgreSQL یا SQLite نیز اعمال می‌شوند. اگر در حال دنبال کردن هستید و ترجیح می‌دهید از پایگاه داده دیگری استفاده کنید، می‌توانید، اما من توصیه می‌کنم ابتدا از MySQL استفاده کنید تا احساسی از نحوه کار همه چیز پیدا کنید و سپس به عنوان یک تمرین، پایگاه داده‌ها را پس از اتمام کتاب تغییر دهید.
@@ -36,13 +36,83 @@
 <p>در این بخش یاد خواهید گرفت که چگونه:</p>
 
 <ul>
-<li><a href="04.02-installing-a-database-driver.html">نصب یک درایور پایگاه داده</a> به عنوان یک 'واسط' بین MySQL و برنامه Go شما.</li>
-<li><a href="04.04-creating-a-database-connection-pool.html">اتصال به MySQL</a> از برنامه وب خود (به طور خاص، یاد خواهید گرفت که چگونه یک مجموعه از اتصالات قابل استفاده مجدد ایجاد کنید).</li>
-<li>ایجاد یک <a href="04.05-designing-a-database-model.html">بسته <code>models</code> مستقل</a>، به طوری که منطق پایگاه داده شما قابل استفاده مجدد و از برنامه وب شما جدا باشد.</li>
-<li>استفاده از توابع مناسب در بسته <code>database/sql</code> Go برای اجرای انواع مختلف دستورات SQL، و چگونگی جلوگیری از خطاهای رایج که می‌توانند منجر به اتمام منابع سرور شما شوند.</li>
-<li><a href="04.06-executing-sql-statements.html">جلوگیری از حملات تزریق SQL</a> با استفاده صحیح از پارامترهای جایگزین.</li>
-<li>استفاده از <a href="04.09-transactions-and-other-details.html">تراکنش‌ها</a>، به طوری که بتوانید چندین دستور SQL را در یک عمل اتمی اجرا کنید.</li>
+<li><a href="04.02-installing-a-database-driver.html">نصب یک درایور پایگاه داده (Database Driver)</a> به عنوان یک 'واسط' بین MySQL و برنامه Go شما.</li>
+<li><a href="04.04-creating-a-database-connection-pool.html">اتصال به MySQL</a> از برنامه وب خود (به طور خاص، یاد خواهید گرفت که چگونه یک مجموعه از اتصالات قابل استفاده مجدد (Connection Pool) ایجاد کنید).</li>
+<li>ایجاد یک <a href="04.05-designing-a-database-model.html">بسته <code>models</code> مستقل (Independent Models Package)</a>، به طوری که منطق پایگاه داده شما قابل استفاده مجدد و از برنامه وب شما جدا باشد.</li>
+<li>استفاده از توابع مناسب در بسته <code>database/sql</code> Go برای اجرای انواع مختلف دستورات SQL (SQL Statements)، و چگونگی جلوگیری از خطاهای رایج که می‌توانند منجر به اتمام منابع سرور شما شوند.</li>
+<li><a href="04.06-executing-sql-statements.html">جلوگیری از حملات تزریق SQL (SQL Injection Attacks)</a> با استفاده صحیح از پارامترهای جایگزین (Placeholder Parameters).</li>
+<li>استفاده از <a href="04.09-transactions-and-other-details.html">تراکنش‌ها (Transactions)</a>، به طوری که بتوانید چندین دستور SQL را در یک عمل اتمی (Atomic Operation) اجرا کنید.</li>
 </ul>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>پاسخ‌های مبتنی بر پایگاه داده</td>
+        <td>Database-Driven Responses</td>
+        <td>پاسخ‌های وب که محتوای آنها از پایگاه داده دریافت می‌شود</td>
+    </tr>
+    <tr>
+        <td>پایدارسازی</td>
+        <td>Persistence</td>
+        <td>ذخیره داده‌ها به صورت دائمی برای استفاده در آینده</td>
+    </tr>
+    <tr>
+        <td>پرس‌وجو</td>
+        <td>Query</td>
+        <td>درخواست اطلاعات خاص از پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>مخازن داده</td>
+        <td>Data Stores</td>
+        <td>سیستم‌های ذخیره‌سازی داده مانند پایگاه‌های داده</td>
+    </tr>
+    <tr>
+        <td>پایگاه داده رابطه‌ای</td>
+        <td>Relational Database</td>
+        <td>نوعی پایگاه داده که داده‌ها را در جداول مرتبط ذخیره می‌کند</td>
+    </tr>
+    <tr>
+        <td>درایور پایگاه داده</td>
+        <td>Database Driver</td>
+        <td>نرم‌افزار واسط بین برنامه و پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>مجموعه اتصالات</td>
+        <td>Connection Pool</td>
+        <td>مجموعه‌ای از اتصالات پایگاه داده که می‌توانند مجدداً استفاده شوند</td>
+    </tr>
+    <tr>
+        <td>دستورات SQL</td>
+        <td>SQL Statements</td>
+        <td>دستورات استاندارد برای تعامل با پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>حملات تزریق SQL</td>
+        <td>SQL Injection Attacks</td>
+        <td>حملات امنیتی که از طریق ورودی‌های مخرب SQL انجام می‌شوند</td>
+    </tr>
+    <tr>
+        <td>پارامترهای جایگزین</td>
+        <td>Placeholder Parameters</td>
+        <td>مقادیر موقت در دستورات SQL که بعداً با مقادیر واقعی جایگزین می‌شوند</td>
+    </tr>
+    <tr>
+        <td>تراکنش‌ها</td>
+        <td>Transactions</td>
+        <td>مجموعه‌ای از عملیات پایگاه داده که باید به صورت یکپارچه انجام شوند</td>
+    </tr>
+    <tr>
+        <td>عمل اتمی</td>
+        <td>Atomic Operation</td>
+        <td>عملیاتی که باید به طور کامل انجام شود یا اصلاً انجام نشود</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

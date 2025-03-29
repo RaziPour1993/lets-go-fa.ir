@@ -23,7 +23,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 13.1.</div>
-			<h2 id="unit-testing-and-sub-tests">تست واحد و زیرتست‌ها</h2>
+			<h2 id="unit-testing-and-sub-tests">تست واحد و تست‌های فرعی (Unit Testing and Sub-Tests)</h2>
+
+<p>در این بخش، با <dfn>تست واحد (Unit Testing)</dfn> و <dfn>تست‌های فرعی (Sub-Tests)</dfn> در Go آشنا می‌شویم. این شامل <dfn>تست جدول‌محور (Table-Driven Testing)</dfn> و <dfn>تست موازی (Parallel Testing)</dfn> می‌شود.</p>
+
+<p>همچنین با <dfn>توابع کمکی تست (Test Helper Functions)</dfn> و <dfn>مقایسه نتایج (Result Comparison)</dfn> آشنا خواهیم شد.</p>
 
 <p>در این فصل، ما یک تست واحد ایجاد خواهیم کرد تا مطمئن شویم که تابع <code>humanDate()</code> (که در فصل <a href="05.06-custom-template-functions.html">توابع قالب سفارشی</a> ایجاد کردیم) مقادیر <code>time.Time</code> را در قالب دقیق مورد نظر ما خروجی می‌دهد.</p>
 
@@ -356,6 +360,66 @@ $ touch internal/assert/assert.go</pre>
 </span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تست واحد</td>
+        <td>Unit Testing</td>
+        <td>آزمایش بخش‌های کوچک کد</td>
+    </tr>
+    <tr>
+        <td>تست‌های فرعی</td>
+        <td>Sub-Tests</td>
+        <td>آزمایش‌های زیرمجموعه</td>
+    </tr>
+    <tr>
+        <td>تست جدول‌محور</td>
+        <td>Table-Driven Testing</td>
+        <td>آزمایش با داده‌های متعدد</td>
+    </tr>
+    <tr>
+        <td>تست موازی</td>
+        <td>Parallel Testing</td>
+        <td>اجرای همزمان تست‌ها</td>
+    </tr>
+    <tr>
+        <td>توابع کمکی تست</td>
+        <td>Test Helper Functions</td>
+        <td>توابع کمکی برای تست</td>
+    </tr>
+    <tr>
+        <td>مقایسه نتایج</td>
+        <td>Result Comparison</td>
+        <td>بررسی نتایج مورد انتظار</td>
+    </tr>
+    <tr>
+        <td>پیش‌نیازهای تست</td>
+        <td>Test Prerequisites</td>
+        <td>شرایط لازم برای تست</td>
+    </tr>
+    <tr>
+        <td>داده‌های تست</td>
+        <td>Test Data</td>
+        <td>داده‌های مورد نیاز تست</td>
+    </tr>
+    <tr>
+        <td>گزارش خطا</td>
+        <td>Error Reporting</td>
+        <td>گزارش مشکلات تست</td>
+    </tr>
+    <tr>
+        <td>پاکسازی تست</td>
+        <td>Test Cleanup</td>
+        <td>پاکسازی بعد از تست</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

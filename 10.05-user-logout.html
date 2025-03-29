@@ -27,9 +27,9 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۱۰.۵.</div>
-			<h2 id="user-logout">خروج کاربر</h2>
+			<h2 id="user-logout">خروج کاربر (User Logout)</h2>
 
-<p>این ما را به خوبی به خروج کاربر می‌رساند. پیاده‌سازی خروج کاربر در مقایسه با ثبت‌نام و ورود به سیستم ساده‌تر است &mdash; اساساً تنها کاری که باید انجام دهیم حذف مقدار <code>&quot;authenticatedUserID&quot;</code> از جلسه کاربر است.</p>
+<p>در این بخش، نحوه پیاده‌سازی <dfn>خروج کاربر (User Logout)</dfn> را بررسی می‌کنیم. این شامل <dfn>پایان نشست (Session Termination)</dfn>، <dfn>پاکسازی کوکی‌ها (Cookie Cleanup)</dfn> و <dfn>هدایت کاربر (User Redirection)</dfn> می‌شود.</p>
 
 <p>در عین حال، بهتر است شناسه جلسه را دوباره تجدید کنیم و همچنین یک پیام فلش به داده‌های جلسه اضافه کنیم تا به کاربر تأیید کنیم که از سیستم خارج شده است.</p>
 
@@ -68,6 +68,66 @@
 <figure class="img">
 <img src="assets/img/10.05-01.png" alt="10.05-01.png" />
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>خروج کاربر</td>
+        <td>User Logout</td>
+        <td>فرآیند خروج از حساب کاربری</td>
+    </tr>
+    <tr>
+        <td>پایان نشست</td>
+        <td>Session Termination</td>
+        <td>پایان دادن به نشست کاربری</td>
+    </tr>
+    <tr>
+        <td>پاکسازی کوکی‌ها</td>
+        <td>Cookie Cleanup</td>
+        <td>حذف کوکی‌های نشست</td>
+    </tr>
+    <tr>
+        <td>هدایت کاربر</td>
+        <td>User Redirection</td>
+        <td>انتقال کاربر به صفحه دیگر</td>
+    </tr>
+    <tr>
+        <td>هندلر خروج</td>
+        <td>Logout Handler</td>
+        <td>پردازش‌کننده درخواست خروج</td>
+    </tr>
+    <tr>
+        <td>کد برنامه</td>
+        <td>Application Code</td>
+        <td>کد منبع برنامه</td>
+    </tr>
+    <tr>
+        <td>امنیت نشست</td>
+        <td>Session Security</td>
+        <td>حفاظت از نشست کاربری</td>
+    </tr>
+    <tr>
+        <td>مدیریت نشست</td>
+        <td>Session Management</td>
+        <td>کنترل نشست‌های کاربری</td>
+    </tr>
+    <tr>
+        <td>حذف نشست</td>
+        <td>Session Removal</td>
+        <td>پاک کردن اطلاعات نشست</td>
+    </tr>
+    <tr>
+        <td>صفحه خروج</td>
+        <td>Logout Page</td>
+        <td>صفحه پردازش خروج</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

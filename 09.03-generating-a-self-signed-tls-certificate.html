@@ -28,7 +28,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 9.3.</div>
-			<h2 id="generating-a-self-signed-tls-certificate">تولید یک گواهی TLS خودامضا</h2>
+			<h2 id="generating-a-self-signed-tls-certificate">تولید یک گواهی TLS خودامضا (Generating a Self-Signed TLS Certificate)</h2>
+
+<p>در این بخش، نحوه تولید یک <dfn>گواهی TLS خودامضا (Self-Signed TLS Certificate)</dfn> را بررسی می‌کنیم. این گواهی برای <dfn>رمزنگاری (Encryption)</dfn> و <dfn>امنیت ارتباطات (Communication Security)</dfn> استفاده می‌شود.</p>
+
+<p>برای شروع، بیایید یک <dfn>جفت کلید (Key Pair)</dfn> شامل <dfn>کلید خصوصی (Private Key)</dfn> و <dfn>گواهی عمومی (Public Certificate)</dfn> ایجاد کنیم:</p>
 
 <p>بیایید توجه خود را به استفاده از HTTPS (به جای HTTP ساده) برای همه درخواست‌ها و پاسخ‌ها در برنامه خود معطوف کنیم.</p>
 
@@ -90,6 +94,65 @@ $ cd tls</pre>
 
 <p>به عنوان جایگزینی برای ابزار <code>generate_cert.go</code>، ممکن است بخواهید از <a href="https://github.com/FiloSottile/mkcert">mkcert</a> برای تولید گواهی‌های TLS استفاده کنید. اگرچه این کار نیاز به تنظیمات اضافی دارد، اما این مزیت را دارد که گواهی‌های تولید شده <em>به صورت محلی معتبر</em> هستند &mdash; به این معنی که می‌توانید از آنها برای آزمایش و توسعه بدون دریافت هشدارهای امنیتی در مرورگر وب خود استفاده کنید.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>گواهی TLS خودامضا</td>
+        <td>Self-Signed TLS Certificate</td>
+        <td>گواهی امنیتی تولید شده توسط خود</td>
+    </tr>
+    <tr>
+        <td>رمزنگاری</td>
+        <td>Encryption</td>
+        <td>کدگذاری اطلاعات برای امنیت</td>
+    </tr>
+    <tr>
+        <td>امنیت ارتباطات</td>
+        <td>Communication Security</td>
+        <td>حفاظت از تبادل اطلاعات</td>
+    </tr>
+    <tr>
+        <td>جفت کلید</td>
+        <td>Key Pair</td>
+        <td>زوج کلید خصوصی و عمومی</td>
+    </tr>
+    <tr>
+        <td>کلید خصوصی</td>
+        <td>Private Key</td>
+        <td>کلید محرمانه برای رمزگشایی</td>
+    </tr>
+    <tr>
+        <td>گواهی عمومی</td>
+        <td>Public Certificate</td>
+        <td>گواهی قابل اشتراک با دیگران</td>
+    </tr>
+    <tr>
+        <td>الگوریتم رمزنگاری</td>
+        <td>Encryption Algorithm</td>
+        <td>روش رمزگذاری داده‌ها</td>
+    </tr>
+    <tr>
+        <td>امضای دیجیتال</td>
+        <td>Digital Signature</td>
+        <td>تأیید اصالت دیجیتال</td>
+    </tr>
+    <tr>
+        <td>مرجع صدور گواهی</td>
+        <td>Certificate Authority</td>
+        <td>نهاد صادرکننده گواهی</td>
+    </tr>
+    <tr>
+        <td>اعتبارسنجی گواهی</td>
+        <td>Certificate Validation</td>
+        <td>بررسی صحت گواهی</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

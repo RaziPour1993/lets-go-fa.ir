@@ -14,7 +14,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">استفاده از زمینه درخواست</a> &rsaquo; زمینه درخواست برای احراز هویت/مجوز</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">استفاده از زمینه درخواست</a> &rsaquo; زمینه درخواست برای احراز هویت و مجوزدهی</span>
 						
 					
 				</div>
@@ -27,7 +27,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل 11.2.</div>
-			<h2 id="request-context-for-authentication-authorization">زمینه درخواست برای احراز هویت/مجوز</h2>
+			<h2 id="request-context-for-authentication-authorization">زمینه درخواست برای احراز هویت و مجوزدهی (Request Context for Authentication and Authorization)</h2>
+
+<p>در این بخش، نحوه استفاده از <dfn>زمینه درخواست (Request Context)</dfn> برای <dfn>احراز هویت (Authentication)</dfn> و <dfn>مجوزدهی (Authorization)</dfn> را بررسی می‌کنیم. این شامل <dfn>ذخیره‌سازی اطلاعات کاربر (User Information Storage)</dfn> و <dfn>بررسی دسترسی‌ها (Access Checks)</dfn> می‌شود.</p>
 
 <p>بنابراین، با توضیحات فوق، بیایید از قابلیت زمینه درخواست در برنامه خود استفاده کنیم.</p>
 
@@ -214,6 +216,65 @@ mysql&gt; DELETE FROM users WHERE email = &#39;bob@example.com&#39;;</pre>
 
 <p>به دلایل ایمنی نوع و وضوح کد، تقریباً همیشه بهتر است این وابستگی‌ها را به‌طور صریح در دسترس هندلرهای خود قرار دهید، با این که یا هندلرهای خود را به عنوان متدهایی در برابر یک ساختار <code>application</code> (مانند آنچه در این کتاب داریم) یا با انتقال آنها در یک بسته (مانند <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">این Gist</a>) قرار دهید.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>زمینه درخواست</td>
+        <td>Request Context</td>
+        <td>محیط اجرای درخواست</td>
+    </tr>
+    <tr>
+        <td>احراز هویت</td>
+        <td>Authentication</td>
+        <td>تأیید هویت کاربر</td>
+    </tr>
+    <tr>
+        <td>مجوزدهی</td>
+        <td>Authorization</td>
+        <td>کنترل دسترسی کاربر</td>
+    </tr>
+    <tr>
+        <td>ذخیره‌سازی اطلاعات کاربر</td>
+        <td>User Information Storage</td>
+        <td>نگهداری داده‌های کاربر</td>
+    </tr>
+    <tr>
+        <td>بررسی دسترسی‌ها</td>
+        <td>Access Checks</td>
+        <td>کنترل مجوزهای دسترسی</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار احراز هویت</td>
+        <td>Authentication Middleware</td>
+        <td>کد واسط برای تأیید هویت</td>
+    </tr>
+    <tr>
+        <td>کلید زمینه</td>
+        <td>Context Key</td>
+        <td>کلید ذخیره داده در زمینه</td>
+    </tr>
+    <tr>
+        <td>مدل کاربر</td>
+        <td>User Model</td>
+        <td>ساختار داده‌ای کاربر</td>
+    </tr>
+    <tr>
+        <td>نشست کاربر</td>
+        <td>User Session</td>
+        <td>جلسه کاری کاربر</td>
+    </tr>
+    <tr>
+        <td>کنترل دسترسی</td>
+        <td>Access Control</td>
+        <td>مدیریت مجوزها</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper">

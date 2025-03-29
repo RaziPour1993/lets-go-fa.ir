@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۸.۱.</div>
-			<h2 id="choosing-a-session-manager">انتخاب یک مدیر جلسه</h2>
+			<h2 id="choosing-a-session-manager">انتخاب یک مدیر جلسه (Choosing a Session Manager)</h2>
+
+<p>در این بخش، نحوه انتخاب یک <dfn>مدیر جلسه (Session Manager)</dfn> مناسب را بررسی می‌کنیم. یک مدیر جلسه خوب باید قابلیت‌های <dfn>ذخیره‌سازی (Storage)</dfn>، <dfn>امنیت (Security)</dfn> و <dfn>مقیاس‌پذیری (Scalability)</dfn> مناسبی داشته باشد.</p>
+
+<p>برای پروژه ما، از <dfn>پکیج alexedwards/scs (SCS Package)</dfn> استفاده خواهیم کرد که یک <dfn>مدیر جلسه (Session Manager)</dfn> سبک و امن است. این پکیج از <dfn>کوکی‌های امن (Secure Cookies)</dfn> برای <dfn>ذخیره‌سازی جلسه (Session Storage)</dfn> استفاده می‌کند.</p>
 
 <p>هنگام کار با جلسات، ملاحظات امنیتی زیادی وجود دارد و پیاده‌سازی صحیح آن‌ها کار ساده‌ای نیست. مگر اینکه واقعاً نیاز به پیاده‌سازی خودتان داشته باشید، بهتر است از یک بسته شخص ثالث موجود و تست شده استفاده کنید.</p>
 
@@ -56,6 +60,66 @@ $ go get github.com/alexedwards/scs/mysqlstore@latest
 <samp>go: downloading github.com/alexedwards/scs/mysqlstore v0.0.0-20240316133359-d7ab9d9831ec
 go get: added github.com/alexedwards/scs/mysqlstore v0.0.0-20240316133359-d7ab9d9831ec</samp></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>مدیر جلسه</td>
+        <td>Session Manager</td>
+        <td>نرم‌افزار مدیریت جلسات کاربران</td>
+    </tr>
+    <tr>
+        <td>ذخیره‌سازی</td>
+        <td>Storage</td>
+        <td>محل نگهداری داده‌های جلسه</td>
+    </tr>
+    <tr>
+        <td>امنیت</td>
+        <td>Security</td>
+        <td>حفاظت از داده‌ها و جلسات</td>
+    </tr>
+    <tr>
+        <td>مقیاس‌پذیری</td>
+        <td>Scalability</td>
+        <td>قابلیت رشد و گسترش سیستم</td>
+    </tr>
+    <tr>
+        <td>پکیج alexedwards/scs</td>
+        <td>SCS Package</td>
+        <td>کتابخانه مدیریت جلسه در Go</td>
+    </tr>
+    <tr>
+        <td>کوکی‌های امن</td>
+        <td>Secure Cookies</td>
+        <td>کوکی‌های رمزنگاری شده</td>
+    </tr>
+    <tr>
+        <td>ذخیره‌سازی جلسه</td>
+        <td>Session Storage</td>
+        <td>محل نگهداری داده‌های جلسه</td>
+    </tr>
+    <tr>
+        <td>رمزنگاری</td>
+        <td>Encryption</td>
+        <td>محافظت از داده‌ها با کدگذاری</td>
+    </tr>
+    <tr>
+        <td>احراز هویت</td>
+        <td>Authentication</td>
+        <td>تأیید هویت کاربران</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>مدیریت خطاهای جلسه</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

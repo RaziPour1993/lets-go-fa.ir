@@ -25,9 +25,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 5.2.</div>
-			<h2 id="template-actions-and-functions">اقدامات و توابع قالب</h2>
+			<h2 id="template-actions-and-functions">عملکردها و توابع قالب (Template Actions and Functions)</h2>
 
-<p>در این بخش به اقدامات <dfn>قالب</dfn> و <dfn>توابع</dfn> که Go ارائه می دهد، خواهیم پرداخت.</p>
+<p>در این بخش، به بررسی برخی از <dfn>عملکردهای قالب (Template Actions)</dfn> و <dfn>توابع داخلی (Built-in Functions)</dfn> که در بسته <code>html/template</code> Go در دسترس هستند می‌پردازیم.</p>
+
+<p>این ابزارها به شما امکان می‌دهند تا <dfn>منطق قالب (Template Logic)</dfn> را پیاده‌سازی کنید و <dfn>داده‌های پویا (Dynamic Data)</dfn> را به روش‌های مختلف نمایش دهید.</p>
 
 <p>ما قبلاً در مورد برخی از اقدامات صحبت کرده ایم &mdash; <code>{{define}}</code>, <code>{{template}}</code> و <code>{{block}}</code> &mdash; اما سه مورد دیگر وجود دارد که می توانید برای کنترل نمایش داده های پویا استفاده کنید &mdash; <code>{{if}}</code>, <code>{{with}}</code> و <code>{{range}}</code>.</p>
 
@@ -301,6 +303,66 @@
     <span class="c1">// ...
 </span><span class="c1"></span><span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>عملکردهای قالب</td>
+        <td>Template Actions</td>
+        <td>دستورات خاص برای کنترل جریان و پردازش داده در قالب‌ها</td>
+    </tr>
+    <tr>
+        <td>توابع داخلی</td>
+        <td>Built-in Functions</td>
+        <td>توابع از پیش تعریف شده در بسته html/template</td>
+    </tr>
+    <tr>
+        <td>منطق قالب</td>
+        <td>Template Logic</td>
+        <td>قواعد و شرایط برای پردازش و نمایش داده‌ها در قالب</td>
+    </tr>
+    <tr>
+        <td>داده‌های پویا</td>
+        <td>Dynamic Data</td>
+        <td>اطلاعاتی که در زمان اجرا تغییر می‌کنند</td>
+    </tr>
+    <tr>
+        <td>حلقه‌های تکرار</td>
+        <td>Iteration Loops</td>
+        <td>ساختارهای تکرار برای پردازش مجموعه‌ای از داده‌ها</td>
+    </tr>
+    <tr>
+        <td>عبارات شرطی</td>
+        <td>Conditional Statements</td>
+        <td>دستورات برای اجرای کد بر اساس شرایط خاص</td>
+    </tr>
+    <tr>
+        <td>قالب‌بندی متن</td>
+        <td>Text Formatting</td>
+        <td>تغییر شکل و ظاهر متن برای نمایش</td>
+    </tr>
+    <tr>
+        <td>متغیرهای قالب</td>
+        <td>Template Variables</td>
+        <td>متغیرهای موقت برای ذخیره داده در قالب</td>
+    </tr>
+    <tr>
+        <td>فراخوانی تابع</td>
+        <td>Function Call</td>
+        <td>استفاده از یک تابع برای انجام عملیات خاص</td>
+    </tr>
+    <tr>
+        <td>پردازش رشته</td>
+        <td>String Processing</td>
+        <td>عملیات مختلف روی متن‌ها و رشته‌ها</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

@@ -33,7 +33,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۶.۵</div>
-			<h2 id="composable-middleware-chains">زنجیره‌های میان‌افزار قابل ترکیب</h2>
+			<h2 id="composable-middleware-chains">زنجیره‌های میان‌افزار قابل ترکیب (Composable Middleware Chains)</h2>
+
+			<p>در این بخش، نحوه ایجاد <dfn>زنجیره‌های میان‌افزار قابل ترکیب (Composable Middleware Chains)</dfn> را بررسی می‌کنیم. این زنجیره‌ها به ما اجازه می‌دهند تا <dfn>میان‌افزارها (Middlewares)</dfn> را به صورت پویا ترکیب کنیم و <dfn>ترتیب اجرا (Execution Order)</dfn> را کنترل کنیم.</p>
 
 			<p>در این فصل می‌خواهم پکیج <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> را معرفی کنم که به ما در مدیریت زنجیره‌های میان‌افزار/هندلر کمک می‌کند.</p>
 
@@ -117,6 +119,66 @@ require (
 			</figure>
 
 			<p>اگر می‌خواهید، می‌توانید در این مرحله برنامه را مجدداً راه‌اندازی کنید. باید متوجه شوید که همه چیز به درستی کامپایل می‌شود و برنامه همچنان مانند قبل کار می‌کند. همچنین می‌توانید مجدداً <code>go mod tidy</code> را اجرا کنید تا علامت <code>// indirect</code> از فایل <code>go.mod</code> حذف شود.</p>
+
+			<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+			<table class="glossary">
+				<tr>
+					<th>اصطلاح فارسی</th>
+					<th>معادل انگلیسی</th>
+					<th>توضیح</th>
+				</tr>
+				<tr>
+					<td>زنجیره‌های میان‌افزار قابل ترکیب</td>
+					<td>Composable Middleware Chains</td>
+					<td>ترکیب پویای میان‌افزارها به صورت زنجیره‌ای</td>
+				</tr>
+				<tr>
+					<td>میان‌افزارها</td>
+					<td>Middlewares</td>
+					<td>توابعی که درخواست‌ها را پردازش می‌کنند</td>
+				</tr>
+				<tr>
+					<td>ترتیب اجرا</td>
+					<td>Execution Order</td>
+					<td>ترتیب اجرای میان‌افزارها در زنجیره</td>
+				</tr>
+				<tr>
+					<td>تابع زنجیره‌ساز</td>
+					<td>Chain Function</td>
+					<td>تابعی که میان‌افزارها را به هم متصل می‌کند</td>
+				</tr>
+				<tr>
+					<td>میان‌افزار استاندارد</td>
+					<td>Standard Middleware</td>
+					<td>میان‌افزارهای پایه مورد نیاز برنامه</td>
+				</tr>
+				<tr>
+					<td>مسیریاب</td>
+					<td>Router</td>
+					<td>بخشی که درخواست‌ها را به هندلرها هدایت می‌کند</td>
+				</tr>
+				<tr>
+					<td>هندلر</td>
+					<td>Handler</td>
+					<td>تابعی که درخواست‌ها را پردازش می‌کند</td>
+				</tr>
+				<tr>
+					<td>پردازش درخواست</td>
+					<td>Request Processing</td>
+					<td>عملیات انجام شده روی درخواست‌های دریافتی</td>
+				</tr>
+				<tr>
+					<td>مدیریت مسیر</td>
+					<td>Route Handling</td>
+					<td>پردازش درخواست‌ها بر اساس مسیر URL</td>
+				</tr>
+				<tr>
+					<td>سرور فایل</td>
+					<td>File Server</td>
+					<td>بخشی که فایل‌های استاتیک را سرو می‌کند</td>
+				</tr>
+			</table>
 
 		</main>
 		<footer dir="rtl">

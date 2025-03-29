@@ -23,7 +23,11 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter" dir="rtl">فصل ۷.۶.</div>
-			<h2 id="automatic-form-parsing" dir="rtl">تجزیه خودکار فرم</h2>
+			<h2 id="automatic-form-parsing">تجزیه خودکار فرم (Automatic Form Parsing)</h2>
+
+<p>در این بخش، نحوه <dfn>تجزیه خودکار فرم (Automatic Form Parsing)</dfn> را بررسی می‌کنیم. این روش به ما کمک می‌کند تا <dfn>داده‌های فرم (Form Data)</dfn> را به صورت خودکار به <dfn>ساختارهای داده (Data Structures)</dfn> تبدیل کنیم.</p>
+
+<p>برای شروع، بیایید یک <dfn>نوع فرم (Form Type)</dfn> جدید برای <dfn>قطعه‌های کد (Code Snippets)</dfn> ایجاد کنیم که شامل <dfn>قوانین اعتبارسنجی (Validation Rules)</dfn> باشد:</p>
 
 <p dir="rtl">ما می‌توانیم هندلر <code>snippetCreatePost</code> خود را با استفاده از یک پکیج شخص ثالث مانند <a href="https://github.com/go-playground/form"><code>go-playground/form</code></a> یا <a href="https://github.com/gorilla/schema"><code>gorilla/schema</code></a> برای رمزگشایی خودکار داده‌های فرم به ساختار <code>snippetCreateForm</code> ساده‌تر کنیم. استفاده از یک رمزگشا خودکار <em>کاملاً</em> اختیاری است، اما می‌تواند به شما در صرفه‌جویی در زمان و تایپ کمک کند &mdash; به ویژه اگر برنامه شما فرم‌های زیادی دارد یا نیاز به پردازش یک فرم بسیار بزرگ دارید.</p>
 
@@ -281,6 +285,65 @@
 
 <p dir="rtl">کد هندلر ما اکنون زیبا و مختصر است، اما همچنان در مورد رفتار و کاری که انجام می‌دهد بسیار واضح است. و ما یک الگوی کلی برای پردازش و اعتبارسنجی فرم داریم که می‌توانیم به راحتی در فرم‌های دیگر پروژه خود استفاده کنیم &mdash; مانند فرم‌های ثبت‌نام و ورود کاربر که به زودی خواهیم ساخت.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تجزیه خودکار فرم</td>
+        <td>Automatic Form Parsing</td>
+        <td>تبدیل خودکار داده‌های فرم به ساختارهای داده</td>
+    </tr>
+    <tr>
+        <td>داده‌های فرم</td>
+        <td>Form Data</td>
+        <td>اطلاعات وارد شده در فرم</td>
+    </tr>
+    <tr>
+        <td>ساختارهای داده</td>
+        <td>Data Structures</td>
+        <td>الگوهای سازماندهی داده‌ها در برنامه</td>
+    </tr>
+    <tr>
+        <td>نوع فرم</td>
+        <td>Form Type</td>
+        <td>ساختار داده برای نگهداری اطلاعات فرم</td>
+    </tr>
+    <tr>
+        <td>قطعه‌های کد</td>
+        <td>Code Snippets</td>
+        <td>بخش‌های کوچک و مستقل کد</td>
+    </tr>
+    <tr>
+        <td>قوانین اعتبارسنجی</td>
+        <td>Validation Rules</td>
+        <td>شرایط لازم برای معتبر بودن داده‌ها</td>
+    </tr>
+    <tr>
+        <td>تگ‌های ساختاری</td>
+        <td>Struct Tags</td>
+        <td>متادیتای اضافه شده به فیلدهای ساختار</td>
+    </tr>
+    <tr>
+        <td>پردازش خودکار</td>
+        <td>Automatic Processing</td>
+        <td>انجام عملیات بدون دخالت دستی</td>
+    </tr>
+    <tr>
+        <td>تبدیل داده</td>
+        <td>Data Conversion</td>
+        <td>تغییر شکل داده از یک فرمت به فرمت دیگر</td>
+    </tr>
+    <tr>
+        <td>اعتبارسنجی خودکار</td>
+        <td>Automatic Validation</td>
+        <td>بررسی خودکار صحت داده‌ها</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

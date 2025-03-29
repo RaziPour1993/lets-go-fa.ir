@@ -32,7 +32,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; ایجاد یک استخر اتصال به پایگاه داده</span>
+						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</a> &rsaquo; ایجاد استخر اتصال پایگاه داده (Creating a Database Connection Pool)</span>
 						
 					
 				</div>
@@ -45,9 +45,11 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۴.۴</div>
-			<h2 id="creating-a-database-connection-pool">ایجاد یک استخر اتصال به پایگاه داده</h2>
+			<h2 id="creating-a-database-connection-pool">ایجاد استخر اتصال پایگاه داده (Creating a Database Connection Pool)</h2>
 
-<p>حالا که پایگاه داده MySQL راه‌اندازی شده و درایور آن نصب شده است، گام طبیعی بعدی اتصال به پایگاه داده از برنامه وب ما است.</p>
+<p>حالا که درایور MySQL نصب شده است، می‌توانیم از آن برای ایجاد یک <dfn>استخر اتصال (Connection Pool)</dfn> به پایگاه داده استفاده کنیم.</p>
+
+<p>در Go، استخر اتصال با استفاده از نوع <code>sql.DB</code> از بسته <code>database/sql</code> نمایش داده می‌شود. این یک <dfn>مجموعه اتصالات (Connection Pool)</dfn> را مدیریت می‌کند، که می‌تواند شامل اتصالات باز و بسته به پایگاه داده باشد.</p>
 
 <p>برای این کار به تابع <a href="https://pkg.go.dev/database/sql/#Open"><code>sql.Open()</code></a> گو نیاز داریم که به این صورت استفاده می‌شود:</p>
 
@@ -63,20 +65,20 @@
 <p>چند نکته مهم در مورد این کد وجود دارد که باید توضیح داده شود:</p>
 
 <ul>
-<li><p>پارامتر اول تابع <code>sql.Open()</code> نام درایور و پارامتر دوم نام منبع داده (گاهی اوقات رشته اتصال یا DSN نیز نامیده می‌شود) است که نحوه اتصال به پایگاه داده شما را توصیف می‌کند.</p></li>
+<li><p>پارامتر اول تابع <code>sql.Open()</code> نام درایور (Driver Name) و پارامتر دوم نام منبع داده (Data Source Name یا DSN) است که نحوه اتصال به پایگاه داده شما را توصیف می‌کند.</p></li>
 
-<li><p>فرمت نام منبع داده به پایگاه داده و درایوری که استفاده می‌کنید بستگی دارد. معمولاً می‌توانید اطلاعات و نمونه‌ها را در مستندات درایور خاص خود پیدا کنید. برای درایوری که ما استفاده می‌کنیم می‌توانید مستندات را <a href="https://github.com/go-sql-driver/mysql#dsn-data-source-name">اینجا</a> پیدا کنید.</p></li>
+<li><p>فرمت نام منبع داده (DSN Format) به پایگاه داده و درایوری که استفاده می‌کنید بستگی دارد. معمولاً می‌توانید اطلاعات و نمونه‌ها را در مستندات درایور خاص خود پیدا کنید.</p></li>
 
-<li><p>قسمت <code>parseTime=true</code> در DSN یک پارامتر خاص درایور است که به درایور ما دستور می‌دهد فیلدهای <code>TIME</code> و <code>DATE</code> SQL را به اشیاء <code>time.Time</code> گو تبدیل کند.</p></li>
+<li><p>قسمت <code>parseTime=true</code> در DSN یک پارامتر خاص درایور (Driver-specific Parameter) است که به درایور ما دستور می‌دهد فیلدهای <code>TIME</code> و <code>DATE</code> SQL را به اشیاء <code>time.Time</code> گو تبدیل کند.</p></li>
 
-<li><p>تابع <code>sql.Open()</code> یک شیء <a href="https://pkg.go.dev/database/sql/#DB"><code>sql.DB</code></a> برمی‌گرداند. این یک اتصال به پایگاه داده نیست - بلکه یک <em>استخر از بسیاری از اتصالات</em> است. این یک تفاوت مهم است که باید درک شود. گو اتصالات را در این استخر به صورت خودکار مدیریت می‌کند و در صورت نیاز اتصالات را به پایگاه داده از طریق درایور باز و بسته می‌کند.</p></li>
+<li><p>تابع <code>sql.Open()</code> یک شیء <a href="https://pkg.go.dev/database/sql/#DB"><code>sql.DB</code></a> برمی‌گرداند. این یک اتصال به پایگاه داده نیست - بلکه یک <em>استخر از بسیاری از اتصالات (Connection Pool)</em> است.</p></li>
 
-<li><p>استخر اتصال برای دسترسی همزمان امن است، بنابراین می‌توانید آن را از هندلرهای برنامه وب به طور ایمن استفاده کنید.</p></li>
+<li><p>استخر اتصال برای دسترسی همزمان (Concurrent Access) امن است، بنابراین می‌توانید آن را از هندلرهای برنامه وب به طور ایمن استفاده کنید.</p></li>
 
 <li><p>استخر اتصال برای استفاده طولانی مدت طراحی شده است. در یک برنامه وب، معمول است که استخر اتصال را در تابع <code>main()</code> خود مقداردهی اولیه کنید و سپس استخر را به هندلرهای خود ارسال کنید. نباید <code>sql.Open()</code> را در یک هندلر HTTP کوتاه‌مدت فراخوانی کنید - این کار هدر رفتن حافظه و منابع شبکه خواهد بود.</p></li>
 </ul>
 
-<h3 id="using-it-in-our-web-application">استفاده از آن در برنامه وب ما</h3>
+<h3 id="using-it-in-our-web-application">استفاده از آن در برنامه وب ما (Using it in our Web Application)</h3>
 
 <p>بیایید ببینیم چگونه می‌توانیم از <code>sql.Open()</code> در عمل استفاده کنیم. فایل <code>main.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
 
@@ -159,7 +161,7 @@
 <li><p>برگشت به تابع <code>main()</code>، در این لحظه فراخوانی <code>defer db.Close()</code> کمی اضافی است. برنامه ما فقط با یک سیگنال قطع (یعنی <code>Ctrl+C</code>) یا با <code>os.Exit(1)</code> خاتمه می‌یابد. در هر دو مورد، برنامه بلافاصله خارج می‌شود و توابع تعویق‌افتاده هرگز اجرا نمی‌شوند. اما اطمینان از بستن همیشه استخر اتصال عادت خوبی است که باید به آن عادت کنید و می‌تواند در آینده مفید باشد اگر یک خاموش‌سازی نرم به برنامه خود اضافه کنید.</p></li>
 </ul>
 
-<h3 id="testing-a-connection">تست اتصال</h3>
+<h3 id="testing-a-connection">تست اتصال (Testing a Connection)</h3>
 
 <p>اطمینان حاصل کنید که فایل ذخیره شده است و سپس سعی کنید برنامه را اجرا کنید. اگر همه چیز طبق برنامه پیش رفته باشد، استخر اتصال باید ایجاد شود و متد <code>db.Ping()</code> باید بتواند یک اتصال بدون هیچ خطایی ایجاد کند. اگر همه چیز خوب باشد، باید پیام لاگ معمولی <em>starting server</em> را مانند زیر ببینید:</p>
 
@@ -176,7 +178,7 @@
 exit status 1</samp></pre>
 </figure>
 
-<h3 id="tidying-the-go-mod-file">مرتب کردن فایل go.mod</h3>
+<h3 id="tidying-the-go-mod-file">مرتب کردن فایل go.mod (Tidying the go.mod File)</h3>
 
 <p>حالا که کد ما در واقع درایور <code>github.com/go-sql-driver/mysql</code> را import می‌کند، می‌توانید دستور <code>go mod tidy</code> را اجرا کنید تا فایل <code>go.mod</code> خود را مرتب کنید و هر گونه حاشیه‌نویسی <code>// indirect</code> غیرضروری را حذف کنید.</p>
 
@@ -228,6 +230,66 @@ require filippo.io/edwards25519 v1.1.0 // indirect</pre>
 				}
 			};
 		</script>
+
+		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>استخر اتصال پایگاه داده</td>
+        <td>Database Connection Pool</td>
+        <td>مجموعه‌ای از اتصالات پایگاه داده که برای استفاده مجدد مدیریت می‌شوند</td>
+    </tr>
+    <tr>
+        <td>استخر اتصال</td>
+        <td>Connection Pool</td>
+        <td>مکانیزمی برای مدیریت و استفاده مجدد از اتصالات پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>مجموعه اتصالات</td>
+        <td>Connection Set</td>
+        <td>گروهی از اتصالات پایگاه داده که می‌توانند باز یا بسته باشند</td>
+    </tr>
+    <tr>
+        <td>رشته اتصال</td>
+        <td>Connection String</td>
+        <td>متنی که اطلاعات لازم برای اتصال به پایگاه داده را مشخص می‌کند</td>
+    </tr>
+    <tr>
+        <td>پیکربندی اتصال</td>
+        <td>Connection Configuration</td>
+        <td>تنظیمات مربوط به نحوه برقراری و مدیریت اتصالات پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>حداکثر اتصالات باز</td>
+        <td>Maximum Open Connections</td>
+        <td>بیشترین تعداد اتصالات همزمان مجاز به پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>حداکثر اتصالات بیکار</td>
+        <td>Maximum Idle Connections</td>
+        <td>بیشترین تعداد اتصالات غیرفعال که در استخر نگهداری می‌شوند</td>
+    </tr>
+    <tr>
+        <td>زمان انقضای اتصال</td>
+        <td>Connection Timeout</td>
+        <td>مدت زمانی که یک اتصال می‌تواند بدون استفاده باقی بماند</td>
+    </tr>
+    <tr>
+        <td>مدیریت خودکار اتصال</td>
+        <td>Automatic Connection Management</td>
+        <td>سیستم خودکار برای باز و بسته کردن اتصالات بر اساس نیاز</td>
+    </tr>
+    <tr>
+        <td>بازیابی اتصال</td>
+        <td>Connection Recovery</td>
+        <td>فرآیند بازیابی اتصالات از دست رفته یا خراب شده</td>
+    </tr>
+</table>
 	</body>
 </html>
 

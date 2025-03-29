@@ -27,41 +27,15 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۶.۲</div>
-			<h2 id="setting-common-headers">تنظیم هدرهای مشترک</h2>
+			<h2 id="setting-common-headers">تنظیم هدرهای مشترک (Setting Common Headers)</h2>
 
-<p>بیایید از الگویی که در فصل قبل آموختیم استفاده کنیم و میان‌افزاری بسازیم که به طور خودکار هدر <code>Server: Go</code> را به همراه هدرهای امنیتی HTTP زیر (مطابق با <a href="https://owasp.org/www-project-secure-headers">راهنمای فعلی OWASP</a>) به هر پاسخ اضافه کند.</p>
+<p>بیایید با ایجاد یک <dfn>میان‌افزار (Middleware)</dfn> ساده شروع کنیم که <dfn>هدرهای HTTP (HTTP Headers)</dfn> را روی تمام <dfn>پاسخ‌های (Responses)</dfn> برنامه ما تنظیم می‌کند.</p>
 
-<figure class="code plain">
-<pre>Content-Security-Policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
-Referrer-Policy: origin-when-cross-origin
-X-Content-Type-Options: nosniff
-X-Frame-Options: deny
-X-XSS-Protection: 0</pre>
-</figure>
-
-<p>اگر با این هدرها آشنا نیستید، به سرعت توضیح می‌دهم که چه کاری انجام می‌دهند.</p>
-
-<ul>
-<li><p>هدرهای <code>Content-Security-Policy</code> (که اغلب به اختصار <em>CSP</em> نامیده می‌شوند) برای محدود کردن منابعی که صفحه وب شما می‌تواند از آنها بارگذاری شود (مانند جاوااسکریپت، تصاویر، فونت‌ها و غیره) استفاده می‌شوند. تنظیم یک سیاست سختگیرانه CSP به جلوگیری از انواع حملات cross-site scripting، clickjacking و سایر حملات تزریق کد کمک می‌کند.</p>
-
-<p>هدرهای CSP و نحوه کار آنها موضوع بزرگی است، و اگر قبلاً با آنها برخورد نکرده‌اید، پیشنهاد می‌کنم <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP">این مقدمه</a> را بخوانید. اما در مورد ما، هدر به مرورگر می‌گوید که بارگیری فونت‌ها از <code>fonts.gstatic.com</code>، استایل‌شیت‌ها از <code>fonts.googleapis.com</code> و <code>self</code> (منشأ خودمان)، و سپس <em>همه چیز دیگر</em> فقط از <code>self</code> مجاز است. جاوااسکریپت درون‌خطی به طور پیش‌فرض مسدود می‌شود.</p></li>
-
-<li><p><code>Referrer-Policy</code> برای کنترل اطلاعاتی که در هدر <code>Referer</code> هنگام خروج کاربر از صفحه وب شما گنجانده می‌شود، استفاده می‌شود. در مورد ما، ما مقدار را روی <code>origin-when-cross-origin</code> تنظیم می‌کنیم، که به این معنی است که URL کامل برای درخواست‌های <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">same-origin</a> گنجانده خواهد شد، اما برای همه درخواست‌های دیگر، اطلاعاتی مانند مسیر URL و مقادیر رشته پرس‌وجو حذف خواهند شد.</p></li>
-
-<li><p><code>X-Content-Type-Options: nosniff</code> به مرورگرها دستور می‌دهد که content-type پاسخ را MIME-type sniff نکنند، که به نوبه خود به جلوگیری از <a href="https://security.stackexchange.com/questions/7506/using-file-extension-and-mime-type-as-output-by-file-i-b-combination-to-dete/7531#7531">حملات content-sniffing</a> کمک می‌کند.</p></li>
-
-<li><p><code>X-Frame-Options: deny</code> برای کمک به جلوگیری از حملات <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking">clickjacking</a> در مرورگرهای قدیمی‌تر که از هدرهای CSP پشتیبانی نمی‌کنند، استفاده می‌شود.</p></li>
-
-<li><p><code>X-XSS-Protection: 0</code> برای <em>غیرفعال کردن</em> مسدود کردن حملات cross-site scripting استفاده می‌شود. قبلاً تنظیم این هدر به <code>X-XSS-Protection: 1; mode=block</code> یک عمل خوب بود، اما وقتی از هدرهای CSP مانند ما استفاده می‌کنید، <a href="https://owasp.org/www-project-secure-headers/#x-xss-protection">توصیه</a> این است که این ویژگی را کاملاً غیرفعال کنید.</p></li>
-</ul>
-
-<p>خب، بیایید به کد Go خود برگردیم و با ایجاد یک فایل جدید <code>middleware.go</code> شروع کنیم. ما از این برای نگهداری تمام میان‌افزارهای سفارشی که در طول این کتاب می‌نویسیم استفاده خواهیم کرد.</p>
+<p>یک فایل جدید <code>cmd/web/middleware.go</code> ایجاد کنید و کد زیر را در آن قرار دهید:</p>
 
 <figure class="code bash">
 <pre>$ touch cmd/web/middleware.go</pre>
 </figure>
-
-<p>سپس آن را باز کنید و یک تابع <code>commonHeaders()</code> با استفاده از الگویی که در فصل قبل معرفی کردیم اضافه کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/middleware.go</figcaption>
@@ -90,13 +64,15 @@ X-XSS-Protection: 0</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>از آنجا که می‌خواهیم این میان‌افزار روی هر درخواست دریافتی اعمال شود، باید آن را <em>قبل</em> اینکه درخواست به servemux ما برسد، اجرا کنیم. می‌خواهیم جریان کنترل در برنامه ما به این شکل باشد:</p>
+<p>این <dfn>میان‌افزار امنیتی (Security Middleware)</dfn> چندین <dfn>هدر امنیتی (Security Headers)</dfn> را به تمام پاسخ‌های HTTP اضافه می‌کند، از جمله:</p>
 
-<figure class="code plain">
-<pre>commonHeaders → servemux → application handler</pre>
-</figure>
+<ul>
+<li><dfn>سیاست امنیت محتوا (Content Security Policy)</dfn> برای کنترل منابع مجاز بارگذاری</li>
+<li><dfn>سیاست ارجاع‌دهنده (Referrer Policy)</dfn> برای کنترل اطلاعات ارجاع‌دهنده</li>
+<li><dfn>محافظت در برابر XSS (XSS Protection)</dfn> برای جلوگیری از حملات تزریق اسکریپت</li>
+</ul>
 
-<p>برای انجام این کار، باید تابع میان‌افزار <code>commonHeaders</code> <em>servemux ما را دربرگیرد</em>. بیایید فایل <code>routes.go</code> را به‌روزرسانی کنیم تا دقیقاً همین کار را انجام دهد:</p>
+<p>حالا باید <dfn>مسیریاب (Router)</dfn> خود را با این میان‌افزار بسته‌بندی کنیم. فایل <code>cmd/web/routes.go</code> را به‌روزرسانی کنید:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/routes.go</figcaption>
@@ -226,6 +202,65 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 <img src="assets/img/06.02-01.png" alt="06.02-01.png" />
 </figure>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>میان‌افزار</td>
+        <td>Middleware</td>
+        <td>کدی که بین درخواست و پاسخ HTTP اجرا می‌شود</td>
+    </tr>
+    <tr>
+        <td>هدرهای HTTP</td>
+        <td>HTTP Headers</td>
+        <td>متادیتای اضافه شده به درخواست‌ها و پاسخ‌های HTTP</td>
+    </tr>
+    <tr>
+        <td>پاسخ‌ها</td>
+        <td>Responses</td>
+        <td>پاسخ‌های HTTP که به کلاینت ارسال می‌شوند</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار امنیتی</td>
+        <td>Security Middleware</td>
+        <td>میان‌افزاری که تنظیمات امنیتی را اعمال می‌کند</td>
+    </tr>
+    <tr>
+        <td>هدر امنیتی</td>
+        <td>Security Headers</td>
+        <td>هدرهای HTTP که برای افزایش امنیت استفاده می‌شوند</td>
+    </tr>
+    <tr>
+        <td>سیاست امنیت محتوا</td>
+        <td>Content Security Policy</td>
+        <td>مکانیزمی برای کنترل منابع مجاز در صفحه</td>
+    </tr>
+    <tr>
+        <td>سیاست ارجاع‌دهنده</td>
+        <td>Referrer Policy</td>
+        <td>کنترل اطلاعات ارجاع‌دهنده در درخواست‌ها</td>
+    </tr>
+    <tr>
+        <td>محافظت در برابر XSS</td>
+        <td>XSS Protection</td>
+        <td>مکانیزم‌های محافظت در برابر حملات تزریق اسکریپت</td>
+    </tr>
+    <tr>
+        <td>مسیریاب</td>
+        <td>Router</td>
+        <td>بخشی که درخواست‌ها را به هندلرها هدایت می‌کند</td>
+    </tr>
+    <tr>
+        <td>سرور فایل</td>
+        <td>File Server</td>
+        <td>بخشی که فایل‌های استاتیک را سرو می‌کند</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper">

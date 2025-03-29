@@ -37,9 +37,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل 2.5.</div>
-			<h2 id="method-based-routing">مسیریابی مبتنی بر روش</h2>
+			<h2 id="method-based-routing">مسیریابی مبتنی بر روش (Method-based Routing)</h2>
 
-<p>در ادامه، بیایید با رعایت اصول خوب HTTP، برنامه خود را محدود کنیم تا فقط به درخواست‌هایی با <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">روش HTTP</a> مناسب پاسخ دهد.</p>
+<p>در ادامه، بیایید با رعایت اصول خوب HTTP، برنامه خود را محدود کنیم تا فقط به درخواست‌هایی با <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">روش HTTP (HTTP Method)</a> مناسب پاسخ دهد.</p>
 
 <p>همانطور که در ساخت برنامه خود پیش می‌رویم، هندلرهای <code>home</code>، <code>snippetView</code> و <code>snippetCreate</code> فقط اطلاعات را بازیابی کرده و صفحات را به کاربر نمایش می‌دهند، بنابراین منطقی است که این هندلرها را به درخواست‌های <code>GET</code> محدود کنیم.</p>
 
@@ -116,7 +116,7 @@ Method Not Allowed</samp>*</pre>
 
 <p>بنابراین این خیلی خوب به نظر می‌رسد. می‌توانیم ببینیم که servemux گو به طور خودکار یک پاسخ <code>405 Method Not Allowed</code> برای ما ارسال کرده است، شامل یک هدر <code>Allow</code> که روش‌های HTTP را که برای URL درخواست پشتیبانی می‌شوند، فهرست می‌کند.</p>
 
-<h3 id="adding-a-post-only-route-and-handler">افزودن یک مسیر و هندلر فقط برای POST</h3>
+<h3 id="adding-a-post-only-route-and-handler">افزودن یک مسیر و هندلر فقط برای POST (Adding a POST-only Route and Handler)</h3>
 
 <p>بیایید همچنین یک هندلر جدید <code>snippetCreatePost</code> به کد خود اضافه کنیم، که بعداً برای ایجاد و ذخیره یک قطعه جدید در یک پایگاه داده استفاده خواهیم کرد. از آنجا که ایجاد و ذخیره یک قطعه یک عمل غیرقابل تکرار است که وضعیت سرور ما را تغییر می‌دهد، می‌خواهیم مطمئن شویم که این هندلر فقط به درخواست‌های <code>POST</code> عمل می‌کند.</p>
 
@@ -221,13 +221,13 @@ Method Not Allowed</samp></pre>
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="method-precedence">اولویت روش</h4>
+<h4 id="method-precedence">اولویت روش (Method Precedence)</h4>
 
-<p>قانون <em>الگوی خاص‌تر برنده می‌شود</em> نیز در صورتی که الگوهای مسیر به دلیل یک روش HTTP همپوشانی داشته باشند، اعمال می‌شود.</p>
+<p>قانون <em>الگوی خاص‌تر برنده می‌شود (More Specific Pattern Wins)</em> نیز در صورتی که الگوهای مسیر به دلیل یک روش HTTP همپوشانی داشته باشند، اعمال می‌شود.</p>
 
 <p>مهم است که بدانید یک الگوی مسیری که شامل یک روش نیست &mdash; مانند <code>&quot;/article/{id}&quot;</code> &mdash; با درخواست‌های HTTP با <em>هر روشی</em> مطابقت خواهد داشت. در مقابل، مسیری مانند <code>&quot;POST /article/{id}&quot;</code> فقط با درخواست‌هایی که روش <code>POST</code> دارند مطابقت خواهد داشت. بنابراین اگر مسیرهای همپوشانی <code>&quot;/article/{id}&quot;</code> و <code>&quot;POST /article/{id}&quot;</code> را در برنامه خود اعلام کنید، مسیر <code>&quot;POST /article/{id}&quot;</code> اولویت خواهد داشت.</p>
 
-<h4 id="handler-naming">نام‌گذاری هندلر</h4>
+<h4 id="handler-naming">نام‌گذاری هندلر (Handler Naming)</h4>
 
 <p>همچنین می‌خواهم تأکید کنم که هیچ راه درست یا غلطی برای نام‌گذاری هندلرهای خود در Go وجود ندارد.</p>
 
@@ -323,6 +323,66 @@ Method Not Allowed</samp></pre>
 </ul>
 
 <p>اگر به این ویژگی‌ها در برنامه خود نیاز دارید، باید از یک بسته روتر شخص ثالث استفاده کنید. آنهایی که من توصیه می‌کنم <a href="https://github.com/julienschmidt/httprouter">httprouter</a>، <a href="https://github.com/go-chi/chi">chi</a>، <a href="https://github.com/letsgofa/flow">flow</a> و <a href="https://github.com/gorilla/mux">gorilla/mux</a> هستند، و می‌توانید مقایسه‌ای از آنها و راهنمایی درباره اینکه کدام یک را استفاده کنید در <a href="https://www.letsgofa.net/blog/which-go-router-should-i-use">این پست وبلاگ</a> پیدا کنید.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>مسیریابی مبتنی بر روش</td>
+        <td>Method-based Routing</td>
+        <td>تکنیکی برای محدود کردن مسیرها به روش‌های HTTP خاص</td>
+    </tr>
+    <tr>
+        <td>روش HTTP</td>
+        <td>HTTP Method</td>
+        <td>نوع عملیاتی که یک درخواست HTTP می‌خواهد انجام دهد (مانند GET، POST، PUT، DELETE)</td>
+    </tr>
+    <tr>
+        <td>هندلر</td>
+        <td>Handler</td>
+        <td>تابعی که درخواست‌های HTTP را پردازش می‌کند</td>
+    </tr>
+    <tr>
+        <td>الگوی مسیر</td>
+        <td>Route Pattern</td>
+        <td>الگویی که برای تطبیق با URL‌های درخواست استفاده می‌شود</td>
+    </tr>
+    <tr>
+        <td>وضعیت پاسخ</td>
+        <td>Response Status</td>
+        <td>کد عددی که نتیجه پردازش درخواست HTTP را نشان می‌دهد (مانند 200 OK، 405 Method Not Allowed)</td>
+    </tr>
+    <tr>
+        <td>هدر پاسخ</td>
+        <td>Response Header</td>
+        <td>متادیتای اضافی که همراه با پاسخ HTTP ارسال می‌شود</td>
+    </tr>
+    <tr>
+        <td>بدنه پاسخ</td>
+        <td>Response Body</td>
+        <td>محتوای اصلی که در پاسخ HTTP برگردانده می‌شود</td>
+    </tr>
+    <tr>
+        <td>درخواست غیرقابل تکرار</td>
+        <td>Non-idempotent Request</td>
+        <td>درخواستی که هر بار اجرا می‌تواند نتایج متفاوتی داشته باشد و وضعیت سرور را تغییر می‌دهد</td>
+    </tr>
+    <tr>
+        <td>همپوشانی مسیرها</td>
+        <td>Route Overlap</td>
+        <td>وضعیتی که در آن چندین الگوی مسیر می‌توانند با یک URL یکسان مطابقت داشته باشند</td>
+    </tr>
+    <tr>
+        <td>اولویت روش</td>
+        <td>Method Precedence</td>
+        <td>قوانینی که تعیین می‌کنند کدام مسیر در صورت همپوشانی باید استفاده شود</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

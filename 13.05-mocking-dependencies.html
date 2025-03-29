@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 13.5.</div>
-			<h2 id="mocking-dependencies">شبیه‌سازی وابستگی‌ها</h2>
+			<h2 id="mocking-dependencies">شبیه‌سازی وابستگی‌ها (Mocking Dependencies)</h2>
+
+<p>در این بخش، نحوه <dfn>شبیه‌سازی وابستگی‌ها (Mocking Dependencies)</dfn> را بررسی می‌کنیم. این شامل <dfn>شبیه‌سازی پایگاه داده (Database Mocking)</dfn> و <dfn>شبیه‌سازی سرویس‌ها (Service Mocking)</dfn> می‌شود.</p>
+
+<p>همچنین با <dfn>رابط‌های شبیه‌سازی (Mock Interfaces)</dfn> و <dfn>داده‌های شبیه‌سازی (Mock Data)</dfn> آشنا خواهیم شد.</p>
 
 <p>اکنون که برخی الگوهای کلی برای تست برنامه وب خود را توضیح داده‌ایم، در این فصل قصد داریم کمی جدی‌تر شویم و برخی تست‌ها را برای مسیر <code>GET /snippet/view/{id}</code> بنویسیم.</p>
 
@@ -250,7 +254,7 @@ FAIL</samp></pre>
 <span class="o">...</span></pre>
 </figure>
 
-<p>و بیایید همین کار را برای ساختار <code>UserModel</code> خود نیز انجام دهیم:</p>
+<p>و بیایید همین کار را برای ساختار <code>UserModel</code> خود نیز انجام دهیم، به این صورت:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
@@ -473,6 +477,65 @@ ok      snippetbox.alexedwards.net/cmd/web      0.015s</samp></pre>
 
 <p>به عنوان یک نکته جانبی، توجه کنید که چگونه نام‌های تست‌های فرعی به صورت استاندارد شده‌اند؟ Go به طور خودکار هر فضای خالی در نام تست فرعی را با یک زیرخط جایگزین می‌کند (و هر کاراکتر غیرقابل چاپ نیز در خروجی تست فرار می‌کند).</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>شبیه‌سازی وابستگی‌ها</td>
+        <td>Mocking Dependencies</td>
+        <td>ایجاد نسخه‌های مجازی</td>
+    </tr>
+    <tr>
+        <td>شبیه‌سازی پایگاه داده</td>
+        <td>Database Mocking</td>
+        <td>شبیه‌سازی پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>شبیه‌سازی سرویس‌ها</td>
+        <td>Service Mocking</td>
+        <td>شبیه‌سازی خدمات</td>
+    </tr>
+    <tr>
+        <td>رابط‌های شبیه‌سازی</td>
+        <td>Mock Interfaces</td>
+        <td>رابط‌های مجازی</td>
+    </tr>
+    <tr>
+        <td>داده‌های شبیه‌سازی</td>
+        <td>Mock Data</td>
+        <td>داده‌های مجازی</td>
+    </tr>
+    <tr>
+        <td>وابستگی‌های خارجی</td>
+        <td>External Dependencies</td>
+        <td>سرویس‌های خارجی</td>
+    </tr>
+    <tr>
+        <td>تست واحد</td>
+        <td>Unit Testing</td>
+        <td>آزمایش جداگانه</td>
+    </tr>
+    <tr>
+        <td>رفتار مورد انتظار</td>
+        <td>Expected Behavior</td>
+        <td>عملکرد پیش‌بینی شده</td>
+    </tr>
+    <tr>
+        <td>پیاده‌سازی مجازی</td>
+        <td>Mock Implementation</td>
+        <td>نسخه شبیه‌سازی شده</td>
+    </tr>
+    <tr>
+        <td>تزریق وابستگی</td>
+        <td>Dependency Injection</td>
+        <td>تزریق سرویس‌ها</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

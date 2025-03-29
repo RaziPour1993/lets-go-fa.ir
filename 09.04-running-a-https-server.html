@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل 9.4.</div>
-			<h2 id="running-a-https-server">اجرای یک سرور HTTPS</h2>
+			<h2 id="running-a-https-server">اجرای یک سرور HTTPS (Running a HTTPS Server)</h2>
+
+<p>در این بخش، نحوه <dfn>راه‌اندازی سرور HTTPS (HTTPS Server Setup)</dfn> را بررسی می‌کنیم. این شامل <dfn>پیکربندی TLS (TLS Configuration)</dfn> و <dfn>مدیریت گواهی‌ها (Certificate Management)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید <dfn>تنظیمات HTTPS (HTTPS Settings)</dfn> را در <dfn>ساختار برنامه (Application Structure)</dfn> خود اضافه کنیم:</p>
 
 <p>اکنون که یک گواهی TLS خود امضا و کلید خصوصی مربوطه داریم، شروع یک سرور وب HTTPS بسیار ساده است &mdash; فقط باید فایل <code>main.go</code> را باز کرده و متد <code>srv.ListenAndServe()</code> را با <a href="https://pkg.go.dev/net/http/#Server.ListenAndServeTLS"><code>srv.ListenAndServeTLS()</code></a> جایگزین کنیم.</p>
 
@@ -191,6 +195,66 @@ $ ls -l
 <pre>$ cd $HOME/code/snippetbox
 $ echo 'tls/' >> .gitignore</pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>راه‌اندازی سرور HTTPS</td>
+        <td>HTTPS Server Setup</td>
+        <td>پیکربندی سرور برای ارتباط امن</td>
+    </tr>
+    <tr>
+        <td>پیکربندی TLS</td>
+        <td>TLS Configuration</td>
+        <td>تنظیمات پروتکل امنیتی</td>
+    </tr>
+    <tr>
+        <td>مدیریت گواهی‌ها</td>
+        <td>Certificate Management</td>
+        <td>مدیریت گواهی‌های امنیتی</td>
+    </tr>
+    <tr>
+        <td>تنظیمات HTTPS</td>
+        <td>HTTPS Settings</td>
+        <td>پارامترهای ارتباط امن</td>
+    </tr>
+    <tr>
+        <td>ساختار برنامه</td>
+        <td>Application Structure</td>
+        <td>سازماندهی کد برنامه</td>
+    </tr>
+    <tr>
+        <td>پروتکل امن</td>
+        <td>Secure Protocol</td>
+        <td>پروتکل ارتباطی امن</td>
+    </tr>
+    <tr>
+        <td>رمزنگاری</td>
+        <td>Encryption</td>
+        <td>کدگذاری اطلاعات</td>
+    </tr>
+    <tr>
+        <td>گواهی دیجیتال</td>
+        <td>Digital Certificate</td>
+        <td>گواهی برای تأیید هویت</td>
+    </tr>
+    <tr>
+        <td>پورت امن</td>
+        <td>Secure Port</td>
+        <td>پورت برای ارتباط HTTPS</td>
+    </tr>
+    <tr>
+        <td>هدایت خودکار</td>
+        <td>Auto Redirect</td>
+        <td>هدایت به نسخه امن</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

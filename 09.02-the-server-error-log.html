@@ -29,7 +29,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۹.۲.</div>
-			<h2 id="the-server-error-log">گزارش خطای سرور</h2>
+			<h2 id="the-server-error-log">گزارش خطای سرور (Server Error Log)</h2>
+
+<p>در این بخش، نحوه پیکربندی <dfn>گزارش خطای سرور (Server Error Log)</dfn> را بررسی می‌کنیم. این شامل <dfn>ثبت خطاها (Error Logging)</dfn>، <dfn>مدیریت خطا (Error Handling)</dfn> و <dfn>گزارش‌دهی (Reporting)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید یک <dfn>لاگر ساختاریافته (Structured Logger)</dfn> برای <dfn>ثبت خطاها (Error Logging)</dfn> ایجاد کنیم:</p>
 
 <p>مهم است که بدانید <code>http.Server</code> در Go ممکن است ورودی‌های لاگ خود را در رابطه با مواردی مانند پانیک‌های بازیابی نشده یا مشکلات پذیرش یا نوشتن در اتصالات HTTP بنویسد.</p>
 
@@ -158,6 +162,65 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;http: invalid Content-Le
 <span class="o">...</span></pre>
 </figure>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>گزارش خطای سرور</td>
+        <td>Server Error Log</td>
+        <td>ثبت و نگهداری خطاهای سرور</td>
+    </tr>
+    <tr>
+        <td>ثبت خطاها</td>
+        <td>Error Logging</td>
+        <td>ذخیره و ثبت خطاها</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>نحوه برخورد با خطاها</td>
+    </tr>
+    <tr>
+        <td>گزارش‌دهی</td>
+        <td>Reporting</td>
+        <td>ارائه گزارش از خطاها</td>
+    </tr>
+    <tr>
+        <td>لاگر ساختاریافته</td>
+        <td>Structured Logger</td>
+        <td>سیستم ثبت خطای سازمان‌یافته</td>
+    </tr>
+    <tr>
+        <td>سطح خطا</td>
+        <td>Error Level</td>
+        <td>درجه اهمیت خطا</td>
+    </tr>
+    <tr>
+        <td>فرمت خطا</td>
+        <td>Error Format</td>
+        <td>قالب پیام خطا</td>
+    </tr>
+    <tr>
+        <td>خروجی خطا</td>
+        <td>Error Output</td>
+        <td>محل نمایش خطاها</td>
+    </tr>
+    <tr>
+        <td>پیام خطا</td>
+        <td>Error Message</td>
+        <td>متن توضیح خطا</td>
+    </tr>
+    <tr>
+        <td>ردیابی خطا</td>
+        <td>Error Trace</td>
+        <td>مسیر وقوع خطا</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

@@ -12,7 +12,7 @@
 		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; مدیریت خطای متمرکز</span>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; مدیریت خطای متمرکز (Centralized Error Handling)</span>
 				</div>
 				<div>
 					&lsaquo; <a href="03.03-dependency-injection.html">قبلی</a>
@@ -23,9 +23,9 @@
 		</header>
 		<main class="wrapper text" style="direction: rtl;">
 			<div class="chapter">فصل 3.4.</div>
-			<h2 id="centralized-error-handling">مدیریت خطای متمرکز</h2>
+			<h2 id="centralized-error-handling">مدیریت خطای متمرکز (Centralized Error Handling)</h2>
 
-<p>بیایید برنامه خود را با انتقال بخشی از کد مدیریت خطا به متدهای کمکی مرتب کنیم. این کار به <a href="https://deviq.com/separation-of-concerns/">جداسازی نگرانی‌ها</a> کمک می‌کند و از تکرار کد در طول ساخت جلوگیری می‌کند.</p>
+<p>بیایید برنامه خود را با انتقال بخشی از کد مدیریت خطا به متدهای کمکی (Helper Methods) مرتب کنیم. این کار به <a href="https://deviq.com/separation-of-concerns/">جداسازی نگرانی‌ها (Separation of Concerns)</a> کمک می‌کند و از تکرار کد در طول ساخت جلوگیری می‌کند.</p>
 
 <p>یک فایل جدید به نام <code>helpers.go</code> در دایرکتوری <code>cmd/web</code> اضافه کنید:</p>
 
@@ -113,7 +113,7 @@
 time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/home.tmpl: no such file or directory&#34; method=GET uri=/</samp></pre>
 </figure>
 
-<h3 id="revert-the-deliberate-error">بازگرداندن خطای عمدی</h3>
+<h3 id="revert-the-deliberate-error">بازگرداندن خطای عمدی (Reverting the Deliberate Error)</h3>
 
 <p>در این مرحله دیگر به خطای عمدی نیاز نداریم، بنابراین آن را به این صورت برطرف کنید:</p>
 
@@ -123,9 +123,9 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/hom
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی</h3>
+<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
 
-<h4 id="stack-traces">ردیابی پشته</h4>
+<h4 id="stack-traces">ردیابی پشته (Stack Traces)</h4>
 
 <p>می‌توانید از تابع <a href="https://pkg.go.dev/runtime/debug/#Stack"><code>debug.Stack()</code></a> برای دریافت یک <em>ردیابی پشته</em> که مسیر اجرای برنامه را برای <em>گوروتین فعلی</em> مشخص می‌کند، استفاده کنید. افزودن این به عنوان یک ویژگی در ورودی‌های لاگ می‌تواند برای اشکال‌زدایی خطاها مفید باشد.</p>
 
@@ -173,6 +173,66 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/hom
    \n\t/usr/local/go/src/net/http/server.go:2009 +0x5f4\ncreated by net/http.(*Server).
    Serve in goroutine 1\n\t/usr/local/go/src/net/http/server.go:3086 +0x5cb\n&#34;</samp></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>مدیریت خطای متمرکز</td>
+        <td>Centralized Error Handling</td>
+        <td>روشی برای مدیریت خطاها در یک مکان مشخص و یکپارچه</td>
+    </tr>
+    <tr>
+        <td>متدهای کمکی</td>
+        <td>Helper Methods</td>
+        <td>توابع کمکی که برای انجام وظایف تکراری استفاده می‌شوند</td>
+    </tr>
+    <tr>
+        <td>جداسازی نگرانی‌ها</td>
+        <td>Separation of Concerns</td>
+        <td>اصل طراحی که هر بخش از کد باید یک مسئولیت مشخص داشته باشد</td>
+    </tr>
+    <tr>
+        <td>کد وضعیت HTTP</td>
+        <td>HTTP Status Code</td>
+        <td>کد عددی که نتیجه یک درخواست HTTP را نشان می‌دهد</td>
+    </tr>
+    <tr>
+        <td>ردیابی پشته</td>
+        <td>Stack Trace</td>
+        <td>نمایش مسیر اجرای برنامه تا نقطه بروز خطا</td>
+    </tr>
+    <tr>
+        <td>گوروتین</td>
+        <td>Goroutine</td>
+        <td>واحد اجرای همزمان در Go</td>
+    </tr>
+    <tr>
+        <td>اشکال‌زدایی</td>
+        <td>Debugging</td>
+        <td>فرآیند شناسایی و رفع خطاها در برنامه</td>
+    </tr>
+    <tr>
+        <td>خطای عمدی</td>
+        <td>Deliberate Error</td>
+        <td>خطایی که به صورت عمدی برای آزمایش سیستم ایجاد می‌شود</td>
+    </tr>
+    <tr>
+        <td>کد وضعیت داخلی سرور</td>
+        <td>Internal Server Error</td>
+        <td>خطای 500 که نشان‌دهنده مشکلی در سمت سرور است</td>
+    </tr>
+    <tr>
+        <td>کد وضعیت درخواست بد</td>
+        <td>Bad Request</td>
+        <td>خطای 400 که نشان‌دهنده مشکلی در درخواست کاربر است</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

@@ -27,11 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 10.2.</div>
-			<h2 id="creating-a-users-model">ایجاد مدل کاربران</h2>
+			<h2 id="creating-a-users-model">ایجاد مدل کاربران (Creating a Users Model)</h2>
 
-<p>اکنون که مسیرها تنظیم شده‌اند، باید یک جدول جدید <code>users</code> در پایگاه داده ایجاد کنیم و یک مدل پایگاه داده برای دسترسی به آن ایجاد کنیم.</p>
+<p>در این بخش، نحوه ایجاد <dfn>مدل کاربران (Users Model)</dfn> را بررسی می‌کنیم. این شامل <dfn>ساختار داده (Data Structure)</dfn>، <dfn>متدهای دسترسی (Access Methods)</dfn> و <dfn>عملیات پایگاه داده (Database Operations)</dfn> می‌شود.</p>
 
-<p>ابتدا با استفاده از کاربر <code>root</code> از پنجره ترمینال خود به MySQL متصل شوید و دستور SQL زیر را برای تنظیم جدول <code>users</code> اجرا کنید:</p>
+<p>برای شروع، بیایید یک <dfn>جدول کاربران (Users Table)</dfn> در <dfn>پایگاه داده (Database)</dfn> خود ایجاد کنیم:</p>
 
 <figure class="code sql" dir="ltr">
 <pre><span class="n">USE</span> <span class="n">snippetbox</span><span class="p">;</span>
@@ -192,6 +192,66 @@
 </figure>
 
 <p>اطمینان حاصل کنید که همه فایل‌ها ذخیره شده‌اند، سپس برنامه را اجرا کنید. در این مرحله باید متوجه شوید که بدون هیچ مشکلی کامپایل می‌شود.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>مدل کاربران</td>
+        <td>Users Model</td>
+        <td>ساختار داده برای کاربران</td>
+    </tr>
+    <tr>
+        <td>ساختار داده</td>
+        <td>Data Structure</td>
+        <td>الگوی سازماندهی داده‌ها</td>
+    </tr>
+    <tr>
+        <td>متدهای دسترسی</td>
+        <td>Access Methods</td>
+        <td>توابع دسترسی به داده‌ها</td>
+    </tr>
+    <tr>
+        <td>عملیات پایگاه داده</td>
+        <td>Database Operations</td>
+        <td>دستورات کار با پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>جدول کاربران</td>
+        <td>Users Table</td>
+        <td>جدول ذخیره اطلاعات کاربران</td>
+    </tr>
+    <tr>
+        <td>پایگاه داده</td>
+        <td>Database</td>
+        <td>محل ذخیره‌سازی داده‌ها</td>
+    </tr>
+    <tr>
+        <td>رکورد کاربر</td>
+        <td>User Record</td>
+        <td>اطلاعات یک کاربر</td>
+    </tr>
+    <tr>
+        <td>درج داده</td>
+        <td>Data Insertion</td>
+        <td>افزودن داده جدید</td>
+    </tr>
+    <tr>
+        <td>بازیابی داده</td>
+        <td>Data Retrieval</td>
+        <td>خواندن داده از پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>به‌روزرسانی داده</td>
+        <td>Data Update</td>
+        <td>تغییر داده موجود</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

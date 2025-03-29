@@ -23,9 +23,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۱۳.۴.</div>
-			<h2 id="customizing-how-tests-run">سفارشی‌سازی نحوه اجرای تست‌ها</h2>
+			<h2 id="customizing-how-tests-run">سفارشی‌سازی نحوه اجرای تست‌ها (Customizing How Tests Run)</h2>
 
-<p>قبل از اینکه به افزودن تست‌های بیشتر به برنامه خود ادامه دهیم، می‌خواهم یک وقفه کوتاه بگیرم و درباره چندین فلگ و گزینه مفید که برای سفارشی‌سازی نحوه اجرای تست‌ها در دسترس هستند صحبت کنم.</p>
+<p>در این بخش، نحوه <dfn>سفارشی‌سازی اجرای تست‌ها (Customizing Test Execution)</dfn> را بررسی می‌کنیم. این شامل <dfn>پرچم‌های تست (Test Flags)</dfn> و <dfn>متغیرهای محیطی (Environment Variables)</dfn> می‌شود.</p>
+
+<p>همچنین با <dfn>تنظیمات تست (Test Settings)</dfn> و <dfn>پیکربندی تست (Test Configuration)</dfn> آشنا خواهیم شد.</p>
 
 <h3 id="controlling-which-tests-are-run">کنترل اینکه کدام تست‌ها اجرا شوند</h3>
 
@@ -162,6 +164,66 @@ ok      snippetbox.alexedwards.net/cmd/web      0.006s</samp></pre>
 <p>باید بدانید که آشکارساز رقابت در مفید بودن خود محدود است... این فقط یک ابزار است که شرایط رقابتی را اگر و زمانی که در زمان اجرا در طول تست شناسایی شوند، پرچم‌گذاری می‌کند. این تحلیل استاتیک از کدبیس شما انجام نمی‌دهد، و یک اجرای بدون مشکل تضمین نمی‌کند که کد شما از شرایط رقابتی خالی است.</p>
 
 <p>فعال‌سازی آشکارساز رقابت همچنین زمان کلی اجرای تست‌های شما را افزایش خواهد داد. بنابراین اگر در حال اجرای تست‌ها به صورت بسیار مکرر به عنوان بخشی از یک جریان کاری TDD هستید، ممکن است ترجیح دهید از فلگ <code>-race</code> فقط در طول اجرای تست‌های پیش از تعهد استفاده کنید.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>سفارشی‌سازی اجرای تست‌ها</td>
+        <td>Customizing Test Execution</td>
+        <td>تنظیم نحوه اجرای تست‌ها</td>
+    </tr>
+    <tr>
+        <td>پرچم‌های تست</td>
+        <td>Test Flags</td>
+        <td>گزینه‌های خط فرمان تست</td>
+    </tr>
+    <tr>
+        <td>متغیرهای محیطی</td>
+        <td>Environment Variables</td>
+        <td>متغیرهای سیستمی</td>
+    </tr>
+    <tr>
+        <td>تنظیمات تست</td>
+        <td>Test Settings</td>
+        <td>پیکربندی اجرای تست</td>
+    </tr>
+    <tr>
+        <td>پیکربندی تست</td>
+        <td>Test Configuration</td>
+        <td>تنظیمات محیط تست</td>
+    </tr>
+    <tr>
+        <td>زمان اجرا</td>
+        <td>Runtime</td>
+        <td>زمان اجرای برنامه</td>
+    </tr>
+    <tr>
+        <td>پارامترهای تست</td>
+        <td>Test Parameters</td>
+        <td>مقادیر ورودی تست</td>
+    </tr>
+    <tr>
+        <td>گزینه‌های اجرا</td>
+        <td>Execution Options</td>
+        <td>تنظیمات اجرا</td>
+    </tr>
+    <tr>
+        <td>مسیر اجرا</td>
+        <td>Execution Path</td>
+        <td>مسیر پردازش تست</td>
+    </tr>
+    <tr>
+        <td>خروجی تست</td>
+        <td>Test Output</td>
+        <td>نتایج اجرای تست</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

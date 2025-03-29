@@ -40,60 +40,56 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۷.۲</div>
-			<h2 id="parsing-form-data">تجزیه داده‌های فرم</h2>
+			<h2 id="parsing-form-data">تجزیه داده‌های فرم (Parsing Form Data)</h2>
 
-<p>با توجه به کاری که قبلاً در بخش <a href="02.05-method-based-routing.html">پایه‌ها</a> انجام دادیم، هر درخواست <code>POST /snippets/create</code> به هندلر <code>snippetCreatePost</code> ما ارسال می‌شود. اکنون این هندلر را به‌روزرسانی می‌کنیم تا داده‌های فرم را هنگام ارسال پردازش و استفاده کند.</p>
+<p>در این بخش، نحوه <dfn>تجزیه و دسترسی (Parsing and Accessing)</dfn> به <dfn>داده‌های فرم (Form Data)</dfn> ارسال شده در یک <dfn>درخواست POST (POST Request)</dfn> را بررسی می‌کنیم.</p>
 
-<p>در سطح بالا، می‌توانیم این را به دو مرحله مجزا تقسیم کنیم.</p>
-
-<ol>
-<li><p>ابتدا، باید از متد <a href="https://pkg.go.dev/net/http/#Request.ParseForm"><code>r.ParseForm()</code></a> برای تجزیه بدنه درخواست استفاده کنیم. این بررسی می‌کند که بدنه درخواست به درستی شکل گرفته است، و سپس داده‌های فرم را در نقشه <a href="https://pkg.go.dev/net/http/#Request"><code>r.PostForm</code></a> درخواست ذخیره می‌کند. اگر هنگام تجزیه بدنه خطایی رخ دهد (مانند عدم وجود بدنه، یا خیلی بزرگ بودن آن برای پردازش) یک خطا برمی‌گرداند. متد <code>r.ParseForm()</code> همچنین ایدمپوتنت است؛ می‌تواند چندین بار روی یک درخواست یکسان بدون هیچ عوارض جانبی فراخوانی شود.</p></li>
-
-<li><p>سپس می‌توانیم به داده‌های فرم موجود در <code>r.PostForm</code> با استفاده از متد <code>r.PostForm.Get()</code> دسترسی پیدا کنیم. به عنوان مثال، می‌توانیم مقدار فیلد <code>title</code> را با <code>r.PostForm.Get(&quot;title&quot;)</code> بازیابی کنیم. اگر هیچ فیلد منطبقی در فرم وجود نداشته باشد، رشته خالی <code>&quot;&quot;</code> را برمی‌گرداند.</p></li>
-</ol>
-
-<p>فایل <code>cmd/web/handlers.go</code> خود را باز کنید و آن را با کد زیر به‌روزرسانی کنید:</p>
+<p>برای شروع، بیایید یک <dfn>هندلر جدید (New Handler)</dfn> به نام <code>snippetCreatePost</code> ایجاد کنیم که مسئول پردازش داده‌های فرم ارسالی است:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
-<span class="o">...</span>
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;strconv&#34;</span>
+<span class="p">)</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// First we call r.ParseForm() which adds any data in POST request bodies
-</span><span class="c1"></span>    <span class="c1">// to the r.PostForm map. This also works in the same way for PUT and PATCH
-</span><span class="c1"></span>    <span class="c1">// requests. If there are any errors, we use our app.ClientError() helper to 
-</span><span class="c1"></span>    <span class="c1">// send a 400 Bad Request response to the user.
+</span><span class="c1"></span>    <span class="c1">// to the r.PostForm map. This also works in the same way for PUT and
+</span><span class="c1"></span>    <span class="c1">// PATCH requests. If there are any errors, we use our app.clientError
+</span><span class="c1"></span>    <span class="c1">// helper to send a 400 Bad Request response to the user.
 </span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="c1">// Use the r.PostForm.Get() method to retrieve the title and content
+    <span class="c1">// Use the r.PostForm.Get() method to retrieve the relevant data fields
 </span><span class="c1"></span>    <span class="c1">// from the r.PostForm map.
 </span><span class="c1"></span>    <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span>
     <span class="nx">content</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span>
+    <span class="nx">expires</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span>
 
-    <span class="c1">// The r.PostForm.Get() method always returns the form data as a *string*.
-</span><span class="c1"></span>    <span class="c1">// However, we&#39;re expecting our expires value to be a number, and want to
-</span><span class="c1"></span>    <span class="c1">// represent it in our Go code as an integer. So we need to manually convert
-</span><span class="c1"></span>    <span class="c1">// the form data to an integer using strconv.Atoi(), and we send a 400 Bad
-</span><span class="c1"></span>    <span class="c1">// Request response if the conversion fails.
-</span><span class="c1"></span>    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="c1">// Convert the expires value from form to an integer.
+</span><span class="c1"></span>    <span class="nx">expiresInt</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">expires</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expires</span><span class="p">)</span>
+    <span class="c1">// Pass the data to the SnippetModel.Insert() method, receiving the
+</span><span class="c1"></span>    <span class="c1">// ID of the new record back.
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expiresInt</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+    <span class="c1">// Redirect the user to the relevant page for the snippet.
+</span><span class="c1"></span>    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
@@ -196,6 +192,65 @@
 
 <p>استفاده از <code>r.Form</code> می‌تواند بسیار مفید باشد اگر می‌خواهید برنامه شما نسبت به نحوه ارسال مقادیر داده بی‌تفاوت باشد. اما خارج از آن سناریو، <code>r.Form</code> هیچ مزیتی ارائه نمی‌دهد و واضح‌تر و صریح‌تر است که داده‌ها را از بدنه درخواست <code>POST</code> از طریق <code>r.PostForm</code> یا از پارامترهای رشته پرس‌وجو از طریق <code>r.URL.Query().Get()</code> بخوانید.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تجزیه و دسترسی</td>
+        <td>Parsing and Accessing</td>
+        <td>خواندن و استخراج داده‌های فرم</td>
+    </tr>
+    <tr>
+        <td>داده‌های فرم</td>
+        <td>Form Data</td>
+        <td>اطلاعات وارد شده توسط کاربر در فرم</td>
+    </tr>
+    <tr>
+        <td>درخواست POST</td>
+        <td>POST Request</td>
+        <td>درخواست HTTP برای ارسال داده به سرور</td>
+    </tr>
+    <tr>
+        <td>هندلر جدید</td>
+        <td>New Handler</td>
+        <td>تابع جدید برای پردازش درخواست‌ها</td>
+    </tr>
+    <tr>
+        <td>تجزیه فرم</td>
+        <td>Parse Form</td>
+        <td>استخراج داده‌های فرم از درخواست</td>
+    </tr>
+    <tr>
+        <td>نقشه داده‌ها</td>
+        <td>Data Map</td>
+        <td>ساختار داده برای نگهداری مقادیر فرم</td>
+    </tr>
+    <tr>
+        <td>خطای کاربر</td>
+        <td>Client Error</td>
+        <td>خطای ناشی از درخواست نامعتبر</td>
+    </tr>
+    <tr>
+        <td>تبدیل داده</td>
+        <td>Data Conversion</td>
+        <td>تغییر نوع داده (مثلاً رشته به عدد)</td>
+    </tr>
+    <tr>
+        <td>درج رکورد</td>
+        <td>Record Insertion</td>
+        <td>افزودن داده جدید به پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>تغییر مسیر</td>
+        <td>Redirect</td>
+        <td>هدایت کاربر به صفحه دیگر</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper">

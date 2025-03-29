@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل 13.2.</div>
-			<h2 id="testing-http-handlers-and-middleware">تست هندلرها و میان‌افزارهای HTTP</h2>
+			<h2 id="testing-http-handlers-and-middleware">تست هندلرها و میان‌افزارهای HTTP (Testing HTTP Handlers and Middleware)</h2>
+
+<p>در این بخش، نحوه <dfn>تست هندلرهای HTTP (Testing HTTP Handlers)</dfn> و <dfn>میان‌افزارها (Middleware)</dfn> را بررسی می‌کنیم. این شامل <dfn>درخواست‌های تست (Test Requests)</dfn> و <dfn>پاسخ‌های تست (Test Responses)</dfn> می‌شود.</p>
+
+<p>همچنین با <dfn>شبیه‌سازی درخواست (Request Mocking)</dfn> و <dfn>بررسی پاسخ (Response Verification)</dfn> آشنا خواهیم شد.</p>
 
 <p>بیایید به سراغ تکنیک‌های خاصی برای تست واحد هندلرهای HTTP شما برویم.</p>
 
@@ -270,6 +274,65 @@ ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
 
 <p>بنابراین، به طور خلاصه، یک راه سریع و آسان برای تست واحد هندلرها و میان‌افزارهای HTTP شما این است که به سادگی آنها را با استفاده از نوع <code>httptest.ResponseRecorder</code> فراخوانی کنید. سپس می‌توانید کد وضعیت، هدرها و بدنه پاسخ ضبط شده را بررسی کنید تا مطمئن شوید که آنها به درستی کار می‌کنند.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تست هندلرهای HTTP</td>
+        <td>Testing HTTP Handlers</td>
+        <td>آزمایش توابع پردازش HTTP</td>
+    </tr>
+    <tr>
+        <td>میان‌افزارها</td>
+        <td>Middleware</td>
+        <td>کدهای واسط پردازش</td>
+    </tr>
+    <tr>
+        <td>درخواست‌های تست</td>
+        <td>Test Requests</td>
+        <td>درخواست‌های شبیه‌سازی شده</td>
+    </tr>
+    <tr>
+        <td>پاسخ‌های تست</td>
+        <td>Test Responses</td>
+        <td>پاسخ‌های مورد انتظار</td>
+    </tr>
+    <tr>
+        <td>شبیه‌سازی درخواست</td>
+        <td>Request Mocking</td>
+        <td>ایجاد درخواست مجازی</td>
+    </tr>
+    <tr>
+        <td>بررسی پاسخ</td>
+        <td>Response Verification</td>
+        <td>تأیید صحت پاسخ</td>
+    </tr>
+    <tr>
+        <td>سرآیندهای HTTP</td>
+        <td>HTTP Headers</td>
+        <td>اطلاعات اضافی درخواست</td>
+    </tr>
+    <tr>
+        <td>کد وضعیت</td>
+        <td>Status Code</td>
+        <td>کد نتیجه درخواست</td>
+    </tr>
+    <tr>
+        <td>بدنه پاسخ</td>
+        <td>Response Body</td>
+        <td>محتوای اصلی پاسخ</td>
+    </tr>
+    <tr>
+        <td>مسیر درخواست</td>
+        <td>Request Path</td>
+        <td>آدرس درخواست HTTP</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

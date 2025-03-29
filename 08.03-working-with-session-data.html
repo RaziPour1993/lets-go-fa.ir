@@ -37,7 +37,9 @@
 		</header>
 		<main class="wrapper text" style="direction: rtl;">
 			<div class="chapter">فصل 8.3.</div>
-			<h2 id="working-with-session-data">کار با داده‌های جلسه</h2>
+			<h2 id="working-with-session-data">کار با داده‌های جلسه (Working with Session Data)</h2>
+
+<p>در این بخش، نحوه <dfn>کار با داده‌های جلسه (Working with Session Data)</dfn> را بررسی می‌کنیم. این شامل <dfn>ذخیره‌سازی (Storage)</dfn>، <dfn>بازیابی (Retrieval)</dfn> و <dfn>حذف داده‌ها (Data Removal)</dfn> از جلسه می‌شود.</p>
 
 <p>در این فصل، بیایید قابلیت جلسه را به کار بگیریم و از آن برای حفظ پیام تأیید بین درخواست‌های HTTP که <a href="08.00-stateful-http.html">قبلاً بحث کردیم</a>، استفاده کنیم.</p>
 
@@ -89,7 +91,7 @@
 </p>
 
 <p style="direction: rtl;">
-    پارامتر دوم (در مورد ما رشته <code>"flash"</code>) کلید برای پیام خاصی است که به داده‌های جلسه اضافه می‌کنیم. ما بعداً پیام را از داده‌های جلسه با استفاده از این کلید بازیابی خواهیم کرد.
+    پارامتر دوم (در مورد ما رشته <code>"flash"</code>) کلید برای پیام خاصی است که به داده‌های جلسه اضافه می‌کنیم. ما بعداً پیام را از داده‌های جلسه بازیابی خواهیم کرد.
 </p>
 
 <p style="direction: rtl;">
@@ -328,6 +330,65 @@
 
 <p>هر تغییری که در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، در زمینه درخواست به‌روزرسانی می‌شود و سپس میان‌افزار <code>LoadAndSave()</code> پایگاه داده را با هر تغییری در داده‌های جلسه قبل از بازگشت به‌روزرسانی می‌کند.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>کار با داده‌های جلسه</td>
+        <td>Working with Session Data</td>
+        <td>مدیریت و دستکاری داده‌های جلسه</td>
+    </tr>
+    <tr>
+        <td>ذخیره‌سازی</td>
+        <td>Storage</td>
+        <td>نگهداری داده‌ها در جلسه</td>
+    </tr>
+    <tr>
+        <td>بازیابی</td>
+        <td>Retrieval</td>
+        <td>خواندن داده‌ها از جلسه</td>
+    </tr>
+    <tr>
+        <td>حذف داده‌ها</td>
+        <td>Data Removal</td>
+        <td>پاک کردن داده‌ها از جلسه</td>
+    </tr>
+    <tr>
+        <td>پیام فلش</td>
+        <td>Flash Message</td>
+        <td>پیام موقتی برای نمایش به کاربر</td>
+    </tr>
+    <tr>
+        <td>جلسه کاربر</td>
+        <td>User Session</td>
+        <td>داده‌های مربوط به جلسه یک کاربر</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>مدیریت خطاهای جلسه</td>
+    </tr>
+    <tr>
+        <td>نوع داده</td>
+        <td>Data Type</td>
+        <td>نوع داده‌های ذخیره شده در جلسه</td>
+    </tr>
+    <tr>
+        <td>زمان انقضا</td>
+        <td>Expiry Time</td>
+        <td>مدت زمان اعتبار داده‌های جلسه</td>
+    </tr>
+    <tr>
+        <td>امنیت داده‌ها</td>
+        <td>Data Security</td>
+        <td>حفاظت از داده‌های جلسه</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

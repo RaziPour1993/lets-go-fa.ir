@@ -29,9 +29,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 9.6.</div>
-			<h2 id="connection-timeouts">زمان‌های قطع اتصال</h2>
+			<h2 id="connection-timeouts">زمان‌های قطع اتصال (Connection Timeouts)</h2>
 
-<p>بیایید لحظه‌ای برای بهبود پایداری سرورمان با افزودن برخی تنظیمات زمان قطع اتصال، مانند زیر، وقت بگذاریم:</p>
+<p>در این بخش، نحوه پیکربندی <dfn>زمان‌های قطع اتصال (Connection Timeouts)</dfn> را بررسی می‌کنیم. این شامل <dfn>محدودیت‌های زمانی (Time Limits)</dfn> برای <dfn>خواندن (Reading)</dfn>، <dfn>نوشتن (Writing)</dfn> و <dfn>اتصال (Connection)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید <dfn>تنظیمات زمان‌سنج (Timer Settings)</dfn> را در <dfn>پیکربندی سرور (Server Configuration)</dfn> خود اضافه کنیم:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/main.go</figcaption>
@@ -128,6 +130,66 @@
 <p>اگر <code>MaxHeaderBytes</code> تجاوز کند، کاربر به طور خودکار یک پاسخ <code>431 Request Header Fields Too Large</code> دریافت خواهد کرد.</p>
 
 <p>اینجا یک نکته وجود دارد: Go <em>همیشه</em> <a href="https://github.com/golang/go/blob/4b36e129f865f802eb87f7aa2b25e3297c5d8cfd/src/net/http/server.go#L871">4096 بایت اضافی</a> فضای سر به عددی که تنظیم کرده‌اید اضافه می‌کند. اگر نیاز دارید که <code>MaxHeaderBytes</code> یک عدد دقیق یا بسیار کم باشد، باید این را در نظر بگیرید.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>زمان‌های قطع اتصال</td>
+        <td>Connection Timeouts</td>
+        <td>محدودیت‌های زمانی اتصال</td>
+    </tr>
+    <tr>
+        <td>محدودیت‌های زمانی</td>
+        <td>Time Limits</td>
+        <td>محدودیت‌های زمانی عملیات</td>
+    </tr>
+    <tr>
+        <td>خواندن</td>
+        <td>Reading</td>
+        <td>دریافت داده از اتصال</td>
+    </tr>
+    <tr>
+        <td>نوشتن</td>
+        <td>Writing</td>
+        <td>ارسال داده به اتصال</td>
+    </tr>
+    <tr>
+        <td>اتصال</td>
+        <td>Connection</td>
+        <td>ارتباط شبکه‌ای</td>
+    </tr>
+    <tr>
+        <td>تنظیمات زمان‌سنج</td>
+        <td>Timer Settings</td>
+        <td>پیکربندی محدودیت‌های زمانی</td>
+    </tr>
+    <tr>
+        <td>پیکربندی سرور</td>
+        <td>Server Configuration</td>
+        <td>تنظیمات سرور</td>
+    </tr>
+    <tr>
+        <td>حملات کند</td>
+        <td>Slow Attacks</td>
+        <td>حملات با اتصال‌های طولانی</td>
+    </tr>
+    <tr>
+        <td>مدیریت منابع</td>
+        <td>Resource Management</td>
+        <td>مدیریت منابع سیستم</td>
+    </tr>
+    <tr>
+        <td>امنیت شبکه</td>
+        <td>Network Security</td>
+        <td>حفاظت از ارتباطات شبکه</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

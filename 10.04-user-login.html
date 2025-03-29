@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 10.4.</div>
-			<h2 id="user-login">ورود کاربر</h2>
+			<h2 id="user-login">ورود کاربر (User Login)</h2>
+
+<p>در این بخش، نحوه پیاده‌سازی <dfn>ورود کاربر (User Login)</dfn> را بررسی می‌کنیم. این شامل <dfn>فرم ورود (Login Form)</dfn>، <dfn>احراز هویت (Authentication)</dfn> و <dfn>مدیریت نشست (Session Management)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید یک <dfn>فرم HTML (HTML Form)</dfn> برای <dfn>ورود کاربر (User Login)</dfn> ایجاد کنیم:</p>
 
 <p>در این فصل قصد داریم روی ایجاد صفحه ورود کاربر برای برنامه خود تمرکز کنیم.</p>
 
@@ -298,6 +302,65 @@
 <li><p>کاربران ثبت‌نام شده سپس می‌توانند با استفاده از فرم <code>GET /user/login</code> برای ارائه آدرس ایمیل و رمز عبور خود <em>احراز هویت</em> کنند. اگر این موارد با جزئیات یک کاربر ثبت‌نام شده مطابقت داشته باشد، ما آنها را به عنوان احراز هویت موفقیت‌آمیز می‌دانیم و مقدار <code>&quot;authenticatedUserID&quot;</code> مربوطه را به داده‌های جلسه آنها اضافه می‌کنیم.</p></li>
 </ul>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>ورود کاربر</td>
+        <td>User Login</td>
+        <td>فرآیند دسترسی به حساب کاربری</td>
+    </tr>
+    <tr>
+        <td>فرم ورود</td>
+        <td>Login Form</td>
+        <td>فرم ورود اطلاعات کاربر</td>
+    </tr>
+    <tr>
+        <td>احراز هویت</td>
+        <td>Authentication</td>
+        <td>تأیید هویت کاربر</td>
+    </tr>
+    <tr>
+        <td>مدیریت نشست</td>
+        <td>Session Management</td>
+        <td>کنترل نشست‌های کاربری</td>
+    </tr>
+    <tr>
+        <td>فرم HTML</td>
+        <td>HTML Form</td>
+        <td>فرم ورود اطلاعات</td>
+    </tr>
+    <tr>
+        <td>اعتبارسنجی</td>
+        <td>Validation</td>
+        <td>بررسی صحت اطلاعات</td>
+    </tr>
+    <tr>
+        <td>رمز عبور</td>
+        <td>Password</td>
+        <td>کلمه عبور کاربر</td>
+    </tr>
+    <tr>
+        <td>کوکی نشست</td>
+        <td>Session Cookie</td>
+        <td>کوکی نگهداری اطلاعات نشست</td>
+    </tr>
+    <tr>
+        <td>خطای ورود</td>
+        <td>Login Error</td>
+        <td>پیام خطای ورود ناموفق</td>
+    </tr>
+    <tr>
+        <td>امنیت</td>
+        <td>Security</td>
+        <td>حفاظت از حساب کاربری</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

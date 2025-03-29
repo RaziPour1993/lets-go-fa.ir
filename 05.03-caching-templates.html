@@ -48,14 +48,14 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۵.۳.</div>
-			<h2 id="caching-templates">کش کردن قالب‌ها</h2>
+			<h2 id="caching-templates">کش کردن قالب‌ها (Caching Templates)</h2>
 
-<p>قبل از اینکه عملکرد بیشتری به قالب‌های HTML اضافه کنیم، زمان خوبی است تا بهینه‌سازی‌هایی در کد پایه انجام دهیم. در حال حاضر دو مشکل اصلی وجود دارد:</p>
+<p>قبل از اینکه عملکرد بیشتری به قالب‌های HTML اضافه کنیم، زمان خوبی است تا <dfn>بهینه‌سازی‌هایی (Optimizations)</dfn> در کد پایه انجام دهیم. در حال حاضر دو مشکل اصلی وجود دارد:</p>
 
 <ol>
-<li><p>هر بار که صفحه وب را رندر می‌کنیم، برنامه ما فایل‌های قالب مربوطه را با استفاده از تابع <code>template.ParseFiles()</code> می‌خواند و تجزیه می‌کند. می‌توانیم از این کار تکراری با تجزیه یکباره فایل‌ها - هنگام شروع برنامه - و ذخیره قالب‌های تجزیه شده در یک <dfn>کش</dfn> در حافظه جلوگیری کنیم.</p></li>
+<li><p>هر بار که صفحه وب را رندر می‌کنیم، برنامه ما فایل‌های قالب مربوطه را با استفاده از تابع <code>template.ParseFiles()</code> می‌خواند و تجزیه می‌کند. می‌توانیم از این کار تکراری با تجزیه یکباره فایل‌ها - هنگام شروع برنامه - و ذخیره قالب‌های تجزیه شده در یک <dfn>کش (Cache)</dfn> در حافظه جلوگیری کنیم.</p></li>
 
-<li><p>در هندلرهای <code>home</code> و <code>snippetView</code> کد تکراری وجود دارد و می‌توانیم این تکرار را با ایجاد یک تابع کمکی کاهش دهیم.</p></li>
+<li><p>در هندلرهای <code>home</code> و <code>snippetView</code> <dfn>کد تکراری (Duplicate Code)</dfn> وجود دارد و می‌توانیم این تکرار را با ایجاد یک <dfn>تابع کمکی (Helper Function)</dfn> کاهش دهیم.</p></li>
 </ol>
 
 <p>بیایید ابتدا نکته اول را بررسی کنیم و یک نقشه در حافظه با نوع <code>map[string]*template.Template</code> برای کش کردن قالب‌های تجزیه شده ایجاد کنیم. فایل <code>cmd/web/templates.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
@@ -287,55 +287,65 @@
 <img src="assets/img/05.03-02.png" alt="05.03-02.png" />
 </figure>
 
-<h3 id="automatically-parsing-partials">تجزیه خودکار بخش‌های جزئی</h3>
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
 
-<p>قبل از اینکه ادامه دهیم، بیایید تابع <code>newTemplateCache()</code> خود را کمی انعطاف‌پذیرتر کنیم تا به طور خودکار <em>تمام قالب‌های موجود در پوشه <code>ui/html/partials</code></em> را تجزیه کند - به جای فقط فایل <code>nav.tmpl</code> ما.</p>
-
-<p>این کار در صورت اضافه کردن بخش‌های جزئی اضافی در آینده، زمان، تایپ و خطاهای احتمالی را صرفه‌جویی می‌کند.</p>
-
-<figure class="code go">
-<figcaption>File: cmd/web/templates.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="o">...</span>
-
-<span class="kd">func</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">cache</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">{</span><span class="p">}</span>
-
-    <span class="nx">pages</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Glob</span><span class="p">(</span><span class="s">&#34;./ui/html/pages/*.tmpl&#34;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-    <span class="p">}</span>
-
-    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">page</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">pages</span> <span class="p">{</span>
-        <span class="nx">name</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Base</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
-
-        <span class="c1">// Parse the base template file into a template set.
-</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-        <span class="p">}</span>
-
-        <span class="c1">// Call ParseGlob() *on this template set* to add any partials.
-</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseGlob</span><span class="p">(</span><span class="s">&#34;./ui/html/partials/*.tmpl&#34;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-        <span class="p">}</span>
-
-        <span class="c1">// Call ParseFiles() *on this template set* to add the  page template.
-</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
-        <span class="p">}</span>
-
-        <span class="c1">// Add the template set to the map as normal...
-</span><span class="c1"></span>        <span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">=</span> <span class="nx">ts</span>
-    <span class="p">}</span>
-
-    <span class="k">return</span> <span class="nx">cache</span><span class="p">,</span> <span class="kc">nil</span>
-<span class="p">}</span></pre>
-</figure>
-
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>کش کردن قالب‌ها</td>
+        <td>Template Caching</td>
+        <td>ذخیره‌سازی قالب‌های پردازش شده در حافظه برای استفاده مجدد</td>
+    </tr>
+    <tr>
+        <td>بهینه‌سازی‌ها</td>
+        <td>Optimizations</td>
+        <td>تغییراتی برای بهبود عملکرد و کارایی برنامه</td>
+    </tr>
+    <tr>
+        <td>کش</td>
+        <td>Cache</td>
+        <td>فضای ذخیره‌سازی موقت برای دسترسی سریع به داده‌ها</td>
+    </tr>
+    <tr>
+        <td>کد تکراری</td>
+        <td>Duplicate Code</td>
+        <td>بخش‌هایی از کد که در چند جا تکرار شده‌اند</td>
+    </tr>
+    <tr>
+        <td>تابع کمکی</td>
+        <td>Helper Function</td>
+        <td>تابعی که عملیات مشترک را انجام می‌دهد</td>
+    </tr>
+    <tr>
+        <td>تجزیه قالب</td>
+        <td>Template Parsing</td>
+        <td>فرآیند خواندن و تحلیل فایل‌های قالب</td>
+    </tr>
+    <tr>
+        <td>مدیریت حافظه</td>
+        <td>Memory Management</td>
+        <td>کنترل نحوه استفاده از حافظه در برنامه</td>
+    </tr>
+    <tr>
+        <td>بارگذاری فایل</td>
+        <td>File Loading</td>
+        <td>خواندن محتوای فایل‌ها از دیسک</td>
+    </tr>
+    <tr>
+        <td>نقشه قالب‌ها</td>
+        <td>Template Map</td>
+        <td>ساختار داده برای نگهداری قالب‌های کش شده</td>
+    </tr>
+    <tr>
+        <td>مسیر نسبی</td>
+        <td>Relative Path</td>
+        <td>آدرس فایل نسبت به موقعیت فعلی</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper">

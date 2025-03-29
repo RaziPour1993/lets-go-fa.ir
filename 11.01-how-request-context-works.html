@@ -33,7 +33,11 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۱۱.۱.</div>
-			<h2 id="how-request-context-works">چگونه زمینه درخواست کار می‌کند</h2>
+			<h2 id="how-request-context-works">نحوه عملکرد زمینه درخواست (How Request Context Works)</h2>
+
+<p>در این بخش، نحوه عملکرد <dfn>زمینه درخواست (Request Context)</dfn> را بررسی می‌کنیم. این شامل <dfn>مدیریت داده‌ها (Data Management)</dfn>، <dfn>انتشار سیگنال (Signal Propagation)</dfn> و <dfn>زمان‌بندی (Timing)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید با <dfn>مفاهیم پایه (Basic Concepts)</dfn> زمینه درخواست آشنا شویم:</p>
 
 <p>هر <code>http.Request</code> که میان‌افزار و هندلرهای ما پردازش می‌کنند، یک شیء <a href="https://pkg.go.dev/context/#Context"><code>context.Context</code></a> در خود دارد که می‌توانیم از آن برای ذخیره اطلاعات در طول عمر درخواست استفاده کنیم.</p>
 
@@ -115,6 +119,66 @@
     <span class="k">return</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">"could not convert value to bool"</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>زمینه درخواست</td>
+        <td>Request Context</td>
+        <td>محیط اجرای درخواست</td>
+    </tr>
+    <tr>
+        <td>مدیریت داده‌ها</td>
+        <td>Data Management</td>
+        <td>کنترل داده‌های درخواست</td>
+    </tr>
+    <tr>
+        <td>انتشار سیگنال</td>
+        <td>Signal Propagation</td>
+        <td>ارسال سیگنال در برنامه</td>
+    </tr>
+    <tr>
+        <td>زمان‌بندی</td>
+        <td>Timing</td>
+        <td>کنترل زمان اجرا</td>
+    </tr>
+    <tr>
+        <td>مفاهیم پایه</td>
+        <td>Basic Concepts</td>
+        <td>اصول اولیه</td>
+    </tr>
+    <tr>
+        <td>درخت زمینه</td>
+        <td>Context Tree</td>
+        <td>ساختار سلسله مراتبی زمینه</td>
+    </tr>
+    <tr>
+        <td>مقدار کلید</td>
+        <td>Key Value</td>
+        <td>داده ذخیره شده در زمینه</td>
+    </tr>
+    <tr>
+        <td>کانال لغو</td>
+        <td>Cancel Channel</td>
+        <td>کانال ارتباطی لغو عملیات</td>
+    </tr>
+    <tr>
+        <td>مهلت زمانی</td>
+        <td>Timeout</td>
+        <td>محدودیت زمان اجرا</td>
+    </tr>
+    <tr>
+        <td>همگام‌سازی</td>
+        <td>Synchronization</td>
+        <td>هماهنگی اجرای عملیات</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

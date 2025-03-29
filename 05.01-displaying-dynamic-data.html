@@ -29,11 +29,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 5.1.</div>
-			<h2 id="displaying-dynamic-data">نمایش داده‌های پویا</h2>
+			<h2 id="displaying-dynamic-data">نمایش داده‌های پویا (Displaying Dynamic Data)</h2>
 
-<p>در حال حاضر، تابع <code>snippetView</code> ما یک شیء <code>models.Snippet</code> را از پایگاه داده دریافت می‌کند و سپس محتویات آن را به صورت یک پاسخ HTTP متنی ساده نمایش می‌دهد.</p>
+<p>در حال حاضر، تابع <code>snippetView</code> ما یک شیء <dfn>مدل قطعه کد (Snippet Model)</dfn> را از پایگاه داده دریافت می‌کند و سپس محتویات آن را به صورت یک <dfn>پاسخ HTTP متنی ساده (Plain Text HTTP Response)</dfn> نمایش می‌دهد.</p>
 
-<p>در این فصل، این را بهبود می‌دهیم تا داده‌ها در یک صفحه وب HTML مناسب نمایش داده شوند که شبیه به این است:</p>
+<p>در این فصل، این را بهبود می‌دهیم تا داده‌ها در یک <dfn>صفحه وب HTML (HTML Web Page)</dfn> مناسب نمایش داده شوند که شبیه به این است:</p>
 
 <p><img class="sketch" src="assets/img/05.01-01.png" alt="05.01-01.png"></img></p>
 
@@ -296,6 +296,65 @@
 
 <p>دلیل این کار کمک به جلوگیری از حملات XSS هنگام رندر کردن محتوای پویا است. اجازه دادن به نظرات شرطی به این معنی است که Go همیشه نمی‌تواند پیش‌بینی کند که یک مرورگر چگونه نشانه‌گذاری در یک صفحه را تفسیر خواهد کرد، و بنابراین نمی‌تواند همه چیز را به درستی فرار دهد. برای حل این مشکل، Go به سادگی همه نظرات HTML را حذف می‌کند.</p>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>نمایش داده‌های پویا</td>
+        <td>Displaying Dynamic Data</td>
+        <td>نمایش اطلاعات متغیر و پویا در صفحات وب</td>
+    </tr>
+    <tr>
+        <td>مدل قطعه کد</td>
+        <td>Snippet Model</td>
+        <td>ساختار داده‌ای برای نگهداری و مدیریت قطعات کد</td>
+    </tr>
+    <tr>
+        <td>پاسخ HTTP متنی ساده</td>
+        <td>Plain Text HTTP Response</td>
+        <td>پاسخ وب که فقط شامل متن خام است</td>
+    </tr>
+    <tr>
+        <td>صفحه وب HTML</td>
+        <td>HTML Web Page</td>
+        <td>صفحه وب با ساختار و قالب‌بندی HTML</td>
+    </tr>
+    <tr>
+        <td>قالب صفحه</td>
+        <td>Page Template</td>
+        <td>الگوی پایه برای ساخت صفحات وب</td>
+    </tr>
+    <tr>
+        <td>رندر قالب</td>
+        <td>Template Rendering</td>
+        <td>فرآیند تبدیل قالب به خروجی HTML نهایی</td>
+    </tr>
+    <tr>
+        <td>ساختار داده</td>
+        <td>Data Structure</td>
+        <td>روشی برای سازماندهی و ذخیره داده‌ها</td>
+    </tr>
+    <tr>
+        <td>مسیر فایل</td>
+        <td>File Path</td>
+        <td>آدرس و مسیر دسترسی به یک فایل در سیستم</td>
+    </tr>
+    <tr>
+        <td>خطای سرور</td>
+        <td>Server Error</td>
+        <td>خطایی که در سمت سرور رخ می‌دهد</td>
+    </tr>
+    <tr>
+        <td>پردازش قالب</td>
+        <td>Template Processing</td>
+        <td>عملیات تجزیه و تحلیل و اجرای قالب‌ها</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

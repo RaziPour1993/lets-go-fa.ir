@@ -28,7 +28,11 @@
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۱۳.۷.</div>
 
-			<h2 id="integration-testing">تست یکپارچه‌سازی</h2>
+			<h2 id="integration-testing">تست یکپارچه‌سازی (Integration Testing)</h2>
+
+<p>در این بخش، نحوه <dfn>تست یکپارچه‌سازی (Integration Testing)</dfn> را بررسی می‌کنیم. این شامل <dfn>تست پایگاه داده (Database Testing)</dfn> و <dfn>تست API (API Testing)</dfn> می‌شود.</p>
+
+<p>همچنین با <dfn>محیط تست (Test Environment)</dfn> و <dfn>داده‌های آزمایشی (Test Data)</dfn> آشنا خواهیم شد.</p>
 
 <p>اجرای تست‌های انتها به انتها با وابستگی‌های شبیه‌سازی شده کار خوبی است، اما می‌توانیم اعتماد به برنامه خود را حتی بیشتر کنیم اگر اطمینان حاصل کنیم که مدل‌های واقعی پایگاه داده MySQL ما همانطور که انتظار می‌رود کار می‌کنند.</p>
 
@@ -354,6 +358,66 @@ ok      snippetbox.alexedwards.net/internal/models      0.003s
 <p>آیا متوجه علامت <code>SKIP</code> در خروجی بالا شدید؟ این تأیید می‌کند که Go تست <code>TestUserModelExists</code> ما را در طول این اجرا رد کرده است.</p>
 
 <p>اگر دوست دارید، می‌توانید این را دوباره بدون پرچم <code>-short</code> اجرا کنید، و باید ببینید که تست <code>TestUserModelExists</code> به طور عادی اجرا می‌شود.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>تست یکپارچه‌سازی</td>
+        <td>Integration Testing</td>
+        <td>آزمایش تعامل اجزا</td>
+    </tr>
+    <tr>
+        <td>تست پایگاه داده</td>
+        <td>Database Testing</td>
+        <td>آزمایش ذخیره‌سازی</td>
+    </tr>
+    <tr>
+        <td>تست API</td>
+        <td>API Testing</td>
+        <td>آزمایش رابط برنامه‌نویسی</td>
+    </tr>
+    <tr>
+        <td>محیط تست</td>
+        <td>Test Environment</td>
+        <td>محیط اجرای آزمایش</td>
+    </tr>
+    <tr>
+        <td>داده‌های آزمایشی</td>
+        <td>Test Data</td>
+        <td>داده‌های نمونه</td>
+    </tr>
+    <tr>
+        <td>پایگاه داده تست</td>
+        <td>Test Database</td>
+        <td>پایگاه داده آزمایشی</td>
+    </tr>
+    <tr>
+        <td>تراکنش‌ها</td>
+        <td>Transactions</td>
+        <td>عملیات پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>بازیابی داده</td>
+        <td>Data Recovery</td>
+        <td>برگرداندن داده‌ها</td>
+    </tr>
+    <tr>
+        <td>اتصال پایگاه داده</td>
+        <td>Database Connection</td>
+        <td>ارتباط با پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>مهاجرت داده</td>
+        <td>Data Migration</td>
+        <td>انتقال داده‌ها</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

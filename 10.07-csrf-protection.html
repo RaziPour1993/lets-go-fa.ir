@@ -29,11 +29,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 10.7.</div>
-			<h2 id="csrf-protection">محافظت در برابر CSRF</h2>
+			<h2 id="csrf-protection">محافظت در برابر CSRF (CSRF Protection)</h2>
 
-<p>در این فصل به بررسی نحوه محافظت از برنامه خود در برابر حملات <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html">جعل درخواست بین‌سایتی</a> (CSRF) می‌پردازیم.</p>
+<p>در این بخش، نحوه پیاده‌سازی <dfn>محافظت در برابر CSRF (CSRF Protection)</dfn> را بررسی می‌کنیم. این شامل <dfn>توکن CSRF (CSRF Token)</dfn>، <dfn>میان‌افزار محافظت (Protection Middleware)</dfn> و <dfn>اعتبارسنجی درخواست (Request Validation)</dfn> می‌شود.</p>
 
-<p>اگر با اصول CSRF آشنا نیستید، این نوعی حمله است که در آن یک وب‌سایت مخرب درخواست‌های HTTP تغییر وضعیت را به وب‌سایت شما ارسال می‌کند. توضیح عالی از حمله CSRF پایه می‌تواند <a href="http://www.gnucitizen.org/blog/csrf-demystified/">اینجا یافت شود</a>.</p>
+<p>برای شروع، بیایید یک <dfn>میان‌افزار (Middleware)</dfn> برای <dfn>تولید توکن (Token Generation)</dfn> ایجاد کنیم:</p>
 
 <p>در برنامه ما، خطر اصلی این است:</p>
 
@@ -389,6 +389,65 @@ go get: added github.com/justinas/nosurf v1.1.1</samp></pre>
 <li>از روش‌های HTTP <code>POST</code>، <code>PUT</code> یا <code>DELETE</code> برای هر درخواست تغییر وضعیت استفاده کنید.</li>
 </ul>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>محافظت در برابر CSRF</td>
+        <td>CSRF Protection</td>
+        <td>محافظت از حملات جعل درخواست</td>
+    </tr>
+    <tr>
+        <td>توکن CSRF</td>
+        <td>CSRF Token</td>
+        <td>کد امنیتی یکتا</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار محافظت</td>
+        <td>Protection Middleware</td>
+        <td>کد واسط امنیتی</td>
+    </tr>
+    <tr>
+        <td>اعتبارسنجی درخواست</td>
+        <td>Request Validation</td>
+        <td>بررسی صحت درخواست</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار</td>
+        <td>Middleware</td>
+        <td>کد واسط پردازش درخواست</td>
+    </tr>
+    <tr>
+        <td>تولید توکن</td>
+        <td>Token Generation</td>
+        <td>ایجاد کد امنیتی</td>
+    </tr>
+    <tr>
+        <td>حمله CSRF</td>
+        <td>CSRF Attack</td>
+        <td>حمله جعل درخواست</td>
+    </tr>
+    <tr>
+        <td>امنیت فرم</td>
+        <td>Form Security</td>
+        <td>محافظت از فرم‌های ورودی</td>
+    </tr>
+    <tr>
+        <td>اعتبارسنجی توکن</td>
+        <td>Token Validation</td>
+        <td>بررسی صحت کد امنیتی</td>
+    </tr>
+    <tr>
+        <td>درخواست جعلی</td>
+        <td>Forged Request</td>
+        <td>درخواست غیرمجاز</td>
+    </tr>
+</table>
 		</main>
 		<footer dir="rtl">
 			<div class="wrapper">

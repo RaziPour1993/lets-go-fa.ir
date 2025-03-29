@@ -23,9 +23,9 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل ۱۶.۱.</div>
-			<h2 id="add-an-about-page-to-the-application">اضافه کردن صفحه 'درباره' به برنامه</h2>
+			<h2 id="add-an-about-page-to-the-application">اضافه کردن صفحه 'درباره' به برنامه (Adding an About Page to the Application)</h2>
 
-<p>هدف شما در این تمرین اضافه کردن یک صفحه جدید 'درباره' به برنامه است. این صفحه باید به مسیر <code>GET /about</code> متصل شود و برای کاربران احراز هویت شده و نشده در دسترس باشد و به این شکل به نظر برسد:</p>
+<p>هدف شما در این تمرین اضافه کردن یک <dfn>صفحه جدید (New Page)</dfn> 'درباره' به برنامه است. این صفحه باید به <dfn>مسیر (Route)</dfn> <code>GET /about</code> متصل شود و برای <dfn>کاربران احراز هویت شده (Authenticated Users)</dfn> و نشده در دسترس باشد و به این شکل به نظر برسد:</p>
 
 <figure class="img">
 <img src="assets/img/16.01-01.png" alt="16.01-01.png" />
@@ -33,25 +33,25 @@
 
 <h4 id="step-1">مرحله ۱</h4>
 
-<p>یک مسیر <code>GET /about</code> ایجاد کنید که به یک هندلر جدید <code>about</code> متصل شود. به این فکر کنید که کدام استک میان‌افزار برای استفاده در این مسیر مناسب است.</p>
+<p>یک <dfn>مسیر (Route)</dfn> <code>GET /about</code> ایجاد کنید که به یک <dfn>هندلر (Handler)</dfn> جدید <code>about</code> متصل شود. به این فکر کنید که کدام <dfn>استک میان‌افزار (Middleware Stack)</dfn> برای استفاده در این مسیر مناسب است.</p>
 
 <p><a href="#17.01-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
 <h4 id="step-2">مرحله ۲</h4>
 
-<p>یک فایل جدید <code>ui/html/pages/about.tmpl</code> ایجاد کنید و الگوی مشابهی که برای صفحات دیگر برنامه استفاده کرده‌ایم را دنبال کنید. یک عنوان، سرصفحه و مقداری متن جایگزین برای صفحه 'درباره' اضافه کنید.</p>
+<p>یک <dfn>فایل قالب (Template File)</dfn> جدید <code>ui/html/pages/about.tmpl</code> ایجاد کنید و <dfn>الگوی (Pattern)</dfn> مشابهی که برای صفحات دیگر برنامه استفاده کرده‌ایم را دنبال کنید. یک <dfn>عنوان (Title)</dfn>، <dfn>سرصفحه (Header)</dfn> و مقداری متن جایگزین برای صفحه 'درباره' اضافه کنید.</p>
 
 <p><a href="#17.01-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
 <h4 id="step-3">مرحله ۳</h4>
 
-<p>نوار ناوبری اصلی برنامه را به‌روزرسانی کنید تا شامل یک لینک به صفحه جدید 'درباره' باشد (لینک باید برای همه کاربران، صرف نظر از اینکه وارد شده‌اند یا نه، قابل مشاهده باشد).</p>
+<p><dfn>نوار ناوبری (Navigation Bar)</dfn> اصلی برنامه را به‌روزرسانی کنید تا شامل یک <dfn>پیوند (Link)</dfn> به صفحه جدید 'درباره' باشد (پیوند باید برای همه کاربران، صرف نظر از اینکه وارد شده‌اند یا نه، قابل مشاهده باشد).</p>
 
 <p><a href="#17.01-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
 
 <h4 id="step-4">مرحله ۴</h4>
 
-<p>هندلر <code>about</code> را به‌روزرسانی کنید تا فایل <code>about.tmpl</code> که به تازگی ایجاد کرده‌اید را رندر کند. سپس بررسی کنید که صفحه جدید و ناوبری با بازدید از <a href="https://localhost:4000/about"><code>https://localhost:4000/about</code></a> در مرورگر شما کار می‌کند.</p>
+<p>هندلر <code>about</code> را به‌روزرسانی کنید تا <dfn>فایل قالب (Template File)</dfn> <code>about.tmpl</code> که به تازگی ایجاد کرده‌اید را <dfn>رندر (Render)</dfn> کند. سپس بررسی کنید که صفحه جدید و ناوبری با بازدید از <a href="https://localhost:4000/about"><code>https://localhost:4000/about</code></a> در مرورگر شما کار می‌کند.</p>
 
 <p><a href="#17.01-suggested-code-for-step-4">نمایش کد پیشنهادی</a></p>
 
@@ -129,6 +129,76 @@
     <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;about.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>صفحه جدید</td>
+        <td>New Page</td>
+        <td>صفحه تازه اضافه شده به برنامه</td>
+    </tr>
+    <tr>
+        <td>مسیر</td>
+        <td>Route</td>
+        <td>آدرس دسترسی به صفحه</td>
+    </tr>
+    <tr>
+        <td>کاربران احراز هویت شده</td>
+        <td>Authenticated Users</td>
+        <td>کاربران وارد شده به سیستم</td>
+    </tr>
+    <tr>
+        <td>هندلر</td>
+        <td>Handler</td>
+        <td>پردازش‌کننده درخواست</td>
+    </tr>
+    <tr>
+        <td>استک میان‌افزار</td>
+        <td>Middleware Stack</td>
+        <td>لایه‌های پردازش درخواست</td>
+    </tr>
+    <tr>
+        <td>فایل قالب</td>
+        <td>Template File</td>
+        <td>فایل حاوی ساختار HTML</td>
+    </tr>
+    <tr>
+        <td>الگو</td>
+        <td>Pattern</td>
+        <td>ساختار تکرارشونده</td>
+    </tr>
+    <tr>
+        <td>عنوان</td>
+        <td>Title</td>
+        <td>نام نمایشی صفحه</td>
+    </tr>
+    <tr>
+        <td>سرصفحه</td>
+        <td>Header</td>
+        <td>بخش بالای صفحه</td>
+    </tr>
+    <tr>
+        <td>نوار ناوبری</td>
+        <td>Navigation Bar</td>
+        <td>منوی هدایت برنامه</td>
+    </tr>
+    <tr>
+        <td>پیوند</td>
+        <td>Link</td>
+        <td>اتصال به صفحه دیگر</td>
+    </tr>
+    <tr>
+        <td>رندر</td>
+        <td>Render</td>
+        <td>تولید خروجی نهایی</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

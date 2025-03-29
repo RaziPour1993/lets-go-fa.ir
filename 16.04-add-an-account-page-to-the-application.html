@@ -27,7 +27,7 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 16.4.</div>
-			<h2 id="add-an-account-page-to-the-application">اضافه کردن صفحه 'حساب کاربری' به برنامه</h2>
+			<h2 id="add-an-account-page-to-the-application">اضافه کردن صفحه 'حساب کاربری' به برنامه (Adding an Account Page to the Application)</h2>
 
 <p>هدف شما در این تمرین اضافه کردن یک صفحه جدید 'حساب کاربری شما' به برنامه است. این صفحه باید به یک مسیر جدید <code>GET /account/view</code> متصل شود و نام، آدرس ایمیل و تاریخ ثبت‌نام کاربر احراز هویت شده فعلی را نمایش دهد، مشابه این:</p>
 
@@ -35,7 +35,7 @@
 <img src="assets/img/16.04-01.png" alt="16.04-01.png" />
 </figure>
 
-<h4 id="step-1">مرحله 1</h4>
+<h4 id="step-1">مرحله 1 (Step 1)</h4>
 
 <p>در فایل <code>internal/models/users.go</code> یک متد جدید <code>UserModel.Get()</code> ایجاد کنید. این متد باید شناسه یک کاربر را به عنوان پارامتر بپذیرد و یک ساختار <code>User</code> حاوی تمام اطلاعات این کاربر (به جز رمز عبور هش شده آنها، که نیازی به آن نداریم) را برگرداند. اگر هیچ کاربری با این شناسه پیدا نشد، باید یک خطای <code>ErrNoRecord</code> برگرداند.</p>
 
@@ -43,13 +43,13 @@
 
 <p><a href="#17.04-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">مرحله 2</h4>
+<h4 id="step-2">مرحله 2 (Step 2)</h4>
 
 <p>یک مسیر <code>GET /account/view</code> ایجاد کنید که به یک هندلر جدید <code>accountView</code> متصل شود. این مسیر باید فقط برای کاربران احراز هویت شده محدود شود.</p>
 
 <p><a href="#17.04-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-3">مرحله 3</h4>
+<h4 id="step-3">مرحله 3 (Step 3)</h4>
 
 <p>هندلر <code>accountView</code> را به‌روزرسانی کنید تا <code>"authenticatedUserID"</code> را از جلسه دریافت کند، جزئیات کاربر مربوطه را از پایگاه داده (با استفاده از متد جدید <code>UserModel.Get()</code>) دریافت کند و آنها را در یک پاسخ HTTP متنی ساده نمایش دهد. اگر هیچ کاربری مطابق با <code>"authenticatedUserID"</code> از جلسه پیدا نشد، کاربر را به <code>GET /user/login</code> هدایت کنید تا مجدداً احراز هویت شود.</p>
 
@@ -61,13 +61,13 @@
 
 <p><a href="#17.04-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-4">مرحله 4</h4>
+<h4 id="step-4">مرحله 4 (Step 4)</h4>
 
 <p>یک فایل جدید <code>ui/html/pages/account.tmpl</code> ایجاد کنید که اطلاعات کاربر را در یک جدول نمایش دهد. سپس هندلر <code>accountView</code> را به‌روزرسانی کنید تا این قالب جدید را رندر کند و جزئیات کاربر را از طریق ساختار <code>templateData</code> منتقل کند.</p>
 
 <p><a href="#17.04-suggested-code-for-step-4">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-5">مرحله 5</h4>
+<h4 id="step-5">مرحله 5 (Step 5)</h4>
 
 <p>علاوه بر این، نوار ناوبری اصلی سایت را به‌روزرسانی کنید تا یک لینک به صفحه مشاهده حساب کاربری (فقط برای کاربران احراز هویت شده قابل مشاهده) اضافه شود. سپس بررسی کنید که صفحه جدید و ناوبری همانطور که انتظار می‌رود کار می‌کند، با مراجعه به <a href="https://localhost:4000/account/view"><code>https://localhost:4000/account/view</code></a> در مرورگر خود در حالی که وارد شده‌اید.</p>
 
@@ -151,7 +151,7 @@
 </figure>
 
 <figure class="code go" dir="ltr">
-<figcaption>File: cmd/web/routes.go</figcaption>
+<figcaption>File: cmd/web/routes.go</caption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
@@ -313,6 +313,141 @@
 <span class="p">&lt;</span><span class="p">/</span><span class="nt">nav</span><span class="p">&gt;</span>
 {{end}}</pre>
 </figure>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>صفحه جدید</td>
+        <td>New Page</td>
+        <td>صفحه تازه اضافه شده به برنامه</td>
+    </tr>
+    <tr>
+        <td>مسیر جدید</td>
+        <td>New Route</td>
+        <td>مسیر دسترسی جدید در برنامه</td>
+    </tr>
+    <tr>
+        <td>نام</td>
+        <td>Name</td>
+        <td>نام کاربر در سیستم</td>
+    </tr>
+    <tr>
+        <td>آدرس ایمیل</td>
+        <td>Email Address</td>
+        <td>آدرس پست الکترونیکی کاربر</td>
+    </tr>
+    <tr>
+        <td>تاریخ ثبت‌نام</td>
+        <td>Registration Date</td>
+        <td>تاریخ ایجاد حساب کاربری</td>
+    </tr>
+    <tr>
+        <td>کاربر احراز هویت شده</td>
+        <td>Authenticated User</td>
+        <td>کاربری که وارد سیستم شده است</td>
+    </tr>
+    <tr>
+        <td>متد جدید</td>
+        <td>New Method</td>
+        <td>تابع جدید اضافه شده به کلاس</td>
+    </tr>
+    <tr>
+        <td>شناسه کاربر</td>
+        <td>User ID</td>
+        <td>شماره منحصر به فرد کاربر</td>
+    </tr>
+    <tr>
+        <td>پارامتر</td>
+        <td>Parameter</td>
+        <td>ورودی تابع</td>
+    </tr>
+    <tr>
+        <td>ساختار</td>
+        <td>Structure</td>
+        <td>نوع داده ترکیبی</td>
+    </tr>
+    <tr>
+        <td>اطلاعات کاربر</td>
+        <td>User Information</td>
+        <td>داده‌های مربوط به کاربر</td>
+    </tr>
+    <tr>
+        <td>رمز عبور هش شده</td>
+        <td>Hashed Password</td>
+        <td>رمز عبور رمزنگاری شده</td>
+    </tr>
+    <tr>
+        <td>خطا</td>
+        <td>Error</td>
+        <td>پیام خطا در برنامه</td>
+    </tr>
+    <tr>
+        <td>هندلر جدید</td>
+        <td>New Handler</td>
+        <td>تابع پردازش درخواست</td>
+    </tr>
+    <tr>
+        <td>جلسه</td>
+        <td>Session</td>
+        <td>نشست کاربری</td>
+    </tr>
+    <tr>
+        <td>جزئیات کاربر</td>
+        <td>User Details</td>
+        <td>اطلاعات جزئی کاربر</td>
+    </tr>
+    <tr>
+        <td>پایگاه داده</td>
+        <td>Database</td>
+        <td>محل ذخیره داده‌ها</td>
+    </tr>
+    <tr>
+        <td>پاسخ HTTP متنی ساده</td>
+        <td>Plain Text HTTP Response</td>
+        <td>پاسخ متنی بدون قالب‌بندی</td>
+    </tr>
+    <tr>
+        <td>فایل قالب جدید</td>
+        <td>New Template File</td>
+        <td>فایل قالب‌بندی صفحه</td>
+    </tr>
+    <tr>
+        <td>جدول</td>
+        <td>Table</td>
+        <td>نمایش داده در قالب سطر و ستون</td>
+    </tr>
+    <tr>
+        <td>قالب جدید</td>
+        <td>New Template</td>
+        <td>قالب تازه ایجاد شده</td>
+    </tr>
+    <tr>
+        <td>رندر</td>
+        <td>Render</td>
+        <td>نمایش محتوا در قالب</td>
+    </tr>
+    <tr>
+        <td>ساختار داده قالب</td>
+        <td>Template Data Structure</td>
+        <td>ساختار داده برای قالب</td>
+    </tr>
+    <tr>
+        <td>نوار ناوبری</td>
+        <td>Navigation Bar</td>
+        <td>منوی اصلی سایت</td>
+    </tr>
+    <tr>
+        <td>پیوند</td>
+        <td>Link</td>
+        <td>لینک به صفحه دیگر</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

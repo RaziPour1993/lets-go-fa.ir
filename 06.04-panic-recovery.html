@@ -36,7 +36,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۶.۴.</div>
-			<h2 id="panic-recovery">بازیابی پنیک</h2>
+			<h2 id="panic-recovery">بازیابی پنیک (Panic Recovery)</h2>
+
+<p>در این بخش، یک <dfn>میان‌افزار بازیابی (Recovery Middleware)</dfn> ایجاد خواهیم کرد که <dfn>پنیک‌های زمان اجرا (Runtime Panics)</dfn> را مدیریت می‌کند و آن‌ها را به <dfn>پاسخ خطای 500 (500 Error Response)</dfn> تبدیل می‌کند.</p>
 
 <p>در یک برنامه ساده Go، <a href="https://pkg.go.dev/builtin/#panic">وقتی کد شما پنیک می‌کند</a> منجر به خاتمه فوری برنامه می‌شود.</p>
 
@@ -97,25 +99,29 @@
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;fmt&#34;</span> <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
 <span class="p">)</span>
 
-<span class="o">...</span>
-
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// Create a deferred function (which will always be run in the event
 </span><span class="c1"></span>        <span class="c1">// of a panic as Go unwinds the stack).
 </span><span class="c1"></span>        <span class="k">defer</span> <span class="kd">func</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
             <span class="c1">// Use the builtin recover function to check if there has been a
-</span><span class="c1"></span>            <span class="c1">// panic or not. If there has...
+</span><span class="c1"></span>            <span class="c1">// panic or not.
 </span><span class="c1"></span>            <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-                <span class="c1">// Set a &#34;Connection: close&#34; header on the response.
+                <span class="c1">// If there was a panic, set a "Connection: close" header on the
+</span><span class="c1"></span>                <span class="c1">// response. This acts as a trigger to make Go&#39;s HTTP server
+</span><span class="c1"></span>                <span class="c1">// automatically close the current connection after a response has been
+</span><span class="c1"></span>                <span class="c1">// sent.
 </span><span class="c1"></span>                <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Connection&#34;</span><span class="p">,</span> <span class="s">&#34;close&#34;</span><span class="p">)</span>
-                <span class="c1">// Call the app.serverError helper method to return a 500
-</span><span class="c1"></span>                <span class="c1">// Internal Server response.
-</span><span class="c1"></span>                <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span><span class="p">)</span>
+                <span class="c1">// The value returned by recover() has the type any, so we use
+</span><span class="c1"></span>                <span class="c1">// fmt.Errorf() to normalize it into an error and log it using our
+</span><span class="c1"></span>                <span class="c1">// custom Logger type.
+</span><span class="c1"></span>                <span class="nx">err</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+                <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
             <span class="p">}</span>
         <span class="p">}</span><span class="p">(</span><span class="p">)</span>
 
@@ -144,15 +150,13 @@
     <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 
     <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
 
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/view/&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
 
-    <span class="c1">// Wrap the existing chain with the recoverPanic middleware.
-</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">logRequest</span><span class="p">(</span><span class="nf">commonHeaders</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">logRequest</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">commonHeaders</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
@@ -213,6 +217,65 @@ Internal Server Error</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>میان‌افزار بازیابی</td>
+        <td>Recovery Middleware</td>
+        <td>میان‌افزاری که پنیک‌ها را مدیریت می‌کند</td>
+    </tr>
+    <tr>
+        <td>پنیک‌های زمان اجرا</td>
+        <td>Runtime Panics</td>
+        <td>خطاهای غیرمنتظره در زمان اجرای برنامه</td>
+    </tr>
+    <tr>
+        <td>پاسخ خطای 500</td>
+        <td>500 Error Response</td>
+        <td>پاسخ خطای سرور داخلی</td>
+    </tr>
+    <tr>
+        <td>زنجیره میان‌افزار</td>
+        <td>Middleware Chain</td>
+        <td>ترکیب چندین میان‌افزار به صورت پشت سر هم</td>
+    </tr>
+    <tr>
+        <td>تابع معوق</td>
+        <td>Deferred Function</td>
+        <td>تابعی که در پایان اجرای بلوک فراخوانی می‌شود</td>
+    </tr>
+    <tr>
+        <td>بازیابی</td>
+        <td>Recover</td>
+        <td>تابع داخلی Go برای مدیریت پنیک‌ها</td>
+    </tr>
+    <tr>
+        <td>هدر اتصال</td>
+        <td>Connection Header</td>
+        <td>هدر HTTP برای کنترل وضعیت اتصال</td>
+    </tr>
+    <tr>
+        <td>ثبت خطا</td>
+        <td>Error Logging</td>
+        <td>ذخیره اطلاعات خطاها در گزارش‌ها</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>نحوه برخورد با خطاها در برنامه</td>
+    </tr>
+    <tr>
+        <td>خطای سرور</td>
+        <td>Server Error</td>
+        <td>خطایی که در سمت سرور رخ می‌دهد</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper">

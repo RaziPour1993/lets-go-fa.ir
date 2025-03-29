@@ -22,7 +22,7 @@
 		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; قالب‌بندی HTML و وراثت</span>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; قالب‌بندی HTML و وراثت (HTML Templating and Inheritance)</span>
 				</div>
 				<div>
 					&lsaquo; <a href="02.07-project-structure-and-organization.html">قبلی</a>
@@ -33,13 +33,13 @@
 		</header>
 		<main class="wrapper text rtl">
 			<div class="chapter">فصل 2.8.</div>
-			<h2 id="html-templating-and-inheritance">قالب‌بندی HTML و وراثت</h2>
+			<h2 id="html-templating-and-inheritance">قالب‌بندی HTML و وراثت (HTML Templating and Inheritance)</h2>
 
 <p>بیایید کمی زندگی به پروژه بدهیم و یک صفحه اصلی مناسب برای برنامه وب Snippetbox خود توسعه دهیم. در طول چند فصل بعدی، به سمت ایجاد صفحه‌ای که به این شکل است، کار خواهیم کرد:</p>
 
 <p><img class="sketch" src="assets/img/02.08-01.png" alt="02.08-01.png"></img></p>
 
-<p>بیایید با ایجاد یک <dfn>فایل قالب</dfn> در <code>ui/html/pages/home.tmpl</code> شروع کنیم تا محتوای HTML برای صفحه اصلی را در خود جای دهد. به این صورت:</p>
+<p>بیایید با ایجاد یک <dfn>فایل قالب (Template File)</dfn> در <code>ui/html/pages/home.tmpl</code> شروع کنیم تا محتوای HTML برای صفحه اصلی را در خود جای دهد. به این صورت:</p>
 
 <figure class="code bash">
 <pre>$ mkdir ui/html/pages
@@ -75,7 +75,7 @@ $ touch ui/html/pages/home.tmpl</pre>
 
 <p>حالا که یک فایل قالب حاوی نشانه‌گذاری HTML برای صفحه اصلی ایجاد کرده‌ایم، سوال بعدی این است که <em>چگونه می‌توانیم handler <code>home</code> خود را برای رندر کردن آن استفاده کنیم؟</em></p>
 
-<p>برای این کار باید از بسته <a href="https://pkg.go.dev/html/template/"><code>html/template</code></a> Go استفاده کنیم، که مجموعه‌ای از توابع برای تجزیه و رندر کردن ایمن قالب‌های HTML فراهم می‌کند. می‌توانیم از توابع این بسته برای <dfn>تجزیه</dfn> فایل قالب و سپس <dfn>اجرا</dfn> قالب استفاده کنیم.</p>
+<p>برای این کار باید از بسته <a href="https://pkg.go.dev/html/template/"><code>html/template</code></a> Go استفاده کنیم، که مجموعه‌ای از توابع برای <dfn>تجزیه (Parse)</dfn> و <dfn>رندر (Render)</dfn> کردن ایمن قالب‌های HTML فراهم می‌کند. می‌توانیم از توابع این بسته برای <dfn>تجزیه</dfn> فایل قالب و سپس <dfn>اجرا</dfn> قالب استفاده کنیم.</p>
 
 <p>من نشان خواهم داد. فایل <code>cmd/web/handlers.go</code> را باز کنید و کد زیر را اضافه کنید:</p>
 
@@ -141,11 +141,11 @@ $ go run ./cmd/web
 <img src="assets/img/02.08-02.png" alt="02.08-02.png" />
 </figure>
 
-<h3 id="template-composition">ترکیب قالب</h3>
+<h3 id="template-composition">ترکیب قالب (Template Composition)</h3>
 
 <p>همانطور که صفحات بیشتری به برنامه وب خود اضافه می‌کنیم، برخی از نشانه‌گذاری‌های HTML مشترک و تکراری وجود خواهد داشت که می‌خواهیم در هر صفحه قرار دهیم &mdash; مانند هدر، ناوبری و متادیتا درون عنصر HTML <code>&lt;head&gt;</code>.</p>
 
-<p>برای جلوگیری از تکرار و صرفه‌جویی در تایپ، ایده خوبی است که یک قالب <em>پایه</em> (یا <em>اصلی</em>) ایجاد کنیم که این محتوای مشترک را در خود جای دهد، که سپس می‌توانیم با نشانه‌گذاری خاص صفحه برای صفحات جداگانه <dfn>ترکیب</dfn> کنیم.</p>
+<p>برای جلوگیری از تکرار و صرفه‌جویی در تایپ، ایده خوبی است که یک قالب <em>پایه (Base)</em> (یا <em>اصلی (Master)</em>) ایجاد کنیم که این محتوای مشترک را در خود جای دهد، که سپس می‌توانیم با نشانه‌گذاری خاص صفحه برای صفحات جداگانه <dfn>ترکیب (Compose)</dfn> کنیم.</p>
 
 <p>یک فایل جدید <code>ui/html/base.tmpl</code> ایجاد کنید&hellip;</p>
 
@@ -179,7 +179,7 @@ $ go run ./cmd/web
 
 <p>امیدوارم این برای شما آشنا باشد اگر قبلاً از قالب‌بندی در زبان‌های دیگر استفاده کرده‌اید. این اساساً فقط HTML معمولی با برخی <em>عملیات</em> اضافی در داخل آکولادهای دوتایی است.</p>
 
-<p>ما از عملیات <code>{{define "base"}}...{{end}}</code> به عنوان یک پوشش برای تعریف یک <dfn>قالب نام‌گذاری شده</dfn> به نام <code>base</code> استفاده می‌کنیم، که حاوی محتوایی است که می‌خواهیم در هر صفحه ظاهر شود.</p>
+<p>ما از عملیات <code>{{define "base"}}...{{end}}</code> به عنوان یک پوشش برای تعریف یک <dfn>قالب نام‌گذاری شده (Named Template)</dfn> به نام <code>base</code> استفاده می‌کنیم، که حاوی محتوایی است که می‌خواهیم در هر صفحه ظاهر شود.</p>
 
 <p>در داخل این، از عملیات <code>{{template "title" .}}</code> و <code>{{template "main" .}}</code> برای نشان دادن اینکه می‌خواهیم قالب‌های نام‌گذاری شده دیگر (به نام <code>title</code> و <code>main</code>) را در یک مکان خاص در HTML <dfn>فراخوانی</dfn> کنیم، استفاده می‌کنیم.</p>
 
@@ -244,53 +244,33 @@ $ go run ./cmd/web
 
 <p>احساس راحتی کنید و سرور را مجدداً راه‌اندازی کنید و این را امتحان کنید. باید ببینید که همان خروجی قبلی را رندر می‌کند (اگرچه در منبع HTML مقداری فضای خالی اضافی وجود خواهد داشت که عملیات‌ها در آن قرار دارند).</p>
 
-<h3 id="embedding-partials">جاسازی جزئیات</h3>
+<h3 id="template-composition">ترکیب قالب (Template Composition)</h3>
 
-<p>برای برخی از برنامه‌ها ممکن است بخواهید برخی از بخش‌های HTML را به <dfn>جزئیات</dfn> تقسیم کنید که می‌توانند در صفحات یا طرح‌های مختلف استفاده مجدد شوند. برای نشان دادن، بیایید یک جزئیات حاوی نوار ناوبری اصلی برای برنامه وب خود ایجاد کنیم.</p>
+<p>همانطور که صفحات بیشتری به برنامه وب خود اضافه می‌کنیم، برخی از نشانه‌گذاری‌های HTML مشترک و تکراری وجود خواهد داشت که می‌خواهیم در هر صفحه قرار دهیم &mdash; مانند هدر، ناوبری و متادیتا درون عنصر HTML <code>&lt;head&gt;</code>.</p>
 
-<p>یک فایل جدید <code>ui/html/partials/nav.tmpl</code> ایجاد کنید که حاوی یک قالب نام‌گذاری شده به نام <code>&quot;nav&quot;</code> باشد، به این صورت:</p>
+<p>برای جلوگیری از تکرار و صرفه‌جویی در تایپ، ایده خوبی است که یک قالب <em>پایه (Base)</em> (یا <em>اصلی (Master)</em>) ایجاد کنیم که این محتوای مشترک را در خود جای دهد، که سپس می‌توانیم با نشانه‌گذاری خاص صفحه برای صفحات جداگانه <dfn>ترکیب (Compose)</dfn> کنیم.</p>
 
-<figure class="code bash">
-<pre>$ mkdir ui/html/partials
-$ touch ui/html/partials/nav.tmpl</pre>
-</figure>
+<p>ما از عملیات <code>{{define "base"}}...{{end}}</code> به عنوان یک پوشش برای تعریف یک <dfn>قالب نام‌گذاری شده (Named Template)</dfn> به نام <code>base</code> استفاده می‌کنیم، که حاوی محتوایی است که می‌خواهیم در هر صفحه ظاهر شود.</p>
+
+<p>در داخل این، از عملیات <code>{{template "title" .}}</code> و <code>{{template "main" .}}</code> برای نشان دادن اینکه می‌خواهیم قالب‌های نام‌گذاری شده دیگر (به نام <code>title</code> و <code>main</code>) را در یک مکان خاص در HTML <dfn>فراخوانی</dfn> کنیم، استفاده می‌کنیم.</p>
+
+<aside class="note"><p>
+<strong>توجه:</strong> اگر تعجب می‌کنید، نقطه در انتهای عملیات <code>{{template "title" .}}</code> نشان‌دهنده هر داده پویا است که می‌خواهید به قالب فراخوانی شده ارسال کنید. ما در ادامه کتاب بیشتر در مورد این صحبت خواهیم کرد.
+</p></aside>
+
+<p>حالا به فایل <code>ui/html/pages/home.tmpl</code> برگردید و آن را به‌روزرسانی کنید تا قالب‌های نام‌گذاری شده <code>title</code> و <code>main</code> را که حاوی محتوای خاص صفحه اصلی هستند، تعریف کنید.</p>
 
 <figure class="code html">
-<figcaption>File: ui/html/partials/nav.tmpl</figcaption>
-<pre>{{define "nav"}}
- <span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Home<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
-<span class="p">&lt;</span><span class="p">/</span><span class="nt">nav</span><span class="p">&gt;</span>
+<figcaption>File: ui/html/pages/home.tmpl</figcaption>
+<pre>{{define "title"}}Home{{end}}
+
+{{define "main"}}
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p"></span><span class="p">&gt;</span>Latest Snippets<span class="p">&lt;</span><span class="p">/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>There's nothing to see here yet!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
 {{end}}</pre>
 </figure>
 
-<p>سپس قالب <code>base</code> را به‌روزرسانی کنید تا جزئیات ناوبری را با استفاده از عملیات <code>{{template "nav" .}}</code> فراخوانی کند:</p>
-
-<figure class="code html">
-<figcaption>File: ui/html/base.tmpl</figcaption>
-<pre>{{define "base"}}
-<span class="cp">&lt;!doctype html&gt;</span>
-<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;en&#39;</span><span class="p"></span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">head</span><span class="p"></span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p"></span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">title</span><span class="p"></span><span class="p">&gt;</span>{{template "title" .}} - Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">title</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="p">/</span><span class="nt">head</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="nt">body</span><span class="p"></span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">header</span><span class="p"></span><span class="p">&gt;</span>
-            <span class="p">&lt;</span><span class="nt">h1</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">h1</span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="p">/</span><span class="nt">header</span><span class="p">&gt;</span>
-        <span class="c">&lt;!--</span><span class="c"> Invoke the navigation template </span><span class="c">--&gt;</span>
-        {{template "nav" .}}
-        <span class="p">&lt;</span><span class="nt">main</span><span class="p"></span><span class="p">&gt;</span>
-            {{template "main" .}}
-        <span class="p">&lt;</span><span class="p">/</span><span class="nt">main</span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">footer</span><span class="p"></span><span class="p">&gt;</span> Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">footer</span><span class="p">&gt;</span>
-    <span class="p">&lt;</span><span class="p">/</span><span class="nt">body</span><span class="p">&gt;</span>
-<span class="p">&lt;</span><span class="p">/</span><span class="nt">html</span><span class="p">&gt;</span>
-{{end}}</pre>
-</figure>
-
-<p>در نهایت، باید handler <code>home</code> را به‌روزرسانی کنیم تا فایل جدید <code>ui/html/partials/nav.tmpl</code> را هنگام تجزیه فایل‌های قالب شامل کند:</p>
+<p>پس از انجام این کار، مرحله بعدی این است که کد در handler <code>home</code> خود را به‌روزرسانی کنید تا هر دو فایل قالب را تجزیه کند، به این صورت:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -359,6 +339,66 @@ $ touch ui/html/partials/nav.tmpl</pre>
 </figure>
 
 <p>اما &mdash; اگر بخواهید &mdash; نیازی نیست که هیچ محتوای پیش‌فرضی بین عملیات <code>{{block}}</code> و <code>{{end}}</code> قرار دهید. در این صورت، قالب فراخوانی شده به صورت &lsquo;اختیاری&rsquo; عمل می‌کند. اگر قالب در مجموعه قالب وجود داشته باشد، رندر خواهد شد. اما اگر وجود نداشته باشد، هیچ چیزی نمایش داده نخواهد شد.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>قالب‌بندی HTML</td>
+        <td>HTML Templating</td>
+        <td>فرآیند ایجاد قالب‌های HTML که می‌توانند با داده‌های پویا پر شوند</td>
+    </tr>
+    <tr>
+        <td>وراثت</td>
+        <td>Inheritance</td>
+        <td>مکانیزمی که در آن یک قالب می‌تواند از قالب دیگر محتوا را به ارث ببرد</td>
+    </tr>
+    <tr>
+        <td>فایل قالب</td>
+        <td>Template File</td>
+        <td>فایلی که حاوی ساختار HTML و دستورالعمل‌های قالب‌بندی است</td>
+    </tr>
+    <tr>
+        <td>تجزیه</td>
+        <td>Parse</td>
+        <td>فرآیند خواندن و تفسیر محتوای یک فایل قالب</td>
+    </tr>
+    <tr>
+        <td>رندر</td>
+        <td>Render</td>
+        <td>فرآیند تبدیل یک قالب به خروجی HTML نهایی</td>
+    </tr>
+    <tr>
+        <td>قالب پایه</td>
+        <td>Base Template</td>
+        <td>قالبی که ساختار اصلی و مشترک صفحات را تعریف می‌کند</td>
+    </tr>
+    <tr>
+        <td>قالب اصلی</td>
+        <td>Master Template</td>
+        <td>مترادف با قالب پایه، قالبی که سایر قالب‌ها از آن ارث می‌برند</td>
+    </tr>
+    <tr>
+        <td>ترکیب</td>
+        <td>Compose</td>
+        <td>فرآیند ترکیب چندین قالب برای ایجاد یک صفحه کامل</td>
+    </tr>
+    <tr>
+        <td>قالب نام‌گذاری شده</td>
+        <td>Named Template</td>
+        <td>قالبی که با یک نام مشخص تعریف شده و می‌تواند در جاهای دیگر فراخوانی شود</td>
+    </tr>
+    <tr>
+        <td>جزئیات</td>
+        <td>Partials</td>
+        <td>بخش‌های کوچک و قابل استفاده مجدد از کد HTML که می‌توانند در چندین قالب استفاده شوند</td>
+    </tr>
+</table>
 
 		</main>
 		<footer class="rtl">

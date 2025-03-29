@@ -28,7 +28,7 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۶.۱</div>
-			<h2 id="how-middleware-works">نحوه کار میان‌افزار</h2>
+			<h2 id="how-middleware-works">نحوه کار میان‌افزار (How Middleware Works)</h2>
 
 <p><a href="02.10-the-http-handler-interface.html">پیش‌تر در کتاب</a> مطلبی را گفتم که می‌خواهم در این فصل آن را گسترش دهم:</p>
 
@@ -107,6 +107,66 @@
 <p>مثالی از این مورد می‌تواند میان‌افزار احراز هویت باشد که ممکن است بخواهید فقط روی مسیرهای خاصی اجرا شود.</p>
 
 <p>همانطور که در طول کتاب پیش می‌رویم، نحوه انجام هر دوی این موارد را در عمل نشان خواهیم داد.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>میان‌افزار</td>
+        <td>Middleware</td>
+        <td>کدی که بین درخواست و پاسخ HTTP اجرا می‌شود</td>
+    </tr>
+    <tr>
+        <td>تابع بسته‌بندی</td>
+        <td>Wrapper Function</td>
+        <td>تابعی که یک تابع دیگر را دریافت و تغییر می‌دهد</td>
+    </tr>
+    <tr>
+        <td>هندلر HTTP</td>
+        <td>HTTP Handler</td>
+        <td>تابعی که درخواست‌های HTTP را پردازش می‌کند</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار ثبت</td>
+        <td>Logging Middleware</td>
+        <td>میان‌افزاری که درخواست‌ها را ثبت می‌کند</td>
+    </tr>
+    <tr>
+        <td>زنجیره‌های میان‌افزار</td>
+        <td>Middleware Chains</td>
+        <td>ترکیب چندین میان‌افزار به صورت پشت سر هم</td>
+    </tr>
+    <tr>
+        <td>مسیریاب</td>
+        <td>Router</td>
+        <td>بخشی که درخواست‌ها را به هندلرها هدایت می‌کند</td>
+    </tr>
+    <tr>
+        <td>پردازش درخواست</td>
+        <td>Request Processing</td>
+        <td>عملیات انجام شده روی درخواست‌های دریافتی</td>
+    </tr>
+    <tr>
+        <td>پاسخ‌دهنده</td>
+        <td>Response Writer</td>
+        <td>ابزاری برای نوشتن پاسخ HTTP</td>
+    </tr>
+    <tr>
+        <td>درخواست‌دهنده</td>
+        <td>Request</td>
+        <td>شیء حاوی اطلاعات درخواست HTTP</td>
+    </tr>
+    <tr>
+        <td>مدیریت مسیر</td>
+        <td>Route Handling</td>
+        <td>پردازش درخواست‌ها بر اساس مسیر URL</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

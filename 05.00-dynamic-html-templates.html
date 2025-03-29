@@ -23,20 +23,70 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۵.</div>
-			<h1 id="dynamic-html-templates">قالب‌های HTML پویا</h1>
+			<h1 id="dynamic-html-templates">قالب‌های HTML پویا (Dynamic HTML Templates)</h1>
 
-<p>در این بخش از کتاب، ما بر نمایش داده‌های پویا از پایگاه داده MySQL در صفحات HTML مناسب تمرکز خواهیم کرد.</p>
+<p>در این بخش از کتاب، ما بر نمایش <dfn>داده‌های پویا (Dynamic Data)</dfn> از پایگاه داده MySQL در <dfn>صفحات HTML (HTML Pages)</dfn> مناسب تمرکز خواهیم کرد.</p>
 
 <p>شما یاد خواهید گرفت که چگونه:</p>
 
 <ul>
-<li><a href="05.01-displaying-dynamic-data.html">داده‌های پویا</a> را به قالب‌های HTML خود به روشی ساده، مقیاس‌پذیر و نوع‌امن منتقل کنید.</li>
-<li>از <a href="05.02-template-actions-and-functions.html">عملکردها و توابع</a> مختلف در بسته <code>html/template</code> Go برای کنترل نمایش داده‌های پویا استفاده کنید.</li>
-<li>یک <a href="05.03-caching-templates.html">کش قالب</a> ایجاد کنید تا قالب‌های شما برای هر درخواست HTTP از دیسک خوانده و تجزیه نشوند.</li>
-<li>خطاهای <a href="05.04-catching-runtime-errors.html">اجرای قالب</a> را در زمان اجرا به‌طور مؤثر مدیریت کنید.</li>
-<li>یک الگو برای انتقال <a href="05.05-common-dynamic-data.html">داده‌های پویا مشترک</a> به صفحات وب خود بدون تکرار کد پیاده‌سازی کنید.</li>
-<li>توابع <a href="05.06-custom-template-functions.html">سفارشی خود</a> را برای قالب‌بندی و نمایش داده‌ها در قالب‌های HTML خود ایجاد کنید.</li>
+<li><dfn>داده‌های پویا (Dynamic Data)</dfn> را به قالب‌های HTML خود به روشی ساده، مقیاس‌پذیر و نوع‌امن منتقل کنید.</li>
+<li>از <dfn>عملکردها و توابع (Actions and Functions)</dfn> مختلف در بسته <code>html/template</code> Go برای کنترل نمایش داده‌های پویا استفاده کنید.</li>
+<li>یک <dfn>کش قالب (Template Cache)</dfn> ایجاد کنید تا قالب‌های شما برای هر درخواست HTTP از دیسک خوانده و تجزیه نشوند.</li>
+<li>خطاهای <dfn>اجرای قالب (Template Runtime)</dfn> را در زمان اجرا به‌طور مؤثر مدیریت کنید.</li>
+<li>یک الگو برای انتقال <dfn>داده‌های پویا مشترک (Common Dynamic Data)</dfn> به صفحات وب خود بدون تکرار کد پیاده‌سازی کنید.</li>
+<li>توابع <dfn>سفارشی قالب (Custom Template Functions)</dfn> را برای قالب‌بندی و نمایش داده‌ها در قالب‌های HTML خود ایجاد کنید.</li>
 </ul>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>قالب‌های HTML پویا</td>
+        <td>Dynamic HTML Templates</td>
+        <td>قالب‌هایی که می‌توانند محتوای متغیر را نمایش دهند</td>
+    </tr>
+    <tr>
+        <td>داده‌های پویا</td>
+        <td>Dynamic Data</td>
+        <td>داده‌هایی که در زمان اجرا تغییر می‌کنند</td>
+    </tr>
+    <tr>
+        <td>صفحات HTML</td>
+        <td>HTML Pages</td>
+        <td>صفحات وب که با زبان نشانه‌گذاری HTML ساخته شده‌اند</td>
+    </tr>
+    <tr>
+        <td>عملکردها و توابع</td>
+        <td>Actions and Functions</td>
+        <td>دستورات و توابعی که در قالب‌ها برای پردازش داده‌ها استفاده می‌شوند</td>
+    </tr>
+    <tr>
+        <td>کش قالب</td>
+        <td>Template Cache</td>
+        <td>ذخیره‌سازی قالب‌های پردازش شده در حافظه برای استفاده مجدد</td>
+    </tr>
+    <tr>
+        <td>اجرای قالب</td>
+        <td>Template Runtime</td>
+        <td>فرآیند پردازش و اجرای قالب‌ها در زمان اجرا</td>
+    </tr>
+    <tr>
+        <td>داده‌های پویا مشترک</td>
+        <td>Common Dynamic Data</td>
+        <td>داده‌هایی که در چندین صفحه یا قالب استفاده می‌شوند</td>
+    </tr>
+    <tr>
+        <td>توابع سفارشی قالب</td>
+        <td>Custom Template Functions</td>
+        <td>توابع تعریف شده توسط کاربر برای پردازش داده‌ها در قالب‌ها</td>
+    </tr>
+</table>
 
 		</main>
 		<footer>

@@ -27,11 +27,11 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter" dir="rtl">فصل ۵.۴.</div>
-			<h2 id="catching-runtime-errors" dir="rtl">مدیریت خطاهای زمان اجرا</h2>
+			<h2 id="catching-runtime-errors" dir="rtl">مدیریت خطاهای زمان اجرا (Catching Runtime Errors)</h2>
 
-<p dir="rtl">به محض اینکه شروع به اضافه کردن رفتار پویا به قالب‌های HTML می‌کنیم، خطر مواجهه با خطاهای زمان اجرا وجود دارد.</p>
+<p dir="rtl">به محض اینکه شروع به اضافه کردن <dfn>رفتار پویا (Dynamic Behavior)</dfn> به قالب‌های HTML می‌کنیم، خطر مواجهه با <dfn>خطاهای زمان اجرا (Runtime Errors)</dfn> وجود دارد.</p>
 
-<p dir="rtl">بیایید یک خطای عمدی به قالب <code>view.tmpl</code> اضافه کنیم و ببینیم چه اتفاقی می‌افتد:</p>
+<p dir="rtl">بیایید یک <dfn>خطای عمدی (Deliberate Error)</dfn> به قالب <code>view.tmpl</code> اضافه کنیم و ببینیم چه اتفاقی می‌افتد:</p>
 
 <figure class="code html">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
@@ -190,6 +190,65 @@ Internal Server Error</samp></pre>
 {{end}}</pre>
 </figure>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>خطاهای زمان اجرا</td>
+        <td>Runtime Errors</td>
+        <td>خطاهایی که در حین اجرای برنامه رخ می‌دهند</td>
+    </tr>
+    <tr>
+        <td>رفتار پویا</td>
+        <td>Dynamic Behavior</td>
+        <td>عملکردی که در زمان اجرا تغییر می‌کند</td>
+    </tr>
+    <tr>
+        <td>خطای عمدی</td>
+        <td>Deliberate Error</td>
+        <td>خطایی که به قصد تست سیستم ایجاد می‌شود</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>روش‌های کنترل و پاسخ به خطاها</td>
+    </tr>
+    <tr>
+        <td>پیام خطا</td>
+        <td>Error Message</td>
+        <td>توضیحی درباره خطای رخ داده</td>
+    </tr>
+    <tr>
+        <td>خطای قالب</td>
+        <td>Template Error</td>
+        <td>خطایی که در پردازش قالب رخ می‌دهد</td>
+    </tr>
+    <tr>
+        <td>تست خطا</td>
+        <td>Error Testing</td>
+        <td>بررسی واکنش سیستم به شرایط خطا</td>
+    </tr>
+    <tr>
+        <td>گزارش خطا</td>
+        <td>Error Reporting</td>
+        <td>نمایش و ثبت اطلاعات خطاها</td>
+    </tr>
+    <tr>
+        <td>بازیابی از خطا</td>
+        <td>Error Recovery</td>
+        <td>اقدامات لازم پس از رخداد خطا</td>
+    </tr>
+    <tr>
+        <td>پیشگیری از خطا</td>
+        <td>Error Prevention</td>
+        <td>روش‌های جلوگیری از وقوع خطا</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper" dir="rtl">

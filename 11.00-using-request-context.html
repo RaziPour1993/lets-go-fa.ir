@@ -27,7 +27,17 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter" dir="rtl">فصل 11.</div>
-			<h1 id="using-request-context" dir="rtl">استفاده از زمینه درخواست</h1>
+			<h1 id="using-request-context">استفاده از زمینه درخواست (Using Request Context)</h1>
+
+<p>در این فصل، نحوه استفاده از <dfn>زمینه درخواست (Request Context)</dfn> را بررسی می‌کنیم. این شامل <dfn>مدیریت داده‌ها (Data Management)</dfn>، <dfn>لغو عملیات (Operation Cancellation)</dfn> و <dfn>زمان‌بندی (Timing)</dfn> می‌شود.</p>
+
+<p>در این فصل خواهیم آموخت:</p>
+
+<ul>
+<li>چگونه از <dfn>زمینه درخواست (Request Context)</dfn> برای <dfn>مدیریت داده‌ها (Data Management)</dfn> استفاده کنیم.</li>
+<li>نحوه <dfn>لغو عملیات (Operation Cancellation)</dfn> با استفاده از <dfn>زمینه (Context)</dfn>.</li>
+<li>چگونه <dfn>زمان‌بندی (Timing)</dfn> را با <dfn>زمینه (Context)</dfn> کنترل کنیم.</li>
+</ul>
 
 <p dir="rtl">در حال حاضر منطق ما برای احراز هویت کاربر شامل بررسی این است که آیا مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های جلسه آنها وجود دارد یا خیر، به این صورت:</p>
 
@@ -46,13 +56,6 @@
 <p dir="rtl">رویکرد بهتر این است که این بررسی را در برخی از میان‌افزارها انجام دهیم تا تعیین کنیم که آیا درخواست فعلی از یک کاربر احراز هویت شده است یا خیر، و سپس آن اطلاعات را به همه هندلرهای بعدی در زنجیره منتقل کنیم.</p>
 
 <p dir="rtl">پس چگونه این کار را انجام دهیم؟ وارد <dfn>زمینه درخواست</dfn> شوید.</p>
-
-<p dir="rtl">در این بخش یاد خواهید گرفت:</p>
-
-<ul dir="rtl">
-<li><a href="11.01-how-request-context-works.html">زمینه درخواست چیست</a>، چگونه از آن استفاده کنید و چه زمانی مناسب است از آن استفاده کنید.</li>
-<li>چگونه از زمینه درخواست در عمل استفاده کنید تا اطلاعات مربوط به کاربر فعلی را بین هندلرهای خود منتقل کنید.</li>
-</ul>
 
 		</main>
 		<footer dir="rtl">
@@ -85,6 +88,65 @@
 				}
 			};
 		</script>
+		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>زمینه درخواست</td>
+        <td>Request Context</td>
+        <td>محیط اجرای درخواست</td>
+    </tr>
+    <tr>
+        <td>مدیریت داده‌ها</td>
+        <td>Data Management</td>
+        <td>کنترل داده‌های درخواست</td>
+    </tr>
+    <tr>
+        <td>لغو عملیات</td>
+        <td>Operation Cancellation</td>
+        <td>توقف اجرای عملیات</td>
+    </tr>
+    <tr>
+        <td>زمان‌بندی</td>
+        <td>Timing</td>
+        <td>کنترل زمان اجرا</td>
+    </tr>
+    <tr>
+        <td>زمینه</td>
+        <td>Context</td>
+        <td>محیط اجرای برنامه</td>
+    </tr>
+    <tr>
+        <td>مهلت زمانی</td>
+        <td>Timeout</td>
+        <td>محدودیت زمان اجرا</td>
+    </tr>
+    <tr>
+        <td>مقدار کلید</td>
+        <td>Key Value</td>
+        <td>داده ذخیره شده در زمینه</td>
+    </tr>
+    <tr>
+        <td>انتشار سیگنال</td>
+        <td>Signal Propagation</td>
+        <td>ارسال سیگنال لغو</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>کنترل خطاهای اجرا</td>
+    </tr>
+    <tr>
+        <td>همگام‌سازی</td>
+        <td>Synchronization</td>
+        <td>هماهنگی اجرای عملیات</td>
+    </tr>
+</table>
 	</body>
 </html>
 

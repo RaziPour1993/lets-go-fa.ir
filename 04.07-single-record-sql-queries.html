@@ -18,7 +18,7 @@
 		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; پرس‌وجوهای SQL تک رکوردی</span>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</a> &rsaquo; پرس و جوهای SQL تک رکوردی (Single Record SQL Queries)</span>
 				</div>
 				<div>
 					&lsaquo; <a href="04.06-executing-sql-statements.html">قبلی</a>
@@ -29,20 +29,22 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 4.7.</div>
-			<h2 id="single-record-sql-queries">پرس‌وجوهای SQL تک رکوردی</h2>
+			<h2 id="single-record-sql-queries">پرس و جوهای SQL تک رکوردی (Single Record SQL Queries)</h2>
 
-<p>الگوی اجرای یک دستور <code>SELECT</code> برای بازیابی یک رکورد واحد از پایگاه داده کمی پیچیده‌تر است. بیایید نحوه انجام این کار را با به‌روزرسانی متد <code>SnippetModel.Get()</code> خود توضیح دهیم تا یک قطعه خاص را بر اساس شناسه آن برگرداند.</p>
+<p>در این بخش، ما متد <code>SnippetModel.Get()</code> را پیاده‌سازی خواهیم کرد تا یک <dfn>رکورد واحد (Single Record)</dfn> را بر اساس <dfn>کلید اصلی (Primary Key)</dfn> آن بازیابی کند.</p>
 
-<p>برای انجام این کار، باید پرس‌وجوی SQL زیر را در پایگاه داده اجرا کنیم:</p>
+<p>برای این کار، از متد <code>QueryRow()</code> استفاده می‌کنیم که برای اجرای <dfn>پرس و جوهای تک رکوردی (Single Record Queries)</dfn> طراحی شده است.</p>
+
+<p>برای انجام این کار، باید پرس‌وجوی SQL (SQL Query) زیر را در پایگاه داده اجرا کنیم:</p>
 
 <figure class="code sql">
 <pre><span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span> <span class="k">FROM</span> <span class="n">snippets</span>
 <span class="k">WHERE</span> <span class="n">expires</span> <span class="o">&gt;</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span> <span class="k">AND</span> <span class="n">id</span> <span class="o">=</span> <span class="o">?</span></pre>
 </figure>
 
-<p>از آنجا که جدول <code>snippets</code> ما از ستون <code>id</code> به عنوان کلید اصلی خود استفاده می‌کند، این پرس‌وجو همیشه دقیقاً یک سطر پایگاه داده (یا هیچ) را برمی‌گرداند. پرس‌وجو همچنین شامل یک بررسی بر روی زمان انقضا است تا هیچ قطعه‌ای که منقضی شده است را برنگرداند.</p>
+<p>از آنجا که جدول <code>snippets</code> ما از ستون <code>id</code> به عنوان کلید اصلی (Primary Key) خود استفاده می‌کند، این پرس‌وجو همیشه دقیقاً یک سطر پایگاه داده (یا هیچ) را برمی‌گرداند. پرس‌وجو همچنین شامل یک بررسی بر روی زمان انقضا (Expiry Time) است تا هیچ قطعه‌ای که منقضی شده است را برنگرداند.</p>
 
-<p>همچنین توجه کنید که آیا دوباره از یک پارامتر جایگزین برای مقدار <code>id</code> استفاده می‌کنیم؟</p>
+<p>همچنین توجه کنید که آیا دوباره از یک پارامتر جایگزین (Placeholder Parameter) برای مقدار <code>id</code> استفاده می‌کنیم؟</p>
 
 <p>فایل <code>internal/models/snippets.go</code> را باز کنید و کد زیر را اضافه کنید:</p>
 
@@ -138,7 +140,7 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 
 <p>به عنوان یک نکته جانبی، ممکن است بپرسید چرا ما خطای <code>ErrNoRecord</code> را از متد <code>SnippetModel.Get()</code> خود برمی‌گردانیم، به جای <code>sql.ErrNoRows</code> به‌طور مستقیم. دلیل این کار کمک به کپسوله‌سازی کامل مدل است، به‌طوری که هندلرهای ما نگران پایگاه داده زیرین نباشند یا به خطاهای خاص پایگاه داده (مانند <code>sql.ErrNoRows</code>) برای رفتار خود وابسته نباشند.</p>
 
-<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما</h3>
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما (Using the Model in our Handlers)</h3>
 
 <p>بسیار خوب، بیایید متد <code>SnippetModel.Get()</code> را به کار بگیریم.</p>
 
@@ -201,9 +203,9 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی</h3>
+<h3 id="additional-information">اطلاعات تکمیلی (Additional Information)</h3>
 
-<h4 id="checking-for-specific-errors">بررسی خطاهای خاص</h4>
+<h4 id="checking-for-specific-errors">بررسی خطاهای خاص (Checking for Specific Errors)</h4>
 
 <p>چندین بار در این فصل از تابع <a href="https://tip.golang.org/pkg/errors/#Is"><code>errors.Is()</code></a> برای بررسی اینکه آیا یک خطا با یک مقدار خاص مطابقت دارد استفاده کرده‌ایم. مانند این:</p>
 
@@ -233,7 +235,7 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 
 <p>همچنین یک تابع دیگر به نام <a href="https://tip.golang.org/pkg/errors/#As"><code>errors.As()</code></a> وجود دارد که می‌توانید از آن برای بررسی اینکه آیا یک خطا (احتمالاً بسته‌بندی شده) دارای یک <em>نوع</em> خاص است استفاده کنید. ما بعداً در این کتاب از این استفاده خواهیم کرد.</p>
 
-<h4 id="shorthand-single-record-queries">پرس‌وجوهای تک رکوردی کوتاه</h4>
+<h4 id="shorthand-single-record-queries">پرس و جوهای تک رکوردی کوتاه (Shorthand Single Record Queries)</h4>
 
 <p>من عمداً کد در <code>SnippetModel.Get()</code> را کمی طولانی کرده‌ام تا به وضوح و تأکید بر آنچه در پشت صحنه کد اتفاق می‌افتد کمک کنم.</p>
 
@@ -287,6 +289,71 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 				}
 			};
 		</script>
+
+		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>پرس و جوهای SQL تک رکوردی</td>
+        <td>Single Record SQL Queries</td>
+        <td>دستورات SQL که یک رکورد خاص را از پایگاه داده بازیابی می‌کنند</td>
+    </tr>
+    <tr>
+        <td>رکورد واحد</td>
+        <td>Single Record</td>
+        <td>یک سطر منفرد از داده در پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>کلید اصلی</td>
+        <td>Primary Key</td>
+        <td>فیلدی که به طور منحصر به فرد یک رکورد را شناسایی می‌کند</td>
+    </tr>
+    <tr>
+        <td>زمان انقضا</td>
+        <td>Expiry Time</td>
+        <td>زمانی که پس از آن یک رکورد دیگر معتبر نیست</td>
+    </tr>
+    <tr>
+        <td>پارامتر جایگزین</td>
+        <td>Placeholder Parameter</td>
+        <td>نشانه‌ای در پرس‌وجوی SQL که بعداً با مقدار واقعی جایگزین می‌شود</td>
+    </tr>
+    <tr>
+        <td>پاسخ‌های مبتنی بر پایگاه داده</td>
+        <td>Database-Driven Responses</td>
+        <td>پاسخ‌های وب که محتوای آنها از پایگاه داده بازیابی می‌شود</td>
+    </tr>
+    <tr>
+        <td>خطای رکورد یافت نشد</td>
+        <td>Record Not Found Error</td>
+        <td>خطایی که هنگام عدم وجود رکورد درخواستی رخ می‌دهد</td>
+    </tr>
+    <tr>
+        <td>اسکن داده‌ها</td>
+        <td>Data Scanning</td>
+        <td>فرآیند خواندن و تبدیل داده‌های پایگاه داده به ساختارهای Go</td>
+    </tr>
+    <tr>
+        <td>مدیریت خطا</td>
+        <td>Error Handling</td>
+        <td>مکانیزم‌های کنترل و پاسخ به خطاها در عملیات پایگاه داده</td>
+    </tr>
+    <tr>
+        <td>نگاشت داده</td>
+        <td>Data Mapping</td>
+        <td>تبدیل داده‌ها بین فرمت‌های پایگاه داده و ساختارهای برنامه</td>
+    </tr>
+    <tr>
+        <td>بررسی وجود</td>
+        <td>Existence Check</td>
+        <td>تأیید وجود یک رکورد در پایگاه داده</td>
+    </tr>
+</table>
 	</body>
 </html>
 

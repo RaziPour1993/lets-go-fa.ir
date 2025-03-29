@@ -23,7 +23,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 10.6.</div>
-			<h2 id="user-authorization">مجوز کاربر</h2>
+			<h2 id="user-authorization">مجوز کاربر (User Authorization)</h2>
+
+<p>در این بخش، نحوه پیاده‌سازی <dfn>مجوز کاربر (User Authorization)</dfn> را بررسی می‌کنیم. این شامل <dfn>کنترل دسترسی (Access Control)</dfn>، <dfn>محافظت از مسیرها (Route Protection)</dfn> و <dfn>میان‌افزار احراز هویت (Authentication Middleware)</dfn> می‌شود.</p>
+
+<p>برای شروع، بیایید یک <dfn>میان‌افزار (Middleware)</dfn> برای <dfn>بررسی مجوز (Authorization Check)</dfn> ایجاد کنیم:</p>
 
 <p>احراز هویت کاربران برنامه ما خوب است، اما اکنون باید با آن اطلاعات کاری مفید انجام دهیم. در این فصل، برخی از بررسی‌های <em>مجوز</em> را معرفی خواهیم کرد تا:</p>
 
@@ -259,6 +263,65 @@ date: Wed, 18 Mar 2024 11:29:23 GMT</samp></pre>
 <pre><span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">requireAuthentication</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>مجوز کاربر</td>
+        <td>User Authorization</td>
+        <td>کنترل دسترسی کاربران</td>
+    </tr>
+    <tr>
+        <td>کنترل دسترسی</td>
+        <td>Access Control</td>
+        <td>مدیریت سطوح دسترسی</td>
+    </tr>
+    <tr>
+        <td>محافظت از مسیرها</td>
+        <td>Route Protection</td>
+        <td>امن‌سازی مسیرهای برنامه</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار احراز هویت</td>
+        <td>Authentication Middleware</td>
+        <td>کد واسط برای تأیید هویت</td>
+    </tr>
+    <tr>
+        <td>میان‌افزار</td>
+        <td>Middleware</td>
+        <td>کد واسط پردازش درخواست</td>
+    </tr>
+    <tr>
+        <td>بررسی مجوز</td>
+        <td>Authorization Check</td>
+        <td>بررسی مجوز دسترسی</td>
+    </tr>
+    <tr>
+        <td>نشست کاربر</td>
+        <td>User Session</td>
+        <td>اطلاعات نشست کاربری</td>
+    </tr>
+    <tr>
+        <td>هدایت مجدد</td>
+        <td>Redirection</td>
+        <td>انتقال به صفحه دیگر</td>
+    </tr>
+    <tr>
+        <td>مسیر محافظت شده</td>
+        <td>Protected Route</td>
+        <td>مسیر نیازمند مجوز</td>
+    </tr>
+    <tr>
+        <td>سطح دسترسی</td>
+        <td>Access Level</td>
+        <td>میزان مجوز دسترسی</td>
+    </tr>
+</table>
 		</main>
 		<footer>
 			<div class="wrapper" dir="rtl">

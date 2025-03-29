@@ -18,7 +18,7 @@
 		<header dir="rtl">
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; لاگ‌گیری ساختاریافته</span>
+					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; لاگ‌گیری ساختاریافته (Structured Logging)</span>
 				</div>
 				<div>
 					&lsaquo; <a href="03.01-managing-configuration-settings.html">قبلی</a>
@@ -29,7 +29,7 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 3.2.</div>
-			<h2 id="structured-logging">لاگ‌گیری ساختاریافته</h2>
+			<h2 id="structured-logging">لاگ‌گیری ساختاریافته (Structured Logging)</h2>
 
 <p>در حال حاضر، ما در حال خروجی‌گیری از لاگ‌ها با استفاده از توابع <a href="https://pkg.go.dev/log/#Printf"><code>log.Printf()</code></a> و <a href="https://pkg.go.dev/log/#Fatal"><code>log.Fatal()</code></a> هستیم. یک مثال خوب از این، لاگ <em>&ldquo;شروع سرور&hellip;&rdquo;</em> است که درست قبل از شروع سرور چاپ می‌کنیم:</p>
 
@@ -57,7 +57,7 @@
 <li>به صورت اختیاری، هر تعداد جفت کلید-مقدار (که به عنوان <em>attributes</em> شناخته می‌شوند) حاوی اطلاعات اضافی.</li>
 </ul>
 
-<h3 id="creating-a-structured-logger">ایجاد یک لاگر ساختاریافته</h3>
+<h3 id="creating-a-structured-logger">ایجاد یک لاگر ساختاریافته (Creating a Structured Logger)</h3>
 
 <p>کد ایجاد یک لاگر ساختاریافته با بسته <code>log/slog</code> ممکن است در ابتدا کمی گیج‌کننده به نظر برسد.</p>
 
@@ -85,7 +85,7 @@
 <pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="using-a-structured-logger">استفاده از یک لاگر ساختاریافته</h3>
+<h3 id="using-a-structured-logger">استفاده از یک لاگر ساختاریافته (Using a Structured Logger)</h3>
 
 <p>پس از ایجاد یک لاگر ساختاریافته، می‌توانید با فراخوانی متدهای <code>Debug()</code>، <code>Info()</code>، <code>Warn()</code> یا <code>Error()</code> بر روی لاگر، یک لاگ را در سطح شدت خاصی بنویسید. به عنوان مثال، خط کد زیر:</p>
 
@@ -115,7 +115,7 @@
 <strong>توجه:</strong> اگر کلیدها، مقادیر یا پیام لاگ شما شامل کاراکترهای <code>&quot;</code> یا <code>=</code> یا هر فضای خالی باشد، در خروجی لاگ در علامت نقل قول قرار می‌گیرند. ما می‌توانیم این رفتار را در مثال بالا ببینیم، جایی که پیام لاگ <code>msg=&quot;request received&quot;</code> در نقل قول قرار گرفته است.
 </p></aside>
 
-<h3 id="adding-structured-logging-to-our-application">افزودن لاگ‌گیری ساختاریافته به برنامه ما</h3>
+<h3 id="adding-structured-logging-to-our-application">افزودن لاگ‌گیری ساختاریافته به برنامه ما (Adding Structured Logging to Our Application)</h3>
 
 <p>خوب، بیایید فایل <code>main.go</code> خود را به‌روزرسانی کنیم تا به جای لاگر استاندارد Go از یک لاگر ساختاریافته استفاده کنیم. به این صورت:</p>
 
@@ -184,9 +184,9 @@ exit status 1</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی</h3>
+<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
 
-<h4 id="safer-attributes">ویژگی‌های ایمن‌تر</h4>
+<h4 id="safer-attributes">ویژگی‌های ایمن‌تر (Safer Attributes)</h4>
 
 <p>فرض کنید که به طور تصادفی کدی نوشته‌اید که در آن فراموش کرده‌اید کلید یا مقدار یک ویژگی را وارد کنید. به عنوان مثال:</p>
 
@@ -215,7 +215,7 @@ exit status 1</samp></pre>
 
 <p>اینکه بخواهید از این توابع استفاده کنید یا نه به شما بستگی دارد. بسته <code>log/slog</code> نسبتاً جدید در Go است (در Go 1.21 معرفی شده است)، و هنوز بهترین روش‌ها یا کنوانسیون‌های زیادی برای استفاده از آن وجود ندارد. اما معامله ساده است&hellip; استفاده از توابعی مانند <code>slog.String()</code> برای ایجاد ویژگی‌ها بیشتر است، اما ایمن‌تر است به این معنا که خطر بروز باگ‌ها در برنامه شما را کاهش می‌دهد.</p>
 
-<h4 id="json-formatted-logs">لاگ‌های فرمت‌شده به صورت JSON</h4>
+<h4 id="json-formatted-logs">لاگ‌های فرمت‌شده به صورت JSON (JSON-formatted Logs)</h4>
 
 <p>تابع <code>slog.NewTextHandler()</code> که در این فصل استفاده کرده‌ایم، یک مدیریت‌کننده ایجاد می‌کند که لاگ‌ها را به صورت متن ساده می‌نویسد. اما می‌توان یک مدیریت‌کننده ایجاد کرد که لاگ‌ها را به صورت <em>اشیاء JSON</em> بنویسد، با استفاده از تابع <a href="https://pkg.go.dev/log/slog#NewJSONHandler"><code>slog.NewJSONHandler()</code></a>. به این صورت:</p>
 
@@ -230,7 +230,7 @@ exit status 1</samp></pre>
 {&#34;time&#34;:&#34;2024-03-18T11:29:23.00000000+00:00&#34;,&#34;level&#34;:&#34;ERROR&#34;,&#34;msg&#34;:&#34;listen tcp :4000: bind: address already in use&#34;}</samp></pre>
 </figure>
 
-<h4 id="minimum-log-level">حداقل سطح لاگ</h4>
+<h4 id="minimum-log-level">حداقل سطح لاگ (Minimum Log Level)</h4>
 
 <p>همانطور که چندین بار اشاره کردیم، بسته <code>log/slog</code> از چهار سطح شدت پشتیبانی می‌کند: <code>Debug</code>، <code>Info</code>، <code>Warn</code> و <code>Error</code> <em>به همین ترتیب</em>. <code>Debug</code> کمترین سطح شدت است و <code>Error</code> بیشترین سطح شدت.</p>
 
@@ -244,7 +244,7 @@ exit status 1</samp></pre>
 <span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<h4 id="caller-location">مکان فراخوانی</h4>
+<h4 id="caller-location">مکان فراخوانی (Caller Location)</h4>
 
 <p>می‌توانید مدیریت‌کننده را سفارشی کنید تا شامل نام فایل و شماره خط کد منبع فراخوانی در لاگ‌ها باشد، به این صورت:</p>
 
@@ -285,6 +285,66 @@ exit status 1</samp></pre>
 <p>لاگرهای سفارشی ایجاد شده توسط <code>slog.New()</code> برای همزمانی ایمن هستند. می‌توانید یک لاگر را به اشتراک بگذارید و از آن در چندین گوروتین و در مدیریت‌کننده‌های HTTP خود استفاده کنید بدون اینکه نگران شرایط مسابقه باشید.</p>
 
 <p>با این حال، اگر <em>چندین</em> لاگر ساختاریافته دارید که به یک مقصد می‌نویسند، باید مراقب باشید و اطمینان حاصل کنید که متد <code>Write()</code> زیرین مقصد نیز برای استفاده همزمان ایمن است.</p>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>لاگ‌گیری ساختاریافته</td>
+        <td>Structured Logging</td>
+        <td>روشی برای ثبت لاگ‌ها در قالبی ساختاریافته و قابل پردازش</td>
+    </tr>
+    <tr>
+        <td>لاگر</td>
+        <td>Logger</td>
+        <td>ابزاری برای ثبت و مدیریت پیام‌های لاگ</td>
+    </tr>
+    <tr>
+        <td>سطح شدت</td>
+        <td>Severity Level</td>
+        <td>درجه اهمیت یک پیام لاگ (مانند Debug، Info، Warn، Error)</td>
+    </tr>
+    <tr>
+        <td>مدیریت‌کننده لاگ</td>
+        <td>Log Handler</td>
+        <td>بخشی از سیستم لاگ‌گیری که نحوه فرمت‌بندی و ذخیره لاگ‌ها را کنترل می‌کند</td>
+    </tr>
+    <tr>
+        <td>ویژگی‌ها</td>
+        <td>Attributes</td>
+        <td>جفت‌های کلید-مقدار که اطلاعات اضافی را به یک پیام لاگ اضافه می‌کنند</td>
+    </tr>
+    <tr>
+        <td>جریان خروجی استاندارد</td>
+        <td>Standard Output</td>
+        <td>مسیر پیش‌فرض برای خروجی برنامه</td>
+    </tr>
+    <tr>
+        <td>فرمت‌بندی JSON</td>
+        <td>JSON Formatting</td>
+        <td>نمایش لاگ‌ها در قالب ساختاریافته JSON</td>
+    </tr>
+    <tr>
+        <td>حداقل سطح لاگ</td>
+        <td>Minimum Log Level</td>
+        <td>پایین‌ترین سطح شدتی که لاگ‌ها در آن ثبت می‌شوند</td>
+    </tr>
+    <tr>
+        <td>مکان فراخوانی</td>
+        <td>Caller Location</td>
+        <td>اطلاعات مربوط به محل دقیق کد که لاگ از آنجا ایجاد شده است</td>
+    </tr>
+    <tr>
+        <td>تابع متغیر</td>
+        <td>Variadic Function</td>
+        <td>تابعی که می‌تواند تعداد نامشخصی پارامتر دریافت کند</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">

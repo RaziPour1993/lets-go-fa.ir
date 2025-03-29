@@ -27,7 +27,11 @@
 		</header>
 		<main class="wrapper text" dir="rtl">
 			<div class="chapter">فصل 13.8.</div>
-			<h2 id="profiling-test-coverage">پروفایل‌سازی پوشش تست</h2>
+			<h2 id="profiling-test-coverage">پروفایل‌سازی پوشش تست (Profiling Test Coverage)</h2>
+
+<p dir="rtl">در این بخش، نحوه <dfn>پروفایل‌سازی پوشش تست (Profiling Test Coverage)</dfn> را بررسی می‌کنیم. این شامل <dfn>گزارش پوشش (Coverage Report)</dfn> و <dfn>تحلیل کد (Code Analysis)</dfn> می‌شود.</p>
+
+<p dir="rtl">همچنین با <dfn>نقاط کور تست (Test Blind Spots)</dfn> و <dfn>بهبود کیفیت (Quality Improvement)</dfn> آشنا خواهیم شد.</p>
 
 <p dir="rtl">یکی از ویژگی‌های عالی ابزار <code>go test</code>، متریک‌ها و تجسم‌هایی است که برای <dfn>پوشش تست</dfn> ارائه می‌دهد.</p>
 
@@ -130,6 +134,66 @@ $ go tool cover -html=/tmp/profile.out</pre>
 <aside class="note"><p dir="rtl">
 <strong>توجه:</strong> اگر برخی از تست‌های خود را به صورت موازی اجرا می‌کنید، باید از فلگ <code>-covermode=atomic</code> (به جای <code>-covermode=count</code>) برای اطمینان از شمارش دقیق استفاده کنید.
 </p></aside>
+
+<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی (Technical Glossary)</h3>
+
+<table class="glossary">
+    <tr>
+        <th>اصطلاح فارسی</th>
+        <th>معادل انگلیسی</th>
+        <th>توضیح</th>
+    </tr>
+    <tr>
+        <td>پروفایل‌سازی پوشش تست</td>
+        <td>Profiling Test Coverage</td>
+        <td>تحلیل پوشش تست</td>
+    </tr>
+    <tr>
+        <td>گزارش پوشش</td>
+        <td>Coverage Report</td>
+        <td>گزارش تست‌ها</td>
+    </tr>
+    <tr>
+        <td>تحلیل کد</td>
+        <td>Code Analysis</td>
+        <td>بررسی کد</td>
+    </tr>
+    <tr>
+        <td>نقاط کور تست</td>
+        <td>Test Blind Spots</td>
+        <td>بخش‌های تست نشده</td>
+    </tr>
+    <tr>
+        <td>بهبود کیفیت</td>
+        <td>Quality Improvement</td>
+        <td>ارتقای کیفیت</td>
+    </tr>
+    <tr>
+        <td>نسبت پوشش</td>
+        <td>Coverage Ratio</td>
+        <td>درصد تست شده</td>
+    </tr>
+    <tr>
+        <td>گزارش HTML</td>
+        <td>HTML Report</td>
+        <td>گزارش وب</td>
+    </tr>
+    <tr>
+        <td>تحلیل عملکرد</td>
+        <td>Performance Analysis</td>
+        <td>بررسی کارایی</td>
+    </tr>
+    <tr>
+        <td>بهینه‌سازی</td>
+        <td>Optimization</td>
+        <td>بهبود عملکرد</td>
+    </tr>
+    <tr>
+        <td>معیارهای کیفیت</td>
+        <td>Quality Metrics</td>
+        <td>شاخص‌های کیفیت</td>
+    </tr>
+</table>
 
 		</main>
 		<footer dir="rtl">
