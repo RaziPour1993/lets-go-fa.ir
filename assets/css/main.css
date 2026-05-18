@@ -125,9 +125,11 @@ a:hover, a:visited:hover { text-decoration: underline; }
 h1#front-matter { display: none; }
 
 /*contents*/
-nav ol li { font-weight: 700; list-style-type: disc; }
+nav ol { padding-inline-start: 0; }
 
-nav ol li.indent { font-weight: 400; margin-left: 24px; list-style-type: circle; }
+nav ol li { font-weight: 700; list-style-type: disc; list-style-position: outside; padding-inline-start: 0.25em; }
+
+nav ol li.indent { font-weight: 400; margin-inline-start: 1.5em; list-style-type: circle; }
 
 .text code, .text table, .text pre, .text samp, .text figcaption { font-family: "Ubuntu Mono", monospace; }
 .text blockquote { font-style: italic; border-left: solid 4px #EDEDED; padding-left: 1em; }
@@ -145,10 +147,17 @@ nav ol li.indent { font-weight: 400; margin-left: 24px; list-style-type: circle;
 .text h4 { font-weight: 700; font-size: 22px; margin: 30px 0 20px; }
 .text h3 + h4 { margin-top: 20px; }
 .text table { width: 100%; }
-.text ul, .text ol { padding-left: 1em; }
-.text ul li, .text ol li { padding-left: 0.25em; }
+.text ul, .text ol {
+	padding-inline-start: 1.5em;
+	padding-inline-end: 0;
+	list-style-position: outside;
+}
+.text ul li, .text ol li { padding-inline-start: 0.35em; }
 .text ul { list-style-type: disc; }
-.text li + li { margin-top: 5px; }
+.text ol { list-style-type: decimal; }
+.text li > p { margin: 0; }
+.text li > p + p { margin-top: 0.75em; }
+.text li + li { margin-top: 0.5em; }
 .text code { color: #A82255; font-size: 19px; padding: 0px 1px; white-space: nowrap; }
 .text a code { color: #007BB6; }
 .text figure.img { border: solid 1px #EDEDED; -webkit-box-shadow: 1px 1px 2px 0px #EDEDED; -moz-box-shadow: 1px 1px 2px 0px #EDEDED; box-shadow: 1px 1px 2px 0px #EDEDED; }
@@ -188,13 +197,25 @@ nav ol li.indent { font-weight: 400; margin-left: 24px; list-style-type: circle;
 .text ul.en-links {
 	direction: ltr;
 	text-align: left;
+	padding-inline-start: 1.5em;
 }
 .text ul.en-links li {
 	text-align: left;
+	padding-inline-start: 0.35em;
 }
 .text .chapter { color: #818181; font-size: 16px; color: #818181; margin-bottom: 5px; }
-.text ul ul { list-style-type: circle; }
-.text ul ul li { margin-top: 5px; }
+.text ul ul,
+.text ul ol,
+.text ol ul,
+.text ol ol {
+	list-style-type: circle;
+	margin-top: 0.5em;
+	margin-bottom: 0;
+	padding-inline-start: 1.5em;
+}
+.text ol ol { list-style-type: lower-alpha; }
+.text ul ul li,
+.text ol ol li { margin-top: 0.5em; }
 .text hr { margin-top: 60px; border: none; border-top: solid 1px #EDEDED; }
 
 figure.code .c { color: #818181; }
