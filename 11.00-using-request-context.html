@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>استفاده از context درخواست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; استفاده از زمینه درخواست</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; استفاده از context درخواست</span>
 						
 					
 				</div>
@@ -26,39 +27,36 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter" dir="rtl">فصل 11.</div>
-			<h1 id="using-request-context">استفاده از زمینه درخواست (Using Request Context)</h1>
+			<div class="chapter">فصل ۱۱.</div>
+			<h1 id="using-request-context">استفاده از context درخواست</h1>
 
-<p>در این فصل، نحوه استفاده از <dfn>زمینه درخواست (Request Context)</dfn> را بررسی می‌کنیم. این شامل <dfn>مدیریت داده‌ها (Data Management)</dfn>، <dfn>لغو عملیات (Operation Cancellation)</dfn> و <dfn>زمان‌بندی (Timing)</dfn> می‌شود.</p>
+<p>در حال حاضر منطق ما برای احراز هویت کاربر شامل بررسی ساده این است که آیا یک مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های نشست آن‌ها وجود دارد یا نه، به این صورت:</p>
 
-<p>در این فصل خواهیم آموخت:</p>
-
-<ul>
-<li>چگونه از <dfn>زمینه درخواست (Request Context)</dfn> برای <dfn>مدیریت داده‌ها (Data Management)</dfn> استفاده کنیم.</li>
-<li>نحوه <dfn>لغو عملیات (Operation Cancellation)</dfn> با استفاده از <dfn>زمینه (Context)</dfn>.</li>
-<li>چگونه <dfn>زمان‌بندی (Timing)</dfn> را با <dfn>زمینه (Context)</dfn> کنترل کنیم.</li>
-</ul>
-
-<p dir="rtl">در حال حاضر منطق ما برای احراز هویت کاربر شامل بررسی این است که آیا مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های جلسه آنها وجود دارد یا خیر، به این صورت:</p>
-
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">isAuthenticated</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p dir="rtl">ما می‌توانیم این بررسی را با پرس و جو از جدول <code>users</code> در پایگاه داده خود قوی‌تر کنیم تا مطمئن شویم که مقدار <code>&quot;authenticatedUserID&quot;</code> یک مقدار واقعی و معتبر است (یعنی ما حساب کاربر را از زمانی که آخرین بار وارد شده‌اند حذف نکرده‌ایم).</p>
+<p>می‌توانیم این بررسی را با پرس‌وجو از جدول <code>users</code> پایگاه داده خود قوی‌تر کنیم تا مطمئن شویم که مقدار <code>&quot;authenticatedUserID&quot;</code> یک مقدار واقعی و معتبر است (یعنی حساب کاربری کاربر را از زمان آخرین ورود آن‌ها حذف نکرده‌ایم).</p>
 
-<p dir="rtl">اما یک مشکل جزئی در انجام این بررسی اضافی پایگاه داده وجود دارد.</p>
+<p>اما یک مشکل جزئی در انجام این بررسی اضافی پایگاه داده وجود دارد.</p>
 
-<p dir="rtl">کمک‌کننده <code>isAuthenticated()</code> ما می‌تواند به طور بالقوه چندین بار در هر چرخه درخواست فراخوانی شود. در حال حاضر ما از آن دو بار استفاده می‌کنیم &mdash; یک بار در میان‌افزار <code>requireAuthentication()</code> و دوباره در کمک‌کننده <code>newTemplateData()</code>. بنابراین، اگر از کمک‌کننده <code>isAuthenticated()</code> مستقیماً به پایگاه داده پرس و جو کنیم، در هر درخواست، سفرهای رفت و برگشت تکراری به پایگاه داده خواهیم داشت. و این خیلی کارآمد نیست.</p>
+<p>helper <code>isAuthenticated()</code> ما به‌طور بالقوه می‌تواند چندین بار در هر چرخه درخواست فراخوانی شود. در حال حاضر ما آن را دو بار استفاده می‌کنیم &mdash; یک بار در middleware <code>requireAuthentication()</code> و دوباره در helper <code>newTemplateData()</code>. بنابراین، اگر مستقیماً از helper <code>isAuthenticated()</code> از پایگاه داده پرس‌وجو کنیم، در نهایت سفرهای تکراری به پایگاه داده در هر درخواست انجام می‌دهیم. و این خیلی کارآمد نیست.</p>
 
-<p dir="rtl">رویکرد بهتر این است که این بررسی را در برخی از میان‌افزارها انجام دهیم تا تعیین کنیم که آیا درخواست فعلی از یک کاربر احراز هویت شده است یا خیر، و سپس آن اطلاعات را به همه هندلرهای بعدی در زنجیره منتقل کنیم.</p>
+<p>یک رویکرد بهتر این است که این بررسی را در یک middleware انجام دهیم تا تعیین کنیم که آیا درخواست فعلی از یک کاربر احراز هویت شده است یا نه، و سپس آن اطلاعات را به تمام handlerهای بعدی در زنجیره منتقل کنیم.</p>
 
-<p dir="rtl">پس چگونه این کار را انجام دهیم؟ وارد <dfn>زمینه درخواست</dfn> شوید.</p>
+<p>پس چگونه این کار را انجام دهیم؟ وارد <dfn>context درخواست</dfn> شوید.</p>
+
+<p>در این بخش یاد خواهید گرفت:</p>
+
+<ul>
+<li><a href="11.01-how-request-context-works.html">context درخواست چیست</a> و چه زمانی از آن استفاده کنیم.</li>
+<li><a href="11.02-request-context-for-authentication-authorization.html">انتقال وضعیت احراز هویت</a> بین handlerها با middleware و context.</li>
+</ul>
 
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="10.07-csrf-protection.html">قبلی</a>
@@ -88,65 +86,6 @@
 				}
 			};
 		</script>
-		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>زمینه درخواست</td>
-        <td>Request Context</td>
-        <td>محیط اجرای درخواست</td>
-    </tr>
-    <tr>
-        <td>مدیریت داده‌ها</td>
-        <td>Data Management</td>
-        <td>کنترل داده‌های درخواست</td>
-    </tr>
-    <tr>
-        <td>لغو عملیات</td>
-        <td>Operation Cancellation</td>
-        <td>توقف اجرای عملیات</td>
-    </tr>
-    <tr>
-        <td>زمان‌بندی</td>
-        <td>Timing</td>
-        <td>کنترل زمان اجرا</td>
-    </tr>
-    <tr>
-        <td>زمینه</td>
-        <td>Context</td>
-        <td>محیط اجرای برنامه</td>
-    </tr>
-    <tr>
-        <td>مهلت زمانی</td>
-        <td>Timeout</td>
-        <td>محدودیت زمان اجرا</td>
-    </tr>
-    <tr>
-        <td>مقدار کلید</td>
-        <td>Key Value</td>
-        <td>داده ذخیره شده در زمینه</td>
-    </tr>
-    <tr>
-        <td>انتشار سیگنال</td>
-        <td>Signal Propagation</td>
-        <td>ارسال سیگنال لغو</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>کنترل خطاهای اجرا</td>
-    </tr>
-    <tr>
-        <td>همگام‌سازی</td>
-        <td>Synchronization</td>
-        <td>هماهنگی اجرای عملیات</td>
-    </tr>
-</table>
 	</body>
 </html>
 

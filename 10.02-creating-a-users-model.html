@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>ایجاد مدل کاربران &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ایجاد مدل کاربران</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ایجاد مدل کاربران</span>
 						
 					
 				</div>
@@ -25,13 +26,13 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 10.2.</div>
-			<h2 id="creating-a-users-model">ایجاد مدل کاربران (Creating a Users Model)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۰.۲.</div>
+			<h2 id="creating-a-users-model">ایجاد یک مدل کاربر</h2>
 
-<p>در این بخش، نحوه ایجاد <dfn>مدل کاربران (Users Model)</dfn> را بررسی می‌کنیم. این شامل <dfn>ساختار داده (Data Structure)</dfn>، <dfn>متدهای دسترسی (Access Methods)</dfn> و <dfn>عملیات پایگاه داده (Database Operations)</dfn> می‌شود.</p>
+<p>حالا که مسیرها راه‌اندازی شده‌اند، باید یک جدول پایگاه داده جدید <code>users</code> و یک مدل پایگاه داده برای دسترسی به آن ایجاد کنیم.</p>
 
-<p>برای شروع، بیایید یک <dfn>جدول کاربران (Users Table)</dfn> در <dfn>پایگاه داده (Database)</dfn> خود ایجاد کنیم:</p>
+<p>با اتصال به MySQL از پنجره ترمینال خود به عنوان کاربر <code>root</code> شروع کنید و دستور SQL زیر را برای راه‌اندازی جدول <code>users</code> اجرا کنید:</p>
 
 <figure class="code sql" dir="ltr">
 <pre><span class="n">USE</span> <span class="n">snippetbox</span><span class="p">;</span>
@@ -47,21 +48,21 @@
 <span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">users</span> <span class="k">ADD</span> <span class="k">CONSTRAINT</span> <span class="n">users_uc_email</span> <span class="k">UNIQUE</span> <span class="p">(</span><span class="n">email</span><span class="p">)</span><span class="p">;</span></pre>
 </figure>
 
-<p>چند نکته در مورد این جدول وجود دارد:</p>
+<p>چند نکته در مورد این جدول وجود دارد که ارزش اشاره دارد:</p>
 
 <ul>
-<li><p>فیلد <code>id</code> یک فیلد عدد صحیح خودافزایشی و کلید اصلی جدول است. این بدان معناست که مقادیر شناسه کاربر به صورت اعداد صحیح مثبت منحصر به فرد (1، 2، 3 و غیره) تضمین می‌شوند.</p></li>
+<li><p>فیلد <code>id</code> یک فیلد عدد صحیح خودافزاینده و کلید اصلی جدول است. این به این معنی است که مقادیر شناسه کاربر به طور قطع اعداد صحیح مثبت یکتایی هستند (1، 2، 3 و غیره).</p></li>
 
-<li><p>نوع فیلد <code>hashed_password</code> <code>CHAR(60)</code> است. این به این دلیل است که ما هش‌های bcrypt از رمزهای عبور کاربران را در پایگاه داده ذخیره خواهیم کرد &mdash; نه خود رمزها &mdash; و هش‌ها همیشه دقیقاً 60 کاراکتر طول دارند.</p></li>
+<li><p>نوع فیلد <code>hashed_password</code> <code>CHAR(60)</code> است. این به این دلیل است که ما hashهای bcrypt رمزهای عبور کاربر را در پایگاه داده ذخیره می‌کنیم — نه خود رمزهای عبور — و hashها همیشه دقیقاً 60 کاراکتر طول دارند.</p></li>
 
-<li><p>ما همچنین یک محدودیت <code>UNIQUE</code> بر روی ستون <code>email</code> اضافه کرده‌ایم و آن را <code>users_uc_email</code> نامگذاری کرده‌ایم. این محدودیت تضمین می‌کند که ما با دو کاربر که آدرس ایمیل یکسانی دارند مواجه نخواهیم شد. اگر سعی کنیم رکوردی را در این جدول با ایمیل تکراری وارد کنیم، MySQL یک خطای <a href="https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html#error_er_dup_entry"><code>ERROR 1062: ER_DUP_ENTRY</code></a> پرتاب خواهد کرد.</p></li>
+<li><p>همچنین یک محدودیت <code>UNIQUE</code> روی ستون <code>email</code> اضافه کرده‌ایم و آن را <code>users_uc_email</code> نامیده‌ایم. این محدودیت اطمینان می‌دهد که دو کاربر با آدرس ایمیل یکسان نخواهیم داشت. اگر سعی کنیم یک رکورد با ایمیل تکراری در این جدول درج کنیم، MySQL یک خطای <a href="https://dev.mysql.com/doc/mysql-errors/8.0/en/server-error-reference.html#error_er_dup_entry"><code>ERROR 1062: ER_DUP_ENTRY</code></a> پرتاب می‌کند.</p></li>
 </ul>
 
 <h3 id="building-the-model-in-go">ساخت مدل در Go</h3>
 
-<p>سپس بیایید یک مدل تنظیم کنیم تا بتوانیم به راحتی با جدول جدید <code>users</code> کار کنیم. ما همان الگویی را که قبلاً در کتاب برای مدل‌سازی دسترسی به جدول <code>snippets</code> استفاده کرده‌ایم، دنبال خواهیم کرد، بنابراین امیدواریم که این کار آشنا و ساده باشد.</p>
+<p>سپس بیایید یک مدل راه‌اندازی کنیم تا بتوانیم به راحتی با جدول جدید <code>users</code> کار کنیم. همان الگویی را دنبال می‌کنیم که قبلاً در کتاب برای مدل‌سازی دسترسی به جدول <code>snippets</code> استفاده کردیم، بنابراین امیدوارم این باید آشنا و ساده به نظر برسد.</p>
 
-<p>ابتدا فایل <code>internal/models/errors.go</code> را که قبلاً ایجاد کرده‌اید باز کنید و چند نوع خطای جدید تعریف کنید:</p>
+<p>ابتدا، فایل <code>internal/models/errors.go</code> که قبلاً ایجاد کردید را باز کنید و چند نوع خطای جدید تعریف کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/errors.go</figcaption>
@@ -90,7 +91,7 @@
 <pre>$ touch internal/models/users.go</pre>
 </figure>
 
-<p>&hellip;و یک ساختار جدید <code>User</code> (برای نگهداری داده‌های یک کاربر خاص) و یک ساختار <code>UserModel</code> (با برخی متدهای جایگزین برای تعامل با پایگاه داده ما) تعریف کنید. به این صورت:</p>
+<p>&hellip;و یک struct جدید <code>User</code> (برای نگه‌داری داده‌های یک کاربر خاص) و یک struct <code>UserModel</code> (با چند متد placeholder برای تعامل با پایگاه داده ما) تعریف کنید. به این صورت:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
@@ -134,7 +135,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>مرحله نهایی اضافه کردن یک فیلد جدید به ساختار <code>application</code> است تا بتوانیم این مدل را در دسترس هندلرهای خود قرار دهیم. فایل <code>main.go</code> را به صورت زیر به‌روزرسانی کنید:</p>
+<p>مرحله نهایی اضافه کردن یک فیلد جدید به struct <code>application</code> ما است تا بتوانیم این مدل را در دسترس handlerهای خود قرار دهیم. فایل <code>main.go</code> را به این صورت به‌روزرسانی کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/main.go</figcaption>
@@ -193,68 +194,8 @@
 
 <p>اطمینان حاصل کنید که همه فایل‌ها ذخیره شده‌اند، سپس برنامه را اجرا کنید. در این مرحله باید متوجه شوید که بدون هیچ مشکلی کامپایل می‌شود.</p>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>مدل کاربران</td>
-        <td>Users Model</td>
-        <td>ساختار داده برای کاربران</td>
-    </tr>
-    <tr>
-        <td>ساختار داده</td>
-        <td>Data Structure</td>
-        <td>الگوی سازماندهی داده‌ها</td>
-    </tr>
-    <tr>
-        <td>متدهای دسترسی</td>
-        <td>Access Methods</td>
-        <td>توابع دسترسی به داده‌ها</td>
-    </tr>
-    <tr>
-        <td>عملیات پایگاه داده</td>
-        <td>Database Operations</td>
-        <td>دستورات کار با پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>جدول کاربران</td>
-        <td>Users Table</td>
-        <td>جدول ذخیره اطلاعات کاربران</td>
-    </tr>
-    <tr>
-        <td>پایگاه داده</td>
-        <td>Database</td>
-        <td>محل ذخیره‌سازی داده‌ها</td>
-    </tr>
-    <tr>
-        <td>رکورد کاربر</td>
-        <td>User Record</td>
-        <td>اطلاعات یک کاربر</td>
-    </tr>
-    <tr>
-        <td>درج داده</td>
-        <td>Data Insertion</td>
-        <td>افزودن داده جدید</td>
-    </tr>
-    <tr>
-        <td>بازیابی داده</td>
-        <td>Data Retrieval</td>
-        <td>خواندن داده از پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>به‌روزرسانی داده</td>
-        <td>Data Update</td>
-        <td>تغییر داده موجود</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="10.01-routes-setup.html">قبلی</a>

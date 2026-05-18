@@ -3,41 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>کش کردن قالب‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
-				direction: ltr;
-				text-align: left;
-				unicode-bidi: embed;
-			}
-			main ol {
-				padding-right: 2em;
-			}
-			main ol li {
-				text-align: right;
-			}
-			header .wrapper, footer .wrapper {
-				direction: rtl;
-			}
-			header .wrapper > div:first-child {
-				text-align: right;
-			}
-			header .wrapper > div:last-child {
-				text-align: left;
-			}
-			footer .wrapper > div {
-				text-align: center;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; کش کردن قالب‌ها</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; کش کردن قالب‌ها</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="05.02-template-actions-and-functions.html">قبلی</a>
@@ -48,19 +28,19 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۵.۳.</div>
-			<h2 id="caching-templates">کش کردن قالب‌ها (Caching Templates)</h2>
+			<h2 id="caching-templates">کش کردن قالب‌ها</h2>
 
-<p>قبل از اینکه عملکرد بیشتری به قالب‌های HTML اضافه کنیم، زمان خوبی است تا <dfn>بهینه‌سازی‌هایی (Optimizations)</dfn> در کد پایه انجام دهیم. در حال حاضر دو مشکل اصلی وجود دارد:</p>
+<p>قبل از اینکه قابلیت‌های بیشتری به قالب‌های HTML خود اضافه کنیم، زمان مناسبی است تا بهینه‌سازی‌هایی در کدبیس خود انجام دهیم. در حال حاضر دو مشکل اصلی وجود دارد:</p>
 
 <ol>
-<li><p>هر بار که صفحه وب را رندر می‌کنیم، برنامه ما فایل‌های قالب مربوطه را با استفاده از تابع <code>template.ParseFiles()</code> می‌خواند و تجزیه می‌کند. می‌توانیم از این کار تکراری با تجزیه یکباره فایل‌ها - هنگام شروع برنامه - و ذخیره قالب‌های تجزیه شده در یک <dfn>کش (Cache)</dfn> در حافظه جلوگیری کنیم.</p></li>
+<li><p>هر بار که یک صفحه وب را رندر می‌کنیم، برنامه ما فایل‌های قالب مربوطه را با استفاده از تابع <code>template.ParseFiles()</code> می‌خواند و تجزیه می‌کند. می‌توانیم با تجزیه فایل‌ها یک بار &mdash; هنگام راه‌اندازی برنامه &mdash; و ذخیره قالب‌های تجزیه شده در یک <dfn>کش</dfn> درون حافظه، از این کار تکراری اجتناب کنیم.</p></li>
 
-<li><p>در هندلرهای <code>home</code> و <code>snippetView</code> <dfn>کد تکراری (Duplicate Code)</dfn> وجود دارد و می‌توانیم این تکرار را با ایجاد یک <dfn>تابع کمکی (Helper Function)</dfn> کاهش دهیم.</p></li>
+<li><p>کد تکراری در handlerهای <code>home</code> و <code>snippetView</code> وجود دارد و می‌توانیم با ایجاد یک تابع کمکی، این تکرار را کاهش دهیم.</p></li>
 </ol>
 
-<p>بیایید ابتدا نکته اول را بررسی کنیم و یک نقشه در حافظه با نوع <code>map[string]*template.Template</code> برای کش کردن قالب‌های تجزیه شده ایجاد کنیم. فایل <code>cmd/web/templates.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
+<p>بیایید ابتدا نکته اول را حل کنیم و یک مپ درون حافظه با نوع <code>map[string]*template.Template</code> برای کش کردن قالب‌های تجزیه شده ایجاد کنیم. فایل <code>cmd/web/templates.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -68,7 +48,7 @@
     <span class="s">&#34;html/template&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span>    <span class="s">&#34;path/filepath&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span>
-    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 <span class="p">)</span>
 
 <span class="o">...</span>
@@ -116,9 +96,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>مرحله بعدی، مقداردهی اولیه این کش در تابع <code>main()</code> و در دسترس قرار دادن آن برای هندلرهای ما به عنوان یک وابستگی از طریق ساختار <code>application</code> است، مانند این:</p>
+<p>مرحله بعدی، مقداردهی اولیه این کش در تابع <code>main()</code> و در دسترس قرار دادن آن برای handlerهای ما به عنوان یک وابستگی از طریق ساختار <code>application</code> است، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -130,7 +110,7 @@
     <span class="s">&#34;net/http&#34;</span>
     <span class="s">&#34;os&#34;</span>
 
-    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 
     <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
 <span class="p">)</span>
@@ -180,13 +160,13 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>بنابراین، در این مرحله، ما یک کش در حافظه از مجموعه قالب مربوط به هر یک از صفحات خود داریم و هندلرهای ما از طریق ساختار <code>application</code> به این کش دسترسی دارند.</p>
+<p>پس، در این مرحله، یک کش درون حافظه از مجموعه قالب مربوطه برای هر یک از صفحات خود داریم و handlerهای ما از طریق ساختار <code>application</code> به این کش دسترسی دارند.</p>
 
-<p>حالا بیایید مشکل دوم کد تکراری را بررسی کنیم و یک متد کمکی ایجاد کنیم تا بتوانیم به راحتی قالب‌ها را از کش رندر کنیم.</p>
+<p>حالا بیایید مشکل دوم کد تکراری را حل کنیم و یک متد کمکی ایجاد کنیم تا بتوانیم به راحتی قالب‌ها را از کش رندر کنیم.</p>
 
 <p>فایل <code>cmd/web/helpers.go</code> خود را باز کنید و متد <code>render()</code> زیر را اضافه کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -221,9 +201,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>با تکمیل این موارد، حالا می‌توانیم نتیجه این تغییرات را ببینیم و کد هندلرهای خود را به طور چشمگیری ساده‌تر کنیم:</p>
+<p>با تکمیل این کار، حالا می‌توانیم نتیجه این تغییرات را ببینیم و کد در handlerهای خود را به طور چشمگیری ساده کنیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -233,7 +213,7 @@
     <span class="s">&#34;net/http&#34;</span>
     <span class="s">&#34;strconv&#34;</span>
 
-    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -277,7 +257,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>اگر برنامه را مجدداً راه‌اندازی کنید و سعی کنید از <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> و <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بازدید کنید، باید ببینید که صفحات دقیقاً به همان روش قبلی رندر می‌شوند.</p>
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و دوباره به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> و <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> مراجعه کنید، باید ببینید که صفحات دقیقاً به همان روش قبلی رندر (render) می‌شوند.</p>
 
 <figure class="img">
 <img src="assets/img/05.03-01.png" alt="05.03-01.png" />
@@ -287,65 +267,55 @@
 <img src="assets/img/05.03-02.png" alt="05.03-02.png" />
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
+<h3 id="automatically-parsing-partials">تجزیه خودکار بخش‌های جزئی</h3>
 
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>کش کردن قالب‌ها</td>
-        <td>Template Caching</td>
-        <td>ذخیره‌سازی قالب‌های پردازش شده در حافظه برای استفاده مجدد</td>
-    </tr>
-    <tr>
-        <td>بهینه‌سازی‌ها</td>
-        <td>Optimizations</td>
-        <td>تغییراتی برای بهبود عملکرد و کارایی برنامه</td>
-    </tr>
-    <tr>
-        <td>کش</td>
-        <td>Cache</td>
-        <td>فضای ذخیره‌سازی موقت برای دسترسی سریع به داده‌ها</td>
-    </tr>
-    <tr>
-        <td>کد تکراری</td>
-        <td>Duplicate Code</td>
-        <td>بخش‌هایی از کد که در چند جا تکرار شده‌اند</td>
-    </tr>
-    <tr>
-        <td>تابع کمکی</td>
-        <td>Helper Function</td>
-        <td>تابعی که عملیات مشترک را انجام می‌دهد</td>
-    </tr>
-    <tr>
-        <td>تجزیه قالب</td>
-        <td>Template Parsing</td>
-        <td>فرآیند خواندن و تحلیل فایل‌های قالب</td>
-    </tr>
-    <tr>
-        <td>مدیریت حافظه</td>
-        <td>Memory Management</td>
-        <td>کنترل نحوه استفاده از حافظه در برنامه</td>
-    </tr>
-    <tr>
-        <td>بارگذاری فایل</td>
-        <td>File Loading</td>
-        <td>خواندن محتوای فایل‌ها از دیسک</td>
-    </tr>
-    <tr>
-        <td>نقشه قالب‌ها</td>
-        <td>Template Map</td>
-        <td>ساختار داده برای نگهداری قالب‌های کش شده</td>
-    </tr>
-    <tr>
-        <td>مسیر نسبی</td>
-        <td>Relative Path</td>
-        <td>آدرس فایل نسبت به موقعیت فعلی</td>
-    </tr>
-</table>
+<p>قبل از ادامه، بیایید تابع <code>newTemplateCache()</code> خود را کمی انعطاف‌پذیرتر کنیم تا به طور خودکار <em>همه قالب‌ها در پوشه <code>ui/html/partials</code></em> را تجزیه کند &mdash; به جای اینکه فقط فایل <code>nav.tmpl</code> ما را تجزیه کند.</p>
+
+<p>این کار زمان، تایپ و باگ‌های احتمالی را در صورت تمایل به افزودن بخش‌های جزئی اضافی در آینده، برای ما صرفه‌جویی می‌کند.</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/templates.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">newTemplateCache</span><span class="p">(</span><span class="p">)</span> <span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">cache</span> <span class="o">:=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="o">*</span><span class="nx">template</span><span class="p">.</span><span class="nx">Template</span><span class="p">{</span><span class="p">}</span>
+
+    <span class="nx">pages</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Glob</span><span class="p">(</span><span class="s">&#34;./ui/html/pages/*.tmpl&#34;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">page</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">pages</span> <span class="p">{</span>
+        <span class="nx">name</span> <span class="o">:=</span> <span class="nx">filepath</span><span class="p">.</span><span class="nf">Base</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+
+        <span class="c1">// Parse the base template file into a template set.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">template</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="s">&#34;./ui/html/base.tmpl&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Call ParseGlob() *on this template set* to add any partials.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseGlob</span><span class="p">(</span><span class="s">&#34;./ui/html/partials/*.tmpl&#34;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Call ParseFiles() *on this template set* to add the  page template.
+</span><span class="c1"></span>        <span class="nx">ts</span><span class="p">,</span> <span class="nx">err</span> <span class="p">=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">ParseFiles</span><span class="p">(</span><span class="nx">page</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+        <span class="p">}</span>
+
+        <span class="c1">// Add the template set to the map as normal...
+</span><span class="c1"></span>        <span class="nx">cache</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="p">=</span> <span class="nx">ts</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">cache</span><span class="p">,</span> <span class="kc">nil</span>
+<span class="p">}</span></pre>
+</figure>
+
 		</main>
 		<footer>
 			<div class="wrapper">

@@ -3,24 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>ماژول‌ها و ساخت‌های قابل تکرار &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.text figure.code, .text figure.bash, .text figure.go, .text figure.html {
-				direction: ltr !important;
-				text-align: left !important;
-			}
-			.text ul .code, .text ul .bash, .text ul .go, .text ul .html {
-				direction: ltr !important;
-				text-align: left !important;
-			}
-			.text ul li .code, .text ul li .bash, .text ul li .go, .text ul li .html {
-				direction: ltr !important;
-				text-align: left !important;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -28,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; ماژول‌ها و ساخت‌های قابل تکرار (Modules and Reproducible Builds)</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; ماژول‌ها و ساخت‌های قابل تکرار</span>
 						
 					
 				</div>
@@ -40,14 +27,14 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۴.۳.</div>
-			<h2 id="modules-and-reproducible-builds">ماژول‌ها و ساخت‌های قابل تکرار (Modules and Reproducible Builds)</h2>
+			<div class="chapter">فصل 4.3.</div>
+			<h2 id="modules-and-reproducible-builds">ماژول‌ها و ساخت‌های قابل تکرار</h2>
 
-<p>حالا که درایور MySQL نصب شده است، بیایید نگاهی به فایل <code>go.mod</code> بیندازیم (که در همان ابتدای کتاب آن را ایجاد کردیم). شما باید یک بلوک <code>require</code> (نیازمندی‌ها) با دو خط حاوی مسیر و شماره نسخه دقیق پکیج‌هایی که دانلود کردید را ببینید:</p>
+<p>حالا که درایور MySQL نصب شده است، بیایید به فایل <code>go.mod</code> نگاهی بیندازیم (که درست در ابتدای کتاب ایجاد کردیم). باید یک بلوک <code>require</code> با دو خط حاوی مسیر و شماره نسخه دقیق پکیج‌هایی که دانلود کردید ببینید:</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <figcaption>File: go.mod</figcaption>
-<pre>module snippetbox.letsgofa.net
+<pre>module snippetbox.alexedwards.net
 
 go 1.23.0
 
@@ -57,23 +44,23 @@ require (
 )</pre>
 </figure>
 
-<p>این خطوط در <code>go.mod</code> اساساً به دستور Go می‌گویند که دقیقاً از کدام نسخه پکیج (Package Version) باید هنگام اجرای دستوری مانند <code>go run</code>، <code>go test</code> یا <code>go build</code> از دایرکتوری پروژه شما استفاده شود.</p>
+<p>این خطوط در <code>go.mod</code> اساساً به دستور Go می‌گویند که دقیقاً کدام نسخه از یک پکیج باید هنگام اجرای دستوری مانند <code>go run</code>، <code>go test</code> یا <code>go build</code> از دایرکتوری پروژه شما استفاده شود.</p>
 
-<p>این باعث می‌شود که داشتن چندین پروژه روی یک ماشین که از <em>نسخه‌های مختلف یک پکیج (Different Package Versions)</em> استفاده می‌کنند، آسان شود. برای مثال، این پروژه از نسخه <code>v1.8.1</code> درایور MySQL استفاده می‌کند، اما شما می‌توانید کد دیگری روی کامپیوتر خود داشته باشید که از نسخه <code>v1.5.0</code> استفاده می‌کند و این کاملاً قابل قبول است.</p>
+<p>این باعث می‌شود که داشتن چندین پروژه روی همان ماشین که <em>نسخه‌های مختلف همان پکیج</em> استفاده می‌شود آسان شود. به عنوان مثال، این پروژه از <code>v1.8.1</code> درایور MySQL استفاده می‌کند، اما می‌توانید یک کدبیس دیگر روی کامپیوتر خود داشته باشید که از <code>v1.5.0</code> استفاده می‌کند و این کاملاً درست است.</p>
 
 <aside class="note"><p>
-<strong>نکته:</strong> حاشیه‌نویسی <code>// indirect</code> نشان می‌دهد که یک پکیج مستقیماً در هیچ عبارت <code>import</code> در کد شما ظاهر نمی‌شود. در حال حاضر، ما هنوز هیچ کدی ننوشته‌ایم که واقعاً از پکیج‌های <code>github.com/go-sql-driver/mysql</code> یا <code>filippo.io/edwards25519</code> استفاده کند، به همین دلیل هر دو به عنوان وابستگی‌های غیرمستقیم علامت‌گذاری شده‌اند. ما این را در فصل بعدی اصلاح خواهیم کرد.
+<strong>یادداشت:</strong> حاشیه‌نویسی <code>// indirect</code> نشان می‌دهد که یک پکیج به طور مستقیم در هیچ دستور <code>import</code> در کدبیس شما ظاهر نمی‌شود. در حال حاضر، ما هنوز هیچ کدی ننوشته‌ایم که واقعاً از پکیج‌های <code>github.com/go-sql-driver/mysql</code> یا <code>filippo.io/edwards25519</code> استفاده کند، به همین دلیل هر دو به عنوان وابستگی‌های غیرمستقیم علامت‌گذاری شده‌اند. این را در فصل بعدی اصلاح خواهیم کرد.
 </p></aside>
 
-<p>همچنین خواهید دید که یک فایل جدید به نام <code>go.sum</code> در ریشه دایرکتوری پروژه شما ایجاد شده است.</p>
+<p>همچنین خواهید دید که یک فایل جدید در ریشه دایرکتوری پروژه شما به نام <code>go.sum</code> ایجاد شده است.</p>
 
 <figure class="img">
 <img src="assets/img/04.03-01.png" alt="04.03-01.png" />
 </figure>
 
-<p>این فایل <code>go.sum</code> شامل مجموع‌های رمزنگاری شده است که محتوای پکیج‌های مورد نیاز را نشان می‌دهد. اگر آن را باز کنید باید چیزی شبیه به این را ببینید:</p>
+<p>این فایل <code>go.sum</code> شامل چک‌سام‌های رمزنگاری است که محتوای پکیج‌های مورد نیاز را نشان می‌دهد. اگر آن را باز کنید، باید چیزی شبیه این ببینید:</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <figcaption>File: go.sum</figcaption>
 <pre>filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
@@ -82,115 +69,66 @@ github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqw
 </pre>
 </figure>
 
-<p>فایل <code>go.sum</code> برای ویرایش دستی طراحی نشده است و معمولاً نیازی به باز کردن آن نخواهید داشت. اما دو عملکرد مفید دارد:</p>
+<p>فایل <code>go.sum</code> برای ویرایش دستی طراحی نشده است و به طور کلی نیازی به باز کردن آن نخواهید داشت. اما دو عملکرد مفید دارد:</p>
 
 <ul>
-<li><p>اگر دستور <code>go mod verify</code> را از ترمینال خود اجرا کنید، این دستور تأیید می‌کند که مجموع‌های رمزنگاری شده پکیج‌های دانلود شده روی ماشین شما با ورودی‌های موجود در <code>go.sum</code> مطابقت دارند، بنابراین می‌توانید مطمئن باشید که تغییر نکرده‌اند.</p>
+<li><p>اگر دستور <code>go mod verify</code> را از ترمینال خود اجرا کنید، این تأیید می‌کند که چک‌سام‌های پکیج‌های دانلود شده روی ماشین شما با ورودی‌های <code>go.sum</code> مطابقت دارند، بنابراین می‌توانید مطمئن باشید که تغییر نکرده‌اند.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go mod verify
 <samp>all modules verified</samp></pre>
 </figure>
 </li>
 
-<li><p>اگر شخص دیگری نیاز به دانلود تمام وابستگی‌های پروژه داشته باشد &mdash; که می‌تواند با اجرای <code>go mod download</code> انجام دهد &mdash; در صورت عدم تطابق بین پکیج‌هایی که دانلود می‌کند و مجموع‌های رمزنگاری شده در فایل، خطایی دریافت خواهد کرد.</p></li>
+<li><p>اگر شخص دیگری نیاز به دانلود تمام وابستگی‌ها برای پروژه داشته باشد — که می‌تواند با اجرای <code>go mod download</code> انجام دهد — در صورت عدم تطابق بین پکیج‌هایی که دانلود می‌کند و چک‌سام‌های موجود در فایل، خطا دریافت خواهد کرد.</p></li>
 </ul>
 
-<p>پس، به طور خلاصه:</p>
+<p>بنابراین، به طور خلاصه:</p>
 
 <ul>
-<li>شما (یا شخص دیگری در آینده) می‌توانید <code>go mod download</code> را اجرا کنید تا نسخه‌های دقیق تمام پکیج‌هایی که پروژه شما نیاز دارد را دانلود کنید.</li>
-<li>شما می‌توانید <code>go mod verify</code> را اجرا کنید تا اطمینان حاصل کنید که هیچ چیز در آن پکیج‌های دانلود شده به طور غیرمنتظره تغییر نکرده است.</li>
-<li>هر زمان که <code>go run</code>، <code>go test</code> یا <code>go build</code> را اجرا می‌کنید، همیشه از نسخه‌های دقیق پکیج‌های ذکر شده در <code>go.mod</code> استفاده خواهد شد.</li>
+<li>شما (یا شخص دیگری در آینده) می‌توانید <code>go mod download</code> را اجرا کنید تا نسخه‌های دقیق همه پکیج‌هایی که پروژه شما نیاز دارد را دانلود کنید.</li>
+<li>می‌توانید <code>go mod verify</code> را اجرا کنید تا اطمینان حاصل کنید که هیچ چیز در آن پکیج‌های دانلود شده به طور غیرمنتظره تغییر نکرده است.</li>
+<li>هر زمان که <code>go run</code>، <code>go test</code> یا <code>go build</code> را اجرا می‌کنید، نسخه‌های دقیق پکیج‌های فهرست شده در <code>go.mod</code> همیشه استفاده خواهند شد.</li>
 </ul>
 
-<p>و این موارد در کنار هم باعث می‌شود که ایجاد <a href="https://en.wikipedia.org/wiki/Reproducible_builds">ساخت‌های قابل تکرار</a> از برنامه‌های Go شما بسیار آسان‌تر شود.</p>
+<p>و این موارد در کنار هم، ایجاد قابل اعتماد <a href="https://en.wikipedia.org/wiki/Reproducible_builds">ساخت‌های قابل تکرار</a> از برنامه‌های Go شما را بسیار آسان‌تر می‌کند.</p>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="upgrading-packages">ارتقای پکیج‌ها (Upgrading Packages)</h4>
+<h4 id="upgrading-packages">ارتقای پکیج‌ها</h4>
 
-<p>پس از اینکه یک پکیج دانلود شد و به فایل <code>go.mod</code> شما اضافه شد، پکیج و نسخه آن 'ثابت' می‌شوند. اما دلایل زیادی وجود دارد که ممکن است بخواهید در آینده از نسخه جدیدتری از یک پکیج استفاده کنید.</p>
+<p>پس از دانلود یک پکیج و افزودن آن به فایل <code>go.mod</code> شما، پکیج و نسخه «ثابت» می‌شوند. اما دلایل زیادی وجود دارد که ممکن است بخواهید در آینده به نسخه جدیدتری از یک پکیج ارتقا دهید.</p>
 
-<p>برای ارتقا به آخرین نسخه <em>جزئی یا اصلاح</em> موجود یک پکیج، می‌توانید به سادگی <code>go get</code> را با پرچم <code>-u</code> اجرا کنید:</p>
+<p>برای ارتقا به آخرین <em>نسخه جزئی یا وصله</em> موجود از یک پکیج، می‌توانید به سادگی <code>go get</code> را با پرچم <code>-u</code> مانند این اجرا کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go get -u github.com/foo/bar</pre>
 </figure>
 
-<p>یا به طور متناوب، اگر می‌خواهید به یک نسخه خاص ارتقا پیدا کنید، باید همان دستور را با پسوند <code>@version</code> مناسب اجرا کنید. برای مثال:</p>
+<p>یا به طور جایگزین، اگر می‌خواهید به یک نسخه خاص ارتقا دهید، باید همان دستور را با پسوند مناسب <code>@version</code> اجرا کنید. به عنوان مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go get -u github.com/foo/bar@v2.0.0</pre>
 </figure>
 
-<h4 id="removing-unused-packages">حذف پکیج‌های استفاده نشده (Removing Unused Packages)</h4>
+<h4 id="removing-unused-packages">حذف پکیج‌های استفاده نشده</h4>
 
-<p>گاهی اوقات ممکن است یک پکیج را با <code>go get</code> نصب کنید و بعداً متوجه شوید که دیگر به آن نیاز ندارید. در این صورت دو انتخاب دارید.</p>
+<p>گاهی ممکن است یک پکیج را <code>go get</code> کنید و بعداً متوجه شوید که دیگر به آن نیاز ندارید. وقتی این اتفاق می‌افتد، دو انتخاب دارید.</p>
 
-<p>می‌توانید یا <code>go get</code> را اجرا کنید و مسیر پکیج را با <code>@none</code> پسوند دهید:</p>
+<p>می‌توانید یا <code>go get</code> را اجرا کنید و مسیر پکیج را با <code>@none</code> پسوند دهید، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go get github.com/foo/bar@none</pre>
 </figure>
 
-<p>یا اگر تمام ارجاعات به پکیج را در کد خود حذف کرده‌اید، می‌توانید <code>go mod tidy</code> را اجرا کنید، که به طور خودکار هر پکیج استفاده نشده را از فایل‌های <code>go.mod</code> و <code>go.sum</code> شما حذف می‌کند.</p>
+<p>یا اگر همه ارجاعات به پکیج را در کد خود حذف کرده‌اید، می‌توانید <code>go mod tidy</code> را اجرا کنید، که به طور خودکار هر پکیج استفاده نشده را از فایل‌های <code>go.mod</code> و <code>go.sum</code> شما حذف می‌کند.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go mod tidy</pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>ماژول‌ها</td>
-        <td>Modules</td>
-        <td>واحدهای مستقل کد در Go که شامل مجموعه‌ای از پکیج‌های مرتبط هستند</td>
-    </tr>
-    <tr>
-        <td>ساخت‌های قابل تکرار</td>
-        <td>Reproducible Builds</td>
-        <td>فرآیند ساخت نرم‌افزار که همیشه خروجی یکسانی تولید می‌کند</td>
-    </tr>
-    <tr>
-        <td>نیازمندی‌ها</td>
-        <td>Requirements</td>
-        <td>پکیج‌ها و وابستگی‌هایی که برای اجرای برنامه مورد نیاز هستند</td>
-    </tr>
-    <tr>
-        <td>نسخه پکیج</td>
-        <td>Package Version</td>
-        <td>شماره نسخه مشخص یک پکیج که نشان‌دهنده تغییرات و ویژگی‌های آن است</td>
-    </tr>
-    <tr>
-        <td>وابستگی‌های غیرمستقیم</td>
-        <td>Indirect Dependencies</td>
-        <td>پکیج‌هایی که مستقیماً در کد استفاده نمی‌شوند اما توسط سایر وابستگی‌ها مورد نیاز هستند</td>
-    </tr>
-    <tr>
-        <td>مجموع رمزنگاری شده</td>
-        <td>Cryptographic Checksum</td>
-        <td>مقدار هش که برای تأیید یکپارچگی محتوای پکیج استفاده می‌شود</td>
-    </tr>
-    <tr>
-        <td>ارتقای پکیج‌ها</td>
-        <td>Upgrading Packages</td>
-        <td>فرآیند به‌روزرسانی پکیج‌ها به نسخه‌های جدیدتر</td>
-    </tr>
-    <tr>
-        <td>پکیج‌های استفاده نشده</td>
-        <td>Unused Packages</td>
-        <td>پکیج‌هایی که در پروژه نصب شده‌اند اما دیگر مورد استفاده قرار نمی‌گیرند</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">

@@ -3,34 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مقدمه &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.text {
-				text-align: right;
-			}
-			.code, pre, samp, .code * {
-				text-align: left;
-				direction: ltr;
-			}
-			.code figcaption {
-				text-align: left;
-			}
-			header, footer {
-				direction: rtl;
-			}
-			header *, footer * {
-				text-align: right;
-			}
-			header .wrapper > div:last-child,
-			footer .wrapper > div:last-child {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -38,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; مقدمه</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; مقدمه</span>
 						
 					
 				</div>
@@ -53,93 +30,43 @@
 			<div class="chapter">فصل ۱.</div>
 			<h1 id="introduction">مقدمه</h1>
 
-<p>در این کتاب ما یک برنامه وب (Web Application) به نام Snippetbox می‌سازیم که به کاربران اجازه می‌دهد تا قطعات متن را کپی و به اشتراک بگذارند - شبیه به <a href="https://pastebin.com/">Pastebin</a> یا <a href="https://gist.github.com/">Gists</a> گیت‌هاب. در پایان ساخت، برنامه به این شکل خواهد بود:</p>
+<p>در این کتاب ما یک برنامه وب به نام Snippetbox می‌سازیم که به کاربران اجازه می‌دهد تکه‌های متن را paste و به اشتراک بگذارند — چیزی شبیه به <a href="https://pastebin.com/">Pastebin</a> یا <a href="https://gist.github.com/">Gists</a> گیت‌هاب. در پایان ساخت، چیزی شبیه به این خواهد بود:</p>
 
 <figure class="img">
 <img src="assets/img/01.00-01.png" alt="01.00-01.png" />
 </figure>
 
-<p>برنامه ما با یک صفحه وب ساده شروع می‌شود. سپس در هر فصل آن را گام به گام توسعه می‌دهیم تا کاربران بتوانند از طریق برنامه، قطعات متن را ذخیره و مشاهده کنند. این مسیر ما را از موضوعاتی مانند ساختار پروژه، مسیریابی درخواست‌ها (Request Routing)، کار با پایگاه داده (Database)، پردازش فرم‌ها (Form Processing) و نمایش امن داده‌های پویا (Dynamic Data Display) عبور می‌دهد.</p>
+<p>برنامه ما از یک صفحه وب ساده شروع می‌شود. سپس با هر فصل، گام‌به‌گام آن را می‌سازیم تا زمانی که کاربر بتواند تکه‌های متن را از طریق برنامه ذخیره و مشاهده کند. این کار ما را از موضوعاتی مانند نحوه ساختاردهی پروژه، مسیریابی (routing) درخواست‌ها، کار با پایگاه داده، پردازش فرم‌ها و نمایش ایمن داده‌های پویا عبور می‌دهد.</p>
 
-<p>سپس در ادامه کتاب، حساب‌های کاربری را اضافه می‌کنیم و برنامه را محدود می‌کنیم تا فقط کاربران ثبت‌نام شده بتوانند قطعات متن ایجاد کنند. این ما را با موضوعات پیشرفته‌تری مانند پیکربندی سرور HTTPS، مدیریت جلسات (Session Management)، احراز هویت کاربران (User Authentication) و middleware آشنا می‌کند.</p>
+<p>سپس در ادامه کتاب، حساب‌های کاربری را اضافه می‌کنیم و برنامه را محدود می‌کنیم تا فقط کاربران ثبت‌نام‌شده بتوانند تکه‌های متن ایجاد کنند. این کار ما را از موضوعات پیشرفته‌تری مانند پیکربندی سرور HTTPS، مدیریت نشست (session management)، احراز هویت کاربر (authentication) و میدل‌ور (middleware) عبور می‌دهد.</p>
 
 <h3 id="conventions">قوانین و قراردادها</h3>
 
-<p>بلوک‌های کد در این کتاب با پس‌زمینه نقره‌ای نمایش داده می‌شوند، مانند مثال زیر. اگر یک بلوک کد به خصوص طولانی باشد، قسمت‌های غیر مرتبط ممکن است با سه نقطه جایگزین شوند. برای سهولت در دنبال کردن، اکثر بلوک‌های کد یک نوار عنوان در بالا دارند که نام فایل حاوی کد را نشان می‌دهد. مانند این:</p>
+<p>بلوک‌های کد در این کتاب با پس‌زمینه نقرهای نمایش داده می‌شوند، مانند مثال زیر. اگر یک بلوک کد به خصوص طولانی باشد، بخش‌هایی که مرتبط نیستند ممکن است با سه نقطه جایگزین شوند. برای سهولت در دنبال کردن، بیشتر بلوک‌های کد یک نوار عنوان در بالا دارند که نام فایلی که کد در آن قرار دارد را نشان می‌دهد. مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: hello.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
-<span class="o">...</span> <span class="c1">// Indicates that some existing code has been omitted.
+<span class="o">...</span> <span class="c1">// نشان می‌دهد که بخشی از کد موجود حذف شده است.
 </span><span class="c1"></span>
 <span class="kd">func</span> <span class="nf">sayHello</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Hello world!&#34;</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>دستورات ترمینال (Terminal Commands) با پس‌زمینه سیاه نمایش داده می‌شوند و با علامت دلار شروع می‌شوند. این دستورات باید در هر سیستم عامل مبتنی بر یونیکس، از جمله مک OSX و لینوکس کار کنند. خروجی نمونه به رنگ نقره‌ای زیر دستور نمایش داده می‌شود، مانند این:</p>
+<p>دستورالعمل‌های ترمینال با پس‌زمینه سیاه نمایش داده می‌شوند و با نماد دلار شروع می‌شوند. این دستورات باید روی هر سیستم‌عامل مبتنی بر Unix، از جمله macOS و Linux کار کنند. خروجی نمونه در زیر دستور به رنگ نقرهای نمایش داده می‌شود، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ echo &#34;Hello world!&#34;
 <samp>Hello world!</samp></pre>
 </figure>
 
-<p>اگر از ویندوز استفاده می‌کنید، باید دستور را با معادل DOS جایگزین کنید یا عملیات را از طریق رابط گرافیکی معمول ویندوز انجام دهید.</p>
+<p>اگر از Windows استفاده می‌کنید، باید دستور را با معادل DOS جایگزین کنید یا عمل را از طریق رابط گرافیکی عادی Windows انجام دهید.</p>
 
-<p>لطفاً توجه داشته باشید که تاریخ‌ها و برچسب‌های زمانی نشان داده شده در تصاویر و خروجی نمونه از دستورات فقط جنبه نمایشی دارند. آنها لزوماً با یکدیگر هماهنگ نیستند یا به صورت زمانی در طول کتاب پیشرفت نمی‌کنند.</p>
+<p>لطفاً توجه داشته باشید که تاریخ‌ها و برچسب‌های زمانی نشان داده شده در اسکرین‌شات‌ها و خروجی نمونه دستورات فقط برای توضیح هستند. آن‌ها لزوماً با یکدیگر هماهنگ نیستند یا به ترتیب زمانی در طول کتاب پیش نمی‌روند.</p>
 
-<p>برخی از فصل‌های این کتاب با بخش <em>اطلاعات اضافی</em> به پایان می‌رسند. این بخش‌ها شامل اطلاعاتی هستند که برای ساخت برنامه ما مرتبط نیستند، اما همچنان مهم (یا گاهی اوقات، فقط جالب) هستند که بدانید. اگر در Go بسیار تازه‌کار هستید، ممکن است بخواهید این قسمت‌ها را رد کنید و بعداً به آنها برگردید.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>برنامه وب</td>
-        <td>Web Application</td>
-        <td>برنامه‌ای که از طریق مرورگر وب قابل دسترسی است و با کاربران از طریق پروتکل HTTP ارتباط برقرار می‌کند</td>
-    </tr>
-    <tr>
-        <td>مسیریابی درخواست‌ها</td>
-        <td>Request Routing</td>
-        <td>فرآیند هدایت درخواست‌های HTTP به توابع پردازشگر مناسب بر اساس URL و روش درخواست</td>
-    </tr>
-    <tr>
-        <td>پایگاه داده</td>
-        <td>Database</td>
-        <td>سیستم ذخیره‌سازی ساختاریافته برای نگهداری و بازیابی داده‌ها</td>
-    </tr>
-    <tr>
-        <td>پردازش فرم‌ها</td>
-        <td>Form Processing</td>
-        <td>فرآیند دریافت، اعتبارسنجی و پردازش داده‌های ارسال شده توسط کاربر از طریق فرم‌های HTML</td>
-    </tr>
-    <tr>
-        <td>داده‌های پویا</td>
-        <td>Dynamic Data</td>
-        <td>داده‌هایی که به صورت پویا در زمان اجرا تولید می‌شوند و در قالب HTML به کاربر نمایش داده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>مدیریت جلسات</td>
-        <td>Session Management</td>
-        <td>فرآیند نگهداری و مدیریت اطلاعات کاربر در طول مدت تعامل با برنامه وب</td>
-    </tr>
-    <tr>
-        <td>احراز هویت کاربران</td>
-        <td>User Authentication</td>
-        <td>فرآیند تأیید هویت کاربران و کنترل دسترسی آنها به بخش‌های مختلف برنامه</td>
-    </tr>
-    <tr>
-        <td>Middleware</td>
-        <td>Middleware</td>
-        <td>لایه‌های نرم‌افزاری که بین درخواست HTTP و پردازشگر نهایی قرار می‌گیرند و وظایف مشترک را انجام می‌دهند</td>
-    </tr>
-</table>
+<p>برخی از فصل‌های این کتاب با بخش <em>اطلاعات اضافی</em> به پایان می‌رسند. این بخش‌ها حاوی اطلاعاتی هستند که مرتبط با ساخت برنامه ما نیستند، اما هنوز مهم هستند (یا گاهی اوقات فقط جالب). اگر تازه با Go شروع کرده‌اید، ممکن است بخواهید این بخش‌ها را رد کنید و بعداً به آن‌ها برگردید.</p>
 
 		</main>
 		<footer>
@@ -151,7 +78,7 @@
 					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
-					&lsaquo; <a href="01.01-prerequisites.html">بعدی</a> 
+					<a href="01.01-prerequisites.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</footer>

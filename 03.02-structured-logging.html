@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>لاگ‌گیری ساختاریافته &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code.go, .code.html, .code.bash {
-				text-align: left;
-				direction: ltr;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; لاگ‌گیری ساختاریافته (Structured Logging)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; لاگ‌گیری ساختاریافته</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="03.01-managing-configuration-settings.html">قبلی</a>
@@ -27,100 +26,100 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل 3.2.</div>
-			<h2 id="structured-logging">لاگ‌گیری ساختاریافته (Structured Logging)</h2>
+			<h2 id="structured-logging">لاگ‌گیری ساختاریافته</h2>
 
-<p>در حال حاضر، ما در حال خروجی‌گیری از لاگ‌ها با استفاده از توابع <a href="https://pkg.go.dev/log/#Printf"><code>log.Printf()</code></a> و <a href="https://pkg.go.dev/log/#Fatal"><code>log.Fatal()</code></a> هستیم. یک مثال خوب از این، لاگ <em>&ldquo;شروع سرور&hellip;&rdquo;</em> است که درست قبل از شروع سرور چاپ می‌کنیم:</p>
+<p>در حال حاضر، ما ورودی‌های لاگ را از کد خود با استفاده از توابع <a href="https://pkg.go.dev/log/#Printf"><code>log.Printf()</code></a> و <a href="https://pkg.go.dev/log/#Fatal"><code>log.Fatal()</code></a> خروجی می‌دهیم. یک مثال خوب از این، ورودی لاگ <em>&ldquo;starting server&hellip;&rdquo;</em> است که دقیقاً قبل از شروع سرور ما چاپ می‌کنیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">log</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;starting server on %s&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span></pre>
 </figure>
 
-<p>هر دو تابع <code>log.Printf()</code> و <code>log.Fatal()</code> از لاگر استاندارد Go برای خروجی‌گیری استفاده می‌کنند که به طور پیش‌فرض پیام را با تاریخ و زمان محلی پیشوند می‌کند و به جریان خطای استاندارد می‌نویسد (که باید در پنجره ترمینال شما نمایش داده شود).</p>
+<p>هر دو تابع <code>log.Printf()</code> و <code>log.Fatal()</code> ورودی‌های لاگ را با استفاده از <dfn>لاگر استاندارد</dfn> Go از پکیج <a href="https://pkg.go.dev/log"><code>log</code></a> خروجی می‌دهند، که — به طور پیش‌فرض — یک پیام را با تاریخ و زمان محلی پیشوند می‌کند و به جریان خطای استاندارد می‌نویسد (که باید در پنجره ترمینال شما نمایش داده شود).</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web/
 <samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
 </figure>
 
-<p>برای بسیاری از برنامه‌ها، استفاده از لاگر استاندارد <em>کافی</em> خواهد بود و نیازی به انجام کارهای پیچیده‌تر نیست.</p>
+<p>برای بسیاری از برنامه‌ها، استفاده از لاگر استاندارد <em>کافی</em> خواهد بود و نیازی به انجام کار پیچیده‌تری نیست.</p>
 
-<p>اما برای برنامه‌هایی که لاگ‌گیری زیادی انجام می‌دهند، ممکن است بخواهید لاگ‌ها را به گونه‌ای ساختار دهید که فیلتر کردن و کار با آن‌ها آسان‌تر باشد. به عنوان مثال، ممکن است بخواهید بین سطوح مختلف <em>شدت</em> لاگ‌ها (مانند لاگ‌های اطلاعاتی و خطا) تمایز قائل شوید، یا ساختار ثابتی برای لاگ‌ها اعمال کنید تا برای برنامه‌ها یا سرویس‌های خارجی به راحتی قابل تجزیه باشند.</p>
+<p>اما برای برنامه‌هایی که لاگ‌گیری زیادی انجام می‌دهند، ممکن است بخواهید ورودی‌های لاگ را برای فیلتر و کار آسان‌تر کنید. به عنوان مثال، ممکن است بخواهید بین شدت‌های مختلف ورودی‌های لاگ تمایز قائل شوید (مانند ورودی‌های اطلاعاتی و خطا)، یا ساختار یکنواختی برای ورودی‌های لاگ اعمال کنید تا برای برنامه‌ها یا سرویس‌های خارجی تجزیه آسان باشند.</p>
 
-<p>برای پشتیبانی از این، کتابخانه استاندارد Go شامل بسته <a href="https://pkg.go.dev/log/slog"><code>log/slog</code></a> است که به شما امکان می‌دهد لاگرهای ساختاریافته سفارشی ایجاد کنید که لاگ‌ها را در قالبی مشخص خروجی می‌گیرند. هر لاگ شامل موارد زیر است:</p>
+<p>برای پشتیبانی از این، کتابخانه استاندارد Go شامل پکیج <a href="https://pkg.go.dev/log/slog"><code>log/slog</code></a> است که به شما امکان ایجاد <em>لاگرهای ساختاریافته</em> سفارشی که ورودی‌های لاگ را در یک فرمت مشخص خروجی می‌دهند را می‌دهد. هر ورودی لاگ شامل موارد زیر است:</p>
 
 <ul>
-<li>یک زمان‌سنج با دقت میلی‌ثانیه.</li>
-<li>سطح شدت لاگ (<code>Debug</code>، <code>Info</code>، <code>Warn</code> یا <code>Error</code>).</li>
+<li>یک برچسب زمانی با دقت میلی‌ثانیه.</li>
+<li>سطح شدت ورودی لاگ (<code>Debug</code>، <code>Info</code>، <code>Warn</code> یا <code>Error</code>).</li>
 <li>پیام لاگ (یک مقدار <code>string</code> دلخواه).</li>
-<li>به صورت اختیاری، هر تعداد جفت کلید-مقدار (که به عنوان <em>attributes</em> شناخته می‌شوند) حاوی اطلاعات اضافی.</li>
+<li>به صورت اختیاری، هر تعداد جفت کلید-مقدار (معروف به <em>ویژگی‌ها</em>) حاوی اطلاعات اضافی.</li>
 </ul>
 
-<h3 id="creating-a-structured-logger">ایجاد یک لاگر ساختاریافته (Creating a Structured Logger)</h3>
+<h3 id="creating-a-structured-logger">ایجاد یک لاگر ساختاریافته</h3>
 
-<p>کد ایجاد یک لاگر ساختاریافته با بسته <code>log/slog</code> ممکن است در ابتدا کمی گیج‌کننده به نظر برسد.</p>
+<p>کد ایجاد یک لاگر ساختاریافته با پکیج <code>log/slog</code> ممکن است اولین بار که آن را می‌بینید کمی گیج‌کننده باشد.</p>
 
-<p>نکته کلیدی این است که همه لاگرهای ساختاریافته یک <em>مدیریت‌کننده لاگ ساختاریافته</em> دارند (که نباید با یک مدیریت‌کننده HTTP اشتباه گرفته شود)، و در واقع این مدیریت‌کننده است که کنترل می‌کند لاگ‌ها چگونه فرمت‌بندی و به کجا نوشته شوند.</p>
+<p>نکته کلیدی که باید درک کنید این است که همه لاگرهای ساختاریافته یک <em>handler لاگ ساختاریافته</em> مرتبط با خود دارند (نباید با یک HTTP handler اشتباه گرفته شود)، و در واقع این handler لاگ است که نحوه فرمت‌بندی ورودی‌های لاگ و محل نوشتن آن‌ها را کنترل می‌کند.</p>
 
-<p>کد ایجاد یک لاگر به این صورت است:</p>
+<p>کد ایجاد یک لاگر (logger) به این شکل است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">loggerHandler</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span><span class="o">...</span><span class="p">}</span><span class="p">)</span>
 <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">loggerHandler</span><span class="p">)</span></pre>
 </figure>
 
-<p>در خط اول کد، ابتدا از تابع <a href="https://pkg.go.dev/log/slog#NewTextHandler"><code>slog.NewTextHandler()</code></a> برای ایجاد مدیریت‌کننده لاگ ساختاریافته استفاده می‌کنیم. این تابع دو آرگومان می‌پذیرد:</p>
+<p>در خط اول کد، ابتدا از تابع <a href="https://pkg.go.dev/log/slog#NewTextHandler"><code>slog.NewTextHandler()</code></a> برای ایجاد handler لاگ ساختاریافته استفاده می‌کنیم. این تابع دو آرگومان می‌پذیرد:</p>
 
 <ul>
-<li>آرگومان اول مقصد نوشتن لاگ‌ها است. در مثال بالا، ما آن را به <code>os.Stdout</code> تنظیم کرده‌ایم، که به این معنی است که لاگ‌ها به جریان خروجی استاندارد نوشته می‌شوند.</li>
-<li>آرگومان دوم یک اشاره‌گر به ساختار <a href="https://pkg.go.dev/log/slog#HandlerOptions"><code>slog.HandlerOptions</code></a> است که می‌توانید از آن برای سفارشی‌سازی رفتار مدیریت‌کننده استفاده کنید. در پایان این فصل به برخی از سفارشی‌سازی‌های موجود نگاهی خواهیم انداخت. اگر با پیش‌فرض‌ها راضی هستید و نمی‌خواهید چیزی را تغییر دهید، می‌توانید به جای آن <code>nil</code> را به عنوان آرگومان دوم ارسال کنید.</li>
+<li>آرگومان اول مقصد نوشتن برای ورودی‌های لاگ است. در مثال بالا آن را روی <code>os.Stdout</code> تنظیم کرده‌ایم، که به معنای نوشتن ورودی‌های لاگ به جریان خروجی استاندارد است.</li>
+<li>آرگومان دوم یک اشاره‌گر به یک ساختار <a href="https://pkg.go.dev/log/slog#HandlerOptions"><code>slog.HandlerOptions</code></a> است که می‌توانید از آن برای سفارشی‌سازی رفتار handler استفاده کنید. در پایان این فصل به برخی از سفارشی‌سازی‌های موجود نگاهی می‌اندازیم. اگر با پیش‌فرض‌ها راضی هستید و نمی‌خواهید چیزی را تغییر دهید، می‌توانید به جای آن <code>nil</code> را به عنوان آرگومان دوم ارسال کنید.</li>
 </ul>
 
-<p>سپس در خط دوم کد، در واقع لاگر ساختاریافته را با ارسال مدیریت‌کننده به تابع <a href="https://pkg.go.dev/log/slog#New"><code>slog.New()</code></a> ایجاد می‌کنیم.</p>
+<p>سپس در خط دوم کد، در واقع لاگر ساختاریافته را با ارسال handler به تابع <a href="https://pkg.go.dev/log/slog#New"><code>slog.New()</code></a> ایجاد می‌کنیم.</p>
 
-<p>در عمل، معمولاً این کار را در یک خط کد انجام می‌دهند:</p>
+<p>در عمل، انجام همه این کارها در یک خط کد رایج‌تر است:</p>
 
-<figure class="code go">
-<pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span></pre>
+<figure class="code go" dir="ltr">
+<pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span><span class="o">...</span><span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="using-a-structured-logger">استفاده از یک لاگر ساختاریافته (Using a Structured Logger)</h3>
+<h3 id="using-a-structured-logger">استفاده از یک لاگر ساختاریافته</h3>
 
-<p>پس از ایجاد یک لاگر ساختاریافته، می‌توانید با فراخوانی متدهای <code>Debug()</code>، <code>Info()</code>، <code>Warn()</code> یا <code>Error()</code> بر روی لاگر، یک لاگ را در سطح شدت خاصی بنویسید. به عنوان مثال، خط کد زیر:</p>
+<p>پس از ایجاد یک لاگر ساختاریافته، می‌توانید یک ورودی لاگ در سطح شدت خاص با فراخوانی متدهای <code>Debug()</code>، <code>Info()</code>، <code>Warn()</code> یا <code>Error()</code> روی لاگر بنویسید. به عنوان مثال، خط کد زیر:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;request received&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>منجر به لاگی می‌شود که به این صورت است:</p>
+<p>منجر به یک ورودی لاگ می‌شود که به این شکل است:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;request received&#34;</samp></pre>
 </figure>
 
-<p>متدهای <code>Debug()</code>، <code>Info()</code>، <code>Warn()</code> یا <code>Error()</code> متدهای <em>variadic</em> هستند که تعداد دلخواهی از ویژگی‌های اضافی (جفت‌های کلید-مقدار) را می‌پذیرند. به این صورت:</p>
+<p>متدهای <code>Debug()</code>، <code>Info()</code>، <code>Warn()</code> یا <code>Error()</code> <em>متدهای متغیر</em> هستند که تعداد دلخواهی از ویژگی‌های اضافی (جفت‌های کلید-مقدار) را می‌پذیرند. مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;request received&#34;</span><span class="p">,</span> <span class="s">&#34;method&#34;</span><span class="p">,</span> <span class="s">&#34;GET&#34;</span><span class="p">,</span> <span class="s">&#34;path&#34;</span><span class="p">,</span> <span class="s">&#34;/&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>در این مثال، ما دو ویژگی اضافی به لاگ اضافه کرده‌ایم: کلید <code>&quot;method&quot;</code> و مقدار <code>&quot;GET&quot;</code>، و کلید <code>&quot;path&quot;</code> و مقدار <code>&quot;/&quot;</code>. کلیدهای ویژگی همیشه باید رشته باشند، اما مقادیر می‌توانند از هر نوعی باشند. در این مثال، لاگ به این صورت خواهد بود:</p>
+<p>در این مثال، ما دو ویژگی اضافی به ورودی لاگ اضافه کرده‌ایم: کلید <code>&quot;method&quot;</code> و مقدار <code>&quot;GET&quot;</code>، و کلید <code>&quot;path&quot;</code> و مقدار <code>&quot;/&quot;</code>. کلیدهای ویژگی باید همیشه رشته باشند، اما مقادیر می‌توانند از هر نوعی باشند. در این مثال، ورودی لاگ به این شکل خواهد بود:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;request received&#34; method=GET path=/</samp></pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> اگر کلیدها، مقادیر یا پیام لاگ شما شامل کاراکترهای <code>&quot;</code> یا <code>=</code> یا هر فضای خالی باشد، در خروجی لاگ در علامت نقل قول قرار می‌گیرند. ما می‌توانیم این رفتار را در مثال بالا ببینیم، جایی که پیام لاگ <code>msg=&quot;request received&quot;</code> در نقل قول قرار گرفته است.
+<strong>یادداشت:</strong> اگر کلیدهای ویژگی، مقادیر یا پیام لاگ شما شامل کاراکترهای <code>&quot;</code> یا <code>=</code> یا هر فضای خالی باشند، در خروجی لاگ در نقل‌قول‌های دوتایی پیچیده می‌شوند. می‌توانیم این رفتار را در مثال بالا ببینیم، جایی که پیام لاگ <code>msg=&quot;request received&quot;</code> نقل‌قول شده است.
 </p></aside>
 
-<h3 id="adding-structured-logging-to-our-application">افزودن لاگ‌گیری ساختاریافته به برنامه ما (Adding Structured Logging to Our Application)</h3>
+<h3 id="adding-structured-logging-to-our-application">افزودن لاگ‌گیری ساختاریافته به برنامه ما</h3>
 
-<p>خوب، بیایید فایل <code>main.go</code> خود را به‌روزرسانی کنیم تا به جای لاگر استاندارد Go از یک لاگر ساختاریافته استفاده کنیم. به این صورت:</p>
+<p>خوب، بیایید ادامه دهیم و فایل <code>main.go</code> خود را برای استفاده از یک لاگر ساختاریافته به جای لاگر استاندارد Go به‌روزرسانی کنیم. مانند این:</p>
 
-<figure class="code go">
-<figcaption>File:  cmd/web/main.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -162,192 +161,132 @@
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> هیچ معادل لاگ‌گیری ساختاریافته‌ای برای تابع <code>log.Fatal()</code> وجود ندارد که بتوانیم برای مدیریت خطای بازگشتی از <code>http.ListenAndServe()</code> استفاده کنیم. در عوض، نزدیک‌ترین چیزی که می‌توانیم انجام دهیم این است که یک پیام را در سطح شدت <code>Error</code> لاگ کنیم و سپس به صورت دستی <code>os.Exit(1)</code> را فراخوانی کنیم تا برنامه با کد خروج 1 خاتمه یابد، همانطور که در کد بالا انجام می‌دهیم.
+<strong>مهم:</strong> هیچ معادل لاگ‌گیری ساختاریافته برای تابع <code>log.Fatal()</code> وجود ندارد که بتوانیم از آن برای مدیریت خطای برگشتی از <code>http.ListenAndServe()</code> استفاده کنیم. در عوض، نزدیک‌ترین چیزی که می‌توانیم به آن برسیم، لاگ کردن یک پیام در سطح شدت <code>Error</code> و سپس فراخوانی دستی <code>os.Exit(1)</code> برای خاتمه برنامه با <a href="https://tldp.org/LDP/abs/html/exitcodes.html">کد خروجی 1</a> است، همان‌طور که در کد بالا آمده است.
 </p></aside>
 
 <p>خوب&hellip; بیایید این را امتحان کنیم!</p>
 
-<p>برنامه را اجرا کنید، سپس یک پنجره ترمینال <em>دیگر</em> باز کنید و سعی کنید آن را برای بار دوم اجرا کنید. این باید یک خطا ایجاد کند زیرا آدرس شبکه‌ای که سرور ما می‌خواهد به آن گوش دهد (<code>&quot;:4000&quot;</code>) در حال حاضر در حال استفاده است.</p>
+<p>ادامه دهید و برنامه را اجرا کنید، سپس یک پنجره ترمینال <em>دیگر</em> باز کنید و سعی کنید آن را بار دوم اجرا کنید. این باید یک خطا ایجاد کند زیرا آدرس شبکه که سرور ما می‌خواهد روی آن گوش دهد (<code>&quot;:4000&quot;</code>) در حال استفاده است.</p>
 
-<p>خروجی لاگ در ترمینال دوم شما باید به این صورت باشد:</p>
+<p>خروجی لاگ در ترمینال دوم شما باید کمی شبیه این باشد:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
 time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;listen tcp :4000: bind: address already in use&#34;
 exit status 1</samp></pre>
 </figure>
 
-<p>این به نظر خوب می‌آید. ما می‌توانیم ببینیم که دو لاگ اطلاعات متفاوتی دارند، اما به همان شکل کلی فرمت‌بندی شده‌اند.</p>
+<p>این به نظر خوب می‌رسد. می‌بینیم که دو ورودی لاگ حاوی اطلاعات متفاوتی هستند، اما به همان روش کلی فرمت شده‌اند.</p>
 
-<p>لاگ اول دارای سطح شدت <code>level=INFO</code> و پیام <code>msg=&quot;starting server&quot;</code> است، همراه با ویژگی اضافی <code>addr=:4000</code>. در مقابل، می‌بینیم که لاگ دوم دارای سطح شدت <code>level=ERROR</code> است، مقدار <code>msg</code> حاوی محتوای پیام خطا است و هیچ ویژگی اضافی وجود ندارد.</p>
+<p>ورودی لاگ اول شدت <code>level=INFO</code> و پیام <code>msg=&quot;starting server&quot;</code> دارد، همراه با ویژگی اضافی <code>addr=:4000</code>. در مقابل، می‌بینیم که ورودی لاگ دوم شدت <code>level=ERROR</code> دارد، مقدار <code>msg</code> حاوی محتوای پیام خطا است و هیچ ویژگی اضافی وجود ندارد.</p>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="safer-attributes">ویژگی‌های ایمن‌تر (Safer Attributes)</h4>
+<h4 id="safer-attributes">ویژگی‌های امن‌تر</h4>
 
-<p>فرض کنید که به طور تصادفی کدی نوشته‌اید که در آن فراموش کرده‌اید کلید یا مقدار یک ویژگی را وارد کنید. به عنوان مثال:</p>
+<p>بیایید بگوییم که به طور تصادفی کدی می‌نویسید که فراموش می‌کنید کلید یا مقدار یک ویژگی را شامل کنید. به عنوان مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">)</span> <span class="c1">// Oops, the value for &#34;addr&#34; is missing
 </span></pre>
 </figure>
 
-<p>وقتی این اتفاق می‌افتد، لاگ همچنان نوشته می‌شود اما ویژگی دارای کلید <code>!BADKEY</code> خواهد بود، به این صورت:</p>
+<p>وقتی این اتفاق می‌افتد، ورودی لاگ همچنان نوشته می‌شود اما ویژگی کلید <code>!BADKEY</code> خواهد داشت، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; !BADKEY=addr</samp></pre>
 </figure>
 
-<p>برای جلوگیری از این اتفاق و شناسایی مشکلات در زمان کامپایل، می‌توانید از تابع <a href="https://pkg.go.dev/log/slog#Any"><code>slog.Any()</code></a> برای ایجاد یک جفت ویژگی استفاده کنید:</p>
+<p>برای جلوگیری از این اتفاق و شناسایی هر مشکلی در زمان کامپایل، می‌توانید به جای آن از تابع <a href="https://pkg.go.dev/log/slog#Any"><code>slog.Any()</code></a> برای ایجاد یک جفت ویژگی استفاده کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">Any</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>یا می‌توانید حتی بیشتر پیش بروید و با استفاده از توابع <code>slog.String()</code>، <code>slog.Int()</code>، <code>slog.Bool()</code>، <code>slog.Time()</code> و <code>slog.Duration()</code> ویژگی‌هایی با نوع خاصی از مقدار ایجاد کنید.</p>
+<p>یا می‌توانید حتی بیشتر پیش بروید و با استفاده از توابع <code>slog.String()</code>، <code>slog.Int()</code>، <code>slog.Bool()</code>، <code>slog.Time()</code> و <code>slog.Duration()</code> برای ایجاد ویژگی‌ها با نوع خاصی از مقدار، ایمنی نوع (type safety) اضافی معرفی کنید.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>اینکه بخواهید از این توابع استفاده کنید یا نه به شما بستگی دارد. بسته <code>log/slog</code> نسبتاً جدید در Go است (در Go 1.21 معرفی شده است)، و هنوز بهترین روش‌ها یا کنوانسیون‌های زیادی برای استفاده از آن وجود ندارد. اما معامله ساده است&hellip; استفاده از توابعی مانند <code>slog.String()</code> برای ایجاد ویژگی‌ها بیشتر است، اما ایمن‌تر است به این معنا که خطر بروز باگ‌ها در برنامه شما را کاهش می‌دهد.</p>
+<p>استفاده از این توابع یا نه به خود شما بستگی دارد. پکیج <code>log/slog</code> نسبتاً جدید در Go است (در Go 1.21 معرفی شد)، و هنوز روش‌های زیادی از بهترین روش‌ها یا قراردادهای تثبیت شده در مورد استفاده از آن وجود ندارد. اما معامله ساده است&hellip; استفاده از توابعی مانند <code>slog.String()</code> برای ایجاد ویژگی‌ها طولانی‌تر است، اما از این نظر امن‌تر است که خطر باگ‌ها در برنامه شما را کاهش می‌دهد.</p>
 
-<h4 id="json-formatted-logs">لاگ‌های فرمت‌شده به صورت JSON (JSON-formatted Logs)</h4>
+<h4 id="json-formatted-logs">لاگ‌های فرمت JSON</h4>
 
-<p>تابع <code>slog.NewTextHandler()</code> که در این فصل استفاده کرده‌ایم، یک مدیریت‌کننده ایجاد می‌کند که لاگ‌ها را به صورت متن ساده می‌نویسد. اما می‌توان یک مدیریت‌کننده ایجاد کرد که لاگ‌ها را به صورت <em>اشیاء JSON</em> بنویسد، با استفاده از تابع <a href="https://pkg.go.dev/log/slog#NewJSONHandler"><code>slog.NewJSONHandler()</code></a>. به این صورت:</p>
+<p>تابع <code>slog.NewTextHandler()</code> که در این فصل استفاده کرده‌ایم، یک handler ایجاد می‌کند که ورودی‌های لاگ متنی ساده می‌نویسد. اما امکان ایجاد یک handler که ورودی‌های لاگ را به عنوان <em>اشیاء JSON</em> می‌نویسد با استفاده از تابع <a href="https://pkg.go.dev/log/slog#NewJSONHandler"><code>slog.NewJSONHandler()</code></a> وجود دارد. مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewJSONHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>هنگام استفاده از مدیریت‌کننده JSON، خروجی لاگ به این صورت خواهد بود:</p>
+<p>هنگام استفاده از handler JSON، خروجی لاگ شبیه این خواهد بود:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre><samp>{&#34;time&#34;:&#34;2024-03-18T11:29:23.00000000+00:00&#34;,&#34;level&#34;:&#34;INFO&#34;,&#34;msg&#34;:&#34;starting server&#34;,&#34;addr&#34;:&#34;:4000&#34;}
 {&#34;time&#34;:&#34;2024-03-18T11:29:23.00000000+00:00&#34;,&#34;level&#34;:&#34;ERROR&#34;,&#34;msg&#34;:&#34;listen tcp :4000: bind: address already in use&#34;}</samp></pre>
 </figure>
 
-<h4 id="minimum-log-level">حداقل سطح لاگ (Minimum Log Level)</h4>
+<h4 id="minimum-log-level">حداقل سطح لاگ</h4>
 
-<p>همانطور که چندین بار اشاره کردیم، بسته <code>log/slog</code> از چهار سطح شدت پشتیبانی می‌کند: <code>Debug</code>، <code>Info</code>، <code>Warn</code> و <code>Error</code> <em>به همین ترتیب</em>. <code>Debug</code> کمترین سطح شدت است و <code>Error</code> بیشترین سطح شدت.</p>
+<p>همانطور که چند بار ذکر کردیم، پکیج <code>log/slog</code> چهار سطح شدت را پشتیبانی می‌کند: <code>Debug</code>، <code>Info</code>، <code>Warn</code> و <code>Error</code> <em>به ترتیب</em>. <code>Debug</code> کم‌شدت‌ترین سطح است و <code>Error</code> شدیدترین سطح است.</p>
 
-<p>به طور پیش‌فرض، حداقل سطح لاگ برای یک لاگر ساختاریافته <code>Info</code> است. این بدان معناست که هر لاگی با شدت <em>کمتر</em> از <code>Info</code> &mdash; یعنی لاگ‌های سطح <code>Debug</code> &mdash; به صورت بی‌صدا حذف می‌شوند.</p>
+<p>به طور پیش‌فرض، حداقل سطح لاگ برای یک لاگر ساختاریافته <code>Info</code> است. این به معنای آن است که هر ورودی لاگ با شدت <em>کمتر</em> از <code>Info</code> — یعنی ورودی‌های سطح <code>Debug</code> — به طور خاموش دور ریخته می‌شوند.</p>
 
-<p>می‌توانید از ساختار <code>slog.HandlerOptions</code> برای لغو این تنظیم و تنظیم حداقل سطح به <code>Debug</code> (یا هر سطح دیگری) استفاده کنید:</p>
+<p>می‌توانید از ساختار (struct) <code>slog.HandlerOptions</code> برای بازنویسی این و تنظیم حداقل سطح روی <code>Debug</code> (یا هر سطح دیگری) استفاده کنید اگر می‌خواهید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span>
     <span class="nx">Level</span><span class="p">:</span> <span class="nx">slog</span><span class="p">.</span><span class="nx">LevelDebug</span><span class="p">,</span>
 <span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<h4 id="caller-location">مکان فراخوانی (Caller Location)</h4>
+<h4 id="caller-location">موقعیت فراخوان‌کننده</h4>
 
-<p>می‌توانید مدیریت‌کننده را سفارشی کنید تا شامل نام فایل و شماره خط کد منبع فراخوانی در لاگ‌ها باشد، به این صورت:</p>
+<p>همچنین می‌توانید handler را سفارشی کنید تا نام فایل و شماره خط کد منبع فراخوانی را در ورودی‌های لاگ شامل کند، مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">slog</span><span class="p">.</span><span class="nx">HandlerOptions</span><span class="p">{</span>
     <span class="nx">AddSource</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
 <span class="p">}</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>لاگ‌ها به این صورت خواهند بود، با مکان فراخوانی که تحت کلید <code>source</code> ثبت شده است:</p>
+<p>ورودی‌های لاگ شبیه این خواهند بود، با موقعیت فراخوان‌کننده ثبت شده تحت کلید <code>source</code>:</p>
 
-<figure class="code bash">
-<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO source=/home/letsgofa/code/snippetbox/cmd/web/main.go:32 msg=&#34;starting server&#34; addr=:4000</samp></pre>
+<figure class="code bash" dir="ltr">
+<pre><samp>time=2024-03-18T11:29:23.000+00:00 level=INFO source=/home/alex/code/snippetbox/cmd/web/main.go:32 msg=&#34;starting server&#34; addr=:4000</samp></pre>
 </figure>
 
-<h4 id="decoupled-logging">لاگ‌گیری جداشده</h4>
+<h4 id="decoupled-logging">لاگ‌گیری جدا شده</h4>
 
-<p>در این فصل، لاگر ساختاریافته خود را تنظیم کرده‌ایم تا لاگ‌ها را به <code>os.Stdout</code> &mdash; جریان خروجی استاندارد بنویسد.</p>
+<p>در این فصل، لاگر ساختاریافته خود را برای نوشتن ورودی‌ها به <code>os.Stdout</code> — جریان خروجی استاندارد — تنظیم کرده‌ایم.</p>
 
-<p>بزرگترین مزیت نوشتن لاگ‌ها به <code>os.Stdout</code> این است که برنامه و لاگ‌گیری شما جدا شده‌اند. خود برنامه شما نگران مسیریابی یا ذخیره لاگ‌ها نیست، و این می‌تواند مدیریت لاگ‌ها را بسته به محیط آسان‌تر کند.</p>
+<p>مزیت بزرگ نوشتن ورودی‌های لاگ به <code>os.Stdout</code> این است که برنامه و لاگ‌گیری شما جدا شده‌اند. خود برنامه شما نگران مسیریابی یا ذخیره‌سازی لاگ‌ها نیست، و این می‌تواند مدیریت لاگ‌ها را بسته به محیط متفاوت آسان‌تر کند.</p>
 
 <p>در طول توسعه، مشاهده خروجی لاگ آسان است زیرا جریان خروجی استاندارد در ترمینال نمایش داده می‌شود.</p>
 
-<p>در محیط‌های آزمایشی یا تولیدی، می‌توانید جریان را به مقصد نهایی برای مشاهده و بایگانی هدایت کنید. این مقصد می‌تواند فایل‌های دیسک یا یک سرویس لاگ‌گیری مانند Splunk باشد. به هر حال، مقصد نهایی لاگ‌ها می‌تواند توسط محیط اجرایی شما به صورت مستقل از برنامه مدیریت شود.</p>
+<p>در محیط‌های استیجینگ یا تولید، می‌توانید جریان را به مقصد نهایی برای مشاهده و بایگانی هدایت کنید. این مقصد می‌تواند فایل‌های روی دیسک یا یک سرویس لاگ‌گیری مانند Splunk باشد. در هر صورت، مقصد نهایی لاگ‌ها می‌تواند توسط محیط اجرای شما مستقل از برنامه مدیریت شود.</p>
 
-<p>به عنوان مثال، می‌توانیم جریان خروجی استاندارد را به یک فایل دیسک هدایت کنیم هنگام شروع برنامه به این صورت:</p>
+<p>به عنوان مثال، می‌توانیم جریان خروجی استاندارد را هنگام راه‌اندازی برنامه به یک فایل روی دیسک هدایت کنیم، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web &gt;&gt;/tmp/web.log</pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> استفاده از فلش دوتایی <code>&gt;&gt;</code> به جای قطع کردن آن هنگام شروع برنامه، به یک فایل موجود اضافه می‌کند.
+<strong>یادداشت:</strong> استفاده از فلش دوتایی <code>&gt;&gt;</code> به یک فایل موجود اضافه می‌کند، به جای اینکه هنگام راه‌اندازی برنامه آن را کوتاه کند.
 </p></aside>
 
 <h4 id="concurrent-logging">لاگ‌گیری همزمان</h4>
 
-<p>لاگرهای سفارشی ایجاد شده توسط <code>slog.New()</code> برای همزمانی ایمن هستند. می‌توانید یک لاگر را به اشتراک بگذارید و از آن در چندین گوروتین و در مدیریت‌کننده‌های HTTP خود استفاده کنید بدون اینکه نگران شرایط مسابقه باشید.</p>
+<p>لاگرهای سفارشی ایجاد شده توسط <code>slog.New()</code> از نظر همزمانی (concurrency-safe) امن هستند. می‌توانید یک لاگر واحد را به اشتراک بگذارید و از آن در چندین گوروتین و در HTTP handlerهای خود استفاده کنید بدون نیاز به نگرانی در مورد شرایط مسابقه (race conditions).</p>
 
-<p>با این حال، اگر <em>چندین</em> لاگر ساختاریافته دارید که به یک مقصد می‌نویسند، باید مراقب باشید و اطمینان حاصل کنید که متد <code>Write()</code> زیرین مقصد نیز برای استفاده همزمان ایمن است.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>لاگ‌گیری ساختاریافته</td>
-        <td>Structured Logging</td>
-        <td>روشی برای ثبت لاگ‌ها در قالبی ساختاریافته و قابل پردازش</td>
-    </tr>
-    <tr>
-        <td>لاگر</td>
-        <td>Logger</td>
-        <td>ابزاری برای ثبت و مدیریت پیام‌های لاگ</td>
-    </tr>
-    <tr>
-        <td>سطح شدت</td>
-        <td>Severity Level</td>
-        <td>درجه اهمیت یک پیام لاگ (مانند Debug، Info، Warn، Error)</td>
-    </tr>
-    <tr>
-        <td>مدیریت‌کننده لاگ</td>
-        <td>Log Handler</td>
-        <td>بخشی از سیستم لاگ‌گیری که نحوه فرمت‌بندی و ذخیره لاگ‌ها را کنترل می‌کند</td>
-    </tr>
-    <tr>
-        <td>ویژگی‌ها</td>
-        <td>Attributes</td>
-        <td>جفت‌های کلید-مقدار که اطلاعات اضافی را به یک پیام لاگ اضافه می‌کنند</td>
-    </tr>
-    <tr>
-        <td>جریان خروجی استاندارد</td>
-        <td>Standard Output</td>
-        <td>مسیر پیش‌فرض برای خروجی برنامه</td>
-    </tr>
-    <tr>
-        <td>فرمت‌بندی JSON</td>
-        <td>JSON Formatting</td>
-        <td>نمایش لاگ‌ها در قالب ساختاریافته JSON</td>
-    </tr>
-    <tr>
-        <td>حداقل سطح لاگ</td>
-        <td>Minimum Log Level</td>
-        <td>پایین‌ترین سطح شدتی که لاگ‌ها در آن ثبت می‌شوند</td>
-    </tr>
-    <tr>
-        <td>مکان فراخوانی</td>
-        <td>Caller Location</td>
-        <td>اطلاعات مربوط به محل دقیق کد که لاگ از آنجا ایجاد شده است</td>
-    </tr>
-    <tr>
-        <td>تابع متغیر</td>
-        <td>Variadic Function</td>
-        <td>تابعی که می‌تواند تعداد نامشخصی پارامتر دریافت کند</td>
-    </tr>
-</table>
+<p>با این حال، اگر <em>چندین</em> لاگر ساختاریافته دارید که به همان مقصد می‌نویسند، باید مراقب باشید و اطمینان حاصل کنید که متد <code>Write()</code> زیربنایی مقصد نیز برای استفاده همزمان امن است.</p>
 
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="03.01-managing-configuration-settings.html">قبلی</a>

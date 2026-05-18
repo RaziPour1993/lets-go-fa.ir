@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>سرو کردن فایل‌های استاتیک &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
-	<body dir="rtl">
+	<body>
 		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; ارائه فایل‌های استاتیک (Serving Static Files)</span>
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; سرو کردن فایل‌های استاتیک</span>
+						
 					
 				</div>
 				<div>
@@ -24,87 +27,87 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 2.9.</div>
-			<h2 id="serving-static-files">ارائه فایل‌های استاتیک (Serving Static Files)</h2>
+			<div class="chapter">فصل ۲.۹.</div>
+			<h2 id="serving-static-files">سرو کردن فایل‌های استاتیک</h2>
 
-<p>اکنون بیایید ظاهر و احساس صفحه اصلی را با افزودن برخی فایل‌های استاتیک CSS و تصویر به پروژه خود بهبود دهیم، همراه با کمی جاوااسکریپت برای برجسته کردن آیتم ناوبری فعال.</p>
+<p>حالا بیایید ظاهر و احساس صفحه اصلی را با اضافه کردن برخی فایل‌های CSS و تصویر استاتیک به پروژه خود بهبود دهیم، همراه با کمی JavaScript برای برجسته کردن آیتم ناوبری فعال.</p>
 
-<p>اگر در حال دنبال کردن هستید، می‌توانید فایل‌های لازم را بگیرید و آن‌ها را در پوشه <code>ui/static</code> که قبلاً ساخته‌ایم با دستورات زیر استخراج کنید:</p>
+<p>اگر همراه هستید، می‌توانید فایل‌های لازم را بگیرید و آن‌ها را در پوشه <code>ui/static</code> که قبلاً ساختیم با دستورات زیر استخراج کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
-$ curl https://www.letsgofa.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</pre>
+$ curl https://www.alexedwards.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</pre>
 </figure>
 
-<p>محتویات دایرکتوری <code>ui/static</code> شما اکنون باید به این شکل باشد:</p>
+<p>محتوای دایرکتوری <code>ui/static</code> شما اکنون باید شبیه به این باشد:</p>
 
 <figure class="img">
 <img src="assets/img/02.09-01.png" alt="02.09-01.png" />
 </figure>
 
-<h3 id="the-http-fileserver-handler">هندلر http.Fileserver (HTTP FileServer Handler)</h3>
+<h3 id="the-http-fileserver-handler">Handler http.FileServer</h3>
 
-<p>بسته <code>net/http</code> گو با یک هندلر <a href="https://pkg.go.dev/net/http/#FileServer"><code>http.FileServer</code></a> داخلی ارائه می‌شود که می‌توانید از آن برای ارائه فایل‌ها از یک دایرکتوری خاص استفاده کنید. بیایید یک مسیر جدید به برنامه خود اضافه کنیم تا همه درخواست‌های <code>GET</code> که با <code>&quot;/static/&quot;</code> شروع می‌شوند با استفاده از این هندلر مدیریت شوند، به این صورت:</p>
+<p>بسته <code>net/http</code> در Go با یک handler داخلی <a href="https://pkg.go.dev/net/http/#FileServer"><code>http.FileServer</code></a> همراه است که می‌توانید از آن برای سرو کردن فایل‌ها از طریق HTTP از یک دایرکتوری خاص استفاده کنید. بیایید یک route جدید به برنامه خود اضافه کنیم تا همه درخواست‌های <code>GET</code> که با <code>&quot;/static/&quot;</code> شروع می‌شوند با استفاده از این handler شوند، مانند این:</p>
 
-<table>
+<table dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>هندلر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
 <td>GET /</td>
-<td>خانه</td>
+<td>home</td>
 <td>نمایش صفحه اصلی</td>
 </tr>
 
 <tr>
 <td>GET /snippet/view/{id}</td>
-<td>نمایش قطعه</td>
-<td>نمایش یک قطعه خاص</td>
+<td>snippetView</td>
+<td>نمایش یک تکه متن خاص</td>
 </tr>
 
 <tr>
 <td>GET /snippet/create</td>
-<td>ایجاد قطعه</td>
-<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+<td>snippetCreate</td>
+<td>نمایش فرم برای ایجاد یک تکه متن جدید</td>
 </tr>
 
 <tr>
 <td>POST /snippet/create</td>
-<td>ایجاد قطعه پست</td>
-<td>ذخیره یک قطعه جدید</td>
+<td>snippetCreatePost</td>
+<td>ذخیره یک تکه متن جدید</td>
 </tr>
 
 <tr>
 <td><strong>GET /static/</strong></td>
 <td><strong>http.FileServer</strong></td>
-<td><strong>ارائه یک فایل استاتیک خاص</strong></td>
+<td><strong>سرو کردن یک فایل استاتیک خاص</strong></td>
 </tr>
 </tbody>
 </table>
 <aside class="hint"><p>
- <strong>به یاد داشته باشید:</strong> الگوی <code>&quot;GET /static/&quot;</code> یک الگوی مسیر زیرشاخه است، بنابراین به نوعی مانند این است که یک کاراکتر جایگزین در انتها وجود دارد.
+ <strong>یادآوری:</strong> الگوی <code>&quot;GET /static/&quot;</code> یک الگوی مسیر subtree است، پس کمی مانند این عمل می‌کند که یک wildcard در انتها وجود دارد.
 </p></aside>
 
-<p>برای ایجاد یک هندلر <code>http.FileServer</code> جدید، باید از تابع <a href="https://pkg.go.dev/net/http/#FileServer"><code>http.FileServer()</code></a> به این صورت استفاده کنیم:</p>
+<p>برای ایجاد یک handler جدید <code>http.FileServer</code>، باید از تابع <a href="https://pkg.go.dev/net/http/#FileServer"><code>http.FileServer()</code></a> مانند این استفاده کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>وقتی این هندلر درخواستی برای یک فایل دریافت می‌کند، اسلش ابتدایی را از مسیر URL درخواست حذف می‌کند و سپس دایرکتوری <code>./ui/static</code> را برای فایل مربوطه جستجو می‌کند تا به کاربر ارسال کند.</p>
+<p>وقتی این handler درخواستی برای یک فایل دریافت می‌کند، اسلش ابتدایی را از مسیر URL درخواست حذف می‌کند و سپس دایرکتوری <code>./ui/static</code> را برای فایل مربوطه جستجو می‌کند تا به کاربر ارسال کند.</p>
 
-<p>بنابراین، برای اینکه این به درستی کار کند، باید پیشوند <code>&quot;/static&quot;</code> را از مسیر URL <em>قبل از</em> ارسال به <code>http.FileServer</code> حذف کنیم. در غیر این صورت، به دنبال فایلی خواهد بود که وجود ندارد و کاربر یک پاسخ <code>404 صفحه یافت نشد</code> دریافت خواهد کرد. خوشبختانه گو شامل یک کمک‌کننده <a href="https://pkg.go.dev/net/http/#StripPrefix"><code>http.StripPrefix()</code></a> به طور خاص برای این کار است.</p>
+<p>پس، برای اینکه این به درستی کار کند، باید <code>&quot;/static&quot;</code> ابتدایی را از مسیر URL <em>قبل از</em> ارسال آن به <code>http.FileServer</code> حذف کنیم. در غیر این صورت به دنبال فایلی خواهد بود که وجود ندارد و کاربر پاسخ <code>404 page not found</code> دریافت خواهد کرد. خوشبختانه Go یک helper <a href="https://pkg.go.dev/net/http/#StripPrefix"><code>http.StripPrefix()</code></a> به طور خاص برای این کار شامل می‌کند.</p>
 
-<p>فایل <code>main.go</code> خود را باز کنید و کد زیر را اضافه کنید، به طوری که فایل به این شکل درآید:</p>
+<p>فایل <code>main.go</code> خود را باز کنید و کد زیر را اضافه کنید، تا فایل به این صورت شود:</p>
 
 <figure class="code go" dir="ltr">
-<figcaption>File:  cmd/web/main.go</figcaption>
+<figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -138,24 +141,24 @@ $ curl https://www.letsgofa.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</
 <span class="p">}</span></pre>
 </figure>
 
-<p>پس از اتمام، برنامه را مجدداً راه‌اندازی کنید و <a href="http://localhost:4000/static/"><code>http://localhost:4000/static/</code></a> را در مرورگر خود باز کنید. باید یک فهرست دایرکتوری قابل مرور از پوشه <code>ui/static</code> را ببینید که به این شکل است:</p>
+<p>پس از تکمیل، برنامه را دوباره راه‌اندازی کنید و <a href="http://localhost:4000/static/"><code>http://localhost:4000/static/</code></a> را در مرورگر خود باز کنید. باید یک لیست دایرکتوری قابل ناوبری از پوشه <code>ui/static</code> ببینید که شبیه به این است:</p>
 
 <figure class="img">
 <img src="assets/img/02.09-02.png" alt="02.09-02.png" />
 </figure>
 
-<p>احساس راحتی کنید و در فهرست دایرکتوری بازی کنید و فایل‌های فردی را مشاهده کنید. به عنوان مثال، اگر به <a href="http://localhost:4000/static/css/main.css"><code>http://localhost:4000/static/css/main.css</code></a> بروید، باید فایل CSS را در مرورگر خود به این شکل ببینید:</p>
+<p>آزادانه بازی کنید و از طریق لیست دایرکتوری مرور کنید تا فایل‌های فردی را مشاهده کنید. برای مثال، اگر به <a href="http://localhost:4000/static/css/main.css"><code>http://localhost:4000/static/css/main.css</code></a> ناوبری کنید، باید فایل CSS در مرورگر شما مانند این ظاهر شود:</p>
 
 <figure class="img">
 <img src="assets/img/02.09-03.png" alt="02.09-03.png" />
 </figure>
 
-<h3 id="using-the-static-files">استفاده از فایل‌های استاتیک (Using Static Files)</h3>
+<h3 id="using-the-static-files">استفاده از فایل‌های استاتیک</h3>
 
-<p>با کارکرد صحیح سرور فایل، اکنون می‌توانیم فایل <code>ui/html/base.tmpl</code> را به‌روزرسانی کنیم تا از فایل‌های استاتیک استفاده کنیم:</p>
+<p>با کار کردن صحیح file server، اکنون می‌توانیم فایل <code>ui/html/base.tmpl</code> را به‌روزرسانی کنیم تا از فایل‌های استاتیک استفاده کند:</p>
 
 <figure class="code html" dir="ltr">
-<figcaption>File:  ui/html/base.tmpl</figcaption>
+<figcaption>File: ui/html/base.tmpl</figcaption>
 <pre>{{define &#34;base&#34;}}
 <span class="cp">&lt;!doctype html&gt;</span>
 <span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;en&#39;</span><span class="p"></span><span class="p">&gt;</span>
@@ -184,7 +187,7 @@ $ curl https://www.letsgofa.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</
 {{end}}</pre>
 </figure>
 
-<p>تغییرات را ذخیره کنید، سپس سرور را مجدداً راه‌اندازی کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید. صفحه اصلی شما اکنون باید به این شکل باشد:</p>
+<p>مطمئن شوید که تغییرات را ذخیره می‌کنید، سپس سرور را دوباره راه‌اندازی کنید و <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> را بازدید کنید. صفحه اصلی شما اکنون باید شبیه به این باشد:</p>
 
 <figure class="img">
 <img src="assets/img/02.09-04.png" alt="02.09-04.png" />
@@ -192,17 +195,17 @@ $ curl https://www.letsgofa.net/static/sb-v2.tar.gz | tar -xvz -C ./ui/static/</
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="file-server-features-and-functions">ویژگی‌ها و عملکردهای سرور فایل (File Server Features and Functions)</h4>
+<h4 id="file-server-features-and-functions">ویژگی‌ها و توابع file server</h4>
 
-<p>هندلر <code>http.FileServer</code> گو دارای چند ویژگی واقعاً خوب است که ارزش ذکر کردن دارند:</p>
+<p>Handler <code>http.FileServer</code> در Go چند ویژگی واقعاً خوب دارد که ارزش ذکر دارد:</p>
 
 <ul>
-<li><p>همه مسیرهای درخواست را با عبور از تابع <a href="https://pkg.go.dev/path/#Clean"><code>path.Clean()</code></a> قبل از جستجوی یک فایل پاکسازی می‌کند. این عناصر <code>.</code> و <code>..</code> را از مسیر URL حذف می‌کند، که به جلوگیری از حملات پیمایش دایرکتوری کمک می‌کند. این ویژگی به ویژه مفید است اگر از سرور فایل در کنار یک روتر استفاده می‌کنید که به طور خودکار مسیرهای URL را پاکسازی نمی‌کند.</p></li>
+<li><p>همه مسیرهای درخواست را با اجرای آن‌ها از طریق تابع <a href="https://pkg.go.dev/path/#Clean"><code>path.Clean()</code></a> قبل از جستجوی یک فایل پاکسازی می‌کند. این هر عنصر <code>.</code> و <code>..</code> را از مسیر URL حذف می‌کند، که به توقف حملات directory traversal کمک می‌کند. این ویژگی به خصوص مفید است اگر از fileserver در کنار یک router استفاده می‌کنید که به طور خودکار مسیرهای URL را پاکسازی نمی‌کند.</p></li>
 
-<li><p><a href="https://benramsey.com/blog/2008/05/206-partial-content-and-range-requests">درخواست‌های محدوده</a> به طور کامل پشتیبانی می‌شوند. این عالی است اگر برنامه شما فایل‌های بزرگی را ارائه می‌دهد و می‌خواهید از دانلودهای قابل از سرگیری پشتیبانی کنید. می‌توانید این عملکرد را در عمل ببینید اگر از curl برای درخواست بایت‌های 100-199 از فایل <code>logo.png</code> استفاده کنید، به این صورت:</p></li>
-	
+<li><p><a href="https://benramsey.com/blog/2008/05/206-partial-content-and-range-requests">درخواست‌های Range</a> به طور کامل پشتیبانی می‌شوند. این عالی است اگر برنامه شما فایل‌های بزرگ را سرو می‌کند و می‌خواهید دانلودهای قابل از سرگیری را پشتیبانی کنید. می‌توانید این قابلیت را در عمل ببینید اگر از curl برای درخواست بایت‌های 100-199 از فایل <code>logo.png</code> استفاده کنید، مانند این:</p>
+
 <figure class="code bash" dir="ltr">
 <pre>$ curl -i -H &#34;Range: bytes=100-199&#34; --output - http://localhost:4000/static/img/logo.png
 <samp>HTTP/1.1 206 Partial Content
@@ -214,23 +217,22 @@ Last-Modified: Wed, 18 Mar 2024 11:29:23 GMT
 Date: Wed, 18 Mar 2024 11:29:23 GMT
 [binary data]</samp></pre>
 </figure>
+</li>
 
+<li><p>هدرهای <code>Last-Modified</code> و <code>If-Modified-Since</code> به طور شفاف پشتیبانی می‌شوند. اگر یک فایل از آخرین باری که کاربر آن را درخواست کرده تغییر نکرده باشد، سپس <code>http.FileServer</code> یک کد وضعیت <code>304 Not Modified</code> به جای خود فایل ارسال خواهد کرد. این به کاهش تأخیر و overhead پردازش برای هم client و هم server کمک می‌کند.</p></li>
 
-
-<li><p>هدرهای <code>Last-Modified</code> و <code>If-Modified-Since</code> به طور شفاف پشتیبانی می‌شوند. اگر یک فایل از زمانی که کاربر آخرین بار آن را درخواست کرده تغییر نکرده باشد، <code>http.FileServer</code> یک کد وضعیت <code>304 Not Modified</code> به جای خود فایل ارسال می‌کند. این به کاهش تأخیر و بار پردازشی برای هر دو طرف مشتری و سرور کمک می‌کند.</p></li>
-
-<li><p>نوع محتوا به طور خودکار از پسوند فایل با استفاده از تابع <a href="https://pkg.go.dev/mime/#TypeByExtension"><code>mime.TypeByExtension()</code></a> تنظیم می‌شود. می‌توانید در صورت لزوم پسوندها و نوع‌های محتوای سفارشی خود را با استفاده از تابع <a href="https://pkg.go.dev/mime/#AddExtensionType"><code>mime.AddExtensionType()</code></a> اضافه کنید.</p></li>
+<li><p><code>Content-Type</code> به طور خودکار از پسوند فایل با استفاده از تابع <a href="https://pkg.go.dev/mime/#TypeByExtension"><code>mime.TypeByExtension()</code></a> تنظیم می‌شود. می‌توانید پسوندها و انواع محتوای سفارشی خود را با استفاده از تابع <a href="https://pkg.go.dev/mime/#AddExtensionType"><code>mime.AddExtensionType()</code></a> در صورت لزوم اضافه کنید.</p></li>
 </ul>
 
-<h4 id="performance">عملکرد (Performance)</h4>
+<h4 id="performance">عملکرد</h4>
 
-<p>در این فصل سرور فایل را به گونه‌ای تنظیم کردیم که فایل‌ها را از دایرکتوری <code>./ui/static</code> روی دیسک سخت شما ارائه دهد.</p>
+<p>در این فصل file server را تنظیم کردیم تا فایل‌ها را از دایرکتوری <code>./ui/static</code> روی هارد دیسک شما سرو کند.</p>
 
-<p>اما مهم است که توجه داشته باشید که <code>http.FileServer</code> احتمالاً این فایل‌ها را از دیسک نمی‌خواند وقتی که برنامه در حال اجرا است. هر دو سیستم عامل <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-caching">ویندوز</a> و <a href="https://www.tldp.org/LDP/sag/html/buffer-cache.html">یونیکس</a> فایل‌های اخیراً استفاده شده را در RAM ذخیره می‌کنند، بنابراین (حداقل برای فایل‌هایی که به طور مکرر ارائه می‌شوند) احتمالاً <code>http.FileServer</code> آن‌ها را از RAM ارائه می‌دهد به جای اینکه سفر نسبتاً کند به دیسک سخت شما را انجام دهد.</p>
+<p>اما مهم است توجه داشته باشید که <code>http.FileServer</code> احتمالاً این فایل‌ها را از دیسک نخواهد خواند وقتی برنامه در حال اجرا است. هم سیستم‌عامل‌های <a href="https://docs.microsoft.com/en-us/windows/desktop/fileio/file-caching">Windows</a> و هم <a href="https://www.tldp.org/LDP/sag/html/buffer-cache.html">Unix-based</a> فایل‌های اخیراً استفاده شده را در RAM cache می‌کنند، پس (حداقل برای فایل‌های مکرراً سرو شده) احتمال دارد که <code>http.FileServer</code> آن‌ها را از RAM سرو کند به جای انجام round-trip نسبتاً کند به هارد دیسک شما.</p>
 
-<h4 id="serving-single-files">ارائه فایل‌های تکی (Serving Single Files)</h4>
+<h4 id="serving-single-files">سرو کردن فایل‌های تکی</h4>
 
-<p>گاهی اوقات ممکن است بخواهید یک فایل تکی را از داخل یک هندلر ارائه دهید. برای این کار تابع <a href="https://pkg.go.dev/net/http/#ServeFile"><code>http.ServeFile()</code></a> وجود دارد، که می‌توانید به این صورت از آن استفاده کنید:</p>
+<p>گاهی ممکن است بخواهید یک فایل تکی را از داخل یک handler سرو کنید. برای این کار تابع <a href="https://pkg.go.dev/net/http/#ServeFile"><code>http.ServeFile()</code></a> وجود دارد، که می‌توانید مانند این استفاده کنید:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">downloadHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -239,80 +241,20 @@ Date: Wed, 18 Mar 2024 11:29:23 GMT
 </figure>
 
 <aside class="important"><p>
-<strong>هشدار:</strong> <code>http.ServeFile()</code> به طور خودکار مسیر فایل را پاکسازی نمی‌کند. اگر در حال ساختن یک مسیر فایل از ورودی کاربر غیرقابل اعتماد هستید، برای جلوگیری از حملات پیمایش دایرکتوری باید ورودی را با <a href="https://pkg.go.dev/path/filepath/#Clean"><code>filepath.Clean()</code></a> قبل از استفاده از آن پاکسازی کنید.
+<strong>هشدار:</strong> <code>http.ServeFile()</code> به طور خودکار مسیر فایل را پاکسازی نمی‌کند. اگر در حال ساخت یک مسیر فایل از ورودی کاربر غیرقابل اعتماد هستید، برای جلوگیری از حملات directory traversal <em>باید</em> ورودی را با <a href="https://pkg.go.dev/path/filepath/#Clean"><code>filepath.Clean()</code></a> قبل از استفاده پاکسازی کنید.
 </p></aside>
 
-<h4 id="disabling-directory-listings">غیرفعال کردن فهرست‌های دایرکتوری (Disabling Directory Listings)</h4>
+<h4 id="disabling-directory-listings">غیرفعال کردن لیست‌های دایرکتوری</h4>
 
-<p>اگر می‌خواهید فهرست‌های دایرکتوری را غیرفعال کنید، چند روش مختلف وجود دارد که می‌توانید انجام دهید.</p>
+<p>اگر می‌خواهید لیست‌های دایرکتوری را غیرفعال کنید، چند رویکرد مختلف وجود دارد که می‌توانید بگیرید.</p>
 
-<p>ساده‌ترین راه؟ یک فایل <code>index.html</code> خالی به دایرکتوری خاصی که می‌خواهید فهرست‌ها را برای آن غیرفعال کنید اضافه کنید. این سپس به جای فهرست دایرکتوری ارائه می‌شود و کاربر یک پاسخ <code>200 OK</code> بدون بدنه دریافت خواهد کرد. اگر می‌خواهید این کار را برای همه دایرکتوری‌های زیر <code>./ui/static</code> انجام دهید، می‌توانید از دستور زیر استفاده کنید:</p>
+<p>ساده‌ترین راه؟ یک فایل خالی <code>index.html</code> به دایرکتوری خاصی که می‌خواهید لیست‌ها را برای آن غیرفعال کنید اضافه کنید. این سپس به جای لیست دایرکتوری سرو خواهد شد، و کاربر یک پاسخ <code>200 OK</code> بدون body دریافت خواهد کرد. اگر می‌خواهید این را برای همه دایرکتوری‌های زیر <code>./ui/static</code> انجام دهید می‌توانید از دستور استفاده کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ find ./ui/static -type d -exec touch {}/index.html \;</pre>
 </figure>
 
-<p>یک راه حل پیچیده‌تر (اما به طور قابل بحث بهتر) این است که یک پیاده‌سازی سفارشی از <a href="https://pkg.go.dev/net/http/#FileSystem"><code>http.FileSystem</code></a> ایجاد کنید و آن را برای هر دایرکتوری یک خطای <code>os.ErrNotExist</code> برگردانید. یک توضیح کامل و کد نمونه را می‌توانید در <a href="https://www.letsgofa.net/blog/disable-http-fileserver-directory-listings">این پست وبلاگ</a> پیدا کنید.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>فایل‌های استاتیک</td>
-        <td>Static Files</td>
-        <td>فایل‌هایی که بدون تغییر به کاربر ارسال می‌شوند، مانند CSS، JavaScript و تصاویر</td>
-    </tr>
-    <tr>
-        <td>هندلر سرور فایل</td>
-        <td>File Server Handler</td>
-        <td>کامپوننتی که مسئول ارائه فایل‌های استاتیک به کاربران است</td>
-    </tr>
-    <tr>
-        <td>پاکسازی مسیر</td>
-        <td>Path Cleaning</td>
-        <td>فرآیند حذف عناصر ناامن از مسیر URL برای جلوگیری از حملات امنیتی</td>
-    </tr>
-    <tr>
-        <td>درخواست محدوده</td>
-        <td>Range Request</td>
-        <td>درخواستی که فقط بخشی از یک فایل را می‌خواهد، مفید برای دانلودهای قابل از سرگیری</td>
-    </tr>
-    <tr>
-        <td>نوع محتوا</td>
-        <td>Content Type</td>
-        <td>مشخصه‌ای که نوع فایل ارسالی را به مرورگر اعلام می‌کند</td>
-    </tr>
-    <tr>
-        <td>فهرست دایرکتوری</td>
-        <td>Directory Listing</td>
-        <td>نمایش لیست فایل‌ها و پوشه‌های موجود در یک دایرکتوری</td>
-    </tr>
-    <tr>
-        <td>پیمایش دایرکتوری</td>
-        <td>Directory Traversal</td>
-        <td>یک نوع حمله امنیتی که سعی می‌کند به فایل‌های خارج از دایرکتوری مجاز دسترسی پیدا کند</td>
-    </tr>
-    <tr>
-        <td>کد وضعیت</td>
-        <td>Status Code</td>
-        <td>عددی که وضعیت پاسخ HTTP را نشان می‌دهد (مثل 200 برای موفقیت)</td>
-    </tr>
-    <tr>
-        <td>هدر آخرین تغییر</td>
-        <td>Last-Modified Header</td>
-        <td>هدر HTTP که زمان آخرین تغییر یک فایل را نشان می‌دهد</td>
-    </tr>
-    <tr>
-        <td>حافظه نهان</td>
-        <td>Cache</td>
-        <td>ذخیره موقت داده‌ها برای دسترسی سریع‌تر</td>
-    </tr>
-</table>
+<p>یک راه‌حل پیچیده‌تر (اما به طور قابل بحث بهتر) ایجاد یک پیاده‌سازی سفارشی از <a href="https://pkg.go.dev/net/http/#FileSystem"><code>http.FileSystem</code></a> است، و آن را طوری تنظیم کنید که یک خطای <code>os.ErrNotExist</code> برای هر دایرکتوری برگرداند. یک توضیح کامل و کد نمونه را می‌توانید در <a href="https://www.alexedwards.net/blog/disable-http-fileserver-directory-listings">این پست وبلاگ</a> پیدا کنید.</p>
 
 		</main>
 		<footer>
@@ -347,4 +289,3 @@ Date: Wed, 18 Mar 2024 11:29:23 GMT
 		</script>
 	</body>
 </html>
-

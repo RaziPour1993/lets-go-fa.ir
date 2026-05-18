@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>احراز هویت کاربر &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
 		<header>
-			<div class="wrapper" dir="rtl">
+			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; احراز هویت کاربر</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; احراز هویت کاربر</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="09.06-connection-timeouts.html">قبلی</a>
@@ -22,108 +27,39 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter" dir="rtl">فصل ۱۰.</div>
-			<h1 id="user-authentication">احراز هویت کاربر (User Authentication)</h1>
+			<div class="chapter">فصل ۱۰.</div>
+			<h1 id="user-authentication">احراز هویت کاربر</h1>
 
-<p>در این فصل، نحوه پیاده‌سازی <dfn>احراز هویت کاربر (User Authentication)</dfn> را بررسی می‌کنیم. این شامل <dfn>ثبت‌نام (Sign Up)</dfn>، <dfn>ورود (Login)</dfn>، <dfn>خروج (Logout)</dfn> و <dfn>مجوزدهی (Authorization)</dfn> می‌شود.</p>
+<p>در این بخش از کتاب می‌خواهیم قابلیت احراز هویت کاربر را به برنامه خود اضافه کنیم، به طوری که فقط کاربران ثبت‌نام شده و لاگین شده بتوانند اسنیپت‌های جدید ایجاد کنند. کاربران لاگین نشده همچنان می‌توانند اسنیپت‌ها را مشاهده کنند و همچنین می‌توانند برای یک حساب کاربری ثبت‌نام کنند.</p>
 
-<p>در این فصل خواهیم آموخت:</p>
+<p>گردش کار به این صورت خواهد بود:</p>
 
-<ul>
-<li>چگونه <dfn>مدل کاربر (User Model)</dfn> را در پایگاه داده ایجاد کنیم.</li>
-<li>نحوه <dfn>رمزنگاری رمز عبور (Password Encryption)</dfn> و <dfn>ذخیره‌سازی امن (Secure Storage)</dfn>.</li>
-<li>پیاده‌سازی <dfn>فرآیند ثبت‌نام (Sign Up Process)</dfn> و <dfn>ورود کاربر (User Login)</dfn>.</li>
-<li>محافظت در برابر <dfn>حملات CSRF (CSRF Attacks)</dfn>.</li>
-</ul>
+<ol>
+<li><p>یک کاربر با مراجعه به یک فرم در <code>/user/signup</code> و وارد کردن نام، آدرس ایمیل و رمز عبور خود ثبت‌نام می‌کند. این اطلاعات را در یک جدول پایگاه داده جدید <code>users</code> ذخیره می‌کنیم (که در لحظه‌ای آن را ایجاد خواهیم کرد).</p></li>
 
-<p dir="rtl">در این بخش از کتاب، قصد داریم به برنامه خود قابلیت احراز هویت کاربر اضافه کنیم، به طوری که تنها کاربران ثبت‌نام شده و وارد شده بتوانند قطعات جدید ایجاد کنند. کاربران غیر وارد شده همچنان قادر به مشاهده قطعات خواهند بود و همچنین می‌توانند برای یک حساب کاربری ثبت‌نام کنند.</p>
+<li><p>یک کاربر با مراجعه به یک فرم در <code>/user/login</code> و وارد کردن آدرس ایمیل و رمز عبور خود لاگین می‌کند.</p></li>
 
-<p dir="rtl">روند کار به این صورت خواهد بود:</p>
+<li><p>سپس پایگاه داده را بررسی می‌کنیم تا ببینیم آیا ایمیل و رمز عبوری که وارد کرده‌اند با یکی از کاربران در جدول <code>users</code> مطابقت دارد یا نه. اگر مطابقت وجود داشته باشد، کاربر با موفقیت <em>احراز هویت</em> شده است و مقدار <code>id</code> مربوط به کاربر را با استفاده از کلید <code>&quot;authenticatedUserID&quot;</code> به داده‌های نشست آن‌ها اضافه می‌کنیم.</p></li>
 
-<ol dir="rtl">
-<li><p dir="rtl">یک کاربر با مراجعه به فرمی در <code>/user/signup</code> و وارد کردن نام، آدرس ایمیل و رمز عبور خود ثبت‌نام می‌کند. ما این اطلاعات را در یک جدول جدید <code>users</code> در پایگاه داده ذخیره خواهیم کرد (که در لحظه‌ای ایجاد خواهیم کرد).</p></li>
-
-<li><p dir="rtl">یک کاربر با مراجعه به فرمی در <code>/user/login</code> و وارد کردن آدرس ایمیل و رمز عبور خود وارد می‌شود.</p></li>
-
-<li><p dir="rtl">سپس پایگاه داده را بررسی می‌کنیم تا ببینیم آیا ایمیل و رمز عبوری که وارد کرده‌اند با یکی از کاربران در جدول <code>users</code> مطابقت دارد یا خیر. اگر مطابقتی وجود داشته باشد، کاربر با موفقیت <em>احراز هویت</em> شده و مقدار <code>id</code> مربوط به کاربر را به داده‌های جلسه او اضافه می‌کنیم، با استفاده از کلید <code>"authenticatedUserID"</code>.</p></li>
-
-<li><p dir="rtl">هنگامی که هر درخواست بعدی را دریافت می‌کنیم، می‌توانیم داده‌های جلسه کاربر را برای مقدار <code>"authenticatedUserID"</code> بررسی کنیم. اگر وجود داشته باشد، می‌دانیم که کاربر قبلاً با موفقیت وارد شده است. می‌توانیم این کار را تا زمانی که جلسه منقضی شود ادامه دهیم، زمانی که کاربر باید دوباره وارد شود. اگر <code>"authenticatedUserID"</code> در جلسه وجود نداشته باشد، می‌دانیم که کاربر وارد نشده است.</p></li>
+<li><p>وقتی هر درخواست بعدی را دریافت می‌کنیم، می‌توانیم داده‌های نشست کاربر را برای مقدار <code>&quot;authenticatedUserID&quot;</code> بررسی کنیم. اگر وجود داشته باشد، می‌دانیم که کاربر قبلاً با موفقیت لاگین کرده است. می‌توانیم این بررسی را تا زمانی که نشست منقضی شود ادامه دهیم، که در آن زمان کاربر باید دوباره لاگین کند. اگر <code>&quot;authenticatedUserID&quot;</code> در نشست وجود نداشته باشد، می‌دانیم که کاربر لاگین نشده است.</p></li>
 </ol>
 
-<p dir="rtl">در بسیاری از موارد، بسیاری از محتوای این بخش فقط به شیوه‌ای متفاوت چیزهایی را که قبلاً یاد گرفته‌ایم کنار هم قرار می‌دهد. بنابراین این یک آزمون خوب برای درک شما و یادآوری برخی از مفاهیم کلیدی است.</p>
+<p>از بسیاری جهات، بخش زیادی از محتوای این بخش فقط ترکیب کردن چیزهایی است که قبلاً یاد گرفته‌ایم به روشی متفاوت. بنابراین این یک تست خوب برای درک شما و یادآوری برخی مفاهیم کلیدی است.</p>
 
-<p dir="rtl">شما یاد خواهید گرفت:</p>
+<p>یاد خواهید گرفت:</p>
 
-<ul dir="rtl">
-<li>چگونه به صورت پایه‌ای <a href="10.03-user-signup-and-password-encryption.html">ثبت‌نام</a>، <a href="10.04-user-login.html">ورود</a> و <a href="10.05-user-logout.html">خروج</a> کاربران را پیاده‌سازی کنید.</li>
-<li>یک روش امن برای رمزگذاری و <a href="10.03-user-signup-and-password-encryption.html">ذخیره رمزهای عبور کاربران</a> در پایگاه داده خود.</li>
-<li>یک روش محکم و ساده برای <a href="10.06-user-authorization.html">تأیید اینکه یک کاربر وارد شده است</a> با استفاده از میان‌افزار و جلسات.</li>
-<li>چگونه از <a href="10.07-csrf-protection.html">حملات جعل درخواست بین‌سایتی</a> (CSRF) جلوگیری کنید.</li>
+<ul>
+<li><a href="10.01-routes-setup.html">راه‌اندازی مسیرها</a> و فرم‌های ثبت‌نام/ورود.</li>
+<li><a href="10.02-creating-a-users-model.html">مدل کاربران</a> و جدول <code>users</code>.</li>
+<li><a href="10.03-user-signup-and-password-encryption.html">ثبت‌نام</a> و ذخیرهٔ امن رمز عبور با bcrypt.</li>
+<li><a href="10.04-user-login.html">ورود</a> و <a href="10.05-user-logout.html">خروج</a> کاربر.</li>
+<li><a href="10.06-user-authorization.html">مجوزدهی</a> با middleware و نشست.</li>
+<li><a href="10.07-csrf-protection.html">محافظت CSRF</a> با SameSite و توکن.</li>
 </ul>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>احراز هویت کاربر</td>
-        <td>User Authentication</td>
-        <td>فرآیند تأیید هویت کاربران</td>
-    </tr>
-    <tr>
-        <td>ثبت‌نام</td>
-        <td>Sign Up</td>
-        <td>ایجاد حساب کاربری جدید</td>
-    </tr>
-    <tr>
-        <td>ورود</td>
-        <td>Login</td>
-        <td>دسترسی به حساب کاربری</td>
-    </tr>
-    <tr>
-        <td>خروج</td>
-        <td>Logout</td>
-        <td>پایان دادن به نشست کاربری</td>
-    </tr>
-    <tr>
-        <td>مجوزدهی</td>
-        <td>Authorization</td>
-        <td>کنترل دسترسی کاربران</td>
-    </tr>
-    <tr>
-        <td>مدل کاربر</td>
-        <td>User Model</td>
-        <td>ساختار داده کاربر</td>
-    </tr>
-    <tr>
-        <td>رمزنگاری رمز عبور</td>
-        <td>Password Encryption</td>
-        <td>کدگذاری رمز عبور</td>
-    </tr>
-    <tr>
-        <td>ذخیره‌سازی امن</td>
-        <td>Secure Storage</td>
-        <td>نگهداری ایمن اطلاعات</td>
-    </tr>
-    <tr>
-        <td>فرآیند ثبت‌نام</td>
-        <td>Sign Up Process</td>
-        <td>مراحل ایجاد حساب کاربری</td>
-    </tr>
-    <tr>
-        <td>حملات CSRF</td>
-        <td>CSRF Attacks</td>
-        <td>حملات جعل درخواست بین‌سایتی</td>
-    </tr>
-</table>
 
 		</main>
 		<footer>
-			<div class="wrapper" dir="rtl">
+			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="09.06-connection-timeouts.html">قبلی</a>
 				</div>

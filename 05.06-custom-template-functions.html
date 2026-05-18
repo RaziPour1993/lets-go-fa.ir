@@ -1,51 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>توابع قالب سفارشی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.persian-text {
-				text-align: right;
-				direction: rtl;
-			}
-			.persian-text ol {
-				padding-right: 2em;
-			}
-			.persian-text code {
-				direction: ltr;
-				text-align: left;
-			}
-			/* Keep specific code block classes left-aligned and untranslated */
-			.code.go,
-			.code.html,
-			.code.bash,
-			.code.plain,
-			.code.sql {
-				direction: ltr;
-				text-align: left;
-				unicode-bidi: embed;
-			}
-			.code.go pre,
-			.code.html pre,
-			.code.bash pre,
-			.code.plain pre,
-			.code.sql pre {
-				direction: ltr;
-				text-align: left;
-				unicode-bidi: embed;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
+					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; توابع سفارشی قالب</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; توابع سفارشی قالب</span>
 						
 					
 				</div>
@@ -56,29 +26,25 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text persian-text">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۵.۶.</div>
-			<h2 id="custom-template-functions">توابع سفارشی قالب (Custom Template Functions)</h2>
+			<h2 id="custom-template-functions">توابع سفارشی قالب</h2>
 
-<p>در این فصل، می‌خواهیم در مورد <dfn>توابع سفارشی قالب (Custom Template Functions)</dfn> صحبت کنیم. این توابع به شما اجازه می‌دهند تا <dfn>منطق سفارشی (Custom Logic)</dfn> را در قالب‌های خود اجرا کنید.</p>
+<p>در آخرین بخش این قسمت درباره قالب‌سازی و داده‌های پویا، می‌خواهم توضیح دهم که چگونه توابع سفارشی خود را برای استفاده در قالب‌های Go ایجاد کنید.</p>
 
-<p>به عنوان مثال، بیایید یک <dfn>تابع کمکی (Helper Function)</dfn> ایجاد کنیم که یک <dfn>رشته زمانی (Time String)</dfn> را به عنوان ورودی می‌گیرد و آن را به <dfn>قالب انسان‌خوان (Human-Readable Format)</dfn> تبدیل می‌کند.</p>
+<p>برای نشان دادن این موضوع، بیایید یک تابع سفارشی <code>humanDate()</code> ایجاد کنیم که تاریخ‌ها و زمان‌ها را در یک فرمت 'انسانی' زیبا مانند <code>1 Jan 2024 at 10:47</code> یا <code>18 Mar 2024 at 15:04</code> خروجی می‌دهد، به جای خروجی دادن تاریخ‌ها در فرمت پیش‌فرض <code>YYYY-MM-DD HH:MM:SS +0000 UTC</code> که در حال حاضر استفاده می‌کنیم.</p>
 
-<p>در آخرین بخش از این مبحث درباره قالب‌ها و داده‌های پویا، می‌خواهم توضیح دهم که چگونه می‌توانید توابع سفارشی خود را برای استفاده در قالب‌های Go ایجاد کنید.</p>
-
-<p>برای نشان دادن این موضوع، بیایید یک تابع سفارشی <code>humanDate()</code> ایجاد کنیم که تاریخ‌ها را در فرمت زیبای "انسانی" مانند <code>1 Jan 2024 at 10:47</code> یا <code>18 Mar 2024 at 15:04</code> نمایش دهد، به جای نمایش تاریخ‌ها در فرمت پیش‌فرض <code>YYYY-MM-DD HH:MM:SS +0000 UTC</code> که در حال حاضر استفاده می‌کنیم.</p>
-
-<p>برای انجام این کار دو مرحله اصلی وجود دارد:</p>
+<p>دو مرحله اصلی برای انجام این کار وجود دارد:</p>
 
 <ol>
-<li><p>ما نیاز داریم یک شیء <a href="https://pkg.go.dev/text/template/#FuncMap"><code>template.FuncMap</code></a> حاوی تابع سفارشی <code>humanDate()</code> ایجاد کنیم.</p></li>
+<li><p>باید یک شیء <a href="https://pkg.go.dev/text/template/#FuncMap"><code>template.FuncMap</code></a> حاوی تابع سفارشی <code>humanDate()</code> ایجاد کنیم.</p></li>
 
-<li><p>ما باید از متد <a href="https://pkg.go.dev/html/template/#Template.Funcs"><code>template.Funcs()</code></a> برای ثبت این تابع قبل از تجزیه قالب‌ها استفاده کنیم.</p></li>
+<li><p>باید از متد <a href="https://pkg.go.dev/html/template/#Template.Funcs"><code>template.Funcs()</code></a> برای ثبت این تابع قبل از تجزیه قالب‌ها استفاده کنیم.</p></li>
 </ol>
 
-<p>حالا کد زیر را به فایل <code>templates.go</code> خود اضافه کنید:</p>
+<p>بروید و کد زیر را به فایل <code>templates.go</code> خود اضافه کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -87,7 +53,7 @@
     <span class="s">&#34;path/filepath&#34;</span>
     <span class="s">&#34;time&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span>
-    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 <span class="p">)</span>
 
 <span class="o">...</span>
@@ -142,11 +108,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>قبل از ادامه، باید توضیح دهم: توابع سفارشی قالب (مانند تابع <code>humanDate()</code> ما) می‌توانند به تعداد دلخواه پارامتر دریافت کنند، اما <em>باید</em> فقط یک مقدار برگردانند. تنها استثنا در این مورد زمانی است که می‌خواهید یک خطا را به عنوان مقدار دوم برگردانید، که در این صورت مشکلی نیست.</p>
+<p>قبل از ادامه، باید توضیح دهم: توابع سفارشی قالب (مانند تابع <code>humanDate()</code> ما) می‌توانند به تعداد مورد نیاز پارامتر بپذیرند، اما <em>باید</em> فقط یک مقدار برگردانند. تنها استثنا این است که اگر می‌خواهید یک خطا را به عنوان مقدار دوم برگردانید، در این صورت نیز مشکلی نیست.</p>
 
-<p>حالا می‌توانیم از تابع <code>humanDate()</code> خود به همان روش توابع داخلی قالب استفاده کنیم:</p>
+<p>حالا می‌توانیم از تابع <code>humanDate()</code> خود به همان روش توابع قالب داخلی استفاده کنیم:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/home.tmpl</figcaption>
 <pre>
 {{define &#34;title&#34;}}Home{{end}}
@@ -176,7 +142,7 @@
 </pre>
 </figure>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
 <pre>
 {{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
@@ -199,7 +165,7 @@
 {{end}}</pre>
 </figure>
 
-<p>پس از انجام این تغییرات، برنامه را مجدداً راه‌اندازی کنید. اگر به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> و <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> در مرورگر خود مراجعه کنید، باید تاریخ‌های جدید و زیبا را مشاهده کنید.</p>
+<p>پس از انجام این کار، برنامه را مجدداً راه‌اندازی کنید. اگر به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> و <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> در مرورگر خود مراجعه کنید، باید ببینید که تاریخ‌های جدید و به خوبی فرمت شده استفاده می‌شوند.</p>
 
 <figure class="img">
 <img src="assets/img/05.06-01.png" alt="05.06-01.png" />
@@ -211,89 +177,30 @@
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="pipelining">خط لوله‌سازی</h4>
+<h4 id="pipelining">خط لوله</h4>
 
-<p>در کد بالا، ما تابع سفارشی قالب خود را به این صورت فراخوانی کردیم:</p>
+<p>در کد بالا، تابع قالب سفارشی خود را به این صورت فراخوانی کردیم:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{humanDate .Created}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>یک روش جایگزین استفاده از کاراکتر <code>|</code> برای <em>خط لوله‌سازی</em> مقادیر به یک تابع است. این کار کمی شبیه به خط لوله‌سازی خروجی‌ها از یک دستور به دستور دیگر در ترمینال‌های یونیکس است. می‌توانیم کد بالا را به این صورت بازنویسی کنیم:</p>
+<p>یک رویکرد جایگزین، استفاده از کاراکتر <code>|</code> برای <em>خط لوله</em> کردن مقادیر به یک تابع است. این کار کمی شبیه خط لوله کردن خروجی‌ها از یک دستور به دستور دیگر در ترمینال‌های Unix است. می‌توانیم کد بالا را به این صورت بازنویسی کنیم:</p>
 
-<figure class="code html">
-<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>{{.Created | humanDate}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
+<figure class="code html" dir="ltr">
+<pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>Created: {{.Created | humanDate}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>یکی از ویژگی‌های خوب خط لوله‌سازی این است که می‌توانید زنجیره‌ای به طول دلخواه از توابع قالب ایجاد کنید که خروجی یکی را به عنوان ورودی دیگری استفاده می‌کنند. برای مثال، می‌توانیم خروجی تابع <code>humanDate</code> را به تابع داخلی <code>printf</code> خط لوله کنیم:</p>
+<p>یک ویژگی خوب خط لوله این است که می‌توانید یک زنجیره به طور دلخواه طولانی از توابع قالب ایجاد کنید که خروجی یکی را به عنوان ورودی بعدی استفاده می‌کند. به عنوان مثال، می‌توانیم خروجی تابع <code>humanDate</code> خود را به تابع داخلی <code>printf</code> خط لوله کنیم، به این صورت:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <pre><span class="p">&lt;</span><span class="nt">time</span><span class="p"></span><span class="p">&gt;</span>{{.Created | humanDate | printf &#34;Created: %s&#34;}}<span class="p">&lt;</span><span class="p">/</span><span class="nt">time</span><span class="p">&gt;</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>توابع سفارشی قالب</td>
-        <td>Custom Template Functions</td>
-        <td>توابعی که برای پردازش داده‌ها در قالب‌ها تعریف می‌شوند</td>
-    </tr>
-    <tr>
-        <td>منطق سفارشی</td>
-        <td>Custom Logic</td>
-        <td>پیاده‌سازی خاص برای پردازش داده‌ها</td>
-    </tr>
-    <tr>
-        <td>تابع کمکی</td>
-        <td>Helper Function</td>
-        <td>تابعی که عملیات رایج را ساده می‌کند</td>
-    </tr>
-    <tr>
-        <td>رشته زمانی</td>
-        <td>Time String</td>
-        <td>متنی که نشان‌دهنده تاریخ و زمان است</td>
-    </tr>
-    <tr>
-        <td>قالب انسان‌خوان</td>
-        <td>Human-Readable Format</td>
-        <td>نمایش داده به شکلی که برای انسان قابل درک باشد</td>
-    </tr>
-    <tr>
-        <td>نقشه توابع</td>
-        <td>Function Map</td>
-        <td>مجموعه‌ای از توابع قابل استفاده در قالب</td>
-    </tr>
-    <tr>
-        <td>تجزیه زمان</td>
-        <td>Time Parsing</td>
-        <td>تبدیل متن به مقدار زمانی</td>
-    </tr>
-    <tr>
-        <td>قالب‌بندی خروجی</td>
-        <td>Output Formatting</td>
-        <td>تنظیم شکل نمایش داده‌ها</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>رسیدگی به خطاهای احتمالی در پردازش</td>
-    </tr>
-    <tr>
-        <td>تابع بازگشتی</td>
-        <td>Return Function</td>
-        <td>تابعی که مقداری را برمی‌گرداند</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="05.05-common-dynamic-data.html">قبلی</a>

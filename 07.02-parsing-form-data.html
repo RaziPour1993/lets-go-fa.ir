@@ -3,33 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تجزیه داده‌های فرم &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<style>
-			.text {
-				direction: rtl;
-				text-align: right;
-			}
-			.code, pre, figure.code {
-				direction: ltr;
-				text-align: left;
-			}
-			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
-				direction: ltr;
-				text-align: left;
-			}
-			header .wrapper, footer .wrapper {
-				direction: rtl;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; تجزیه داده‌های فرم</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="07.00-processing-forms.html">پردازش فرم‌ها</a> &rsaquo; تجزیه داده‌های فرم</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="07.01-setting-up-an-html-form.html">قبلی</a>
@@ -39,67 +27,71 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۷.۲</div>
-			<h2 id="parsing-form-data">تجزیه داده‌های فرم (Parsing Form Data)</h2>
+			<div class="chapter">فصل ۷.۲.</div>
+			<h2 id="parsing-form-data">تجزیه داده‌های فرم</h2>
 
-<p>در این بخش، نحوه <dfn>تجزیه و دسترسی (Parsing and Accessing)</dfn> به <dfn>داده‌های فرم (Form Data)</dfn> ارسال شده در یک <dfn>درخواست POST (POST Request)</dfn> را بررسی می‌کنیم.</p>
+<p>به لطف کاری که قبلاً در بخش <a href="02.05-method-based-routing.html">پایه‌ها</a> انجام دادیم، هر درخواست <code>POST /snippets/create</code> در حال حاضر به handler <code>snippetCreatePost</code> ما ارسال می‌شود. حالا این handler را به‌روزرسانی می‌کنیم تا داده‌های فرم را هنگام ارسال پردازش و استفاده کند.</p>
 
-<p>برای شروع، بیایید یک <dfn>هندلر جدید (New Handler)</dfn> به نام <code>snippetCreatePost</code> ایجاد کنیم که مسئول پردازش داده‌های فرم ارسالی است:</p>
+<p>در سطح بالا، می‌توانیم این را به دو مرحله مجزا تقسیم کنیم.</p>
 
-<figure class="code go">
+<ol>
+<li><p>ابتدا، باید از متد <a href="https://pkg.go.dev/net/http/#Request.ParseForm"><code>r.ParseForm()</code></a> برای تجزیه بدنه درخواست استفاده کنیم. این متد بررسی می‌کند که بدنه درخواست به درستی فرمت شده است و سپس داده‌های فرم را در نقشه <a href="https://pkg.go.dev/net/http/#Request"><code>r.PostForm</code></a> درخواست ذخیره می‌کند. اگر هرگونه خطایی هنگام تجزیه بدنه رخ دهد (مثلاً بدنه وجود ندارد یا برای پردازش خیلی بزرگ است) آنگاه یک خطا برمی‌گرداند. متد <code>r.ParseForm()</code> همچنین ناتوان‌ساز است؛ می‌تواند به طور ایمن چندین بار روی همان درخواست فراخوانی شود بدون هیچ عارضه جانبی.</p></li>
+
+<li><p>سپس می‌توانیم با استفاده از متد <code>r.PostForm.Get()</code> به داده‌های فرم موجود در <code>r.PostForm</code> دسترسی پیدا کنیم. به عنوان مثال، می‌توانیم مقدار فیلد <code>title</code> را با <code>r.PostForm.Get(&quot;title&quot;)</code> بازیابی کنیم. اگر نام فیلد مطابقت‌کننده‌ای در فرم وجود نداشته باشد، رشته خالی <code>&quot;&quot;</code> برمی‌گرداند.</p></li>
+</ol>
+
+<p>فایل <code>cmd/web/handlers.go</code> خود را باز کنید و آن را برای شامل کردن کد زیر به‌روزرسانی کنید:</p>
+
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;fmt&#34;</span>
-    <span class="s">&#34;net/http&#34;</span>
-    <span class="s">&#34;strconv&#34;</span>
-<span class="p">)</span>
+<span class="o">...</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">snippetCreatePost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// First we call r.ParseForm() which adds any data in POST request bodies
-</span><span class="c1"></span>    <span class="c1">// to the r.PostForm map. This also works in the same way for PUT and
-</span><span class="c1"></span>    <span class="c1">// PATCH requests. If there are any errors, we use our app.clientError
-</span><span class="c1"></span>    <span class="c1">// helper to send a 400 Bad Request response to the user.
+</span><span class="c1"></span>    <span class="c1">// to the r.PostForm map. This also works in the same way for PUT and PATCH
+</span><span class="c1"></span>    <span class="c1">// requests. If there are any errors, we use our app.ClientError() helper to 
+</span><span class="c1"></span>    <span class="c1">// send a 400 Bad Request response to the user.
 </span><span class="c1"></span>    <span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="c1">// Use the r.PostForm.Get() method to retrieve the relevant data fields
+    <span class="c1">// Use the r.PostForm.Get() method to retrieve the title and content
 </span><span class="c1"></span>    <span class="c1">// from the r.PostForm map.
 </span><span class="c1"></span>    <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span>
     <span class="nx">content</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span>
-    <span class="nx">expires</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span>
 
-    <span class="c1">// Convert the expires value from form to an integer.
-</span><span class="c1"></span>    <span class="nx">expiresInt</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">expires</span><span class="p">)</span>
+    <span class="c1">// The r.PostForm.Get() method always returns the form data as a *string*.
+</span><span class="c1"></span>    <span class="c1">// However, we&#39;re expecting our expires value to be a number, and want to
+</span><span class="c1"></span>    <span class="c1">// represent it in our Go code as an integer. So we need to manually convert
+</span><span class="c1"></span>    <span class="c1">// the form data to an integer using strconv.Atoi(), and we send a 400 Bad
+</span><span class="c1"></span>    <span class="c1">// Request response if the conversion fails.
+</span><span class="c1"></span>    <span class="nx">expires</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;expires&#34;</span><span class="p">)</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">clientError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="c1">// Pass the data to the SnippetModel.Insert() method, receiving the
-</span><span class="c1"></span>    <span class="c1">// ID of the new record back.
-</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expiresInt</span><span class="p">)</span>
+    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Insert</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">expires</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="c1">// Redirect the user to the relevant page for the snippet.
-</span><span class="c1"></span>    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>خب، بیایید این را امتحان کنیم! برنامه را مجدداً راه‌اندازی کنید و سعی کنید فرم را با عنوان و محتوای یک اسنیپت پر کنید، چیزی شبیه به این:</p>
+<p>خوب، بیایید این را امتحان کنیم! برنامه را مجدداً راه‌اندازی کنید و سعی کنید فرم را با عنوان و محتوای یک اسنیپت پر کنید، کمی شبیه این:</p>
 
 <figure class="img">
 <img src="assets/img/07.02-01.png" alt="07.02-01.png" />
 </figure>
 
-<p>و سپس فرم را ارسال کنید. اگر همه چیز درست کار کرده باشد، باید به صفحه‌ای که اسنیپت جدید شما را نمایش می‌دهد، هدایت شوید، به این شکل:</p>
+<p>و سپس فرم را ارسال کنید. اگر همه چیز کار کرده باشد، باید به صفحه‌ای که اسنیپت جدید شما را نمایش می‌دهد هدایت شوید، به این صورت:</p>
 
 <figure class="img">
 <img src="assets/img/07.02-02.png" alt="07.02-02.png" />
@@ -107,19 +99,27 @@
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
 <h4 id="the-postformvalue-method">متد PostFormValue</h4>
 
-<p>پکیج <code>net/http</code> همچنین متد <a href="https://pkg.go.dev/net/http/#Request.PostFormValue"><code>r.PostFormValue()</code></a> را ارائه می‌دهد، که اساساً یک تابع میانبر است که <code>r.ParseForm()</code> را برای شما فراخوانی می‌کند و سپس مقدار فیلد مناسب را از <code>r.PostForm</code> بازیابی می‌کند.</p>
+<p>بسته <code>net/http</code> همچنین متد <a href="https://pkg.go.dev/net/http/#Request.PostFormValue"><code>r.PostFormValue()</code></a> را ارائه می‌دهد که اساساً یک تابع میانبر است که <code>r.ParseForm()</code> را برای شما فراخوانی می‌کند و سپس مقدار فیلد مناسب را از <code>r.PostForm</code> واکشی می‌کند.</p>
 
-<p>توصیه می‌کنم از این میانبر استفاده نکنید زیرا هر خطایی که توسط <code>r.ParseForm()</code> برگردانده می‌شود را به صورت خاموش نادیده می‌گیرد. اگر از آن استفاده کنید، به این معنی است که مرحله تجزیه ممکن است با خطا مواجه شود و برای کاربران شکست بخورد، اما هیچ مکانیزم بازخوردی برای اطلاع دادن به آنها (یا شما) درباره مشکل وجود ندارد.</p>
+<p>توصیه می‌کنم از این میانبر اجتناب کنید چون <em>به طور خاموش هرگونه خطایی</em> که توسط <code>r.ParseForm()</code> برگردانده می‌شود را نادیده می‌گیرد. اگر از آن استفاده کنید، به این معنی است که مرحله تجزیه می‌تواند خطاهایی را برای کاربران مواجه کند و شکست بخورد، اما هیچ مکانیزم بازخوردی برای اطلاع دادن به آن‌ها (یا شما) از مشکل وجود ندارد.</p>
 
 <h4 id="multiple-value-fields">فیلدهای چند مقداری</h4>
 
-<p>در این حالت باید مستقیماً با نقشه <code>r.PostForm</code> کار کنید. نوع زیربنایی نقشه <code>r.PostForm</code>، <a href="https://pkg.go.dev/net/url/#Values"><code>url.Values</code></a> است، که به نوبه خود نوع زیربنایی <code>map[string][]string</code> دارد. بنابراین، برای فیلدهایی با چندین مقدار می‌توانید روی نقشه زیربنایی به این صورت حلقه بزنید:</p>
+<p>به طور دقیق، متد <code>r.PostForm.Get()</code> که در این فصل استفاده کرده‌ایم فقط <em>اولین</em> مقدار را برای یک فیلد فرم خاص برمی‌گرداند. این به این معنی است که نمی‌توانید از آن با فیلدهای فرمی که به طور بالقوه چندین مقدار ارسال می‌کنند، مانند یک گروه چک‌باکس، استفاده کنید.</p>
 
-<figure class="code go">
+<figure class="code html" dir="ltr">
+<pre><span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;foo&#34;</span><span class="p"></span><span class="p">&gt;</span> Foo
+<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;bar&#34;</span><span class="p"></span><span class="p">&gt;</span> Bar
+<span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#34;checkbox&#34;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#34;items&#34;</span> <span class="na">value</span><span class="o">=</span><span class="s">&#34;baz&#34;</span><span class="p"></span><span class="p">&gt;</span> Baz</pre>
+</figure>
+
+<p>در این مورد باید مستقیماً با نقشه <code>r.PostForm</code> کار کنید. نوع زیرین نقشه <code>r.PostForm</code> <a href="https://pkg.go.dev/net/url/#Values"><code>url.Values</code></a> است که به نوبه خود نوع زیرین <code>map[string][]string</code> را دارد. بنابراین، برای فیلدهایی با چندین مقدار می‌توانید روی نقشه زیرین حلقه بزنید تا به آن‌ها دسترسی پیدا کنید، به این صورت:</p>
+
+<figure class="code go" dir="ltr">
 <pre><span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">item</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">r</span><span class="p">.</span><span class="nx">PostForm</span><span class="p">[</span><span class="s">&#34;items&#34;</span><span class="p">]</span> <span class="p">{</span>
     <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;%d: Item %s\n&#34;</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">item</span><span class="p">)</span>
 <span class="p">}</span></pre>
@@ -127,11 +127,11 @@
 
 <h4 id="limiting-form-size">محدود کردن اندازه فرم</h4>
 
-<p>به طور پیش‌فرض، فرم‌هایی که با متد <code>POST</code> ارسال می‌شوند محدودیت اندازه ۱۰ مگابایت داده دارند. استثنا این است که اگر فرم شما ویژگی <code>enctype=&quot;multipart/form-data&quot;</code> داشته باشد و داده‌های چندبخشی ارسال کند، در این صورت هیچ محدودیت پیش‌فرضی وجود ندارد.</p>
+<p>به طور پیش‌فرض، فرم‌های ارسال شده با متد <code>POST</code> محدودیت اندازه 10 مگابایت داده دارند. استثنای این مورد این است که اگر فرم شما ویژگی <code>enctype=&quot;multipart/form-data&quot;</code> را داشته باشد و داده چندبخشی ارسال کند، در این صورت هیچ محدودیت پیش‌فرضی وجود ندارد.</p>
 
-<p>اگر می‌خواهید محدودیت ۱۰ مگابایت را تغییر دهید، می‌توانید از تابع <a href="https://pkg.go.dev/net/http/#MaxBytesReader"><code>http.MaxBytesReader()</code></a> به این صورت استفاده کنید:</p>
+<p>اگر می‌خواهید محدودیت 10 مگابایت را تغییر دهید، می‌توانید از تابع <a href="https://pkg.go.dev/net/http/#MaxBytesReader"><code>http.MaxBytesReader()</code></a> به این صورت استفاده کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="c1">// Limit the request body size to 4096 bytes
 </span><span class="c1"></span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">MaxBytesReader</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">,</span> <span class="mi">4096</span><span class="p">)</span>
 
@@ -142,15 +142,15 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>با این کد تنها ۴۰۹۶ بایت اول بدنه درخواست در طول <code>r.ParseForm()</code> خوانده خواهد شد. تلاش برای خواندن فراتر از این محدودیت باعث می‌شود <code>MaxBytesReader</code> یک خطا برگرداند، که متعاقباً توسط <code>r.ParseForm()</code> نمایش داده می‌شود.</p>
+<p>با این کد فقط 4096 بایت اول بدنه درخواست در طول <code>r.ParseForm()</code> خوانده می‌شود. تلاش برای خواندن فراتر از این محدودیت باعث می‌شود <code>MaxBytesReader</code> یک خطا برگرداند که بعداً توسط <code>r.ParseForm()</code> نمایش داده می‌شود.</p>
 
-<p>علاوه بر این - اگر به محدودیت برخورد شود - <code>MaxBytesReader</code> یک پرچم روی <code>http.ResponseWriter</code> تنظیم می‌کند که به سرور دستور می‌دهد اتصال TCP زیربنایی را ببندد.</p>
+<p>علاوه بر این &mdash; اگر محدودیت برخورد شود &mdash; <code>MaxBytesReader</code> یک پرچم روی <code>http.ResponseWriter</code> تنظیم می‌کند که به سرور دستور می‌دهد اتصال TCP زیرین را ببندد.</p>
 
 <h4 id="query-string-parameters">پارامترهای رشته پرس‌وجو</h4>
 
-<p>اگر فرمی دارید که داده‌ها را با استفاده از متد HTTP <code>GET</code>، به جای <code>POST</code> ارسال می‌کند، داده‌های فرم به عنوان <em>پارامترهای رشته پرس‌وجو</em> URL گنجانده خواهند شد. به عنوان مثال، اگر یک فرم HTML به این شکل داشته باشید:</p>
+<p>اگر فرمی دارید که داده‌ها را با استفاده از متد HTTP <code>GET</code> ارسال می‌کند، به جای <code>POST</code>، داده‌های فرم به عنوان <em>پارامترهای رشته پرس‌وجو</em> URL گنجانده می‌شوند. به عنوان مثال، اگر یک فرم HTML دارید که به این صورت است:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <pre><span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/foo/bar&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;GET&#39;</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;title&#39;</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text&#39;</span> <span class="na">name</span><span class="o">=</span><span class="s">&#39;content&#39;</span><span class="p"></span><span class="p">&gt;</span>
@@ -159,11 +159,11 @@
 <span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span></pre>
 </figure>
 
-<p>هنگامی که فرم ارسال می‌شود، یک درخواست <code>GET</code> با URL به این شکل ارسال خواهد کرد: <code>/foo/bar?title=value&amp;content=value</code>.</p>
+<p>وقتی فرم ارسال می‌شود، یک درخواست <code>GET</code> با URL که به این صورت است ارسال می‌کند: <code>/foo/bar?title=value&amp;content=value</code>.</p>
 
-<p>می‌توانید مقادیر پارامترهای رشته پرس‌وجو را در هندلرهای خود از طریق متد <code>r.URL.Query().Get()</code> بازیابی کنید. این همیشه یک مقدار رشته‌ای برای یک پارامتر برمی‌گرداند، یا رشته خالی <code>&quot;&quot;</code> اگر هیچ پارامتر منطبقی وجود نداشته باشد. به عنوان مثال:</p>
+<p>می‌توانید مقادیر پارامترهای رشته پرس‌وجو را در handlerهای خود از طریق متد <code>r.URL.Query().Get()</code> بازیابی کنید. این همیشه یک مقدار رشته برای یک پارامتر برمی‌گرداند، یا رشته خالی <code>&quot;&quot;</code> اگر پارامتر مطابقت‌کننده‌ای وجود نداشته باشد. به عنوان مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">exampleHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span>
     <span class="nx">content</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;content&#34;</span><span class="p">)</span>
@@ -174,11 +174,11 @@
 
 <h4 id="the-r-form-map">نقشه r.Form</h4>
 
-<p>روش جایگزین برای دسترسی به پارامترهای رشته پرس‌وجو از طریق نقشه <code>r.Form</code> است. این مشابه نقشه <code>r.PostForm</code> است که در این فصل استفاده کردیم، با این تفاوت که شامل داده‌های فرم از هر بدنه درخواست <code>POST</code> <strong>و</strong> هر پارامتر رشته پرس‌وجو است.</p>
+<p>یک روش جایگزین برای دسترسی به پارامترهای رشته پرس‌وجو از طریق نقشه <code>r.Form</code> است. این شبیه نقشه <code>r.PostForm</code> است که در این فصل استفاده کرده‌ایم، به جز اینکه شامل داده‌های فرم از هر بدنه درخواست <code>POST</code> <strong>و</strong> هر پارامتر رشته پرس‌وجو است.</p>
 
-<p>فرض کنید کدی در هندلر خود به این شکل دارید:</p>
+<p>بیایید بگوییم که کدی در handler خود دارید که به این صورت است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">err</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">ParseForm</span><span class="p">(</span><span class="p">)</span>
 <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
     <span class="nx">http</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Bad Request&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
@@ -188,69 +188,10 @@
 <span class="nx">title</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Form</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;title&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>در این کد، خط <code>r.Form.Get(&quot;title&quot;)</code> مقدار <code>title</code> را از بدنه درخواست <code>POST</code> <em>یا</em> از یک پارامتر رشته پرس‌وجو با نام <code>title</code> برمی‌گرداند. در صورت تعارض، مقدار بدنه درخواست بر پارامتر رشته پرس‌وجو اولویت دارد.</p>
+<p>در این کد، خط <code>r.Form.Get(&quot;title&quot;)</code> مقدار <code>title</code> را از بدنه درخواست <code>POST</code> <em>یا</em> از یک پارامتر رشته پرس‌وجو با نام <code>title</code> برمی‌گرداند. در صورت بروز تضاد، مقدار بدنه درخواست بر پارامتر رشته پرس‌وجو اولویت دارد.</p>
 
-<p>استفاده از <code>r.Form</code> می‌تواند بسیار مفید باشد اگر می‌خواهید برنامه شما نسبت به نحوه ارسال مقادیر داده بی‌تفاوت باشد. اما خارج از آن سناریو، <code>r.Form</code> هیچ مزیتی ارائه نمی‌دهد و واضح‌تر و صریح‌تر است که داده‌ها را از بدنه درخواست <code>POST</code> از طریق <code>r.PostForm</code> یا از پارامترهای رشته پرس‌وجو از طریق <code>r.URL.Query().Get()</code> بخوانید.</p>
+<p>استفاده از <code>r.Form</code> می‌تواند بسیار مفید باشد اگر می‌خواهید برنامه شما نسبت به نحوه ارسال مقادیر داده به آن بی‌تفاوت باشد. اما خارج از آن سناریو، <code>r.Form</code> هیچ مزیتی ارائه نمی‌دهد و واضح‌تر و صریح‌تر است که داده‌ها را از بدنه درخواست <code>POST</code> از طریق <code>r.PostForm</code> یا از پارامترهای رشته پرس‌وجو از طریق <code>r.URL.Query().Get()</code> بخوانید.</p>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تجزیه و دسترسی</td>
-        <td>Parsing and Accessing</td>
-        <td>خواندن و استخراج داده‌های فرم</td>
-    </tr>
-    <tr>
-        <td>داده‌های فرم</td>
-        <td>Form Data</td>
-        <td>اطلاعات وارد شده توسط کاربر در فرم</td>
-    </tr>
-    <tr>
-        <td>درخواست POST</td>
-        <td>POST Request</td>
-        <td>درخواست HTTP برای ارسال داده به سرور</td>
-    </tr>
-    <tr>
-        <td>هندلر جدید</td>
-        <td>New Handler</td>
-        <td>تابع جدید برای پردازش درخواست‌ها</td>
-    </tr>
-    <tr>
-        <td>تجزیه فرم</td>
-        <td>Parse Form</td>
-        <td>استخراج داده‌های فرم از درخواست</td>
-    </tr>
-    <tr>
-        <td>نقشه داده‌ها</td>
-        <td>Data Map</td>
-        <td>ساختار داده برای نگهداری مقادیر فرم</td>
-    </tr>
-    <tr>
-        <td>خطای کاربر</td>
-        <td>Client Error</td>
-        <td>خطای ناشی از درخواست نامعتبر</td>
-    </tr>
-    <tr>
-        <td>تبدیل داده</td>
-        <td>Data Conversion</td>
-        <td>تغییر نوع داده (مثلاً رشته به عدد)</td>
-    </tr>
-    <tr>
-        <td>درج رکورد</td>
-        <td>Record Insertion</td>
-        <td>افزودن داده جدید به پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>تغییر مسیر</td>
-        <td>Redirect</td>
-        <td>هدایت کاربر به صفحه دیگر</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">
@@ -269,12 +210,16 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "07.01-setting-up-an-html-form.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "07.03-validating-form-data.html";
 						break;
+						
 				}
 			};
 		</script>

@@ -3,10 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>رابط http.Handler &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header>
@@ -14,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; رابط http.Handler (HTTP Handler Interface)</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; رابط http.Handler</span>
 						
 					
 				</div>
@@ -26,29 +27,28 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 2.10.</div>
-			<h2 id="the-http-handler-interface">رابط http.Handler (HTTP Handler Interface)</h2>
+			<div class="chapter">فصل ۲.۱۰.</div>
+			<h2 id="the-http-handler-interface">رابط http.Handler</h2>
 
-<p>قبل از اینکه بیشتر پیش برویم، باید کمی نظریه را پوشش دهیم. این کمی پیچیده است، بنابراین اگر این فصل برای شما سخت است نگران نباشید. به ساخت برنامه ادامه دهید و بعداً که با Go آشناتر شدید به آن برگردید.</p>
+<p>قبل از اینکه بیشتر پیش برویم، کمی تئوری وجود دارد که باید پوشش دهیم. کمی پیچیده است، پس اگر این فصل را سخت می‌بینید نگران نباشید. با ساخت برنامه ادامه دهید و بعداً وقتی با Go بیشتر آشنا شدید به آن برگردید.</p>
 
-<p>در فصل‌های قبلی من اصطلاح <dfn>هندلر (Handler)</dfn> را بدون توضیح دقیق آن به کار برده‌ام. به طور دقیق، منظور ما از هندلر <em>یک شیء است که رابط <a href="https://pkg.go.dev/net/http/#Handler"><code>http.Handler</code></a> را برآورده می‌کند</em>:</p>
+<p>در فصل‌های قبلی اصطلاح <dfn>handler</dfn> را بدون توضیح اینکه واقعاً چه معنایی دارد استفاده کرده‌ام. به طور دقیق، آنچه که با handler منظور داریم <em>یک شیء است که رابط <a href="https://pkg.go.dev/net/http/#Handler"><code>http.Handler</code></a> را برآورده می‌کند</em>:</p>
 
+<figure class="code go" dir="ltr">
+<pre><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
+    <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
-	<pre><span class="kd">type</span> <span class="nx">Handler</span> <span class="kd">interface</span> <span class="p">{</span>
-		<span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">Request</span><span class="p">)</span>
-	<span class="p">}</span></pre>
-	</figure>
+<p>به زبان ساده، این اساساً به این معنی است که برای اینکه یک handler باشد، یک شیء <em>باید</em> یک متد <code>ServeHTTP()</code> با signature دقیق داشته باشد:</p>
 
-<p>به زبان ساده، این به این معنی است که برای اینکه یک شیء هندلر باشد <em>باید</em> یک متد <code>ServeHTTP()</code> با امضای دقیق زیر داشته باشد:</p>
-
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span></pre>
 </figure>
 
-<p>بنابراین در ساده‌ترین شکل، یک هندلر ممکن است به این صورت باشد:</p>
+<p>پس در ساده‌ترین شکل خود یک handler ممکن است شبیه به این باشد:</p>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">type</span> <span class="nx">home</span> <span class="kd">struct</span> <span class="p">{</span><span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">h</span> <span class="o">*</span><span class="nx">home</span><span class="p">)</span> <span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -56,124 +56,64 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>در اینجا ما یک شیء داریم (در این مورد یک ساختار خالی <code>home</code> است، اما می‌تواند به همان اندازه یک رشته یا تابع یا هر چیز دیگری باشد)، و ما یک متد با امضای <code>ServeHTTP(http.ResponseWriter, *http.Request)</code> بر روی آن پیاده‌سازی کرده‌ایم. این تمام چیزی است که برای ساخت یک هندلر نیاز داریم.</p>
+<p>اینجا یک شیء داریم (در این مورد یک struct خالی <code>home</code> است، اما می‌تواند به همان اندازه یک string یا function یا هر چیز دیگری باشد)، و یک متد با signature <code>ServeHTTP(http.ResponseWriter, *http.Request)</code> روی آن پیاده‌سازی کرده‌ایم. این همه چیزی است که برای ساخت یک handler نیاز داریم.</p>
 
-<p>سپس می‌توانید این را با استفاده از متد <code>Handle</code> به یک servemux ثبت کنید:</p>
+<p>سپس می‌توانید این را با یک servemux با استفاده از متد <code>Handle</code> مانند این ثبت کنید:</p>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">home</span><span class="p">{</span><span class="p">}</span><span class="p">)</span></pre>
 </figure>
 
-<p>وقتی این servemux یک درخواست HTTP برای <code>&quot;/&quot;</code> دریافت می‌کند، متد <code>ServeHTTP()</code> ساختار <code>home</code> را فراخوانی می‌کند &mdash; که به نوبه خود پاسخ HTTP را می‌نویسد.</p>
+<p>وقتی این servemux یک درخواست HTTP برای <code>&quot;/&quot;</code> دریافت می‌کند، سپس متد <code>ServeHTTP()</code> struct <code>home</code> را فراخوانی می‌کند — که به نوبه خود پاسخ HTTP را می‌نویسد.</p>
 
-<h3 id="handler-functions">توابع هندلر (Handler Functions)</h3>
+<h3 id="handler-functions">توابع handler</h3>
 
-<p>اکنون، ایجاد یک شیء فقط برای اینکه بتوانیم یک متد <code>ServeHTTP()</code> بر روی آن پیاده‌سازی کنیم، طولانی و کمی گیج‌کننده است. به همین دلیل در عمل بسیار رایج‌تر است که هندلرهای خود را به عنوان یک تابع عادی بنویسید (مانند آنچه تاکنون در این کتاب انجام داده‌ایم). برای مثال:</p>
+<p>حالا، ایجاد یک شیء فقط برای اینکه بتوانیم یک متد <code>ServeHTTP()</code> روی آن پیاده‌سازی کنیم طولانی و کمی گیج‌کننده است. به همین دلیل در عمل بسیار رایج‌تر است که handlerهای خود را به عنوان یک تابع عادی بنویسید (مانند آنچه که تا الان در این کتاب داشته‌ایم). برای مثال:</p>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;This is my home page&#34;</span><span class="p">)</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>اما این تابع <code>home</code> فقط یک تابع عادی است؛ متد <code>ServeHTTP()</code> ندارد. بنابراین به خودی خود <em>هندلر نیست</em>.</p>
+<p>اما این تابع <code>home</code> فقط یک تابع عادی است؛ یک متد <code>ServeHTTP()</code> ندارد. پس به خودی خود <em>یک handler نیست</em>.</p>
 
-<p>در عوض می‌توانیم آن را با استفاده از آداپتور <a href="https://pkg.go.dev/net/http/#HandlerFunc"><code>http.HandlerFunc()</code></a> به یک هندلر تبدیل کنیم، به این صورت:</p>
+<p>در عوض می‌توانیم آن را با استفاده از adapter <a href="https://pkg.go.dev/net/http/#HandlerFunc"><code>http.HandlerFunc()</code></a> به یک handler <em>تبدیل</em> کنیم، مانند این:</p>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>آداپتور <code>http.HandlerFunc()</code> با افزودن خودکار یک متد <code>ServeHTTP()</code> به تابع <code>home</code> کار می‌کند. وقتی اجرا می‌شود، این متد <code>ServeHTTP()</code> به سادگی <em>کد داخل تابع اصلی <code>home</code> را فراخوانی می‌کند</em>. این یک روش دوربرگردان اما راحت برای تبدیل یک تابع عادی به یک هندلر است که رابط <code>http.Handler</code> را برآورده می‌کند.</p>
+<p>Adapter <code>http.HandlerFunc()</code> با اضافه کردن خودکار یک متد <code>ServeHTTP()</code> به تابع <code>home</code> کار می‌کند. وقتی اجرا می‌شود، این متد <code>ServeHTTP()</code> سپس به سادگی <em>کد داخل تابع اصلی <code>home</code> را فراخوانی می‌کند</em>. این یک راه غیرمستقیم اما راحت برای وادار کردن یک تابع عادی به برآورده کردن رابط <code>http.Handler</code> است.</p>
 
-<p>در طول این پروژه تاکنون از متد <code>HandleFunc()</code> برای ثبت توابع هندلر خود با servemux استفاده کرده‌ایم. این فقط یک شکر نحوی است که یک تابع را به یک هندلر تبدیل می‌کند و آن را در یک مرحله ثبت می‌کند، به جای اینکه به صورت دستی این کار را انجام دهیم. مثال بلافاصله بالا به صورت عملکردی معادل این است:</p>
+<p>در طول این پروژه تا الان از متد <code>HandleFunc()</code> برای ثبت توابع handler خود با servemux استفاده کرده‌ایم. این فقط یک syntactic sugar است که یک تابع را به یک handler تبدیل می‌کند و آن را در یک مرحله ثبت می‌کند، به جای اینکه باید به صورت دستی انجام دهیم. مثال بالا از نظر عملکردی معادل این است:</p>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">home</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="chaining-handlers">زنجیره‌سازی هندلرها (Chaining Handlers)</h3>
+<h3 id="chaining-handlers">زنجیره کردن handlerها</h3>
 
-<p>شاید برخی از شما در ابتدای این پروژه متوجه چیزی جالب شده باشید. تابع <a href="https://pkg.go.dev/net/http/#ListenAndServe"><code>http.ListenAndServe()</code></a> یک شیء <code>http.Handler</code> را به عنوان پارامتر دوم می‌گیرد:</p>
+<p>آن‌هایی که چشم تیزبین دارند ممکن است چیزی جالب درست در ابتدای این پروژه متوجه شده باشند. تابع <a href="https://pkg.go.dev/net/http/#ListenAndServe"><code>http.ListenAndServe()</code></a> یک شیء <code>http.Handler</code> را به عنوان پارامتر دوم می‌گیرد:</p>
 
-<figure class="code go" style="text-align: left; direction: ltr;">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">addr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">handler</span> <span class="nx">Handler</span><span class="p">)</span> <span class="kt">error</span></pre>
 </figure>
 
-<p>&hellip; اما ما یک servemux را پاس داده‌ایم.</p>
+<p>&hellip; اما ما یک servemux را ارسال کرده‌ایم.</p>
 
-<p>ما توانستیم این کار را انجام دهیم زیرا servemux نیز یک متد <a href="https://pkg.go.dev/net/http/#ServeMux.ServeHTTP"><code>ServeHTTP()</code></a> دارد، به این معنی که آن نیز رابط <code>http.Handler</code> را برآورده می‌کند.</p>
+<p>قادر بودیم این کار را انجام دهیم چون servemux همچنین یک متد <a href="https://pkg.go.dev/net/http/#ServeMux.ServeHTTP"><code>ServeHTTP()</code></a> دارد، به این معنی که آن نیز رابط <code>http.Handler</code> را برآورده می‌کند.</p>
 
-<p>برای من ساده‌تر است که به servemux به عنوان یک <em>نوع خاصی از هندلر</em> فکر کنم، که به جای ارائه پاسخ خود، درخواست را به یک هندلر دوم منتقل می‌کند. این به اندازه‌ای که ممکن است در ابتدا به نظر برسد، جهش بزرگی نیست. زنجیره‌سازی هندلرها با هم یک اصطلاح بسیار رایج در Go است و چیزی است که ما در این پروژه زیاد انجام خواهیم داد.</p>
+<p>برای من ساده‌تر می‌کند که servemux را فقط به عنوان یک <em>نوع خاص handler</em> در نظر بگیرم، که به جای ارائه یک پاسخ خودش، درخواست را به یک handler دوم منتقل می‌کند. این به اندازه‌ای که ممکن است در ابتدا به نظر برسد جهش نیست. زنجیره کردن handlerها با هم یک idiom بسیار رایج در Go است، و چیزی است که بعداً در این پروژه زیاد انجام خواهیم داد.</p>
 
-<p>در واقع، آنچه دقیقاً اتفاق می‌افتد این است: وقتی سرور ما یک درخواست HTTP جدید دریافت می‌کند، متد <code>ServeHTTP()</code> servemux را فراخوانی می‌کند. این هندلر مربوطه را بر اساس متد درخواست و مسیر URL جستجو می‌کند و به نوبه خود متد <code>ServeHTTP()</code> آن هندلر را فراخوانی می‌کند. می‌توانید به یک برنامه وب Go به عنوان یک <em>زنجیره‌ای از متدهای <code>ServeHTTP()</code> که یکی پس از دیگری فراخوانی می‌شوند</em> فکر کنید.</p>
+<p>در واقع، آنچه که دقیقاً اتفاق می‌افتد این است: وقتی سرور ما یک درخواست HTTP جدید دریافت می‌کند، متد <code>ServeHTTP()</code> servemux را فراخوانی می‌کند. این handler مربوطه را بر اساس متد درخواست و مسیر URL جستجو می‌کند، و به نوبه خود متد <code>ServeHTTP()</code> آن handler را فراخوانی می‌کند. می‌توانید یک برنامه وب Go را به عنوان <em>یک زنجیره از متدهای <code>ServeHTTP()</code> که یکی پس از دیگری فراخوانی می‌شوند</em> در نظر بگیرید.</p>
 
-<h3 id="requests-are-handled-concurrently">درخواست‌ها به صورت همزمان پردازش می‌شوند (Requests are Handled Concurrently)</h3>
+<h3 id="requests-are-handled-concurrently">درخواست‌ها به صورت همزمان handle می‌شوند</h3>
 
-<p>یک نکته دیگر که واقعاً مهم است باید اشاره کرد: <em>همه درخواست‌های HTTP ورودی در goroutine خودشان سرو می‌شوند</em>. برای سرورهای شلوغ، این به این معنی است که احتمالاً کد درون یا فراخوانی شده توسط هندلرهای شما به صورت همزمان اجرا می‌شود. در حالی که این به Go کمک می‌کند تا بسیار سریع باشد، نقطه ضعف این است که باید از شرایط رقابتی هنگام دسترسی به منابع مشترک از هندلرهای خود آگاه باشید و از آن‌ها محافظت کنید.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>رابط http.Handler</td>
-        <td>HTTP Handler Interface</td>
-        <td>رابطی در Go که تعریف می‌کند یک شیء چگونه باید به درخواست‌های HTTP پاسخ دهد</td>
-    </tr>
-    <tr>
-        <td>هندلر</td>
-        <td>Handler</td>
-        <td>شیئی که رابط http.Handler را پیاده‌سازی می‌کند و می‌تواند به درخواست‌های HTTP پاسخ دهد</td>
-    </tr>
-    <tr>
-        <td>تابع هندلر</td>
-        <td>Handler Function</td>
-        <td>تابعی که می‌تواند به عنوان یک هندلر HTTP عمل کند</td>
-    </tr>
-    <tr>
-        <td>زنجیره‌سازی هندلرها</td>
-        <td>Handler Chaining</td>
-        <td>الگوی طراحی که در آن چندین هندلر به صورت متوالی درخواست را پردازش می‌کنند</td>
-    </tr>
-    <tr>
-        <td>پردازش همزمان</td>
-        <td>Concurrent Processing</td>
-        <td>اجرای همزمان چندین درخواست HTTP در goroutine‌های جداگانه</td>
-    </tr>
-    <tr>
-        <td>شرایط رقابتی</td>
-        <td>Race Conditions</td>
-        <td>مشکلی که در برنامه‌نویسی همزمان رخ می‌دهد، وقتی چند عملیات همزمان به منابع مشترک دسترسی دارند</td>
-    </tr>
-    <tr>
-        <td>آداپتور</td>
-        <td>Adapter</td>
-        <td>الگوی طراحی که یک رابط را به رابط دیگری تبدیل می‌کند</td>
-    </tr>
-    <tr>
-        <td>متد ServeHTTP</td>
-        <td>ServeHTTP Method</td>
-        <td>متدی که باید توسط هر هندلر HTTP پیاده‌سازی شود تا بتواند به درخواست‌ها پاسخ دهد</td>
-    </tr>
-    <tr>
-        <td>servemux</td>
-        <td>ServeMux</td>
-        <td>مسیریاب HTTP در Go که درخواست‌ها را به هندلرهای مناسب هدایت می‌کند</td>
-    </tr>
-    <tr>
-        <td>goroutine</td>
-        <td>Goroutine</td>
-        <td>واحد اجرای سبک‌وزن در Go که امکان اجرای همزمان کد را فراهم می‌کند</td>
-    </tr>
-</table>
+<p>یک چیز دیگر وجود دارد که واقعاً مهم است اشاره کنم: <em>همه درخواست‌های HTTP ورودی در goroutine خودشان سرو می‌شوند</em>. برای سرورهای شلوغ، این به این معنی است که بسیار محتمل است که کد در یا فراخوانی شده توسط handlerهای شما به صورت همزمان (concurrently) اجرا شود. در حالی که این به سریع شدن Go کمک می‌کند، نکته منفی این است که باید از (و در برابر) <a href="https://www.alexedwards.net/blog/understanding-mutexes">race conditions</a> هنگام دسترسی به منابع مشترک از handlerهای خود آگاه باشید.</p>
 
 		</main>
 		<footer>
@@ -208,4 +148,3 @@
 		</script>
 	</body>
 </html>
-

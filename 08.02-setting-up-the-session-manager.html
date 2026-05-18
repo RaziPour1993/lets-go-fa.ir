@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>راه‌اندازی مدیر نشست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html"> حالت دار HTTP</a> &rsaquo; راه‌اندازی مدیر جلسه</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">HTTP با حالت</a> &rsaquo; راه‌اندازی مدیر نشست</span>
 						
 					
 				</div>
@@ -25,20 +26,16 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۸.۲.</div>
-			<h2 id="setting-up-the-session-manager">راه‌اندازی مدیر جلسه (Setting Up the Session Manager)</h2>
+			<h2 id="setting-up-the-session-manager">راه‌اندازی مدیر نشست</h2>
 
-<p>در این بخش، نحوه <dfn>راه‌اندازی مدیر جلسه (Setting Up Session Manager)</dfn> را بررسی می‌کنیم. این شامل <dfn>پیکربندی (Configuration)</dfn> و <dfn>مقداردهی اولیه (Initialization)</dfn> مدیر جلسه می‌شود.</p>
+<p>در این فصل اصول راه‌اندازی و استفاده از بسته <code>alexedwards/scs</code> را مرور می‌کنم، اما اگر می‌خواهید از آن در یک برنامه تولیدی استفاده کنید، توصیه می‌کنم <a href="https://github.com/alexedwards/scs">مستندات</a> و <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2">مرجع API</a> را بخوانید تا با طیف کامل ویژگی‌ها آشنا شوید.</p>
 
-<p>برای شروع، بیایید <dfn>تنظیمات جلسه (Session Settings)</dfn> را در <dfn>ساختار برنامه (Application Structure)</dfn> خود اضافه کنیم:</p>
+<p>اولین کاری که باید انجام دهیم، ایجاد یک جدول <code>sessions</code> در پایگاه داده MySQL خود برای نگهداری داده‌های نشست کاربران ما است. با اتصال به MySQL از پنجره ترمینال خود به عنوان کاربر <code>root</code> شروع کنید و دستور SQL زیر را برای راه‌اندازی جدول <code>sessions</code> اجرا کنید:</p>
 
-<p>در این فصل، به اصول راه‌اندازی و استفاده از بسته <code>alexedwards/scs</code> می‌پردازم، اما اگر قصد دارید از آن در یک برنامه تولیدی استفاده کنید، توصیه می‌کنم <a href="https://github.com/alexedwards/scs">مستندات</a> و <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2">مرجع API</a> را مطالعه کنید تا با تمام ویژگی‌های آن آشنا شوید.</p>
-
-<p>اولین کاری که باید انجام دهیم، ایجاد یک جدول <code>sessions</code> در پایگاه داده MySQL ما برای نگهداری داده‌های نشست کاربران است. ابتدا از طریق ترمینال به MySQL به عنوان کاربر <code>root</code> متصل شوید و دستور SQL زیر را برای راه‌اندازی جدول <code>sessions</code> اجرا کنید:</p>
-
-<figure class="code sql">
-<pre dir="ltr"><span class="n">USE</span> <span class="n">snippetbox</span><span class="p">;</span>
+<figure class="code sql" dir="ltr">
+<pre><span class="n">USE</span> <span class="n">snippetbox</span><span class="p">;</span>
 
 <span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">sessions</span> <span class="p">(</span>
     <span class="n">token</span> <span class="nb">CHAR</span><span class="p">(</span><span class="mi">43</span><span class="p">)</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
@@ -52,36 +49,36 @@
 <p>در این جدول:</p>
 
 <ul>
-<li><p>فیلد <code>token</code> شامل یک شناسه منحصر به فرد و به صورت تصادفی تولید شده برای هر نشست خواهد بود.</p></li>
+<li><p>فیلد <code>token</code> شامل یک شناسه یکتا و تصادفی برای هر نشست خواهد بود.</p></li>
 
-<li><p>فیلد <code>data</code> شامل داده‌های واقعی نشست است که می‌خواهید بین درخواست‌های HTTP به اشتراک بگذارید. این داده‌ها به صورت <em>داده‌های باینری</em> در نوع <code>BLOB</code> (شیء بزرگ باینری) ذخیره می‌شوند.</p></li>
+<li><p>فیلد <code>data</code> شامل داده‌های نشست واقعی است که می‌خواهید بین درخواست‌های HTTP به اشتراک بگذارید. این به عنوان <em>داده باینری</em> در یک نوع <code>BLOB</code> (شیء بزرگ باینری) ذخیره می‌شود.</p></li>
 
-<li><p>فیلد <code>expiry</code> شامل زمان انقضای نشست خواهد بود. بسته <code>scs</code> به طور خودکار نشست‌های منقضی شده را از جدول <code>sessions</code> حذف می‌کند تا بیش از حد بزرگ نشود.</p></li>
+<li><p>فیلد <code>expiry</code> شامل زمان انقضا برای نشست خواهد بود. بسته <code>scs</code> به طور خودکار نشست‌های منقضی شده را از جدول <code>sessions</code> حذف می‌کند تا خیلی بزرگ نشود.</p></li>
 </ul>
 
-<p>کار بعدی که باید انجام دهیم، ایجاد یک <dfn>مدیر نشست</dfn> در فایل <code>main.go</code> و در دسترس قرار دادن آن برای هندلرها از طریق ساختار <code>application</code> است. مدیر نشست تنظیمات پیکربندی نشست‌های ما را نگه می‌دارد و همچنین برخی از میان‌افزارها و روش‌های کمکی را برای بارگذاری و ذخیره داده‌های نشست فراهم می‌کند.</p>
+<p>چیز بعدی که باید انجام دهیم، ایجاد یک <dfn>مدیر نشست</dfn> در فایل <code>main.go</code> خود و در دسترس قرار دادن آن برای handlerهای ما از طریق ساختار <code>application</code> است. مدیر نشست تنظیمات پیکربندی برای نشست‌های ما را نگه می‌دارد و همچنین برخی میدلورها و متدهای کمک‌کننده برای مدیریت بارگذاری و ذخیره داده‌های نشست ارائه می‌دهد.</p>
 
-<p>فایل <code>main.go</code> خود را باز کنید و به صورت زیر به‌روزرسانی کنید:</p>
+<p>فایل <code>main.go</code> خود را باز کنید و آن را به این صورت به‌روزرسانی کنید:</p>
 
-<figure class="code go">
-<figcaption style="text-align: left;">File: cmd/web/main.go</figcaption>
-<pre dir="ltr"><span class="kn">package</span> <span class="nx">main</span>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"database/sql"</span>
-    <span class="s">"flag"</span>
-    <span class="s">"html/template"</span>
-    <span class="s">"log/slog"</span>
-    <span class="s">"net/http"</span>
-    <span class="s">"os"</span>
-    <span class="s">"time"</span> <span class="c1">// New import
+    <span class="s">&#34;database/sql&#34;</span>
+    <span class="s">&#34;flag&#34;</span>
+    <span class="s">&#34;html/template&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;os&#34;</span>
+    <span class="s">&#34;time&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span>
-    <span class="s">"snippetbox.alexedwards.net/internal/models"</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 
-    <span class="s">"github.com/alexedwards/scs/mysqlstore"</span> <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">"github.com/alexedwards/scs/v2"</span>         <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">"github.com/go-playground/form/v4"</span>
-    <span class="nx">_</span> <span class="s">"github.com/go-sql-driver/mysql"</span>
+    <span class="s">&#34;github.com/alexedwards/scs/mysqlstore&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;github.com/alexedwards/scs/v2&#34;</span>         <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;github.com/go-playground/form/v4&#34;</span>
+    <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
 <span class="p">)</span>
 
 <span class="c1">// Add a new sessionManager field to the application struct.
@@ -94,8 +91,8 @@
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">"addr"</span><span class="p">,</span> <span class="s">":4000"</span><span class="p">,</span> <span class="s">"HTTP network address"</span><span class="p">)</span>
-    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">"dsn"</span><span class="p">,</span> <span class="s">"web:pass@/snippetbox?parseTime=true"</span><span class="p">,</span> <span class="s">"MySQL data source name"</span><span class="p">)</span>
+    <span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span>
+    <span class="nx">dsn</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dsn&#34;</span><span class="p">,</span> <span class="s">&#34;web:pass@/snippetbox?parseTime=true&#34;</span><span class="p">,</span> <span class="s">&#34;MySQL data source name&#34;</span><span class="p">)</span>
     <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span>
 
     <span class="nx">logger</span> <span class="o">:=</span> <span class="nx">slog</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">slog</span><span class="p">.</span><span class="nf">NewTextHandler</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Stdout</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span><span class="p">)</span>
@@ -132,7 +129,7 @@
         <span class="nx">sessionManager</span><span class="p">:</span> <span class="nx">sessionManager</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">"starting server"</span><span class="p">,</span> <span class="s">"addr"</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
+    <span class="nx">logger</span><span class="p">.</span><span class="nf">Info</span><span class="p">(</span><span class="s">&#34;starting server&#34;</span><span class="p">,</span> <span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="o">*</span><span class="nx">addr</span><span class="p">)</span>
 
     <span class="nx">err</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="o">*</span><span class="nx">addr</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
     <span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
@@ -143,35 +140,34 @@
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> تابع <code>scs.New()</code> یک اشاره‌گر به ساختار <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager"><code>SessionManager</code></a> برمی‌گرداند که تنظیمات پیکربندی نشست‌های شما را نگه می‌دارد. در کد بالا، فیلدهای <code>Store</code> و <code>Lifetime</code> این ساختار را تنظیم کرده‌ایم، اما <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager">فیلدهای دیگری</a> وجود دارند که می‌توانید و باید بسته به نیازهای برنامه خود تنظیم کنید.
-</p></aside>
+<strong>یادداشت:</strong> تابع <code>scs.New()</code> یک اشاره‌گر به یک ساختار <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager"><code>SessionManager</code></a> برمی‌گرداند که تنظیمات پیکربندی برای نشست‌های شما را نگه می‌دارد. در کد بالا فیلدهای <code>Store</code> و <code>Lifetime</code> این ساختار را تنظیم کرده‌ایم، اما طیفی از <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager">فیلدهای دیگر</a> وجود دارد که می‌توانید و باید بسته به نیازهای برنامه خود پیکربندی کنید.</p></aside>
 
-<p>برای اینکه نشست‌ها کار کنند، باید مسیرهای برنامه خود را با میان‌افزار ارائه شده توسط روش <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.LoadAndSave"><code>SessionManager.LoadAndSave()</code></a> بپوشانیم. این میان‌افزار به طور خودکار داده‌های نشست را با هر درخواست و پاسخ HTTP بارگذاری و ذخیره می‌کند.</p>
+<p>برای کار کردن نشست‌ها، همچنین باید مسیرهای برنامه خود را با میدلور ارائه شده توسط متد <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.LoadAndSave"><code>SessionManager.LoadAndSave()</code></a> بپیچیم. این میدلور به طور خودکار داده‌های نشست را با هر درخواست و پاسخ HTTP بارگذاری و ذخیره می‌کند.</p>
 
-<p>مهم است که توجه داشته باشید که نیازی نیست این میان‌افزار بر روی <em>همه</em> مسیرهای برنامه ما عمل کند. به طور خاص، نیازی به آن در مسیر <code>GET /static/</code> نداریم، زیرا همه این کار فقط ارائه فایل‌های استاتیک است و نیازی به رفتار با حالت نیست.</p>
+<p>مهم است که توجه داشته باشید که نیازی نیست این میدلور روی <em>همه</em> مسیرهای برنامه ما عمل کند. به طور خاص، نیازی به آن در مسیر <code>GET /static/</code> نداریم، چون این فقط فایل‌های استاتیک را سرو می‌کند و نیازی به هیچ رفتار با حالت نیست.</p>
 
-<p>بنابراین، به همین دلیل، منطقی نیست که میان‌افزار نشست را به زنجیره میان‌افزار <code>standard</code> موجود خود اضافه کنیم.</p>
+<p>بنابراین، به همین دلیل، اضافه کردن میدلور نشست به زنجیره میدلور موجود <code>standard</code> ما منطقی نیست.</p>
 
-<p>در عوض، بیایید یک زنجیره میان‌افزار <code>dynamic</code> جدید ایجاد کنیم که فقط شامل میان‌افزار مناسب برای مسیرهای برنامه پویا ما باشد.</p>
+<p>در عوض، بیایید یک زنجیره میدلور جدید <code>dynamic</code> ایجاد کنیم که شامل میدلور مناسب برای مسیرهای برنامه پویای ما فقط باشد.</p>
 
-<p>فایل <code>routes.go</code> را باز کنید و به صورت زیر به‌روزرسانی کنید:</p>
+<p>فایل <code>routes.go</code> را باز کنید و آن را به این صورت به‌روزرسانی کنید:</p>
 
-<figure class="code go">
-<figcaption style="text-align: left;">File: cmd/web/routes.go</figcaption>
-<pre dir="ltr"><span class="kn">package</span> <span class="nx">main</span>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
-    <span class="s">"net/http"</span>
+    <span class="s">&#34;net/http&#34;</span>
 
-    <span class="s">"github.com/justinas/alice"</span>
+    <span class="s">&#34;github.com/justinas/alice&#34;</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
 
     <span class="c1">// Leave the static files route unchanged.
-</span><span class="c1"></span>    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">"./ui/static/"</span><span class="p">)</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"GET /static/"</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">"/static"</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+</span><span class="c1"></span>    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
 
     <span class="c1">// Create a new middleware chain containing the middleware specific to our
 </span><span class="c1"></span>    <span class="c1">// dynamic application routes. For now, this chain will only contain the
@@ -182,17 +178,17 @@
 </span><span class="c1"></span>    <span class="c1">// the appropriate handler function. Note that because the alice ThenFunc()
 </span><span class="c1"></span>    <span class="c1">// method returns a http.Handler (rather than a http.HandlerFunc) we also
 </span><span class="c1"></span>    <span class="c1">// need to switch to registering the route using the mux.Handle() method.
-</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"GET /{$}"</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"GET /snippet/view/{id}"</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"GET /snippet/create"</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"POST /snippet/create"</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
 
     <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
     <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>اگر اکنون برنامه را اجرا کنید، باید متوجه شوید که همه چیز به درستی کامپایل می‌شود و مسیرهای برنامه شما به طور عادی کار می‌کنند.</p>
+<p>اگر الان برنامه را اجرا کنید، باید ببینید که همه چیز به درستی کامپایل می‌شود و مسیرهای برنامه شما به طور عادی ادامه به کار می‌دهند.</p>
 
 <hr />
 
@@ -200,77 +196,18 @@
 
 <h4 id="without-using-alice">بدون استفاده از alice</h4>
 
-<p>اگر از بسته <code>justinas/alice</code> برای مدیریت زنجیره‌های میان‌افزار خود استفاده نمی‌کنید، باید از آداپتور <code>http.HandlerFunc()</code> برای تبدیل توابع هندلر خود مانند <code>app.home</code> به <code>http.Handler</code> استفاده کنید و سپس آن را با میان‌افزار نشست بپوشانید. مانند این:</p>
+<p>اگر از بسته <code>justinas/alice</code> برای کمک به مدیریت زنجیره‌های میدلور خود استفاده نمی‌کنید، آنگاه باید از adapter <code>http.HandlerFunc()</code> برای تبدیل توابع handler خود مانند <code>app.home</code> به یک <code>http.Handler</code> استفاده کنید، و سپس آن را با میدلور نشست بپیچید. به این صورت:</p>
 
-<figure class="code go">
-<pre dir="ltr"><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
-<span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"GET /{$}"</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-<span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">"GET /snippet/view/:id"</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+<figure class="code go" dir="ltr">
+<pre><span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+<span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/:id&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 <span class="c1">// ... etc
 </span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>راه‌اندازی مدیر جلسه</td>
-        <td>Setting Up Session Manager</td>
-        <td>آماده‌سازی و پیکربندی مدیر جلسه</td>
-    </tr>
-    <tr>
-        <td>پیکربندی</td>
-        <td>Configuration</td>
-        <td>تنظیمات و پارامترهای سیستم</td>
-    </tr>
-    <tr>
-        <td>مقداردهی اولیه</td>
-        <td>Initialization</td>
-        <td>راه‌اندازی اولیه سیستم</td>
-    </tr>
-    <tr>
-        <td>تنظیمات جلسه</td>
-        <td>Session Settings</td>
-        <td>پارامترهای پیکربندی جلسه</td>
-    </tr>
-    <tr>
-        <td>ساختار برنامه</td>
-        <td>Application Structure</td>
-        <td>ساختار و سازماندهی کد برنامه</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار جلسه</td>
-        <td>Session Middleware</td>
-        <td>کد واسط برای مدیریت جلسه</td>
-    </tr>
-    <tr>
-        <td>کوکی‌های جلسه</td>
-        <td>Session Cookies</td>
-        <td>کوکی‌های مربوط به جلسه</td>
-    </tr>
-    <tr>
-        <td>زمان انقضا</td>
-        <td>Expiry Time</td>
-        <td>مدت زمان اعتبار جلسه</td>
-    </tr>
-    <tr>
-        <td>امنیت جلسه</td>
-        <td>Session Security</td>
-        <td>حفاظت از داده‌های جلسه</td>
-    </tr>
-    <tr>
-        <td>مسیریابی</td>
-        <td>Routing</td>
-        <td>هدایت درخواست‌ها به هندلرها</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="08.01-choosing-a-session-manager.html">قبلی</a>

@@ -1,28 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>زنجیره‌های میدل‌ور ترکیبی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.text p, .text h2, .chapter {
-				direction: rtl;
-				text-align: right;
-			}
-			.code {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; زنجیره‌های میان‌افزار قابل ترکیب</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میدل‌ور</a> &rsaquo; زنجیره‌های میدل‌ور ترکیبی</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="06.04-panic-recovery.html">قبلی</a>
@@ -32,45 +27,43 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۶.۵</div>
-			<h2 id="composable-middleware-chains">زنجیره‌های میان‌افزار قابل ترکیب (Composable Middleware Chains)</h2>
+			<div class="chapter">فصل ۶.۵.</div>
+			<h2 id="composable-middleware-chains">زنجیره‌های میدل‌ور ترکیبی</h2>
 
-			<p>در این بخش، نحوه ایجاد <dfn>زنجیره‌های میان‌افزار قابل ترکیب (Composable Middleware Chains)</dfn> را بررسی می‌کنیم. این زنجیره‌ها به ما اجازه می‌دهند تا <dfn>میان‌افزارها (Middlewares)</dfn> را به صورت پویا ترکیب کنیم و <dfn>ترتیب اجرا (Execution Order)</dfn> را کنترل کنیم.</p>
+<p>در این فصل می‌خواهم بسته <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> را معرفی کنم تا به ما در مدیریت زنجیره‌های میدل‌ور/handler کمک کند.</p>
 
-			<p>در این فصل می‌خواهم پکیج <a href="https://github.com/justinas/alice"><code>justinas/alice</code></a> را معرفی کنم که به ما در مدیریت زنجیره‌های میان‌افزار/هندلر کمک می‌کند.</p>
+<p>شما <em>نیازی</em> به استفاده از این بسته ندارید، اما دلیل توصیه من این است که ایجاد زنجیره‌های میدل‌ور ترکیبی و قابل استفاده مجدد را آسان می‌کند &mdash; و این می‌تواند کمک واقعی باشد وقتی برنامه شما رشد می‌کند و مسیرهای شما پیچیده‌تر می‌شوند. خود بسته نیز کوچک و سبک‌وزن است و کد واضح و خوب نوشته شده است.</p>
 
-			<p>شما <em>نیازی</em> به استفاده از این پکیج ندارید، اما دلیلی که من آن را توصیه می‌کنم این است که ایجاد زنجیره‌های میان‌افزار قابل ترکیب و قابل استفاده مجدد را آسان می‌کند - و این می‌تواند با رشد برنامه شما و پیچیده‌تر شدن مسیرها، کمک واقعی باشد. خود پکیج نیز کوچک و سبک است، و کد آن واضح و خوب نوشته شده است.</p>
+<p>برای نشان دادن ویژگی‌های آن در یک مثال، به شما اجازه می‌دهد یک زنجیره handler را از این:</p>
 
-			<p>برای نمایش ویژگی‌های آن در یک مثال، به شما اجازه می‌دهد یک زنجیره هندلر را از این حالت:</p>
-
-			<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="k">return</span> <span class="nf">myMiddleware1</span><span class="p">(</span><span class="nf">myMiddleware2</span><span class="p">(</span><span class="nf">myMiddleware3</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
-			</figure>
+</figure>
 
-			<p>به این حالت تبدیل کنید، که در یک نگاه درک آن کمی واضح‌تر است:</p>
+<p>به این تبدیل کنید، که در نگاه اول کمی واضح‌تر است:</p>
 
-			<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="k">return</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddleware1</span><span class="p">,</span> <span class="nx">myMiddleware2</span><span class="p">,</span> <span class="nx">myMiddleware3</span><span class="p">)</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
-			</figure>
+</figure>
 
-			<p>اما قدرت واقعی در این است که می‌توانید از آن برای ایجاد زنجیره‌های میان‌افزار استفاده کنید که می‌توانند به متغیرها اختصاص داده شوند، به آنها اضافه شود و مجدداً استفاده شوند. برای مثال:</p>
+<p>اما قدرت واقعی در این واقعیت نهفته است که می‌توانید از آن برای ایجاد زنجیره‌های میدل‌ور استفاده کنید که می‌توانند به متغیرها اختصاص داده شوند، به آن‌ها اضافه شوند و دوباره استفاده شوند. به عنوان مثال:</p>
 
-			<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">myChain</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">myMiddlewareOne</span><span class="p">,</span> <span class="nx">myMiddlewareTwo</span><span class="p">)</span>
 <span class="nx">myOtherChain</span> <span class="o">:=</span> <span class="nx">myChain</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">myMiddleware3</span><span class="p">)</span>
 <span class="k">return</span> <span class="nx">myOtherChain</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">myHandler</span><span class="p">)</span></pre>
-			</figure>
+</figure>
 
-			<p>اگر همراه ما هستید، لطفاً پکیج <code>justinas/alice</code> را با استفاده از <code>go get</code> نصب کنید:</p>
+<p>اگر همراه می‌آیید، لطفاً بسته <code>justinas/alice</code> را با استفاده از <code>go get</code> نصب کنید:</p>
 
-			<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go get github.com/justinas/alice@v1
 <samp>go: downloading github.com/justinas/alice v1.2.0</samp></pre>
-			</figure>
+</figure>
 
-			<p>و اگر فایل <code>go.mod</code> پروژه خود را باز کنید، باید یک عبارت <code>require</code> جدید مربوطه را مشاهده کنید، به این صورت:</p>
+<p>و اگر فایل <code>go.mod</code> پروژه خود را باز کنید، باید یک دستور <code>require</code> مربوطه جدید ببینید، به این صورت:</p>
 
-			<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <figcaption>File: go.mod</figcaption>
 <pre>module snippetbox.alexedwards.net
 
@@ -82,13 +75,13 @@ require (
     filippo.io/edwards25519 v1.1.0 // indirect
     github.com/justinas/alice v1.2.0 // indirect
 )</pre>
-			</figure>
+</figure>
 
-			<p>مجدداً، این در حال حاضر به عنوان یک وابستگی غیرمستقیم فهرست شده است زیرا ما هنوز آن را در کد خود وارد و استفاده نمی‌کنیم.</p>
+<p>دوباره، این در حال حاضر به عنوان یک وابستگی غیرمستقیم فهرست شده است چون در واقع آن را در کد خود وارد و استفاده نکرده‌ایم.</p>
 
-			<p>بیایید اکنون این کار را انجام دهیم و فایل <code>routes.go</code> خود را به شرح زیر برای استفاده از پکیج <code>justinas/alice</code> به‌روزرسانی کنیم:</p>
+<p>بیایید همین حالا این کار را انجام دهیم و فایل <code>routes.go</code> خود را برای استفاده از بسته <code>justinas/alice</code> به‌روزرسانی کنیم:</p>
 
-			<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -109,79 +102,19 @@ require (
     <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
     <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span>
 
-    <span class="c1">// Create a middleware chain containing our 'standard' middleware
+    <span class="c1">// Create a middleware chain containing our &#39;standard&#39; middleware
 </span><span class="c1"></span>    <span class="c1">// which will be used for every request our application receives.
 </span><span class="c1"></span>    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
 
-    <span class="c1">// Return the 'standard' middleware chain followed by the servemux.
+    <span class="c1">// Return the &#39;standard&#39; middleware chain followed by the servemux.
 </span><span class="c1"></span>    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
 <span class="p">}</span></pre>
-			</figure>
+</figure>
 
-			<p>اگر می‌خواهید، می‌توانید در این مرحله برنامه را مجدداً راه‌اندازی کنید. باید متوجه شوید که همه چیز به درستی کامپایل می‌شود و برنامه همچنان مانند قبل کار می‌کند. همچنین می‌توانید مجدداً <code>go mod tidy</code> را اجرا کنید تا علامت <code>// indirect</code> از فایل <code>go.mod</code> حذف شود.</p>
-
-			<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-			<table class="glossary">
-				<tr>
-					<th>اصطلاح فارسی</th>
-					<th>معادل انگلیسی</th>
-					<th>توضیح</th>
-				</tr>
-				<tr>
-					<td>زنجیره‌های میان‌افزار قابل ترکیب</td>
-					<td>Composable Middleware Chains</td>
-					<td>ترکیب پویای میان‌افزارها به صورت زنجیره‌ای</td>
-				</tr>
-				<tr>
-					<td>میان‌افزارها</td>
-					<td>Middlewares</td>
-					<td>توابعی که درخواست‌ها را پردازش می‌کنند</td>
-				</tr>
-				<tr>
-					<td>ترتیب اجرا</td>
-					<td>Execution Order</td>
-					<td>ترتیب اجرای میان‌افزارها در زنجیره</td>
-				</tr>
-				<tr>
-					<td>تابع زنجیره‌ساز</td>
-					<td>Chain Function</td>
-					<td>تابعی که میان‌افزارها را به هم متصل می‌کند</td>
-				</tr>
-				<tr>
-					<td>میان‌افزار استاندارد</td>
-					<td>Standard Middleware</td>
-					<td>میان‌افزارهای پایه مورد نیاز برنامه</td>
-				</tr>
-				<tr>
-					<td>مسیریاب</td>
-					<td>Router</td>
-					<td>بخشی که درخواست‌ها را به هندلرها هدایت می‌کند</td>
-				</tr>
-				<tr>
-					<td>هندلر</td>
-					<td>Handler</td>
-					<td>تابعی که درخواست‌ها را پردازش می‌کند</td>
-				</tr>
-				<tr>
-					<td>پردازش درخواست</td>
-					<td>Request Processing</td>
-					<td>عملیات انجام شده روی درخواست‌های دریافتی</td>
-				</tr>
-				<tr>
-					<td>مدیریت مسیر</td>
-					<td>Route Handling</td>
-					<td>پردازش درخواست‌ها بر اساس مسیر URL</td>
-				</tr>
-				<tr>
-					<td>سرور فایل</td>
-					<td>File Server</td>
-					<td>بخشی که فایل‌های استاتیک را سرو می‌کند</td>
-				</tr>
-			</table>
+<p>اگر می‌خواهید، در این مرحله آزادانه برنامه را مجدداً راه‌اندازی کنید. باید ببینید که همه چیز به درستی کامپایل می‌شود و برنامه به همان روش قبلی ادامه می‌دهد. همچنین می‌توانید دوباره <code>go mod tidy</code> را اجرا کنید تا حاشیه‌نویسی <code>// indirect</code> را از فایل <code>go.mod</code> حذف کنید.</p>
 
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="06.04-panic-recovery.html">قبلی</a>
@@ -198,12 +131,16 @@ require (
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "06.04-panic-recovery.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "07.00-processing-forms.html";
 						break;
+						
 				}
 			};
 		</script>

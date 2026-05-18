@@ -1,30 +1,21 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>کار با داده‌های نشست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<style>
-			.code.go,
-			.code.html,
-			.code.bash,
-			.code.plain,
-			.code.sql {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">حالت دار HTTP</a> &rsaquo; کار با داده‌های جلسه</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">HTTP با حالت</a> &rsaquo; کار با داده‌های نشست</span>
 						
 					
 				</div>
@@ -35,15 +26,13 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" style="direction: rtl;">
-			<div class="chapter">فصل 8.3.</div>
-			<h2 id="working-with-session-data">کار با داده‌های جلسه (Working with Session Data)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۸.۳.</div>
+			<h2 id="working-with-session-data">کار با داده‌های نشست</h2>
 
-<p>در این بخش، نحوه <dfn>کار با داده‌های جلسه (Working with Session Data)</dfn> را بررسی می‌کنیم. این شامل <dfn>ذخیره‌سازی (Storage)</dfn>، <dfn>بازیابی (Retrieval)</dfn> و <dfn>حذف داده‌ها (Data Removal)</dfn> از جلسه می‌شود.</p>
+<p>در این فصل بیایید عملکرد نشست را به کار ببریم و از آن برای ماندگار کردن پیام فلش تأیید بین درخواست‌های HTTP که <a href="08.00-stateful-http.html">قبلاً بحث کردیم</a> استفاده کنیم.</p>
 
-<p>در این فصل، بیایید قابلیت جلسه را به کار بگیریم و از آن برای حفظ پیام تأیید بین درخواست‌های HTTP که <a href="08.00-stateful-http.html">قبلاً بحث کردیم</a>، استفاده کنیم.</p>
-
-<p>ما در فایل <code>cmd/web/handlers.go</code> خود شروع می‌کنیم و روش <code>snippetCreatePost</code> خود را به‌روزرسانی می‌کنیم تا یک پیام فلش به داده‌های جلسه کاربر اضافه شود، اگر و فقط اگر قطعه با موفقیت ایجاد شده باشد. به این صورت:</p>
+<p>در فایل <code>cmd/web/handlers.go</code> خود شروع می‌کنیم و متد <code>snippetCreatePost</code> خود را به‌روزرسانی می‌کنیم تا یک پیام فلش به داده‌های نشست کاربر اضافه شود اگر &mdash; و فقط اگر &mdash; اسنیپت با موفقیت ایجاد شده باشد. به این صورت:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -60,10 +49,10 @@
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند خالی باشد&#34;</span><span class="p">)</span>
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند بیش از 100 کاراکتر باشد&#34;</span><span class="p">)</span>
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد نمی‌تواند خالی باشد&#34;</span><span class="p">)</span>
-    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;این فیلد باید برابر با 1، 7 یا 365 باشد&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">MaxChars</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Title</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;title&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be more than 100 characters long&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">NotBlank</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Content</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;content&#34;</span><span class="p">,</span> <span class="s">&#34;This field cannot be blank&#34;</span><span class="p">)</span>
+    <span class="nx">form</span><span class="p">.</span><span class="nf">CheckField</span><span class="p">(</span><span class="nx">validator</span><span class="p">.</span><span class="nf">PermittedValue</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Expires</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">365</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;expires&#34;</span><span class="p">,</span> <span class="s">&#34;This field must equal 1, 7 or 365&#34;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">!</span><span class="nx">form</span><span class="p">.</span><span class="nf">Valid</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
@@ -80,29 +69,27 @@
 
     <span class="c1">// Use the Put() method to add a string value (&#34;Snippet successfully 
 </span><span class="c1"></span>    <span class="c1">// created!&#34;) and the corresponding key (&#34;flash&#34;) to the session data.
-</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">,</span> <span class="s">&#34;قطعه با موفقیت ایجاد شد!&#34;</span><span class="p">)</span>
+</span><span class="c1"></span>    <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">Put</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;flash&#34;</span><span class="p">,</span> <span class="s">&#34;Snippet successfully created!&#34;</span><span class="p">)</span>
 
     <span class="nx">http</span><span class="p">.</span><span class="nf">Redirect</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;/snippet/view/%d&#34;</span><span class="p">,</span> <span class="nx">id</span><span class="p">)</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusSeeOther</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p style="direction: rtl;">
-    اولین پارامتری که به <code>app.sessionManager.Put()</code> می‌دهیم، زمینه درخواست فعلی است. ما بعداً در کتاب به‌طور کامل درباره زمینه درخواست و نحوه استفاده از آن صحبت خواهیم کرد، اما فعلاً می‌توانید آن را به‌عنوان جایی که مدیر جلسه به‌طور موقت اطلاعات را ذخیره می‌کند در حالی که هندلرهای شما با درخواست سروکار دارند، در نظر بگیرید.
-</p>
+<p>این خوب و ساده است، اما چند نکته برای اشاره وجود دارد:</p>
 
-<p style="direction: rtl;">
-    پارامتر دوم (در مورد ما رشته <code>"flash"</code>) کلید برای پیام خاصی است که به داده‌های جلسه اضافه می‌کنیم. ما بعداً پیام را از داده‌های جلسه بازیابی خواهیم کرد.
-</p>
+<ul>
+<li><p>اولین پارامتری که به <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.Put"><code>app.sessionManager.Put()</code></a> می‌دهیم، <em>context درخواست فعلی</em> است. بعداً در کتاب به درستی درباره اینکه context درخواست چیست و چگونه از آن استفاده کنیم صحبت خواهیم کرد، اما برای الان فقط می‌توانید آن را جایی در نظر بگیرید که مدیر نشست به طور موقت اطلاعات را ذخیره می‌کند در حالی که handlerهای شما با درخواست سروکار دارند.</p></li>
 
-<p style="direction: rtl;">
-    اگر جلسه‌ای برای کاربر فعلی وجود نداشته باشد (یا جلسه آن‌ها منقضی شده باشد)، یک جلسه جدید و خالی برای آن‌ها به‌طور خودکار توسط میان‌افزار جلسه ایجاد خواهد شد.
-</p>
+<li><p>پارامتر دوم (در مورد ما رشته <code>&quot;flash&quot;</code>) <em>کلید</em> برای پیام خاصی است که به داده‌های نشست اضافه می‌کنیم. بعداً پیام را از داده‌های نشست با استفاده از این کلید نیز بازیابی خواهیم کرد.</p></li>
 
-<p>در مرحله بعد، می‌خواهیم هندلر <code>snippetView</code> ما پیام فلش را (اگر در جلسه کاربر فعلی وجود داشته باشد) بازیابی کند و آن را به قالب HTML برای نمایش بعدی ارسال کند.</p>
+<li><p>اگر نشست موجودی برای کاربر فعلی وجود ندارد (یا نشست آن‌ها منقضی شده است)، یک نشست جدید و خالی برای آن‌ها به طور خودکار توسط میدلور نشست ایجاد خواهد شد.</p></li>
+</ul>
 
-<p>چون می‌خواهیم پیام فلش را فقط یک‌بار نمایش دهیم، در واقع می‌خواهیم پیام را از داده‌های جلسه بازیابی و حذف کنیم. ما می‌توانیم هر دو این عملیات را به‌طور همزمان با استفاده از روش <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.PopString"><code>PopString()</code></a> انجام دهیم.</p>
+<p>بعد می‌خواهیم handler <code>snippetView</code> ما پیام فلش را بازیابی کند (اگر یکی در نشست برای کاربر فعلی وجود داشته باشد) و آن را به قالب HTML برای نمایش بعدی بدهد.</p>
 
-<p>من نشان خواهم داد:</p>
+<p>چون می‌خواهیم پیام فلش را فقط یک بار نمایش دهیم، در واقع می‌خواهیم پیام را از داده‌های نشست بازیابی <em>و حذف</em> کنیم. می‌توانیم هر دو این عملیات را همزمان با استفاده از متد <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.PopString"><code>PopString()</code></a> انجام دهیم.</p>
+
+<p>نشان می‌دهم:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -146,12 +133,11 @@
 </figure>
 
 <aside class="hint"><p>
-<strong>اطلاعات:</strong> اگر می‌خواهید فقط یک مقدار را از داده‌های جلسه بازیابی کنید (و آن را در آنجا بگذارید)، می‌توانید از روش <code>GetString()</code> استفاده کنید. بسته <code>scs</code> همچنین روش‌هایی برای بازیابی انواع داده‌های رایج دیگر، از جمله <code>GetInt()</code>، <code>GetBool()</code>،  <code>GetBytes()</code> و <code>GetTime()</code> ارائه می‌دهد.
-</p></aside>
+<strong>اطلاعات:</strong> اگر می‌خواهید فقط یک مقدار را از داده‌های نشست بازیابی کنید (و آن را در آنجا بگذارید) می‌توانید به جای آن از متد <code>GetString()</code> استفاده کنید. بسته <code>scs</code> همچنین متدهایی برای بازیابی انواع داده رایج دیگر ارائه می‌دهد، از جمله <code>GetInt()</code>، <code>GetBool()</code>، <code>GetBytes()</code> و <code>GetTime()</code>.</p></aside>
 
-<p>اگر اکنون سعی کنید برنامه را اجرا کنید، کامپایلر (به‌درستی) غر خواهد زد که فیلد <code>Flash</code> در ساختار <code>templateData</code> تعریف نشده است. بروید و آن را به این صورت اضافه کنید:</p>
+<p>اگر الان سعی کنید برنامه را اجرا کنید، کامپایلر (درست) شکایت می‌کند که فیلد <code>Flash</code> در ساختار <code>templateData</code> ما تعریف نشده است. پیش بروید و آن را به این صورت اضافه کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -174,13 +160,13 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>و اکنون، می‌توانیم فایل <code>base.tmpl</code> خود را به‌روزرسانی کنیم تا پیام فلش را نمایش دهد، اگر وجود داشته باشد.</p>
+<p>و حالا، می‌توانیم فایل <code>base.tmpl</code> خود را برای نمایش پیام فلش، در صورت وجود، به‌روزرسانی کنیم.</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/base.tmpl</figcaption>
 <pre>{{define &#34;base&#34;}}
 <span class="cp">&lt;!doctype html&gt;</span>
-<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;fa&#39;</span><span class="p"></span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&#39;en&#39;</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">head</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p"></span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">title</span><span class="p"></span><span class="p">&gt;</span>{{template &#34;title&#34; .}} - Snippetbox<span class="p">&lt;</span><span class="p">/</span><span class="nt">title</span><span class="p">&gt;</span>
@@ -209,21 +195,21 @@
 {{end}}</pre>
 </figure>
 
-<p>به یاد داشته باشید، بلوک <code>{{with .Flash}}</code> فقط در صورتی اجرا می‌شود که مقدار <code>.Flash</code> <a href="05.02-template-actions-and-functions.html">رشته خالی نباشد</a>. بنابراین، اگر کلید <code>&quot;flash&quot;</code> در جلسه کاربر فعلی وجود نداشته باشد، نتیجه این است که قطعه جدیدی از نشانه‌گذاری به‌سادگی نمایش داده نمی‌شود.</p>
+<p>به یاد داشته باشید، بلوک <code>{{with .Flash}}</code> فقط اجرا می‌شود اگر مقدار <code>.Flash</code> <a href="05.02-template-actions-and-functions.html">رشته خالی نباشد (not the empty string)</a>. بنابراین، اگر کلید <code>&quot;flash&quot;</code> در نشست کاربر فعلی وجود نداشته باشد، نتیجه این است که تکه نشانه‌گذاری جدید (chunk of new markup) به سادگی نمایش داده نخواهد شد.</p>
 
-<p>پس از انجام این کار، همه فایل‌های خود را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. سعی کنید یک قطعه دیگر ایجاد کنید به این صورت&hellip;</p>
+<p>وقتی این کار انجام شد، همه فایل‌های خود را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. سعی کنید یک اسنیپت جدید اضافه کنید، به این صورت&hellip;</p>
 
 <figure class="img">
 <img src="assets/img/08.03-01.png" alt="08.03-01.png" />
 </figure>
 
-<p>و پس از تغییر مسیر باید ببینید که پیام فلش اکنون نمایش داده می‌شود:</p>
+<p>و پس از هدایت باید پیام فلش را که حالا نمایش داده می‌شود ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/08.03-02.png" alt="08.03-02.png" />
 </figure>
 
-<p>اگر سعی کنید صفحه را تازه‌سازی کنید، می‌توانید تأیید کنید که پیام فلش دیگر نمایش داده نمی‌شود &mdash; این یک پیام یک‌بار برای کاربر فعلی بلافاصله پس از ایجاد قطعه بود.</p>
+<p>اگر سعی کنید صفحه را رفرش کنید، می‌توانید تأیید کنید که پیام فلش دیگر نمایش داده نمی‌شود &mdash; این یک پیام یکباره برای کاربر فعلی بلافاصله پس از ایجاد اسنیپت بود.</p>
 
 <figure class="img">
 <img src="assets/img/08.03-03.png" alt="08.03-03.png" />
@@ -231,11 +217,11 @@
 
 <h3 id="auto-displaying-flash-messages">نمایش خودکار پیام‌های فلش</h3>
 
-<p>یک بهبود کوچک که می‌توانیم انجام دهیم (که بعداً در پروژه برای ما کار را آسان‌تر می‌کند) این است که نمایش پیام‌های فلش را خودکار کنیم، به‌طوری که هر پیامی به‌طور خودکار در دفعه بعدی که <em>هر صفحه‌ای رندر می‌شود</em>، گنجانده شود.</p>
+<p>بهبود کوچکی که می‌توانیم انجام دهیم (که بعداً در پروژه کار ما را صرفه‌جویی می‌کند) خودکارسازی نمایش پیام‌های فلش است، به طوری که هر پیامی به طور خودکار دفعه بعدی که <em>هر صفحه رندر می‌شود</em> گنجانده شود.</p>
 
-<p>ما می‌توانیم این کار را با افزودن هر پیام فلش به داده‌های قالب از طریق روش کمکی <code>newTemplateData()</code> که قبلاً ساخته‌ایم، انجام دهیم، به این صورت:</p>
+<p>می‌توانیم این کار را با افزودن هر پیام فلش به داده قالب از طریق متد کمک‌کننده <code>newTemplateData()</code> که قبلاً ساختیم انجام دهیم، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -252,7 +238,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>ایجاد این تغییر به این معنی است که دیگر نیازی به بررسی پیام فلش در هندلر <code>snippetView</code> نداریم و کد می‌تواند به این صورت برگردد:</p>
+<p>انجام این تغییر به این معنی است که دیگر نیازی به بررسی پیام فلش در داخل handler <code>snippetView</code> نداریم، و کد می‌تواند به این صورت برگردانده شود:</p>
 
 <figure class="code go">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -286,31 +272,31 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p style="direction: rtl;">
-    احساس راحتی کنید و دوباره برنامه را اجرا کنید و یک قطعه دیگر ایجاد کنید. باید ببینید که عملکرد پیام فلش همچنان به‌درستی کار می‌کند.
-</p>
+<p>آزادانه سعی کنید برنامه را دوباره اجرا کنید و یک اسنیپت دیگر ایجاد کنید. باید ببینید که عملکرد پیام فلش هنوز همانطور که انتظار می‌رود کار می‌کند.</p>
 
 <hr />
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="behind-the-scenes-of-session-management">پشت صحنه مدیریت جلسه</h4>
+<h4 id="behind-the-scenes-of-session-management">پشت صحنه مدیریت نشست</h4>
 
-<p>می‌خواهم لحظه‌ای وقت بگذارم تا برخی از "جادو"های پشت مدیریت جلسه را باز کنم و توضیح دهم که چگونه در پشت صحنه کار می‌کند.</p>
+<p>می‌خواهم لحظه‌ای وقت بگذارم تا برخی از 'جادو' پشت مدیریت نشست را باز کنم و توضیح دهم که چگونه در پشت صحنه کار می‌کند.</p>
 
-<p>اگر دوست دارید، ابزارهای توسعه‌دهنده مرورگر خود را باز کنید و به داده‌های کوکی برای یکی از صفحات نگاه کنید. باید یک کوکی به نام <code>session</code> در داده‌های درخواست ببینید، مشابه این:</p>
+<p>اگر می‌خواهید، ابزارهای توسعه‌دهنده را در مرورگر وب خود باز کنید و به داده‌های کوکی برای یکی از صفحات نگاه کنید. باید یک کوکی به نام <code>session</code> در داده‌های درخواست ببینید، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/08.03-04.png" alt="08.03-04.png" />
 </figure>
 
-<p>این <em>کوکی جلسه</em> است و با هر درخواستی که مرورگر شما به برنامه Snippetbox می‌فرستد، ارسال خواهد شد. کوکی جلسه حاوی <em>توکن جلسه</em> &mdash; که گاهی اوقات به‌عنوان <em>شناسه جلسه</em> نیز شناخته می‌شود. توکن جلسه یک رشته تصادفی با انتروپی بالا است، که در مورد من مقدار <code>y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4</code> است (مال شما متفاوت خواهد بود).</p>
+<p>این <em>کوکی نشست</em> است و با هر درخواستی که مرورگر شما می‌کند به برنامه Snippetbox ارسال می‌شود.</p>
 
-<p>مهم است که تأکید کنیم که توکن جلسه فقط یک رشته تصادفی است. در خود، هیچ <em>داده جلسه</em> (مانند پیام فلشی که در این فصل تنظیم کردیم) را حمل یا منتقل نمی‌کند.</p>
+<p>کوکی نشست شامل <em>توکن نشست</em> است &mdash; که گاهی <em>شناسه نشست</em> (session ID) نیز نامیده می‌شود. توکن نشست یک رشته تصادفی با آنتروپی بالا است که در مورد من مقدار <code>y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4</code> است (مال شما متفاوت خواهد بود).</p>
 
-<p>بعد، ممکن است بخواهید یک ترمینال به MySQL باز کنید و یک پرس و جوی <code>SELECT</code> را در برابر جدول <code>sessions</code> اجرا کنید تا توکن جلسه‌ای که در مرورگر خود می‌بینید را جستجو کنید. به این صورت:</p>
+<p>مهم است که تأکید کنیم که توکن نشست فقط یک رشته تصادفی است. به خودی خود، هیچ <em>دادهٔ نشست</em> را حمل یا منتقل نمی‌کند (مانند پیام فلش که در این فصل تنظیم کردیم).</p>
 
-<figure class="code bash">
+<p>بعد، ممکن است بخواهید یک ترمینال به MySQL باز کنید و یک پرس‌وجوی <code>SELECT</code> روی جدول <code>sessions</code> اجرا کنید تا توکن نشست که در مرورگر خود می‌بینید را جستجو کنید. به این صورت:</p>
+
+<figure class="code bash" dir="ltr">
 <pre>mysql&gt; SELECT * FROM sessions WHERE token = &#39;y9y1-mXyQUoAM6V5s9lXNjbZ_vXSGkO7jy-KL-di7A4&#39;;
 <samp>+---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------+
 | token                                       | data                                                                                                                                                                                                                                             | expiry                     |
@@ -320,77 +306,18 @@
 1 row in set (0.00 sec)</samp></pre>
 </figure>
 
-<p>این باید یک رکورد را برگرداند. مقدار <code>data</code> در اینجا چیزی است که <em>در واقع حاوی داده‌های جلسه کاربر است</em>. به‌طور خاص، آنچه که ما در حال مشاهده آن هستیم یک <code>BLOB</code> (شیء بزرگ باینری) MySQL است که حاوی یک نمایش <a href="https://pkg.go.dev/encoding/gob">رمزگذاری شده gob</a> از داده‌های جلسه است.</p>
+<p>این باید یک رکورد برگرداند. مقدار <code>data</code> در اینجا چیزی است که <em>در واقع شامل داده‌های نشست کاربر</em> است. به طور خاص، آنچه که به آن نگاه می‌کنیم یک <code>BLOB</code> MySQL (شیء بزرگ باینری) است که شامل یک نمایش <a href="https://pkg.go.dev/encoding/gob">کدگذاری شده gob</a> از داده‌های نشست است.</p>
 
-<p>هر بار که تغییری در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، این مقدار <code>data</code> به‌روزرسانی می‌شود تا تغییرات را منعکس کند.</p>
+<p>هر بار که تغییری در داده‌های نشست خود ایجاد می‌کنیم، این مقدار <code>data</code> برای منعکس کردن تغییرات به‌روزرسانی می‌شود.</p>
 
-<p>در نهایت، ستون آخر در پایگاه داده زمان <code>expiry</code> است، پس از آن جلسه دیگر معتبر در نظر گرفته نمی‌شود.</p>
+<p>در نهایت، ستون نهایی در پایگاه داده زمان <code>expiry</code> است، پس از آن نشست دیگر معتبر در نظر گرفته نخواهد شد.</p>
 
-<p>بنابراین، آنچه که در برنامه ما اتفاق می‌افتد این است که میان‌افزار <code>LoadAndSave()</code> هر درخواست ورودی را برای یک کوکی جلسه بررسی می‌کند. اگر یک کوکی جلسه وجود داشته باشد، توکن جلسه را از کوکی می‌خواند و داده‌های جلسه مربوطه را از پایگاه داده بازیابی می‌کند (در حالی که بررسی می‌کند که جلسه منقضی نشده باشد). سپس داده‌های جلسه را به <em>زمینه درخواست</em> اضافه می‌کند تا بتواند در هندلرهای شما استفاده شود.</p>
+<p>بنابراین، آنچه در برنامه ما اتفاق می‌افتد این است که میدلور <code>LoadAndSave()</code> هر درخواست ورودی را برای یک کوکی نشست بررسی می‌کند. اگر یک کوکی نشست وجود داشته باشد، توکن نشست را از کوکی می‌خواند و داده‌های نشست مربوطه را از پایگاه داده بازیابی می‌کند (در حالی که همچنین بررسی می‌کند که نشست منقضی نشده است). سپس داده‌های نشست را به <em>context درخواست</em> اضافه می‌کند تا بتواند در handlerهای شما استفاده شود.</p>
 
-<p>هر تغییری که در داده‌های جلسه در هندلرهای خود ایجاد می‌کنیم، در زمینه درخواست به‌روزرسانی می‌شود و سپس میان‌افزار <code>LoadAndSave()</code> پایگاه داده را با هر تغییری در داده‌های جلسه قبل از بازگشت به‌روزرسانی می‌کند.</p>
+<p>هر تغییری که در داده‌های نشست در handlerهای خود ایجاد می‌کنید در context درخواست به‌روزرسانی می‌شود، و سپس میدلور <code>LoadAndSave()</code> پایگاه داده را با هر تغییری در داده‌های نشست قبل از بازگشت به‌روزرسانی می‌کند.</p>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>کار با داده‌های جلسه</td>
-        <td>Working with Session Data</td>
-        <td>مدیریت و دستکاری داده‌های جلسه</td>
-    </tr>
-    <tr>
-        <td>ذخیره‌سازی</td>
-        <td>Storage</td>
-        <td>نگهداری داده‌ها در جلسه</td>
-    </tr>
-    <tr>
-        <td>بازیابی</td>
-        <td>Retrieval</td>
-        <td>خواندن داده‌ها از جلسه</td>
-    </tr>
-    <tr>
-        <td>حذف داده‌ها</td>
-        <td>Data Removal</td>
-        <td>پاک کردن داده‌ها از جلسه</td>
-    </tr>
-    <tr>
-        <td>پیام فلش</td>
-        <td>Flash Message</td>
-        <td>پیام موقتی برای نمایش به کاربر</td>
-    </tr>
-    <tr>
-        <td>جلسه کاربر</td>
-        <td>User Session</td>
-        <td>داده‌های مربوط به جلسه یک کاربر</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>مدیریت خطاهای جلسه</td>
-    </tr>
-    <tr>
-        <td>نوع داده</td>
-        <td>Data Type</td>
-        <td>نوع داده‌های ذخیره شده در جلسه</td>
-    </tr>
-    <tr>
-        <td>زمان انقضا</td>
-        <td>Expiry Time</td>
-        <td>مدت زمان اعتبار داده‌های جلسه</td>
-    </tr>
-    <tr>
-        <td>امنیت داده‌ها</td>
-        <td>Data Security</td>
-        <td>حفاظت از داده‌های جلسه</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="08.02-setting-up-the-session-manager.html">قبلی</a>

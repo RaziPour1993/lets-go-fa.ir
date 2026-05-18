@@ -1,22 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تست handler snippetCreate &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<style>
-			body, p, h2, h4, ul, li {
-				direction: rtl;
-				text-align: right;
-			}
-			.code {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -24,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرینات راهنما</a> &rsaquo; آزمایش هندلر snippetCreate</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; تست handler snippetCreate</span>
 						
 					
 				</div>
@@ -36,41 +27,41 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 16.3.</div>
-			<h2 id="test-the-snippetcreate-handler">آزمایش هندلر snippetCreate (Testing the snippetCreate Handler)</h2>
+			<div class="chapter">فصل ۱۶.۳.</div>
+			<h2 id="test-the-snippetcreate-handler">تست handler snippetCreate</h2>
 
-<p>هدف شما در این تمرین ایجاد یک <dfn>تست انتها به انتها (End-to-End Test)</dfn> برای <dfn>مسیر (Route)</dfn> <code>GET /snippet/create</code> است. به طور خاص، می‌خواهید آزمایش کنید که:</p>
+<p>هدف شما در این تمرین ایجاد یک تست end-to-end برای route <code>GET /snippet/create</code> است. به طور خاص، می‌خواهید تست کنید که:</p>
 
 <ul>
-<li><dfn>کاربران غیرمجاز (Unauthenticated Users)</dfn> به <dfn>فرم ورود (Login Form)</dfn> هدایت می‌شوند.</li>
-<li><dfn>کاربران مجاز (Authenticated Users)</dfn> فرم ایجاد یک قطعه جدید را مشاهده می‌کنند.</li>
+<li>کاربران احراز هویت نشده به فرم ورود هدایت می‌شوند.</li>
+<li>کاربران احراز هویت شده فرم ایجاد snippet جدید را می‌بینند.</li>
 </ul>
 
 <h4 id="step-1">مرحله 1</h4>
 
-<p>یک <dfn>تست جدید (New Test)</dfn> <code>TestSnippetCreate</code> در فایل <code>cmd/web/handlers_test.go</code> خود ایجاد کنید. در این تست، از <dfn>الگو (Pattern)</dfn> و <dfn>توابع کمکی (Helper Functions)</dfn> فصل <a href="13.03-end-to-end-testing.html">تست انتها به انتها</a> برای راه‌اندازی یک <dfn>سرور تست (Test Server)</dfn> جدید با استفاده از مسیرهای برنامه و <dfn>وابستگی‌های شبیه‌سازی شده (Mocked Dependencies)</dfn> استفاده کنید.</p>
+<p>یک تست جدید <code>TestSnippetCreate</code> در فایل <code>cmd/web/handlers_test.go</code> ایجاد کنید. در این تست، از الگو و helperهای <a href="13.03-end-to-end-testing.html">فصل تست end-to-end</a> برای مقداردهی اولیه یک سرور تست با استفاده از routeهای برنامه و dependencyهای mock شده استفاده کنید.</p>
 
 <p><a href="#17.03-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
 <h4 id="step-2">مرحله 2</h4>
 
-<p>یک <dfn>زیرتست (Subtest)</dfn> با نام <code>"Unauthenticated"</code> ایجاد کنید. در این زیرتست، یک <dfn>درخواست GET (GET Request)</dfn> به <code>/snippet/create</code> به سرور تست به عنوان یک کاربر غیرمجاز ارسال کنید. تأیید کنید که <dfn>پاسخ (Response)</dfn> دارای <dfn>کد وضعیت (Status Code)</dfn> <code>303</code> و یک <dfn>هدر (Header)</dfn> <code>Location: /user/login</code> است.</p>
+<p>یک sub-test با نام <code>&quot;Unauthenticated&quot;</code> ایجاد کنید. در این sub-test، یک درخواست <code>GET /snippet/create</code> در برابر سرور تست به عنوان یک کاربر احراز هویت نشده انجام دهید. تأیید کنید که پاسخ کد وضعیت <code>303</code> و یک header <code>Location: /user/login</code> دارد. دوباره، از helperهایی که در فصل تست end-to-end ساختیم استفاده مجدد کنید.</p>
 
 <p><a href="#17.03-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
 <h4 id="step-3">مرحله 3</h4>
 
-<p>یک زیرتست دیگر با نام <code>"Authenticated"</code> ایجاد کنید. در این زیرتست، <dfn>جریان ورود (Login Flow)</dfn> به سیستم به عنوان یک کاربر برای احراز هویت را شبیه‌سازی کنید. به طور خاص، باید یک درخواست <code>GET /user/login</code> ارسال کنید، <dfn>توکن CSRF (CSRF Token)</dfn> را از <dfn>بدنه پاسخ (Response Body)</dfn> استخراج کنید، سپس یک <dfn>درخواست POST (POST Request)</dfn> به <code>/user/login</code> با استفاده از <dfn>اعتبارنامه‌ها (Credentials)</dfn> ارسال کنید.</p>
+<p>یک sub-test دیگر با نام <code>&quot;Authenticated</code>&rdquo; ایجاد کنید. در این sub-test، workflow ورود به عنوان یک کاربر برای احراز هویت را تقلید کنید. به طور خاص، باید یک درخواست <code>GET /user/login</code> انجام دهید، CSRF token را از بدنه پاسخ استخراج کنید، سپس یک درخواست <code>POST /user/login</code> با استفاده از اعتبارنامه‌های موجود در model کاربر mock (ایمیل <code>&quot;alice@example.com&quot;</code>، رمز عبور <code>&quot;pa$$word&quot;</code>) انجام دهید.</p>
 
-<p>سپس پس از احراز هویت، یک درخواست <code>GET /snippet/create</code> ارسال کنید و تأیید کنید که کد وضعیت <code>200</code> و یک بدنه HTML شامل متن <code>&lt;form action='/snippet/create' method='POST'&gt;</code> دریافت می‌کنید.</p>
+<p>سپس پس از احراز هویت، یک درخواست <code>GET /snippet/create</code> انجام دهید و تأیید کنید که کد وضعیت <code>200</code> و یک بدنه HTML شامل متن <code>&lt;form action='/snippet/create' method='POST'&gt;</code> دریافت می‌کنید.</p>
 
 <p><a href="#17.03-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
 
 <h3 id="suggested-code">کد پیشنهادی</h3>
 
-<h4 id="17.03-suggested-code-for-step-1">Suggested code for step 1</h4>
+<h4 id="17.03-suggested-code-for-step-1">کد پیشنهادی برای مرحله 1</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers_test.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -82,9 +73,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="17.03-suggested-code-for-step-2">Suggested code for step 2</h4>
+<h4 id="17.03-suggested-code-for-step-2">کد پیشنهادی برای مرحله 2</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers_test.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -103,7 +94,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$  go test -v -run=TestSnippetCreate ./cmd/web/
 <samp>=== RUN   TestSnippetCreate
 === RUN   TestSnippetCreate/Unauthenticated
@@ -113,9 +104,9 @@ PASS
 ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
 </figure>
 
-<h4 id="17.03-suggested-code-for-step-3">Suggested code for step 3</h4>
+<h4 id="17.03-suggested-code-for-step-3">کد پیشنهادی برای مرحله 3</h4>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers_test.go</figcaption>
 <pre>
 <span class="o">...</span>
@@ -156,7 +147,7 @@ ok      snippetbox.alexedwards.net/cmd/web      0.010s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go test -v -run=TestSnippetCreate ./cmd/web/
 <samp>=== RUN   TestSnippetCreate
 === RUN   TestSnippetCreate/Unauthenticated
@@ -168,115 +159,6 @@ PASS
 ok      snippetbox.alexedwards.net/cmd/web      0.012s</samp></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تست انتها به انتها</td>
-        <td>End-to-End Test</td>
-        <td>آزمایش کامل عملکرد برنامه</td>
-    </tr>
-    <tr>
-        <td>مسیر</td>
-        <td>Route</td>
-        <td>آدرس دسترسی به صفحه</td>
-    </tr>
-    <tr>
-        <td>کاربران غیرمجاز</td>
-        <td>Unauthenticated Users</td>
-        <td>کاربران وارد نشده به سیستم</td>
-    </tr>
-    <tr>
-        <td>کاربران مجاز</td>
-        <td>Authenticated Users</td>
-        <td>کاربران وارد شده به سیستم</td>
-    </tr>
-    <tr>
-        <td>فرم ورود</td>
-        <td>Login Form</td>
-        <td>صفحه ورود به سیستم</td>
-    </tr>
-    <tr>
-        <td>تست جدید</td>
-        <td>New Test</td>
-        <td>آزمون تازه ایجاد شده</td>
-    </tr>
-    <tr>
-        <td>الگو</td>
-        <td>Pattern</td>
-        <td>ساختار تکرارشونده</td>
-    </tr>
-    <tr>
-        <td>توابع کمکی</td>
-        <td>Helper Functions</td>
-        <td>توابع کمکی برای تست</td>
-    </tr>
-    <tr>
-        <td>سرور تست</td>
-        <td>Test Server</td>
-        <td>سرور مخصوص آزمایش</td>
-    </tr>
-    <tr>
-        <td>وابستگی‌های شبیه‌سازی شده</td>
-        <td>Mocked Dependencies</td>
-        <td>وابستگی‌های مجازی برای تست</td>
-    </tr>
-    <tr>
-        <td>زیرتست</td>
-        <td>Subtest</td>
-        <td>بخش کوچکتر از تست اصلی</td>
-    </tr>
-    <tr>
-        <td>درخواست GET</td>
-        <td>GET Request</td>
-        <td>درخواست دریافت اطلاعات</td>
-    </tr>
-    <tr>
-        <td>پاسخ</td>
-        <td>Response</td>
-        <td>پاسخ سرور به درخواست</td>
-    </tr>
-    <tr>
-        <td>کد وضعیت</td>
-        <td>Status Code</td>
-        <td>کد نشان‌دهنده وضعیت پاسخ</td>
-    </tr>
-    <tr>
-        <td>هدر</td>
-        <td>Header</td>
-        <td>اطلاعات اضافی درخواست/پاسخ</td>
-    </tr>
-    <tr>
-        <td>جریان ورود</td>
-        <td>Login Flow</td>
-        <td>فرآیند ورود به سیستم</td>
-    </tr>
-    <tr>
-        <td>توکن CSRF</td>
-        <td>CSRF Token</td>
-        <td>توکن امنیتی فرم</td>
-    </tr>
-    <tr>
-        <td>بدنه پاسخ</td>
-        <td>Response Body</td>
-        <td>محتوای اصلی پاسخ</td>
-    </tr>
-    <tr>
-        <td>درخواست POST</td>
-        <td>POST Request</td>
-        <td>درخواست ارسال اطلاعات</td>
-    </tr>
-    <tr>
-        <td>اعتبارنامه‌ها</td>
-        <td>Credentials</td>
-        <td>اطلاعات ورود به سیستم</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">

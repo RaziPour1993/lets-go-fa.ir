@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مدیریت خطاهای رندر در زمان اجرا &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header>
-			<div class="wrapper" dir="rtl">
-				<div dir="rtl">
+			<div class="wrapper">
+				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; مدیریت خطاهای زمان اجرا</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; ردیابی خطاهای زمان اجرا</span>
 						
 					
 				</div>
@@ -26,14 +27,14 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter" dir="rtl">فصل ۵.۴.</div>
-			<h2 id="catching-runtime-errors" dir="rtl">مدیریت خطاهای زمان اجرا (Catching Runtime Errors)</h2>
+			<div class="chapter">فصل ۵.۴.</div>
+			<h2 id="catching-runtime-errors">ردیابی خطاهای زمان اجرا</h2>
 
-<p dir="rtl">به محض اینکه شروع به اضافه کردن <dfn>رفتار پویا (Dynamic Behavior)</dfn> به قالب‌های HTML می‌کنیم، خطر مواجهه با <dfn>خطاهای زمان اجرا (Runtime Errors)</dfn> وجود دارد.</p>
+<p>به محض اینکه شروع به افزودن رفتار پویا به قالب‌های HTML خود می‌کنیم، خطر مواجهه با خطاهای زمان اجرا (runtime errors) وجود دارد.</p>
 
-<p dir="rtl">بیایید یک <dfn>خطای عمدی (Deliberate Error)</dfn> به قالب <code>view.tmpl</code> اضافه کنیم و ببینیم چه اتفاقی می‌افتد:</p>
+<p>بیایید یک خطای عمدی به قالب <code>view.tmpl</code> اضافه کنیم و ببینیم چه اتفاقی می‌افتد:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
 <pre>{{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
 
@@ -55,18 +56,18 @@
 {{end}}</pre>
 </figure>
 
-<p dir="rtl">در کد بالا، خط <code>{{len  nil}}</code> را اضافه کردیم که باید در زمان اجرا خطا ایجاد کند زیرا در Go مقدار <code>nil</code> طول ندارد.</p>
+<p>در این نشانه‌گذاری بالا، خط <code>{{len  nil}}</code> را اضافه کرده‌ایم که باید در زمان اجرا (runtime) یک خطا ایجاد کند زیرا در Go مقدار <code>nil</code> طول ندارد.</p>
 
-<p dir="rtl">حالا برنامه را اجرا کنید. خواهید دید که همه چیز همچنان به درستی کامپایل می‌شود:</p>
+<p>حالا سعی کنید برنامه را اجرا کنید. خواهید دید که همه چیز همچنان به درستی کامپایل می‌شود:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
 </figure>
 
-<p dir="rtl">اما اگر با استفاده از curl درخواستی به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> ارسال کنید، پاسخی مشابه این دریافت خواهید کرد:</p>
+<p>اما اگر از curl برای درخواست به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> استفاده کنید، پاسخی دریافت خواهید کرد که کمی شبیه این است.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i http://localhost:4000/snippet/view/1
 <samp>HTTP/1.1 200 OK
 Date: Wed, 18 Mar 2024 11:29:23 GMT
@@ -103,13 +104,13 @@ Content-Type: text/html; charset=utf-8
         Internal Server Error</samp></pre>
 </figure>
 
-<p dir="rtl">این وضعیت بسیار بد است. برنامه ما خطایی ایجاد کرده، اما به کاربر به اشتباه پاسخ <code>200 OK</code> ارسال شده است. حتی بدتر از آن، کاربر یک صفحه HTML ناقص دریافت کرده است.</p>
+<p>این بسیار بد است. برنامه ما یک خطا پرتاب کرده است، اما کاربر به اشتباه یک پاسخ <code>200 OK</code> دریافت کرده است. و بدتر از آن، یک صفحه HTML نیمه‌کامل دریافت کرده است.</p>
 
-<p dir="rtl">برای رفع این مشکل، باید رندر قالب را به یک فرآیند دو مرحله‌ای تبدیل کنیم. ابتدا باید یک رندر "آزمایشی" با نوشتن قالب در یک بافر انجام دهیم. اگر این کار با خطا مواجه شود، می‌توانیم پیام خطا را به کاربر ارسال کنیم. اما اگر موفقیت‌آمیز باشد، می‌توانیم محتوای بافر را به <code>http.ResponseWriter</code> خود بنویسیم.</p>
+<p>برای رفع این مشکل، باید رندر قالب را به یک فرآیند دو مرحله‌ای تبدیل کنیم. ابتدا باید یک رندر 'آزمایشی' با نوشتن قالب در یک بافر انجام دهیم. اگر این کار با شکست مواجه شود، می‌توانیم با یک پیام خطا به کاربر پاسخ دهیم. اما اگر کار کند، می‌توانیم محتوای بافر را به <code>http.ResponseWriter</code> خود بنویسیم.</p>
 
-<p dir="rtl">بیایید تابع کمکی <code>render()</code> را به این روش به‌روزرسانی کنیم:</p>
+<p>بیایید متد کمکی <code>render()</code> را برای استفاده از این رویکرد به‌روزرسانی کنیم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -152,9 +153,9 @@ Content-Type: text/html; charset=utf-8
 <span class="p">}</span></pre>
 </figure>
 
-<p dir="rtl">برنامه را مجدداً راه‌اندازی کنید و همان درخواست را دوباره امتحان کنید. حالا باید یک پیام خطای مناسب و پاسخ <code>500 Internal Server Error</code> دریافت کنید.</p>
+<p>برنامه را مجدداً راه‌اندازی کنید و دوباره همان درخواست را انجام دهید. حالا باید یک پیام خطای مناسب و پاسخ <code>500 Internal Server Error</code> دریافت کنید.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i http://localhost:4000/snippet/view/1
 <samp>HTTP/1.1 500 Internal Server Error
 Content-Type: text/plain; charset=utf-8
@@ -165,11 +166,11 @@ Content-Length: 22
 Internal Server Error</samp></pre>
 </figure>
 
-<p dir="rtl">عالی است. این خیلی بهتر به نظر می‌رسد.</p>
+<p>عالی است. این خیلی بهتر به نظر می‌رسد.</p>
 
-<p dir="rtl">قبل از اینکه به فصل بعدی برویم، به فایل <code>view.tmpl</code> برگردید و خطای عمدی را حذف کنید:</p>
+<p>قبل از رفتن به فصل بعدی، به فایل <code>view.tmpl</code> برگردید و خطای عمدی را حذف کنید:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
 <pre>{{define &#34;title&#34;}}Snippet #{{.Snippet.ID}}{{end}}
 
@@ -190,68 +191,9 @@ Internal Server Error</samp></pre>
 {{end}}</pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>خطاهای زمان اجرا</td>
-        <td>Runtime Errors</td>
-        <td>خطاهایی که در حین اجرای برنامه رخ می‌دهند</td>
-    </tr>
-    <tr>
-        <td>رفتار پویا</td>
-        <td>Dynamic Behavior</td>
-        <td>عملکردی که در زمان اجرا تغییر می‌کند</td>
-    </tr>
-    <tr>
-        <td>خطای عمدی</td>
-        <td>Deliberate Error</td>
-        <td>خطایی که به قصد تست سیستم ایجاد می‌شود</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>روش‌های کنترل و پاسخ به خطاها</td>
-    </tr>
-    <tr>
-        <td>پیام خطا</td>
-        <td>Error Message</td>
-        <td>توضیحی درباره خطای رخ داده</td>
-    </tr>
-    <tr>
-        <td>خطای قالب</td>
-        <td>Template Error</td>
-        <td>خطایی که در پردازش قالب رخ می‌دهد</td>
-    </tr>
-    <tr>
-        <td>تست خطا</td>
-        <td>Error Testing</td>
-        <td>بررسی واکنش سیستم به شرایط خطا</td>
-    </tr>
-    <tr>
-        <td>گزارش خطا</td>
-        <td>Error Reporting</td>
-        <td>نمایش و ثبت اطلاعات خطاها</td>
-    </tr>
-    <tr>
-        <td>بازیابی از خطا</td>
-        <td>Error Recovery</td>
-        <td>اقدامات لازم پس از رخداد خطا</td>
-    </tr>
-    <tr>
-        <td>پیشگیری از خطا</td>
-        <td>Error Prevention</td>
-        <td>روش‌های جلوگیری از وقوع خطا</td>
-    </tr>
-</table>
 		</main>
 		<footer>
-			<div class="wrapper" dir="rtl">
+			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="05.03-caching-templates.html">قبلی</a>
 				</div>

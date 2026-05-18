@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" dir="rtl">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>بهبودهای سرور و امنیت &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
@@ -12,7 +13,11 @@
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; بهبودهای سرور و امنیت</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; بهبودهای سرور و امنیت</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="08.03-working-with-session-data.html">قبلی</a>
@@ -21,20 +26,19 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۹.</div>
-			<h1 id="server-and-security-improvements">بهبودهای سرور و امنیت (Server and Security Improvements)</h1>
+			<h1 id="server-and-security-improvements">بهبودهای سرور و امنیت</h1>
 
-<p>در این فصل، نحوه <dfn>بهبود امنیت (Security Improvements)</dfn> و <dfn>عملکرد سرور (Server Performance)</dfn> را بررسی می‌کنیم. این شامل <dfn>پیکربندی HTTPS (HTTPS Configuration)</dfn>، <dfn>مدیریت خطا (Error Handling)</dfn> و <dfn>زمان‌های انتظار (Timeouts)</dfn> می‌شود.</p>
-
-<p>در این فصل خواهیم آموخت:</p>
+<p>در این بخش از کتاب روی بهبودهای سرور HTTP برنامه خود تمرکز خواهیم کرد. یاد خواهید گرفت:</p>
 
 <ul>
-<li>چگونه <dfn>تنظیمات سرور (Server Settings)</dfn> را با استفاده از <dfn>نوع http.Server (http.Server Type)</dfn> سفارشی کنیم.</li>
-<li>نحوه <dfn>ثبت خطاها (Error Logging)</dfn> و <dfn>مدیریت خطا (Error Handling)</dfn> در سرور.</li>
-<li>چگونه یک <dfn>گواهی TLS خودامضا (Self-Signed TLS Certificate)</dfn> ایجاد کنیم.</li>
-<li>نحوه <dfn>راه‌اندازی HTTPS (HTTPS Setup)</dfn> و <dfn>پیکربندی امن (Secure Configuration)</dfn> آن.</li>
-<li>چگونه <dfn>زمان‌های انتظار اتصال (Connection Timeouts)</dfn> را برای مقابله با <dfn>حملات کند (Slow Attacks)</dfn> تنظیم کنیم.</li>
+<li>نحوه سفارشی‌سازی تنظیمات سرور با استفاده از <a href="09.01-the-http-server-struct.html">نوع <code>http.Server</code></a>.</li>
+<li><a href="09.02-the-server-error-log.html">لاگ خطای سرور</a> چیست و چگونه آن را برای استفاده از لاگر ساختاریافته خود پیکربندی کنیم.</li>
+<li>نحوه سریع و آسان <a href="09.03-generating-a-self-signed-tls-certificate.html">ایجاد گواهی TLS خودامضا</a>، فقط با استفاده از Go.</li>
+<li>اصول راه‌اندازی برنامه شما به طوری که همه درخواست‌ها و پاسخ‌ها <a href="09.04-running-a-https-server.html">به صورت امن از طریق HTTPS سرو شوند</a>.</li>
+<li><a href="09.05-configuring-https-settings.html">برخی تنظیمات منطقی</a> برای تنظیمات پیش‌فرض TLS برای کمک به حفظ امنیت اطلاعات کاربر و عملکرد سریع سرور ما.</li>
+<li>نحوه <a href="09.06-connection-timeouts.html">تنظیم تایم‌اوت‌های اتصال</a> برای کاهش تأثیر حملات کلاینت کند.</li>
 </ul>
 
 		</main>
@@ -55,74 +59,19 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "08.03-working-with-session-data.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "09.01-the-http-server-struct.html";
 						break;
+						
 				}
 			};
 		</script>
-		<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>بهبود امنیت</td>
-        <td>Security Improvements</td>
-        <td>ارتقای سطح امنیت سیستم</td>
-    </tr>
-    <tr>
-        <td>عملکرد سرور</td>
-        <td>Server Performance</td>
-        <td>کارایی و سرعت سرور</td>
-    </tr>
-    <tr>
-        <td>پیکربندی HTTPS</td>
-        <td>HTTPS Configuration</td>
-        <td>تنظیمات ارتباط امن</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>نحوه برخورد با خطاها</td>
-    </tr>
-    <tr>
-        <td>زمان‌های انتظار</td>
-        <td>Timeouts</td>
-        <td>محدودیت‌های زمانی اتصال</td>
-    </tr>
-    <tr>
-        <td>تنظیمات سرور</td>
-        <td>Server Settings</td>
-        <td>پیکربندی‌های سرور</td>
-    </tr>
-    <tr>
-        <td>نوع http.Server</td>
-        <td>http.Server Type</td>
-        <td>ساختار داده سرور HTTP</td>
-    </tr>
-    <tr>
-        <td>ثبت خطاها</td>
-        <td>Error Logging</td>
-        <td>ذخیره و ثبت خطاها</td>
-    </tr>
-    <tr>
-        <td>گواهی TLS خودامضا</td>
-        <td>Self-Signed TLS Certificate</td>
-        <td>گواهی امنیتی تولید شده توسط خود</td>
-    </tr>
-    <tr>
-        <td>راه‌اندازی HTTPS</td>
-        <td>HTTPS Setup</td>
-        <td>پیکربندی ارتباط امن</td>
-    </tr>
-</table>
 	</body>
 </html>
 

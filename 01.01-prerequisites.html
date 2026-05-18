@@ -3,23 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>پیش‌نیازها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code, pre, samp {
-				direction: ltr;
-				text-align: left;
-				unicode-bidi: embed;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&lsaquo; <a href="01.00-introduction.html">مقدمه</a> &rsaquo; پیش‌نیازها</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="01.00-introduction.html">مقدمه</a> &rsaquo; پیش‌نیازها</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="01.00-introduction.html">قبلی</a>
@@ -32,83 +30,43 @@
 			<div class="chapter">فصل ۱.۱.</div>
 			<h2 id="prerequisites">پیش‌نیازها</h2>
 
-<h3 id="background-knowledge">دانش پایه</h3>
+<h3 id="background-knowledge">دانش پیش‌زمینه</h3>
 
-<p>این کتاب برای افرادی طراحی شده که تازه با Go آشنا شده‌اند، اما اگر درک کلی از نحو (Syntax) Go داشته باشید، احتمالاً از مطالعه آن لذت بیشتری خواهید برد. اگر در درک نحو مشکل دارید، <a href="http://openmymind.net/The-Little-Go-Book/">کتاب کوچک Go</a> نوشته Karl Seguin یک آموزش عالی است، یا اگر چیزی تعاملی‌تر می‌خواهید، پیشنهاد می‌کنم <a href="https://tour.golang.org/welcome/1">تور Go</a> را انجام دهید.</p>
+<p>این کتاب برای افرادی طراحی شده است که تازه با Go شروع کرده‌اند، اما اگر ابتدا درک کلی از نحو Go داشته باشید، لذت بیشتری خواهید برد. اگر با نحو مشکل دارید، <a href="http://openmymind.net/The-Little-Go-Book/">کتاب کوچک Go</a> نوشته Karl Seguin یک آموزش عالی است، یا اگر چیزی تعاملی‌تر می‌خواهید، توصیه می‌کنم <a href="https://tour.golang.org/welcome/1">تور Go</a> را اجرا کنید.</p>
 
-<p>همچنین فرض کرده‌ام که درک (بسیار) پایه‌ای از HTML/CSS و SQL دارید و با استفاده از ترمینال (Terminal) (یا خط فرمان برای کاربران ویندوز) آشنا هستید. اگر قبلاً با هر زبان دیگری وب اپلیکیشن ساخته‌اید &mdash; خواه Ruby، Python، PHP یا C# &mdash; این کتاب برای شما مناسب خواهد بود.</p>
+<p>همچنین فرض کرده‌ام که درک پایه‌ای از HTML/CSS و SQL دارید، و با استفاده از ترمینال خود (یا خط فرمان برای کاربران Windows) آشنایی دارید. اگر قبلاً یک برنامه وب به هر زبان دیگری ساخته‌اید — چه Ruby، Python، PHP یا C# — این کتاب باید برای شما مناسب باشد.</p>
 
 <h3 id="go-1-23">Go 1.23</h3>
 
-<p>اطلاعات این کتاب برای <a href="https://golang.org/doc/devel/release.html">آخرین نسخه اصلی Go</a> (نسخه 1.23) صحیح است و اگر می‌خواهید همراه با ساخت اپلیکیشن کدنویسی کنید، باید این نسخه را نصب کنید.</p>
+<p>اطلاعات این کتاب برای <a href="https://golang.org/doc/devel/release.html">آخرین نسخه اصلی Go</a> (نسخه 1.23) صحیح است و اگر می‌خواهید همراه با ساخت برنامه کدنویسی کنید، باید این نسخه را نصب کنید.</p>
 
-<p>اگر قبلاً Go را نصب کرده‌اید، می‌توانید شماره نسخه را از ترمینال با استفاده از دستور <code>go version</code> بررسی کنید. خروجی باید شبیه این باشد:</p>
+<p>اگر قبلاً Go را نصب کرده‌اید، می‌توانید شماره نسخه را از ترمینال خود با استفاده از دستور <code>go version</code> بررسی کنید. خروجی باید شبیه به این باشد:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go version
 <samp>go version go1.23.0 linux/amd64</samp></pre>
 </figure>
 
-<p>اگر نیاز به ارتقای نسخه Go دارید &mdash; یا می‌خواهید Go را از ابتدا نصب کنید &mdash; لطفاً همین حالا این کار را انجام دهید. دستورالعمل‌های دقیق برای سیستم‌عامل‌های مختلف را می‌توانید در اینجا پیدا کنید:</p>
+<p>اگر نیاز به ارتقای نسخه Go خود دارید — یا می‌خواهید Go را از ابتدا نصب کنید — لطفاً همین حالا این کار را انجام دهید. دستورالعمل‌های تفصیلی برای سیستم‌عامل‌های مختلف را می‌توانید اینجا پیدا کنید:</p>
 
 <ul>
 <li><a href="https://golang.org/doc/manage-install#uninstalling">حذف نسخه قدیمی Go</a></li>
-<li><a href="https://golang.org/doc/install#tarball">نصب Go روی Mac OS X</a></li>
+<li><a href="https://golang.org/doc/install#tarball">نصب Go روی macOS</a></li>
 <li><a href="https://golang.org/doc/install#windows">نصب Go روی Windows</a></li>
 <li><a href="https://golang.org/doc/install#tarball">نصب Go روی Linux</a></li>
 </ul>
 
-<h3 id="other-software">سایر نرم‌افزارها</h3>
+<h3 id="other-software">نرم‌افزارهای دیگر</h3>
 
-<p>چند نرم‌افزار دیگر وجود دارد که اگر می‌خواهید به طور کامل همراهی کنید، باید مطمئن شوید روی کامپیوتر شما نصب هستند:</p>
+<p>چند نرم‌افزار دیگر وجود دارد که باید مطمئن شوید روی کامپیوتر شما در دسترس هستند، اگر می‌خواهید به طور کامل همراه باشید. آن‌ها عبارتند از:</p>
 
 <ul>
-<li><p>ابزار <a href="https://curl.haxx.se/">curl</a> برای کار با درخواست‌ها و پاسخ‌های HTTP از ترمینال. روی سیستم‌عامل‌های MacOS و Linux معمولاً از پیش نصب شده است یا در مخازن نرم‌افزاری موجود است. در غیر این صورت، می‌توانید آخرین نسخه را <a href="https://curl.haxx.se/download.html">از اینجا</a> دانلود کنید.</p></li>
+<li><p>ابزار <a href="https://curl.haxx.se/">curl</a> برای کار با درخواست‌ها و پاسخ‌های HTTP از ترمینال شما. روی ماشین‌های macOS و Linux باید از قبل نصب شده باشد یا در مخازن نرم‌افزاری شما موجود باشد. در غیر این صورت، می‌توانید آخرین نسخه را <a href="https://curl.haxx.se/download.html">از اینجا</a> دانلود کنید.</p></li>
 
-<li><p>یک مرورگر وب (Web Browser) با ابزارهای توسعه‌دهنده (Developer Tools) خوب. من در این کتاب از <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> استفاده می‌کنم، اما Chromium، Chrome یا Microsoft Edge هم کار خواهند کرد.</p></li>
+<li><p>یک مرورگر وب با ابزارهای توسعه‌دهنده (developer tools) خوب. من در این کتاب از <a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> استفاده می‌کنم، اما Chromium، Chrome یا Microsoft Edge نیز کار می‌کنند.</p></li>
 
-<li><p>ویرایشگر متن (Text Editor) مورد علاقه شما 😊</p></li>
+<li><p>ویرایشگر متن مورد علاقه شما 😊</p></li>
 </ul>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>نحو</td>
-        <td>Syntax</td>
-        <td>قوانین و ساختار نوشتن کد در یک زبان برنامه‌نویسی</td>
-    </tr>
-    <tr>
-        <td>ترمینال</td>
-        <td>Terminal</td>
-        <td>رابط متنی برای تعامل با سیستم عامل و اجرای دستورات</td>
-    </tr>
-    <tr>
-        <td>مرورگر وب</td>
-        <td>Web Browser</td>
-        <td>برنامه کاربردی برای دسترسی به صفحات وب و تعامل با آنها</td>
-    </tr>
-    <tr>
-        <td>ابزارهای توسعه‌دهنده</td>
-        <td>Developer Tools</td>
-        <td>مجموعه ابزارهای تعبیه شده در مرورگر برای کمک به توسعه و اشکال‌زدایی برنامه‌های وب</td>
-    </tr>
-    <tr>
-        <td>ویرایشگر متن</td>
-        <td>Text Editor</td>
-        <td>برنامه‌ای برای ویرایش فایل‌های متنی و کد</td>
-    </tr>
-    <tr>
-        <td>مخازن نرم‌افزاری</td>
-        <td>Software Repositories</td>
-        <td>منابع آنلاین برای دانلود و نصب نرم‌افزارها در سیستم‌عامل‌های مختلف</td>
-    </tr>
-</table>
 
 		</main>
 		<footer>

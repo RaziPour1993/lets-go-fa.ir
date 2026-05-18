@@ -3,17 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مبانی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&lsaquo; مبانی</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; مبانی</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="01.01-prerequisites.html">قبلی</a>
@@ -26,80 +30,22 @@
 			<div class="chapter">فصل ۲.</div>
 			<h1 id="foundations">مبانی</h1>
 
-<p>خب، بیایید شروع کنیم! در این بخش اول کتاب، ما قصد داریم پایه‌های پروژه را بگذاریم و اصول اصلی که برای بقیه ساخت برنامه نیاز دارید را توضیح دهیم.</p>
+<p>خوب، بیایید شروع کنیم! در این بخش اول کتاب، ما پایه‌های پروژه خود را می‌گذاریم و اصول اصلی که برای بقیه ساخت برنامه نیاز دارید را توضیح می‌دهیم.</p>
 
 <p>شما یاد خواهید گرفت که چگونه:</p>
 
 <ul>
-<li><a href="02.01-project-setup-and-creating-a-module.html">یک دایرکتوری پروژه (Project Directory)</a> که از قراردادهای Go پیروی می‌کند را تنظیم کنید.</li>
-<li><a href="02.02-web-application-basics.html">یک سرور وب (Web Server)</a> را راه‌اندازی کنید و به درخواست‌های HTTP ورودی گوش دهید.</li>
-<li><a href="02.03-routing-requests.html">درخواست‌ها را</a> بر اساس مسیر (Path) و متد درخواست (Request Method) به هندلرهای مختلف هدایت کنید.</li>
-<li><a href="02.04-wildcard-url-patterns.html">از بخش‌های wildcard</a> در الگوهای مسیریابی خود استفاده کنید.</li>
-<li>پاسخ‌های HTTP، هدرها (Headers) و کدهای وضعیت (Status Codes) مختلف را به کاربران ارسال کنید.</li>
-<li><a href="02.07-project-structure-and-organization.html">پروژه خود را</a> به روشی منطقی و مقیاس‌پذیر (Scalable) ساختار دهید.</li>
-<li><a href="02.08-html-templating-and-inheritance.html">صفحات HTML را رندر کنید (Render)</a> و از وراثت قالب (Template Inheritance) برای جلوگیری از تکرار کدهای HTML استفاده کنید.</li>
-<li><a href="02.09-serving-static-files.html">فایل‌های استاتیک (Static Files)</a> مانند تصاویر، CSS و JavaScript را از برنامه خود ارائه دهید.</li>
+<li><a href="02.01-project-setup-and-creating-a-module.html">یک دایرکتوری پروژه راه‌اندازی کنید</a> که از قراردادهای Go پیروی می‌کند.</li>
+<li><a href="02.02-web-application-basics.html">یک سرور وب راه‌اندازی کنید</a> و برای درخواست‌های HTTP ورودی گوش دهید.</li>
+<li><a href="02.03-routing-requests.html">درخواست‌ها را مسیریابی (routing) کنید</a> به handlerهای مختلف بر اساس مسیر URL.</li>
+<li><a href="02.04-wildcard-route-patterns.html">از بخش‌های wildcard استفاده کنید</a> در الگوهای مسیریابی خود.</li>
+<li><a href="02.05-method-based-routing.html">مسیریابی مبتنی بر متد HTTP</a> را برای handlerهای مختلف پیاده‌سازی کنید.</li>
+<li><a href="02.06-customizing-responses.html">پاسخ‌های HTTP، هدرها (headers) و کدهای وضعیت (status codes)</a> مختلف برای کاربران ارسال کنید.</li>
+<li><a href="02.07-project-structure-and-organization.html">پروژه خود را ساختاردهی کنید</a> به روشی منطقی و مقیاس‌پذیر.</li>
+<li><a href="02.08-html-templating-and-inheritance.html">صفحات HTML را رندر (render) کنید</a> و از ارث‌بری قالب (template inheritance) استفاده کنید تا کد HTML شما از کدهای تکراری boilerplate عاری باشد.</li>
+<li><a href="02.09-serving-static-files.html">فایل‌های استاتیک را سرو کنید</a> مانند تصاویر، CSS و JavaScript از برنامه خود.</li>
+<li><a href="02.10-the-http-handler-interface.html">رابط <code>http.Handler</code></a> و نحوه زنجیره‌کردن handlerها را درک کنید.</li>
 </ul>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>دایرکتوری پروژه</td>
-        <td>Project Directory</td>
-        <td>ساختار پوشه‌ای که شامل تمام فایل‌ها و منابع پروژه است</td>
-    </tr>
-    <tr>
-        <td>سرور وب</td>
-        <td>Web Server</td>
-        <td>برنامه‌ای که درخواست‌های HTTP را دریافت و پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>مسیر</td>
-        <td>Path</td>
-        <td>بخشی از URL که مسیر درخواست را مشخص می‌کند</td>
-    </tr>
-    <tr>
-        <td>متد درخواست</td>
-        <td>Request Method</td>
-        <td>نوع عملیات درخواست HTTP (مانند GET، POST، PUT، DELETE)</td>
-    </tr>
-    <tr>
-        <td>هدرها</td>
-        <td>Headers</td>
-        <td>اطلاعات اضافی در درخواست‌ها و پاسخ‌های HTTP</td>
-    </tr>
-    <tr>
-        <td>کدهای وضعیت</td>
-        <td>Status Codes</td>
-        <td>کدهای عددی که نتیجه درخواست HTTP را نشان می‌دهند</td>
-    </tr>
-    <tr>
-        <td>مقیاس‌پذیر</td>
-        <td>Scalable</td>
-        <td>قابلیت رشد و توسعه برنامه بدون نیاز به تغییرات اساسی در ساختار</td>
-    </tr>
-    <tr>
-        <td>رندر کردن</td>
-        <td>Render</td>
-        <td>فرآیند تبدیل قالب‌های HTML به صفحات وب نهایی</td>
-    </tr>
-    <tr>
-        <td>وراثت قالب</td>
-        <td>Template Inheritance</td>
-        <td>روشی برای استفاده مجدد از کدهای HTML مشترک در صفحات مختلف</td>
-    </tr>
-    <tr>
-        <td>فایل‌های استاتیک</td>
-        <td>Static Files</td>
-        <td>فایل‌های ثابتی که بدون پردازش به کاربر ارائه می‌شوند</td>
-    </tr>
-</table>
 
 		</main>
 		<footer>

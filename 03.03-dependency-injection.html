@@ -3,10 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تزریق وابستگی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header>
@@ -14,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; تزریق وابستگی (Dependency Injection)</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; تزریق وابستگی</span>
 						
 					
 				</div>
@@ -27,9 +28,9 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل 3.3.</div>
-			<h2 id="dependency-injection">تزریق وابستگی (Dependency Injection)</h2>
+			<h2 id="dependency-injection">تزریق وابستگی</h2>
 
-<p>اگر فایل <code>handlers.go</code> خود را باز کنید، متوجه خواهید شد که تابع <code>home</code> هنوز از لاگر استاندارد Go (Standard Go Logger) برای نوشتن پیام‌های خطا استفاده می‌کند، نه لاگر ساختاری (Structured Logger) که اکنون می‌خواهیم استفاده کنیم.</p>
+<p>اگر فایل <code>handlers.go</code> خود را باز کنید، متوجه می‌شوید که تابع handler <code>home</code> همچنان پیام‌های خطا را با استفاده از لاگر استاندارد Go می‌نویسد، نه لاگر ساختاریافته که اکنون می‌خواهیم از آن استفاده کنیم.</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -50,17 +51,17 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این سوال خوبی را مطرح می‌کند: <em>چگونه می‌توانیم لاگر ساختاری جدید خود را از <code>main()</code> در دسترس تابع <code>home</code> قرار دهیم؟</em></p>
+<p>این یک سوال خوب مطرح می‌کند: <em>چگونه می‌توانیم لاگر ساختاریافته جدید خود را از <code>main()</code> در دسترس تابع <code>home</code> قرار دهیم؟</em></p>
 
-<p>و این سوال بیشتر تعمیم می‌یابد. بیشتر برنامه‌های وب دارای وابستگی‌های متعددی هستند که هندلرهای آن‌ها باید به آن‌ها دسترسی داشته باشند، مانند یک اتصال پایگاه داده، مدیریت خطای متمرکز و کش‌های قالب. آنچه واقعاً می‌خواهیم پاسخ دهیم این است: <em>چگونه می‌توانیم هر وابستگی را در دسترس هندلرهای خود قرار دهیم؟</em></p>
+<p>و این سوال بیشتر تعمیم می‌یابد. بیشتر برنامه‌های وب وابستگی‌های متعددی دارند که handlerهای آن‌ها نیاز به دسترسی دارند، مانند یک استخر اتصال پایگاه داده، handlerهای خطای متمرکز و کش‌های قالب. آنچه واقعاً می‌خواهیم پاسخ دهیم این است: <em>چگونه می‌توانیم هر وابستگی (dependency) را در دسترس handlerهای خود قرار دهیم؟</em></p>
 
-<p>چند <a href="https://www.letsgofa.net/blog/organising-database-access">رویکرد مختلف</a> برای انجام این کار وجود دارد، ساده‌ترین آن‌ها این است که وابستگی‌ها را در متغیرهای جهانی قرار دهیم. اما به طور کلی، بهتر است وابستگی‌ها را به هندلرهای خود تزریق کنید. این کار کد شما را صریح‌تر، کمتر مستعد خطا و آسان‌تر برای تست واحد می‌کند تا اینکه از متغیرهای جهانی استفاده کنید.</p>
+<p><a href="https://www.alexedwards.net/blog/organising-database-access">چند روش مختلف</a> برای انجام این کار وجود دارد، ساده‌ترین آن‌ها این است که وابستگی‌ها را در متغیرهای سراسری قرار دهیم. اما به طور کلی، بهترین روش <em>تزریق وابستگی‌ها</em> به handlerهای شما است. این کد شما را صریح‌تر، کمتر مستعد خطا و آسان‌تر برای تست واحد می‌کند تا استفاده از متغیرهای سراسری.</p>
 
-<p>برای برنامه‌هایی که همه هندلرهای شما در یک بسته هستند، مانند برنامه ما، یک رویکرد مناسب برای تزریق وابستگی‌ها این است که آن‌ها را در یک ساختار <code>application</code> سفارشی قرار دهید و سپس توابع هندلر خود را به عنوان متدهایی در برابر <code>application</code> تعریف کنید.</p>
+<p>برای برنامه‌هایی که همه handlerهای شما در همان پکیج هستند، مانند ما، یک روش مرتب برای تزریق وابستگی‌ها این است که آن‌ها را در یک ساختار <code>application</code> سفارشی قرار دهیم و سپس توابع handler خود را به عنوان متدهای روی <code>application</code> تعریف کنیم.</p>
 
 <p>من نشان خواهم داد.</p>
 
-<p>ابتدا فایل <code>main.go</code> خود را باز کنید و یک ساختار <code>application</code> جدید به صورت زیر ایجاد کنید:</p>
+<p>ابتدا فایل <code>main.go</code> خود را باز کنید و یک ساختار (struct) <code>application</code> جدید مانند این ایجاد کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/main.go</figcaption>
@@ -85,7 +86,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>و سپس در فایل <code>handlers.go</code>، می‌خواهیم توابع هندلر را به‌روزرسانی کنیم تا به <em>متدهایی در برابر ساختار <code>application</code></em> تبدیل شوند و از لاگر ساختاری که در آن قرار دارد استفاده کنند.</p>
+<p>و سپس در فایل <code>handlers.go</code>، می‌خواهیم توابع handler را به‌روزرسانی کنیم تا به <em>متدهای روی ساختار <code>application</code></em> تبدیل شوند و از لاگر ساختاریافته که شامل می‌شود استفاده کنند.</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -206,22 +207,22 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>می‌دانم که این رویکرد ممکن است کمی پیچیده و پیچیده به نظر برسد، به خصوص زمانی که یک جایگزین این است که به سادگی <code>logger</code> را به یک متغیر جهانی تبدیل کنید. اما با من بمانید. همانطور که برنامه رشد می‌کند و هندلرهای ما شروع به نیاز به وابستگی‌های بیشتری می‌کنند، این الگو ارزش خود را نشان خواهد داد.</p>
+<p>من می‌فهمم که این رویکرد ممکن است کمی پیچیده به نظر برسد، به ویژه زمانی که یک جایگزین این است که به سادگی <code>logger</code> را یک متغیر سراسری کنیم. اما با من بمانید. با رشد برنامه و نیاز handlerهای ما به وابستگی‌های بیشتر، این الگو شروع به نشان دادن ارزش خود می‌کند.</p>
 
-<h3 id="adding-a-deliberate-error">افزودن یک خطای عمدی (Adding a Deliberate Error)</h3>
+<h3 id="adding-a-deliberate-error">افزودن یک خطای عمدی</h3>
 
-<p>بیایید این را امتحان کنیم و به سرعت یک خطای عمدی به برنامه خود اضافه کنیم.</p>
+<p>بیایید این را با افزودن سریع یک خطای عمدی به برنامه خود امتحان کنیم.</p>
 
-<p>ترمینال خود را باز کنید و <code>ui/html/pages/home.tmpl</code> را به <code>ui/html/pages/home.bak</code> تغییر نام دهید. هنگامی که برنامه خود را اجرا می‌کنیم و درخواست صفحه اصلی را می‌دهیم، این باید منجر به خطا شود زیرا فایل <code>ui/html/pages/home.tmpl</code> دیگر وجود ندارد.</p>
+<p>ترمینال خود را باز کنید و <code>ui/html/pages/home.tmpl</code> را به <code>ui/html/pages/home.bak</code> تغییر نام دهید. وقتی برنامه خود را اجرا می‌کنیم و درخواستی برای صفحه اصلی می‌دهیم، این باید منجر به خطا شود زیرا فایل <code>ui/html/pages/home.tmpl</code> دیگر وجود ندارد.</p>
 
-<p>بروید و تغییر را انجام دهید:</p>
+<p>ادامه دهید و تغییر را انجام دهید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
 $ mv ui/html/pages/home.tmpl ui/html/pages/home.bak</pre>
 </figure>
 
-<p>سپس برنامه را اجرا کنید و درخواست <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> را بدهید. شما باید یک پاسخ HTTP <code>Internal Server Error</code> در مرورگر خود دریافت کنید و یک ورودی لاگ مربوطه در سطح <code>Error</code> در ترمینال خود مشاهده کنید که شبیه به این است:</p>
+<p>سپس برنامه را اجرا کنید و درخواستی به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بدهید. باید یک پاسخ HTTP <code>Internal Server Error</code> در مرورگر خود دریافت کنید و یک ورودی لاگ مربوطه در سطح <code>Error</code> در ترمینال خود ببینید شبیه این:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web
@@ -229,17 +230,17 @@ $ mv ui/html/pages/home.tmpl ui/html/pages/home.bak</pre>
 time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/home.tmpl: no such file or directory&#34; method=GET uri=/</samp></pre>
 </figure>
 
-<p>این به خوبی نشان می‌دهد که لاگر ساختاری ما اکنون به عنوان یک وابستگی به هندلر <code>home</code> ما منتقل می‌شود و همانطور که انتظار می‌رفت کار می‌کند.</p>
+<p>این به خوبی نشان می‌دهد که لاگر ساختاریافته <code>logger</code> ما اکنون به عنوان یک وابستگی به handler <code>home</code> ما ارسال می‌شود و همانطور که انتظار می‌رود کار می‌کند.</p>
 
-<p>خطای عمدی را فعلاً در جای خود بگذارید؛ ما دوباره به آن در فصل بعدی نیاز خواهیم داشت.</p>
+<p>خطای عمدی را فعلاً در جای خود بگذارید؛ در فصل بعد دوباره به آن نیاز خواهیم داشت.</p>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="closures-for-dependency-injection">بسته‌ها برای تزریق وابستگی (Closures for Dependency Injection)</h4>
+<h4 id="closures-for-dependency-injection">بستارها برای تزریق وابستگی</h4>
 
-<p>الگویی که ما برای تزریق وابستگی‌ها استفاده می‌کنیم، زمانی که هندلرهای شما در چندین بسته پخش شده‌اند، کار نخواهد کرد. در این صورت، یک رویکرد جایگزین این است که یک بسته <code>config</code> مستقل ایجاد کنید که یک ساختار <code>Application</code> را صادر کند و توابع هندلر شما بر روی این بسته بسته شوند تا یک <em>بسته</em> تشکیل دهند. به طور تقریبی:</p>
+<p>الگویی که برای تزریق وابستگی‌ها استفاده می‌کنیم، اگر handlerهای شما در چندین پکیج پخش شده باشند کار نمی‌کند. در آن صورت، یک رویکرد جایگزین ایجاد یک پکیج مستقل <code>config</code> است که یک ساختار <code>Application</code> را صادر می‌کند و توابع handler شما روی این بسته می‌شوند تا یک <em>بستار</em> تشکیل دهند. به طور تقریبی:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">// package config
@@ -279,67 +280,7 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;open ./ui/html/pages/hom
 <span class="p">}</span></pre>
 </figure>
 
-<p>می‌توانید یک مثال کامل و ملموس‌تر از نحوه استفاده از الگوی بسته را در <a href="https://gist.github.com/letsgofa/5cd712192b4831058b21">این Gist</a> پیدا کنید.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تزریق وابستگی</td>
-        <td>Dependency Injection</td>
-        <td>الگویی برای ارائه وابستگی‌های مورد نیاز یک شیء یا تابع از خارج</td>
-    </tr>
-    <tr>
-        <td>لاگر ساختاری</td>
-        <td>Structured Logger</td>
-        <td>سیستم لاگ‌گیری که داده‌ها را در قالبی ساختاریافته ذخیره می‌کند</td>
-    </tr>
-    <tr>
-        <td>هندلر</td>
-        <td>Handler</td>
-        <td>تابعی که درخواست‌های HTTP را پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>متغیر جهانی</td>
-        <td>Global Variable</td>
-        <td>متغیری که در سراسر برنامه قابل دسترسی است</td>
-    </tr>
-    <tr>
-        <td>ساختار برنامه</td>
-        <td>Application Structure</td>
-        <td>ساختار داده‌ای که وابستگی‌های برنامه را نگهداری می‌کند</td>
-    </tr>
-    <tr>
-        <td>متد</td>
-        <td>Method</td>
-        <td>تابعی که روی یک نوع داده خاص تعریف می‌شود</td>
-    </tr>
-    <tr>
-        <td>بسته</td>
-        <td>Package</td>
-        <td>مجموعه‌ای از کدهای مرتبط در Go</td>
-    </tr>
-    <tr>
-        <td>خطای عمدی</td>
-        <td>Deliberate Error</td>
-        <td>خطایی که به صورت عمدی برای آزمایش سیستم ایجاد می‌شود</td>
-    </tr>
-    <tr>
-        <td>وابستگی</td>
-        <td>Dependency</td>
-        <td>منبع یا سرویسی که یک بخش از برنامه به آن نیاز دارد</td>
-    </tr>
-    <tr>
-        <td>تست واحد</td>
-        <td>Unit Testing</td>
-        <td>آزمایش بخش‌های مجزای کد به صورت مستقل</td>
-    </tr>
-</table>
+<p>می‌توانید یک مثال کامل و ملموس‌تر از نحوه استفاده از الگوی بستار را در <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">این Gist</a> پیدا کنید.</p>
 
 		</main>
 		<footer>

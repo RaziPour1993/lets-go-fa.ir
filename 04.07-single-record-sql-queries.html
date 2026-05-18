@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>پرس‌وجوهای SQL تک‌رکوردی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code {
-				text-align: left;
-				direction: ltr; /* Ensures the text direction is left-to-right */
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</a> &rsaquo; پرس و جوهای SQL تک رکوردی (Single Record SQL Queries)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; پرس‌وجوهای SQL تک‌رکوردی</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="04.06-executing-sql-statements.html">قبلی</a>
@@ -27,28 +26,26 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل 4.7.</div>
-			<h2 id="single-record-sql-queries">پرس و جوهای SQL تک رکوردی (Single Record SQL Queries)</h2>
+			<h2 id="single-record-sql-queries">پرس‌وجوهای SQL تک‌رکوردی</h2>
 
-<p>در این بخش، ما متد <code>SnippetModel.Get()</code> را پیاده‌سازی خواهیم کرد تا یک <dfn>رکورد واحد (Single Record)</dfn> را بر اساس <dfn>کلید اصلی (Primary Key)</dfn> آن بازیابی کند.</p>
+<p>الگوی اجرای یک دستور <code>SELECT</code> برای بازیابی یک رکورد از پایگاه داده کمی پیچیده‌تر است. بیایید نحوه انجام آن را با به‌روزرسانی متد <code>SnippetModel.Get()</code> خود توضیح دهیم تا یک snippet خاص را بر اساس ID آن برگرداند.</p>
 
-<p>برای این کار، از متد <code>QueryRow()</code> استفاده می‌کنیم که برای اجرای <dfn>پرس و جوهای تک رکوردی (Single Record Queries)</dfn> طراحی شده است.</p>
+<p>برای انجام این کار، باید پرس‌وجوی SQL زیر را روی پایگاه داده اجرا کنیم:</p>
 
-<p>برای انجام این کار، باید پرس‌وجوی SQL (SQL Query) زیر را در پایگاه داده اجرا کنیم:</p>
-
-<figure class="code sql">
+<figure class="code sql" dir="ltr">
 <pre><span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span> <span class="k">FROM</span> <span class="n">snippets</span>
 <span class="k">WHERE</span> <span class="n">expires</span> <span class="o">&gt;</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span> <span class="k">AND</span> <span class="n">id</span> <span class="o">=</span> <span class="o">?</span></pre>
 </figure>
 
-<p>از آنجا که جدول <code>snippets</code> ما از ستون <code>id</code> به عنوان کلید اصلی (Primary Key) خود استفاده می‌کند، این پرس‌وجو همیشه دقیقاً یک سطر پایگاه داده (یا هیچ) را برمی‌گرداند. پرس‌وجو همچنین شامل یک بررسی بر روی زمان انقضا (Expiry Time) است تا هیچ قطعه‌ای که منقضی شده است را برنگرداند.</p>
+<p>چون جدول <code>snippets</code> ما از ستون <code>id</code> به عنوان کلید اصلی خود استفاده می‌کند، این پرس‌وجو فقط دقیقاً یک ردیف پایگاه داده (یا هیچ) برمی‌گرداند. پرس‌وجو همچنین شامل بررسی زمان انقضا است تا snippetهایی که منقضی شده‌اند را برنگردانیم.</p>
 
-<p>همچنین توجه کنید که آیا دوباره از یک پارامتر جایگزین (Placeholder Parameter) برای مقدار <code>id</code> استفاده می‌کنیم؟</p>
+<p>همچنین توجه کنید که دوباره از یک پارامتر placeholder برای مقدار <code>id</code> استفاده می‌کنیم؟</p>
 
 <p>فایل <code>internal/models/snippets.go</code> را باز کنید و کد زیر را اضافه کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/snippets.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -85,6 +82,7 @@
         <span class="c1">// If the query returns no rows, then row.Scan() will return a
 </span><span class="c1"></span>        <span class="c1">// sql.ErrNoRows error. We use the errors.Is() function check for that
 </span><span class="c1"></span>        <span class="c1">// error specifically, and return our own ErrNoRecord error
+</span><span class="c1"></span>        <span class="c1">// instead (we&#39;ll create this in a moment).
 </span><span class="c1"></span>        <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">sql</span><span class="p">.</span><span class="nx">ErrNoRows</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">return</span> <span class="nx">Snippet</span><span class="p">{</span><span class="p">}</span><span class="p">,</span> <span class="nx">ErrNoRecord</span>
         <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -96,10 +94,11 @@
 </span><span class="c1"></span>    <span class="k">return</span> <span class="nx">s</span><span class="p">,</span> <span class="kc">nil</span>
 <span class="p">}</span>
 
-<span class="o">...</span></pre>
+<span class="o">...</span>
+</pre>
 </figure>
 
-<p>در پشت صحنه <code>rows.Scan()</code> درایور شما به‌طور خودکار خروجی خام از پایگاه داده SQL را به انواع بومی Go مورد نیاز تبدیل می‌کند. تا زمانی که با انواعی که بین SQL و Go نگاشت می‌کنید معقول باشید، این تبدیل‌ها باید به‌طور کلی به‌خوبی کار کنند. معمولاً:</p>
+<p>در پشت صحنه <code>rows.Scan()</code>، درایور شما به طور خودکار خروجی خام از پایگاه داده SQL را به انواع بومی مورد نیاز Go تبدیل می‌کند. تا زمانی که با انواعی که بین SQL و Go نگاشت می‌کنید منطقی باشید، این تبدیل‌ها به طور کلی باید فقط کار کنند. معمولاً:</p>
 
 <ul>
 <li><code>CHAR</code>، <code>VARCHAR</code> و <code>TEXT</code> به <code>string</code> نگاشت می‌شوند.</li>
@@ -110,24 +109,24 @@
 </ul>
 
 <aside class="note"><p>
-<strong>توجه:</strong> یکی از ویژگی‌های درایور MySQL ما این است که باید از پارامتر <code>parseTime=true</code> در DSN خود استفاده کنیم تا آن را مجبور کنیم که فیلدهای <code>TIME</code> و <code>DATE</code> را به <code>time.Time</code> تبدیل کند. در غیر این صورت، این فیلدها را به عنوان اشیاء <code>[]byte</code> برمی‌گرداند. این یکی از بسیاری از <a href="https://github.com/go-sql-driver/mysql#parameters">پارامترهای خاص درایور</a> است که ارائه می‌دهد.
+<strong>یادداشت:</strong> یک ویژگی خاص درایور MySQL ما این است که باید از پارامتر <code>parseTime=true</code> در DSN خود استفاده کنیم تا آن را مجبور کنیم فیلدهای <code>TIME</code> و <code>DATE</code> را به <code>time.Time</code> تبدیل کند. در غیر این صورت، این‌ها را به عنوان اشیاء <code>[]byte</code> برمی‌گرداند. این یکی از بسیاری از <a href="https://github.com/go-sql-driver/mysql#parameters">پارامترهای خاص درایور</a> است که ارائه می‌دهد.
 </p></aside>
 
-<p>اگر در این نقطه سعی کنید برنامه را اجرا کنید، باید یک خطای زمان کامپایل دریافت کنید که می‌گوید مقدار <code>ErrNoRecord</code> تعریف نشده است:</p>
+<p>اگر در این مرحله سعی کنید برنامه را اجرا کنید، باید یک خطای زمان کامپایل دریافت کنید که می‌گوید مقدار <code>ErrNoRecord</code> تعریف نشده است:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web/
-<samp># snippetbox.letsgofa.net/internal/models
+<samp># snippetbox.alexedwards.net/internal/models
 internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 </figure>
 
-<p>بیایید اکنون آن را در یک فایل جدید <code>internal/models/errors.go</code> ایجاد کنیم. به این صورت:</p>
+<p>بیایید ادامه دهیم و آن را اکنون در یک فایل جدید <code>internal/models/errors.go</code> ایجاد کنیم. مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ touch internal/models/errors.go</pre>
 </figure>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/errors.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -138,15 +137,15 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 <span class="kd">var</span> <span class="nx">ErrNoRecord</span> <span class="p">=</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="s">&#34;models: no matching record found&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>به عنوان یک نکته جانبی، ممکن است بپرسید چرا ما خطای <code>ErrNoRecord</code> را از متد <code>SnippetModel.Get()</code> خود برمی‌گردانیم، به جای <code>sql.ErrNoRows</code> به‌طور مستقیم. دلیل این کار کمک به کپسوله‌سازی کامل مدل است، به‌طوری که هندلرهای ما نگران پایگاه داده زیرین نباشند یا به خطاهای خاص پایگاه داده (مانند <code>sql.ErrNoRows</code>) برای رفتار خود وابسته نباشند.</p>
+<p>به عنوان یک نکته جانبی، ممکن است تعجب کنید که چرا خطای <code>ErrNoRecord</code> را از متد <code>SnippetModel.Get()</code> خود برمی‌گردانیم، به جای اینکه مستقیماً <code>sql.ErrNoRows</code> را برگردانیم. دلیل این است که به کپسوله کردن کامل مدل کمک کنیم، تا handlerهای ما نگران مخزن داده زیرین نباشند یا به خطاهای خاص مخزن داده (مانند <code>sql.ErrNoRows</code>) برای رفتار خود وابسته نباشند.</p>
 
-<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما (Using the Model in our Handlers)</h3>
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در handlerهای ما</h3>
 
-<p>بسیار خوب، بیایید متد <code>SnippetModel.Get()</code> را به کار بگیریم.</p>
+<p>خوب، بیایید متد <code>SnippetModel.Get()</code> را به کار ببریم.</p>
 
-<p>فایل <code>cmd/web/handlers.go</code> خود را باز کنید و هندلر <code>snippetView</code> را به‌روزرسانی کنید تا داده‌های یک رکورد خاص را به عنوان یک پاسخ HTTP برگرداند:</p>
+<p>فایل <code>cmd/web/handlers.go</code> خود را باز کنید و handler <code>snippetView</code> را به‌روزرسانی کنید تا داده‌های یک رکورد خاص را به عنوان یک پاسخ HTTP برگرداند:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -157,7 +156,7 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
     <span class="s">&#34;net/http&#34;</span>
     <span class="s">&#34;strconv&#34;</span>
 
-    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span> <span class="c1">// New import
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span> <span class="c1">// New import
 </span><span class="c1"></span><span class="p">)</span>
 
 <span class="o">...</span>
@@ -189,13 +188,13 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 <span class="o">...</span></pre>
 </figure>
 
-<p>بیایید این را امتحان کنیم. برنامه را مجدداً راه‌اندازی کنید، سپس مرورگر وب خود را باز کنید و به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بروید. باید یک پاسخ HTTP ببینید که شبیه به این است:</p>
+<p>بیایید این را امتحان کنیم. برنامه را مجدداً راه‌اندازی کنید، سپس مرورگر وب خود را باز کنید و به <a href="http://localhost:4000/snippet/view/1"><code>http://localhost:4000/snippet/view/1</code></a> بروید. باید یک پاسخ HTTP مشابه این ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/04.07-01.png" alt="04.07-01.png" />
 </figure>
 
-<p>همچنین ممکن است بخواهید برخی درخواست‌ها برای قطعات دیگر که منقضی شده‌اند یا هنوز وجود ندارند (مانند یک مقدار <code>id</code> برابر با <code>99</code>) را امتحان کنید تا تأیید کنید که آنها یک پاسخ <code>404 page not found</code> برمی‌گردانند:</p>
+<p>همچنین ممکن است بخواهید درخواست‌هایی برای snippetهای دیگر که منقضی شده‌اند یا هنوز وجود ندارند (مانند مقدار <code>id</code> از <code>99</code>) ایجاد کنید تا تأیید کنید که یک پاسخ <code>404 page not found</code> برمی‌گردانند:</p>
 
 <figure class="img">
 <img src="assets/img/04.07-02.png" alt="04.07-02.png" />
@@ -203,13 +202,13 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="checking-for-specific-errors">بررسی خطاهای خاص (Checking for Specific Errors)</h4>
+<h4 id="checking-for-specific-errors">بررسی خطاهای خاص</h4>
 
-<p>چندین بار در این فصل از تابع <a href="https://tip.golang.org/pkg/errors/#Is"><code>errors.Is()</code></a> برای بررسی اینکه آیا یک خطا با یک مقدار خاص مطابقت دارد استفاده کرده‌ایم. مانند این:</p>
+<p>چند بار در این فصل از تابع <a href="https://tip.golang.org/pkg/errors/#Is"><code>errors.Is()</code></a> برای بررسی اینکه آیا یک خطا با یک مقدار خاص مطابقت دارد استفاده کرده‌ایم. مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -217,9 +216,9 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>در نسخه‌های بسیار قدیمی Go (قبل از 1.13)، روش ایدئال برای مقایسه خطاها استفاده از عملگر برابری <code>==</code> بود، به این صورت:</p>
+<p>در نسخه‌های بسیار قدیمی Go (قبل از 1.13)، روش رایج برای مقایسهٔ خطاها استفاده از عملگر برابری <code>==</code> بود، مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrNoRecord</span> <span class="p">{</span>
     <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
 <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -227,21 +226,21 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>اما، در حالی که این کد هنوز کامپایل می‌شود، استفاده از تابع <code>errors.Is()</code> ایمن‌تر و بهترین روش است.</p>
+<p>اما، در حالی که این کد هنوز کامپایل می‌شود، استفاده از تابع <code>errors.Is()</code> به جای آن امن‌تر و بهترین روش است.</p>
 
-<p>این به این دلیل است که Go 1.13 قابلیت افزودن اطلاعات اضافی به خطاها را با <a href="https://go.dev/blog/go1.13-errors#wrapping-errors-with-w"><em>بسته‌بندی آنها</em></a> معرفی کرد. اگر یک خطا به‌طور اتفاقی بسته‌بندی شود، یک مقدار خطای کاملاً جدید ایجاد می‌شود &mdash; که به نوبه خود به این معنی است که بررسی مقدار خطای اصلی زیرین با استفاده از عملگر برابری معمولی <code>==</code> ممکن نیست.</p>
+<p>این به این دلیل است که Go 1.13 قابلیت افزودن اطلاعات اضافی به خطاها را با <a href="https://go.dev/blog/go1.13-errors#wrapping-errors-with-w"><em>پیچیدن آن‌ها</em></a> معرفی کرد. اگر یک خطا اتفاقاً پیچیده شود، یک مقدار خطای کاملاً جدید ایجاد می‌شود — که به نوبه خود به معنای این است که بررسی مقدار خطای زیرین اصلی با استفاده از عملگر برابری عادی <code>==</code> امکان‌پذیر نیست.</p>
 
-<p>تابع <code>errors.Is()</code> با <em>باز کردن</em> خطاها در صورت لزوم قبل از بررسی برای مطابقت کار می‌کند.</p>
+<p>تابع <code>errors.Is()</code> با <em>باز کردن پیچ</em> خطاها در صورت نیاز قبل از بررسی تطابق کار می‌کند.</p>
 
-<p>همچنین یک تابع دیگر به نام <a href="https://tip.golang.org/pkg/errors/#As"><code>errors.As()</code></a> وجود دارد که می‌توانید از آن برای بررسی اینکه آیا یک خطا (احتمالاً بسته‌بندی شده) دارای یک <em>نوع</em> خاص است استفاده کنید. ما بعداً در این کتاب از این استفاده خواهیم کرد.</p>
+<p>همچنین تابع دیگری، <a href="https://tip.golang.org/pkg/errors/#As"><code>errors.As()</code></a> وجود دارد که می‌توانید از آن برای بررسی اینکه آیا یک خطا (احتمالاً پیچیده شده) یک <em>نوع</em> خاص دارد استفاده کنید. بعداً در این کتاب از این استفاده خواهیم کرد.</p>
 
-<h4 id="shorthand-single-record-queries">پرس و جوهای تک رکوردی کوتاه (Shorthand Single Record Queries)</h4>
+<h4 id="shorthand-single-record-queries">پرس‌وجوهای تک‌رکوردی کوتاه‌نویسی شده</h4>
 
-<p>من عمداً کد در <code>SnippetModel.Get()</code> را کمی طولانی کرده‌ام تا به وضوح و تأکید بر آنچه در پشت صحنه کد اتفاق می‌افتد کمک کنم.</p>
+<p>من عمداً کد در <code>SnippetModel.Get()</code> را کمی طولانی کرده‌ام تا کمک به روشن‌سازی و تأکید بر آنچه در پشت صحنه کد اتفاق می‌افتد.</p>
 
-<p>در عمل، می‌توانید کد را کمی کوتاه کنید با استفاده از این واقعیت که خطاها از <code>DB.QueryRow()</code> تا زمانی که <code>Scan()</code> فراخوانی شود به تعویق می‌افتند. این هیچ تفاوت عملکردی ندارد، اما اگر بخواهید می‌توانید کد را به این صورت بازنویسی کنید:</p>
+<p>در عمل، می‌توانید کد را کمی کوتاه کنید با استفاده از این واقعیت که خطاها از <code>DB.QueryRow()</code> تا زمان فراخوانی <code>Scan()</code> به تعویق می‌افتند. این هیچ تفاوت عملکردی ایجاد نمی‌کند، اما اگر می‌خواهید کاملاً درست است که کد را به چیزی شبیه این بازنویسی کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><span class="nx">SnippetModel</span><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">id</span> <span class="kt">int</span><span class="p">)</span> <span class="p">(</span><span class="nx">Snippet</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nx">s</span> <span class="nx">Snippet</span>
     
@@ -258,57 +257,8 @@ internal/models/snippets.go:82:25: undefined: ErrNoRecord</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>رکورد واحد</td>
-        <td>Single Record</td>
-        <td>یک ردیف منفرد از داده‌ها در پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>کلید اصلی</td>
-        <td>Primary Key</td>
-        <td>شناسه منحصر به فرد برای هر رکورد در جدول پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>پرس و جوهای تک رکوردی</td>
-        <td>Single Record Queries</td>
-        <td>کوئری‌های SQL که یک رکورد واحد را برمی‌گردانند</td>
-    </tr>
-    <tr>
-        <td>زمان انقضا</td>
-        <td>Expiry Time</td>
-        <td>زمانی که یک رکورد منقضی می‌شود و دیگر معتبر نیست</td>
-    </tr>
-    <tr>
-        <td>پارامتر جایگزین</td>
-        <td>Placeholder Parameter</td>
-        <td>نشانگری در کوئری SQL که با مقادیر واقعی جایگزین می‌شود</td>
-    </tr>
-    <tr>
-        <td>نگاشت نوع داده</td>
-        <td>Data Type Mapping</td>
-        <td>تبدیل خودکار انواع داده بین SQL و زبان برنامه‌نویسی</td>
-    </tr>
-    <tr>
-        <td>خطای رکورد یافت نشد</td>
-        <td>No Record Error</td>
-        <td>خطایی که زمانی رخ می‌دهد که رکورد مورد نظر در پایگاه داده پیدا نشود</td>
-    </tr>
-    <tr>
-        <td>بسته‌بندی خطا</td>
-        <td>Error Wrapping</td>
-        <td>فرآیند اضافه کردن اطلاعات اضافی به یک خطا</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="04.06-executing-sql-statements.html">قبلی</a>

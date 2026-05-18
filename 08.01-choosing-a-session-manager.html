@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>انتخاب مدیر نشست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html"> حالت‌دار HTTP</a> &rsaquo; انتخاب یک مدیر جلسه</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="08.00-stateful-http.html">HTTP با حالت</a> &rsaquo; انتخاب یک مدیر نشست</span>
 						
 					
 				</div>
@@ -25,31 +26,27 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۸.۱.</div>
-			<h2 id="choosing-a-session-manager">انتخاب یک مدیر جلسه (Choosing a Session Manager)</h2>
+			<h2 id="choosing-a-session-manager">انتخاب یک مدیر نشست</h2>
 
-<p>در این بخش، نحوه انتخاب یک <dfn>مدیر جلسه (Session Manager)</dfn> مناسب را بررسی می‌کنیم. یک مدیر جلسه خوب باید قابلیت‌های <dfn>ذخیره‌سازی (Storage)</dfn>، <dfn>امنیت (Security)</dfn> و <dfn>مقیاس‌پذیری (Scalability)</dfn> مناسبی داشته باشد.</p>
+<p>هنگام کار با نشست‌ها، ملاحظات امنیتی زیادی وجود دارد و پیاده‌سازی مناسب پیش‌پاافتاده نیست. مگر اینکه واقعاً نیاز به پیاده‌سازی خودتان داشته باشید، استفاده از یک بسته شخص ثالث موجود و به خوبی تست شده در اینجا ایده خوبی است.</p>
 
-<p>برای پروژه ما، از <dfn>پکیج alexedwards/scs (SCS Package)</dfn> استفاده خواهیم کرد که یک <dfn>مدیر جلسه (Session Manager)</dfn> سبک و امن است. این پکیج از <dfn>کوکی‌های امن (Secure Cookies)</dfn> برای <dfn>ذخیره‌سازی جلسه (Session Storage)</dfn> استفاده می‌کند.</p>
-
-<p>هنگام کار با جلسات، ملاحظات امنیتی زیادی وجود دارد و پیاده‌سازی صحیح آن‌ها کار ساده‌ای نیست. مگر اینکه واقعاً نیاز به پیاده‌سازی خودتان داشته باشید، بهتر است از یک بسته شخص ثالث موجود و تست شده استفاده کنید.</p>
-
-<p>پیشنهاد می‌کنم بسته <a href="https://github.com/gorilla/sessions"><code>gorilla/sessions</code></a> یا <a href="https://github.com/alexedwards/scs"><code>alexedwards/scs</code></a> را بسته به نیاز پروژه‌تان استفاده کنید.</p>
+<p>بسته به نیازهای پروژه شما، استفاده از <a href="https://github.com/gorilla/sessions"><code>gorilla/sessions</code></a> یا <a href="https://github.com/alexedwards/scs"><code>alexedwards/scs</code></a> را توصیه می‌کنم.</p>
 
 <ul>
-<li><p><code>gorilla/sessions</code> شناخته‌شده‌ترین و معتبرترین بسته مدیریت جلسه برای Go است. این بسته دارای یک API ساده و آسان برای استفاده است و به شما اجازه می‌دهد داده‌های جلسه را در سمت کلاینت (در کوکی‌های امضا شده و رمزگذاری شده) یا سمت سرور (در یک پایگاه داده مانند MySQL، PostgreSQL یا Redis) ذخیره کنید.</p>
+<li><p><code>gorilla/sessions</code> بسته مدیریت نشست تثبیت‌شده‌ترین و شناخته‌شده‌ترین برای Go است. یک API ساده و آسان برای استفاده دارد و به شما اجازه می‌دهد داده‌های نشست را سمت کلاینت (در کوکی‌های امضا شده و رمزگذاری شده) یا سمت سرور (در یک پایگاه داده مانند MySQL، PostgreSQL یا Redis) ذخیره کنید.</p>
 
-<p>با این حال، مهم است که بدانید این بسته مکانیزمی برای تجدید شناسه‌های جلسه ارائه نمی‌دهد (که برای کاهش خطرات <a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#renew-the-session-id-after-any-privilege-level-change">مرتبط با حملات تثبیت جلسه</a> ضروری است اگر از یکی از ذخیره‌سازهای جلسه سمت سرور استفاده می‌کنید).</p></li>
+<p>با این حال &mdash; مهم است &mdash; مکانیزمی برای تمدید شناسه‌های نشست ارائه نمی‌دهد (که برای کاهش خطرات <a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#renew-the-session-id-after-any-privilege-level-change">مرتبط با حملات session fixation</a> لازم است اگر از یکی از ذخیره‌کننده‌های نشست سمت سرور استفاده می‌کنید).</p></li>
 
-<li><p><code>alexedwards/scs</code> به شما اجازه می‌دهد داده‌های جلسه را فقط در سمت سرور ذخیره کنید. این بسته از بارگذاری و ذخیره خودکار داده‌های جلسه از طریق میان‌افزار پشتیبانی می‌کند، دارای یک رابط کاربری زیبا برای دستکاری نوع-ایمن داده‌ها است و اجازه تجدید شناسه‌های جلسه را می‌دهد. مانند <code>gorilla/sessions</code>، این بسته نیز از انواع پایگاه داده‌ها (از جمله MySQL، PostgreSQL و Redis) پشتیبانی می‌کند.</p></li>
+<li><p><code>alexedwards/scs</code> به شما اجازه می‌دهد داده‌های نشست را فقط سمت سرور ذخیره کنید. بارگذاری و ذخیره خودکار داده‌های نشست از طریق میدلور را پشتیبانی می‌کند، یک رابط خوب برای دستکاری نوع‌ایمن داده‌ها دارد و <em>اجازه می‌دهد</em> شناسه‌های نشست تمدید شوند. مانند <code>gorilla/sessions</code>، همچنین از انواع مختلف پایگاه داده (شامل MySQL، PostgreSQL و Redis) پشتیبانی می‌کند.</p></li>
 </ul>
 
-<p>به طور خلاصه، اگر می‌خواهید داده‌های جلسه را در سمت کلاینت در یک کوکی ذخیره کنید، <code>gorilla/sessions</code> انتخاب خوبی است، اما در غیر این صورت <code>alexedwards/scs</code> به دلیل قابلیت تجدید شناسه‌های جلسه به طور کلی گزینه بهتری است.</p>
+<p>به طور خلاصه، اگر می‌خواهید داده‌های نشست را سمت کلاینت در یک کوکی ذخیره کنید، <code>gorilla/sessions</code> انتخاب خوبی است، اما در غیر این صورت <code>alexedwards/scs</code> به طور کلی گزینه بهتری است به دلیل توانایی تمدید شناسه‌های نشست.</p>
 
-<p>برای این پروژه، ما قبلاً یک پایگاه داده MySQL راه‌اندازی کرده‌ایم، بنابراین تصمیم گرفتیم از <code>alexedwards/scs</code> استفاده کنیم و داده‌های جلسه را در سمت سرور در MySQL ذخیره کنیم.</p>
+<p>برای این پروژه ما قبلاً یک پایگاه داده MySQL راه‌اندازی کرده‌ایم، بنابراین استفاده از <code>alexedwards/scs</code> را انتخاب می‌کنیم و داده‌های نشست را سمت سرور در MySQL ذخیره می‌کنیم.</p>
 
-<p>اگر شما هم در حال دنبال کردن هستید، مطمئن شوید که در دایرکتوری پروژه‌تان هستید و بسته‌های لازم را به این صورت نصب کنید:</p>
+<p>اگر همراه می‌آیید، مطمئن شوید که در دایرکتوری پروژه خود هستید و بسته‌های لازم را به این صورت نصب کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go get github.com/alexedwards/scs/v2@v2
@@ -61,68 +58,8 @@ $ go get github.com/alexedwards/scs/mysqlstore@latest
 go get: added github.com/alexedwards/scs/mysqlstore v0.0.0-20240316133359-d7ab9d9831ec</samp></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>مدیر جلسه</td>
-        <td>Session Manager</td>
-        <td>نرم‌افزار مدیریت جلسات کاربران</td>
-    </tr>
-    <tr>
-        <td>ذخیره‌سازی</td>
-        <td>Storage</td>
-        <td>محل نگهداری داده‌های جلسه</td>
-    </tr>
-    <tr>
-        <td>امنیت</td>
-        <td>Security</td>
-        <td>حفاظت از داده‌ها و جلسات</td>
-    </tr>
-    <tr>
-        <td>مقیاس‌پذیری</td>
-        <td>Scalability</td>
-        <td>قابلیت رشد و گسترش سیستم</td>
-    </tr>
-    <tr>
-        <td>پکیج alexedwards/scs</td>
-        <td>SCS Package</td>
-        <td>کتابخانه مدیریت جلسه در Go</td>
-    </tr>
-    <tr>
-        <td>کوکی‌های امن</td>
-        <td>Secure Cookies</td>
-        <td>کوکی‌های رمزنگاری شده</td>
-    </tr>
-    <tr>
-        <td>ذخیره‌سازی جلسه</td>
-        <td>Session Storage</td>
-        <td>محل نگهداری داده‌های جلسه</td>
-    </tr>
-    <tr>
-        <td>رمزنگاری</td>
-        <td>Encryption</td>
-        <td>محافظت از داده‌ها با کدگذاری</td>
-    </tr>
-    <tr>
-        <td>احراز هویت</td>
-        <td>Authentication</td>
-        <td>تأیید هویت کاربران</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>مدیریت خطاهای جلسه</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="08.00-stateful-http.html">قبلی</a>

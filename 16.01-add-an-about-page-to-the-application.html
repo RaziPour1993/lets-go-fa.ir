@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>افزودن صفحه «درباره» به برنامه &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; اضافه کردن صفحه 'درباره' به برنامه</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; افزودن صفحه «درباره» به برنامه</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="16.00-guided-exercises.html">قبلی</a>
@@ -21,43 +26,43 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۱۶.۱.</div>
-			<h2 id="add-an-about-page-to-the-application">اضافه کردن صفحه 'درباره' به برنامه (Adding an About Page to the Application)</h2>
+			<h2 id="add-an-about-page-to-the-application">افزودن صفحه &lsquo;درباره&rsquo; به برنامه</h2>
 
-<p>هدف شما در این تمرین اضافه کردن یک <dfn>صفحه جدید (New Page)</dfn> 'درباره' به برنامه است. این صفحه باید به <dfn>مسیر (Route)</dfn> <code>GET /about</code> متصل شود و برای <dfn>کاربران احراز هویت شده (Authenticated Users)</dfn> و نشده در دسترس باشد و به این شکل به نظر برسد:</p>
+<p>هدف شما برای این تمرین افزودن یک صفحه جدید &lsquo;درباره&rsquo; به برنامه است. باید به route <code>GET /about</code> نگاشت شود، برای کاربران authenticated و unauthenticated در دسترس باشد، و مشابه این به نظر برسد:</p>
 
 <figure class="img">
 <img src="assets/img/16.01-01.png" alt="16.01-01.png" />
 </figure>
 
-<h4 id="step-1">مرحله ۱</h4>
+<h4 id="step-1">مرحله 1</h4>
 
-<p>یک <dfn>مسیر (Route)</dfn> <code>GET /about</code> ایجاد کنید که به یک <dfn>هندلر (Handler)</dfn> جدید <code>about</code> متصل شود. به این فکر کنید که کدام <dfn>استک میان‌افزار (Middleware Stack)</dfn> برای استفاده در این مسیر مناسب است.</p>
+<p>یک route <code>GET /about</code> ایجاد کنید که به یک handler جدید <code>about</code> نگاشت شود. فکر کنید که کدام middleware stack برای route مناسب است.</p>
 
 <p><a href="#17.01-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">مرحله ۲</h4>
+<h4 id="step-2">مرحله 2</h4>
 
-<p>یک <dfn>فایل قالب (Template File)</dfn> جدید <code>ui/html/pages/about.tmpl</code> ایجاد کنید و <dfn>الگوی (Pattern)</dfn> مشابهی که برای صفحات دیگر برنامه استفاده کرده‌ایم را دنبال کنید. یک <dfn>عنوان (Title)</dfn>، <dfn>سرصفحه (Header)</dfn> و مقداری متن جایگزین برای صفحه 'درباره' اضافه کنید.</p>
+<p>یک فایل جدید <code>ui/html/pages/about.tmpl</code> ایجاد کنید، با دنبال کردن همان الگوی template که برای صفحات دیگر برنامه استفاده کرده‌ایم. یک title، heading و برخی placeholder copy برای صفحه &lsquo;درباره&rsquo; شامل کنید.</p>
 
 <p><a href="#17.01-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-3">مرحله ۳</h4>
+<h4 id="step-3">مرحله 3</h4>
 
-<p><dfn>نوار ناوبری (Navigation Bar)</dfn> اصلی برنامه را به‌روزرسانی کنید تا شامل یک <dfn>پیوند (Link)</dfn> به صفحه جدید 'درباره' باشد (پیوند باید برای همه کاربران، صرف نظر از اینکه وارد شده‌اند یا نه، قابل مشاهده باشد).</p>
+<p>نوار navigation اصلی برنامه را به‌روزرسانی کنید تا یک لینک به صفحه جدید &lsquo;درباره&rsquo; شامل شود (لینک باید برای همه کاربران قابل مشاهده باشد، صرف نظر از اینکه logged in هستند یا نه).</p>
 
 <p><a href="#17.01-suggested-code-for-step-3">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-4">مرحله ۴</h4>
+<h4 id="step-4">مرحله 4</h4>
 
-<p>هندلر <code>about</code> را به‌روزرسانی کنید تا <dfn>فایل قالب (Template File)</dfn> <code>about.tmpl</code> که به تازگی ایجاد کرده‌اید را <dfn>رندر (Render)</dfn> کند. سپس بررسی کنید که صفحه جدید و ناوبری با بازدید از <a href="https://localhost:4000/about"><code>https://localhost:4000/about</code></a> در مرورگر شما کار می‌کند.</p>
+<p>handler <code>about</code> را به‌روزرسانی کنید تا فایل <code>about.tmpl</code> که تازه ایجاد کرده‌اید را render کند. سپس بررسی کنید که صفحه جدید و navigation کار می‌کند با بازدید از <a href="https://localhost:4000/about"><code>https://localhost:4000/about</code></a> در مرورگر خود.</p>
 
 <p><a href="#17.01-suggested-code-for-step-4">نمایش کد پیشنهادی</a></p>
 
 <h3 id="suggested-code">کد پیشنهادی</h3>
 
-<h4 id="17.01-suggested-code-for-step-1">کد پیشنهادی برای مرحله ۱</h4>
+<h4 id="17.01-suggested-code-for-step-1">کد پیشنهادی برای مرحله 1</h4>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -70,7 +75,42 @@
 </span><span class="c1"></span><span class="p">}</span></pre>
 </figure>
 
-<h4 id="17.01-suggested-code-for-step-2">کد پیشنهادی برای مرحله ۲</h4>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServerFS</span><span class="p">(</span><span class="nx">ui</span><span class="p">.</span><span class="nx">Files</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /ping&#34;</span><span class="p">,</span> <span class="nx">ping</span><span class="p">)</span>
+
+    <span class="nx">dynamic</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nx">LoadAndSave</span><span class="p">,</span> <span class="nx">noSurf</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">authenticate</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span><span class="p">)</span>
+    <span class="c1">// Add the about route.
+</span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /about&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">about</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignup</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignupPost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogin</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLoginPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">protected</span> <span class="o">:=</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">Append</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">requireAuthentication</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/logout&#34;</span><span class="p">,</span> <span class="nx">protected</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogoutPost</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">standard</span> <span class="o">:=</span> <span class="nx">alice</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">recoverPanic</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">logRequest</span><span class="p">,</span> <span class="nx">commonHeaders</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">standard</span><span class="p">.</span><span class="nf">Then</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<h4 id="17.01-suggested-code-for-step-2">کد پیشنهادی برای مرحله 2</h4>
 
 <figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/about.tmpl</figcaption>
@@ -87,7 +127,7 @@
 {{end}}</pre>
 </figure>
 
-<h4 id="17.01-suggested-code-for-step-3">کد پیشنهادی برای مرحله ۳</h4>
+<h4 id="17.01-suggested-code-for-step-3">کد پیشنهادی برای مرحله 3</h4>
 
 <figure class="code html" dir="ltr">
 <figcaption>File: ui/html/partials/nav.tmpl</figcaption>
@@ -116,7 +156,7 @@
 {{end}}</pre>
 </figure>
 
-<h4 id="17.01-suggested-code-for-step-4">کد پیشنهادی برای مرحله ۴</h4>
+<h4 id="17.01-suggested-code-for-step-4">کد پیشنهادی برای مرحله 4</h4>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -130,78 +170,8 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>صفحه جدید</td>
-        <td>New Page</td>
-        <td>صفحه تازه اضافه شده به برنامه</td>
-    </tr>
-    <tr>
-        <td>مسیر</td>
-        <td>Route</td>
-        <td>آدرس دسترسی به صفحه</td>
-    </tr>
-    <tr>
-        <td>کاربران احراز هویت شده</td>
-        <td>Authenticated Users</td>
-        <td>کاربران وارد شده به سیستم</td>
-    </tr>
-    <tr>
-        <td>هندلر</td>
-        <td>Handler</td>
-        <td>پردازش‌کننده درخواست</td>
-    </tr>
-    <tr>
-        <td>استک میان‌افزار</td>
-        <td>Middleware Stack</td>
-        <td>لایه‌های پردازش درخواست</td>
-    </tr>
-    <tr>
-        <td>فایل قالب</td>
-        <td>Template File</td>
-        <td>فایل حاوی ساختار HTML</td>
-    </tr>
-    <tr>
-        <td>الگو</td>
-        <td>Pattern</td>
-        <td>ساختار تکرارشونده</td>
-    </tr>
-    <tr>
-        <td>عنوان</td>
-        <td>Title</td>
-        <td>نام نمایشی صفحه</td>
-    </tr>
-    <tr>
-        <td>سرصفحه</td>
-        <td>Header</td>
-        <td>بخش بالای صفحه</td>
-    </tr>
-    <tr>
-        <td>نوار ناوبری</td>
-        <td>Navigation Bar</td>
-        <td>منوی هدایت برنامه</td>
-    </tr>
-    <tr>
-        <td>پیوند</td>
-        <td>Link</td>
-        <td>اتصال به صفحه دیگر</td>
-    </tr>
-    <tr>
-        <td>رندر</td>
-        <td>Render</td>
-        <td>تولید خروجی نهایی</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="16.00-guided-exercises.html">قبلی</a>
@@ -218,12 +188,16 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "16.00-guided-exercises.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "16.02-add-a-debug-mode.html";
 						break;
+						
 				}
 			};
 		</script>

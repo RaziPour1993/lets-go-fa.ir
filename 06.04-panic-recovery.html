@@ -3,29 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>بازیابی از panic &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.text p, .text h2, .chapter {
-				text-align: right;
-				direction: rtl;
-			}
-			.code, .code.go, .code.html, .code.bash, .code.plain, .code.sql {
-				direction: ltr;
-				text-align: left;
-			}
-			header .wrapper, footer .wrapper {
-				direction: rtl;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; بازیابی پنیک</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میدل‌ور</a> &rsaquo; بازیابی پانیک</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="06.03-request-logging.html">قبلی</a>
@@ -36,21 +28,155 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۶.۴.</div>
-			<h2 id="panic-recovery">بازیابی پنیک (Panic Recovery)</h2>
+			<h2 id="panic-recovery">بازیابی پانیک</h2>
 
-<p>در این بخش، یک <dfn>میان‌افزار بازیابی (Recovery Middleware)</dfn> ایجاد خواهیم کرد که <dfn>پنیک‌های زمان اجرا (Runtime Panics)</dfn> را مدیریت می‌کند و آن‌ها را به <dfn>پاسخ خطای 500 (500 Error Response)</dfn> تبدیل می‌کند.</p>
+<p>در یک برنامه Go ساده، <a href="https://pkg.go.dev/builtin/#panic">وقتی کد شما پانیک می‌کند</a>، باعث خاتمه فوری برنامه می‌شود.</p>
 
-<p>در یک برنامه ساده Go، <a href="https://pkg.go.dev/builtin/#panic">وقتی کد شما پنیک می‌کند</a> منجر به خاتمه فوری برنامه می‌شود.</p>
+<p>اما برنامه وب ما کمی پیچیده‌تر است. سرور HTTP Go فرض می‌کند که تأثیر هر پانیک به گوروتین سرو کردن درخواست HTTP فعال محدود است (<a href="02.10-the-http-handler-interface.html">یادتان باشد</a>، هر درخواست در گوروتین خودش پردازش می‌شود).</p>
 
-<p>اما برنامه وب ما کمی پیچیده‌تر است. سرور HTTP گو فرض می‌کند که تأثیر هر پنیک به گوروتین خدمت‌دهنده به درخواست HTTP فعال محدود می‌شود (<a href="02.10-the-http-handler-interface.html">به یاد داشته باشید</a>، هر درخواست در گوروتین خودش مدیریت می‌شود).</p>
+<p>به طور خاص، پس از یک پانیک، سرور ما یک ردیابی پشته را در لاگ خطای سرور ثبت می‌کند (که <a href="09.02-the-server-error-log.html">بعداً در کتاب</a> درباره آن صحبت خواهیم کرد)، پشته را برای گوروتین تأثیرگرفته باز می‌کند (هر تابع deferred را در مسیر فراخوانی می‌کند) و اتصال HTTP زیرین را می‌بندد. اما برنامه را خاتمه نمی‌دهد، بنابراین پانیک داخل handler نباید کل سرور را از کار بیندازد.</p>
 
-<p>به طور خاص، پس از یک پنیک، سرور ما یک ردیابی پشته را در لاگ خطای سرور ثبت می‌کند (که ما <a href="09.02-the-server-error-log.html">بعداً در کتاب</a> در مورد آن صحبت خواهیم کرد)، پشته را برای گوروتین تحت تأثیر باز می‌کند (با فراخوانی هر تابع معوق در طول مسیر) و اتصال HTTP زیرین را می‌بندد. اما برنامه را متوقف نمی‌کند، بنابراین مهم است که هر پنیک در هندلرهای شما <em>باعث</em> از کار افتادن سرور نمی‌شود.</p>
+<p><em>اما اگر پانیکی در یکی از handlerهای ما رخ دهد، کاربر چه خواهد دید؟</em></p>
 
-<p><em>اما اگر یک پنیک در یکی از هندلرهای ما رخ دهد، کاربر چه چیزی خواهد دید؟</em></p>
+<p>بیایید نگاهی بیندازیم و یک پانیک عمدی در handler <code>home</code> خود معرفی کنیم.</p>
 
-<p>بیایید نگاهی بیندازیم و یک پنیک عمدی در هندلر <code>home</code> خود ایجاد کنیم.</p>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
 
-<figure class="code go">
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nb">panic</span><span class="p">(</span><span class="s">&#34;oops! something went wrong&#34;</span><span class="p">)</span> <span class="c1">// Deliberate panic
+</span><span class="c1"></span>
+    <span class="nx">snippets</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippets</span><span class="p">.</span><span class="nf">Latest</span><span class="p">(</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="nx">data</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nf">newTemplateData</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span>
+    <span class="nx">data</span><span class="p">.</span><span class="nx">Snippets</span> <span class="p">=</span> <span class="nx">snippets</span>
+
+    <span class="nx">app</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">,</span> <span class="s">&#34;home.tmpl&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
+
+<p>برنامه خود را مجدداً راه‌اندازی کنید&hellip;</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
+</figure>
+
+<p>&hellip; و یک درخواست HTTP برای صفحه اصلی از یک پنجره ترمینال دوم انجام دهید:</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ curl -i http://localhost:4000
+<samp>curl: (52) Empty reply from server</samp></pre>
+</figure>
+
+<p>متأسفانه، به دلیل بسته شدن اتصال HTTP زیرین توسط Go پس از پانیک، فقط یک پاسخ خالی دریافت می‌کنیم.</p>
+
+<p>این تجربه خوبی برای کاربر نیست. بهتر و معنادارتر است که یک پاسخ HTTP مناسب با وضعیت <code>500 Internal Server Error</code> به آن‌ها ارسال کنیم.</p>
+
+<p>یک روش خوب برای انجام این کار، ایجاد میدل‌وری است که پانیک را <em>بازیابی می‌کند</em> و متد کمکی <code>app.serverError()</code> ما را فراخوانی می‌کند. برای انجام این کار، می‌توانیم از این واقعیت استفاده کنیم که توابع deferred همیشه هنگام باز شدن پشته پس از یک پانیک فراخوانی می‌شوند.</p>
+
+<p>فایل <code>middleware.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/middleware.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;fmt&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Create a deferred function (which will always be run in the event
+</span><span class="c1"></span>        <span class="c1">// of a panic as Go unwinds the stack).
+</span><span class="c1"></span>        <span class="k">defer</span> <span class="kd">func</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Use the builtin recover function to check if there has been a
+</span><span class="c1"></span>            <span class="c1">// panic or not. If there has...
+</span><span class="c1"></span>            <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+                <span class="c1">// Set a &#34;Connection: close&#34; header on the response.
+</span><span class="c1"></span>                <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Connection&#34;</span><span class="p">,</span> <span class="s">&#34;close&#34;</span><span class="p">)</span>
+                <span class="c1">// Call the app.serverError helper method to return a 500
+</span><span class="c1"></span>                <span class="c1">// Internal Server response.
+</span><span class="c1"></span>                <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span><span class="p">(</span><span class="p">)</span>
+
+        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
+    <span class="p">}</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>دو جزئیات در مورد این کد وجود دارد که ارزش توضیح دارد:</p>
+
+<ul>
+<li><p>تنظیم هدر <code>Connection: Close</code> روی پاسخ به عنوان یک محرک عمل می‌کند تا سرور HTTP Go به طور خودکار اتصال فعلی را پس از ارسال پاسخ ببندد. همچنین به کاربر اطلاع می‌دهد که اتصال <em>بسته خواهد شد</em>. توجه: اگر پروتکل مورد استفاده HTTP/2 باشد، Go به طور <a href="https://go-review.googlesource.com/c/net/+/121415/">خودکار</a> هدر <code>Connection: Close</code> را از پاسخ حذف می‌کند (تا ناقص نباشد) و یک فریم <code>GOAWAY</code> ارسال می‌کند.</p></li>
+
+<li><p>مقدار برگردانده شده توسط تابع داخلی <code>recover()</code> نوع <code>any</code> دارد و نوع زیرین آن می‌تواند <code>string</code>، <code>error</code> یا چیز دیگری باشد &mdash; هر چیزی که به <code>panic()</code> به عنوان پارامتر داده شده باشد. در مورد ما، رشته <code>&quot;oops! something went wrong&quot;</code> است. در کد بالا، این را با استفاده از تابع <code>fmt.Errorf()</code> برای ایجاد یک شیء <code>error</code> جدید حاوی نمایش متنی پیش‌فرض مقدار <code>any</code>، به یک <code>error</code> نرمال می‌کنیم و سپس این <code>error</code> را به متد کمکی <code>app.serverError()</code> می‌دهیم.</p></li>
+</ul>
+
+<p>حالا بیایید این را در فایل <code>routes.go</code> به کار ببریم، به طوری که <em>اولین</em> چیز در زنجیره ما برای اجرا باشد (تا پانیک‌ها را در تمام میدل‌ورها و handlerهای بعدی پوشش دهد).</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/routes.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;net/http&#34;</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
+
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /{$}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/view/{id}&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
+    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span>
+
+    <span class="c1">// Wrap the existing chain with the recoverPanic middleware.
+</span><span class="c1"></span>    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">logRequest</span><span class="p">(</span><span class="nf">commonHeaders</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و حالا یک درخواست برای صفحه اصلی انجام دهید، باید یک پاسخ <code>500 Internal Server Error</code> به خوبی فرمت شده پس از پانیک ببینید، شامل هدر <code>Connection: close</code> که درباره آن صحبت کردیم.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go run ./cmd/web
+<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
+</figure>
+
+<figure class="code bash" dir="ltr">
+<pre>$ curl -i http://localhost:4000
+<samp>HTTP/1.1 500 Internal Server Error
+Connection: close
+Content-Security-Policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
+Content-Type: text/plain; charset=utf-8
+Referrer-Policy: origin-when-cross-origin
+Server: Go
+X-Content-Type-Options: nosniff
+X-Frame-Options: deny
+X-Xss-Protection: 0
+Date: Wed, 18 Mar 2024 11:29:23 GMT
+Content-Length: 22
+
+Internal Server Error</samp></pre>
+</figure>
+
+<p>قبل از ادامه، به handler <code>home</code> خود برگردید و پانیک عمدی را از کد حذف کنید.</p>
+
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -72,133 +198,19 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>برنامه خود را مجدداً راه‌اندازی کنید...</p>
-
-<figure class="code bash">
-<pre>$ go run ./cmd/web
-<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
-</figure>
-
-<p>... و یک درخواست HTTP برای صفحه اصلی از یک پنجره ترمینال دوم ارسال کنید:</p>
-
-<figure class="code bash">
-<pre>$ curl -i http://localhost:4000
-<samp>curl: (52) Empty reply from server</samp></pre>
-</figure>
-
-<p>متأسفانه، به دلیل بسته شدن اتصال HTTP زیرین پس از پنیک توسط Go، تنها چیزی که دریافت می‌کنیم یک پاسخ خالی است.</p>
-
-<p>این تجربه خوبی برای کاربر نیست. ارسال یک پاسخ HTTP مناسب با وضعیت <code>500 Internal Server Error</code> مناسب‌تر و معنادارتر خواهد بود.</p>
-
-<p>یک روش تمیز برای انجام این کار، ایجاد میان‌افزاری است که پنیک را <em>بازیابی</em> می‌کند و متد کمکی <code>app.serverError()</code> ما را فراخوانی می‌کند. برای انجام این کار، می‌توانیم از این واقعیت استفاده کنیم که توابع معوق همیشه هنگام باز شدن پشته پس از یک پنیک فراخوانی می‌شوند.</p>
-
-<p>فایل <code>middleware.go</code> خود را باز کنید و کد زیر را اضافه کنید:</p>
-
-<figure class="code go">
-<figcaption>File: cmd/web/middleware.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&#34;fmt&#34;</span>
-    <span class="s">&#34;net/http&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// Create a deferred function (which will always be run in the event
-</span><span class="c1"></span>        <span class="c1">// of a panic as Go unwinds the stack).
-</span><span class="c1"></span>        <span class="k">defer</span> <span class="kd">func</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-            <span class="c1">// Use the builtin recover function to check if there has been a
-</span><span class="c1"></span>            <span class="c1">// panic or not.
-</span><span class="c1"></span>            <span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-                <span class="c1">// If there was a panic, set a "Connection: close" header on the
-</span><span class="c1"></span>                <span class="c1">// response. This acts as a trigger to make Go&#39;s HTTP server
-</span><span class="c1"></span>                <span class="c1">// automatically close the current connection after a response has been
-</span><span class="c1"></span>                <span class="c1">// sent.
-</span><span class="c1"></span>                <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Connection&#34;</span><span class="p">,</span> <span class="s">&#34;close&#34;</span><span class="p">)</span>
-                <span class="c1">// The value returned by recover() has the type any, so we use
-</span><span class="c1"></span>                <span class="c1">// fmt.Errorf() to normalize it into an error and log it using our
-</span><span class="c1"></span>                <span class="c1">// custom Logger type.
-</span><span class="c1"></span>                <span class="nx">err</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Errorf</span><span class="p">(</span><span class="s">&#34;%v&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-                <span class="nx">app</span><span class="p">.</span><span class="nx">logger</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
-                <span class="nx">app</span><span class="p">.</span><span class="nf">serverError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-            <span class="p">}</span>
-        <span class="p">}</span><span class="p">(</span><span class="p">)</span>
-
-        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
-    <span class="p">}</span><span class="p">)</span>
-<span class="p">}</span></pre>
-</figure>
-
-<p>دو نکته در مورد این کد وجود دارد که ارزش توضیح دارند:</p>
-
-<ul>
-<li><p>تنظیم هدر <code>Connection: Close</code> در پاسخ به عنوان یک محرک عمل می‌کند تا سرور HTTP گو به طور خودکار اتصال فعلی را پس از ارسال پاسخ ببندد. همچنین به کاربر اطلاع می‌دهد که اتصال <em>بسته خواهد شد</em>. نکته: اگر پروتکل مورد استفاده HTTP/2 باشد، گو به طور <a href="https://go-review.googlesource.com/c/net/+/121415/">خودکار</a> هدر <code>Connection: Close</code> را از پاسخ حذف می‌کند (تا نادرست نباشد) و یک فریم <code>GOAWAY</code> ارسال می‌کند.</p></li>
-
-<li><p>مقدار برگردانده شده توسط تابع داخلی <code>recover()</code> دارای نوع <code>any</code> است، و نوع زیرین آن می‌تواند <code>string</code>، <code>error</code>، یا چیز دیگری باشد &mdash; هر پارامتری که به <code>panic()</code> ارسال شده است. در مورد ما، این رشته <code>&quot;oops! something went wrong&quot;</code> است. در کد بالا، ما این را با استفاده از تابع <code>fmt.Errorf()</code> برای ایجاد یک شیء <code>error</code> جدید حاوی نمایش متنی پیش‌فرض مقدار <code>any</code> نرمال می‌کنیم، و سپس این <code>error</code> را به متد کمکی <code>app.serverError()</code> ارسال می‌کنیم.</p></li>
-</ul>
-
-<p>حالا بیایید این را در فایل <code>routes.go</code> به کار ببریم، به طوری که <em>اولین</em> چیز در زنجیره ما برای اجرا باشد (تا پنیک‌ها را در تمام میان‌افزارها و هندلرهای بعدی پوشش دهد).</p>
-
-<figure class="code go">
-<figcaption>File: cmd/web/routes.go</figcaption>
-<pre><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="s">&#34;net/http&#34;</span>
-
-<span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">routes</span><span class="p">(</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
-    <span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">(</span><span class="p">)</span>
-
-    <span class="nx">fileServer</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">FileServer</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Dir</span><span class="p">(</span><span class="s">&#34;./ui/static/&#34;</span><span class="p">)</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;/static/&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">StripPrefix</span><span class="p">(</span><span class="s">&#34;/static&#34;</span><span class="p">,</span> <span class="nx">fileServer</span><span class="p">)</span><span class="p">)</span>
-
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">home</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/view/&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetView</span><span class="p">)</span>
-    <span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="nx">app</span><span class="p">.</span><span class="nf">recoverPanic</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">logRequest</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">commonHeaders</span><span class="p">(</span><span class="nx">mux</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-<span class="p">}</span></pre>
-</figure>
-
-<p>اگر برنامه را مجدداً راه‌اندازی کنید و اکنون درخواستی برای صفحه اصلی ارسال کنید، باید یک پاسخ <code>500 Internal Server Error</code> به خوبی شکل گرفته را پس از پنیک ببینید، از جمله هدر <code>Connection: close</code> که در موردش صحبت کردیم.</p>
-
-<figure class="code bash">
-<pre>$ go run ./cmd/web
-<samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000</samp></pre>
-</figure>
-
-<figure class="code bash">
-<pre>$ curl -i http://localhost:4000
-<samp>HTTP/1.1 500 Internal Server Error
-Connection: close
-Content-Security-Policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
-Content-Type: text/plain; charset=utf-8
-Referrer-Policy: origin-when-cross-origin
-Server: Go
-X-Content-Type-Options: nosniff
-X-Frame-Options: deny
-X-Xss-Protection: 0
-Date: Wed, 18 Mar 2024 11:29:23 GMT
-Content-Length: 22
-
-Internal Server Error</samp></pre>
-</figure>
-
-<p>قبل از ادامه، به هندلر <code>home</code> خود برگردید و پنیک عمدی را از کد حذف کنید.</p>
-
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="panic-recovery-in-background-goroutines">بازیابی پنیک در گوروتین‌های پس‌زمینه</h4>
+<h4 id="panic-recovery-in-background-goroutines">بازیابی پانیک در گوروتین‌های پس‌زمینه</h4>
 
-<p>مهم است که متوجه شوید میان‌افزار ما فقط پنیک‌هایی را که در <em>همان گوروتینی که میان‌افزار <code>recoverPanic()</code> را اجرا کرده</em> رخ می‌دهند، بازیابی می‌کند.</p>
+<p>مهم است بدانید که میدل‌ور ما فقط پانیک‌هایی را بازیابی می‌کند که در <em>همان گوروتین که میدل‌ور <code>recoverPanic()</code> را اجرا کرده است</em> رخ می‌دهند.</p>
 
-<p>به عنوان مثال، اگر هندلری دارید که یک گوروتین دیگر راه‌اندازی می‌کند (مثلاً برای انجام برخی پردازش‌های پس‌زمینه)، هر پنیکی که در گوروتین دوم رخ دهد بازیابی نخواهد شد &mdash; نه توسط میان‌افزار <code>recoverPanic()</code>... و نه توسط بازیابی پنیک داخلی سرور HTTP گو. آنها باعث خروج برنامه شما و از کار افتادن سرور خواهند شد.</p>
+<p>اگر، به عنوان مثال، یک handler دارید که گوروتین دیگری را راه‌اندازی می‌کند (مثلاً برای انجام برخی پردازش‌های پس‌زمینه)، آنگاه هر پانیکی که در گوروتین دوم رخ دهد بازیابی نخواهد شد &mdash; نه توسط میدل‌ور <code>recoverPanic()</code>&hellip; و نه توسط بازیابی پانیک داخلی سرور HTTP Go. آن‌ها باعث خروج برنامه و پایین آمدن سرور می‌شوند.</p>
 
-<p>بنابراین، اگر گوروتین‌های اضافی را از درون برنامه وب خود راه‌اندازی می‌کنید و احتمال پنیک وجود دارد، باید مطمئن شوید که هر پنیکی را از درون آنها نیز بازیابی می‌کنید. به عنوان مثال:</p>
+<p>بنابراین، اگر از داخل برنامه وب خود گوروتین‌های اضافی راه‌اندازی می‌کنید و احتمال پانیک وجود دارد، باید مطمئن شوید که پانیک‌ها را از داخل آن‌ها نیز بازیابی می‌کنید. به عنوان مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">myHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
     <span class="o">...</span>
 
@@ -217,65 +229,6 @@ Internal Server Error</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>میان‌افزار بازیابی</td>
-        <td>Recovery Middleware</td>
-        <td>میان‌افزاری که پنیک‌ها را مدیریت می‌کند</td>
-    </tr>
-    <tr>
-        <td>پنیک‌های زمان اجرا</td>
-        <td>Runtime Panics</td>
-        <td>خطاهای غیرمنتظره در زمان اجرای برنامه</td>
-    </tr>
-    <tr>
-        <td>پاسخ خطای 500</td>
-        <td>500 Error Response</td>
-        <td>پاسخ خطای سرور داخلی</td>
-    </tr>
-    <tr>
-        <td>زنجیره میان‌افزار</td>
-        <td>Middleware Chain</td>
-        <td>ترکیب چندین میان‌افزار به صورت پشت سر هم</td>
-    </tr>
-    <tr>
-        <td>تابع معوق</td>
-        <td>Deferred Function</td>
-        <td>تابعی که در پایان اجرای بلوک فراخوانی می‌شود</td>
-    </tr>
-    <tr>
-        <td>بازیابی</td>
-        <td>Recover</td>
-        <td>تابع داخلی Go برای مدیریت پنیک‌ها</td>
-    </tr>
-    <tr>
-        <td>هدر اتصال</td>
-        <td>Connection Header</td>
-        <td>هدر HTTP برای کنترل وضعیت اتصال</td>
-    </tr>
-    <tr>
-        <td>ثبت خطا</td>
-        <td>Error Logging</td>
-        <td>ذخیره اطلاعات خطاها در گزارش‌ها</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>نحوه برخورد با خطاها در برنامه</td>
-    </tr>
-    <tr>
-        <td>خطای سرور</td>
-        <td>Server Error</td>
-        <td>خطایی که در سمت سرور رخ می‌دهد</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">
@@ -294,12 +247,16 @@ Internal Server Error</samp></pre>
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "06.03-request-logging.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "06.05-composable-middleware-chains.html";
 						break;
+						
 				}
 			};
 		</script>

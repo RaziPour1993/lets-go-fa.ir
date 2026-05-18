@@ -3,22 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>طراحی مدل پایگاه داده &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			body { direction: rtl; }
-			.text { text-align: right; }
-			.code { direction: ltr; text-align: left; }
-			.chapter { text-align: right; }
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</a> &rsaquo; طراحی مدل پایگاه داده (Designing a Database Model)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; طراحی مدل پایگاه داده</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="04.04-creating-a-database-connection-pool.html">قبلی</a>
@@ -28,20 +27,18 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۴.۵.</div>
-			<h2 id="designing-a-database-model">طراحی مدل پایگاه داده (Designing a Database Model)</h2>
+			<div class="chapter">فصل 4.5.</div>
+			<h2 id="designing-a-database-model">طراحی مدل پایگاه داده</h2>
 
-<p>قبل از اینکه بتوانیم از استخر اتصال پایگاه داده استفاده کنیم، باید یک <dfn>مدل پایگاه داده (Database Model)</dfn> طراحی کنیم که شامل تمام منطق برای تعامل با پایگاه داده باشد.</p>
+<p>در این فصل، ما قصد داریم یک مدل پایگاه داده برای پروژه خود ترسیم کنیم.</p>
 
-<p>در Go، یک الگوی رایج این است که یک <dfn>لایه دسترسی به داده (Data Access Layer)</dfn> ایجاد کنیم که شامل تمام کد مربوط به پایگاه داده در یک بسته مستقل باشد.</p>
+<p>اگر از اصطلاح <em>مدل</em> خوشتان نمی‌آید، ممکن است بخواهید آن را به عنوان یک <em>لایه سرویس</em> یا <em>لایه دسترسی به داده</em> در نظر بگیرید. هر چه ترجیح می‌دهید آن را بنامید، ایده این است که کد کار با MySQL را در یک پکیج جدا از بقیه برنامه خود کپسوله کنیم.</p>
 
-<p>اگر با اصطلاح <em>مدل (Model)</em> راحت نیستید، می‌توانید آن را به عنوان یک <em>لایه سرویس (Service Layer)</em> یا <em>لایه دسترسی به داده (Data Access Layer)</em> در نظر بگیرید. هر اصطلاحی که ترجیح می‌دهید، ایده این است که ما کد کار با MySQL را در یک پکیج جداگانه از بقیه برنامه کپسوله خواهیم کرد.</p>
+<p>برای حالا، یک مدل پایگاه داده اسکلتی ایجاد می‌کنیم و آن را به گونه‌ای می‌کنیم که کمی داده ساختگی برگرداند. کار زیادی انجام نمی‌دهد، اما می‌خواهم الگو را قبل از ورود به جزئیات پرس‌وجوهای SQL توضیح دهم.</p>
 
-<p>فعلاً، ما یک مدل پایگاه داده اسکلتی ایجاد می‌کنیم و آن را با مقداری داده آزمایشی برمی‌گردانیم. خیلی کار نخواهد کرد، اما می‌خواهم قبل از اینکه وارد جزئیات پرس‌وجوهای SQL شویم، الگو را توضیح دهم.</p>
+<p>خوب است؟ پس بیایید ادامه دهیم و یک دایرکتوری جدید <code>internal/models</code> حاوی یک فایل <code>snippets.go</code> ایجاد کنیم:</p>
 
-<p>خوب به نظر می‌رسد؟ پس بیایید یک دایرکتوری جدید <code>internal/models</code> ایجاد کنیم که حاوی یک فایل <code>snippets.go</code> است:</p>
-
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ mkdir -p internal/models
 $ touch internal/models/snippets.go</pre>
 </figure>
@@ -50,13 +47,13 @@ $ touch internal/models/snippets.go</pre>
 <img src="assets/img/04.05-01.png" alt="04.05-01.png" />
 </figure>
 
-<aside class="hint" style="text-align: right;"><p>
-<strong>به یاد داشته باشید:</strong> از دایرکتوری <code>internal</code> برای نگهداری کدهای جانبی غیر مختص برنامه استفاده می‌شود که می‌تواند بالقوه مجدداً استفاده شود. یک مدل پایگاه داده که می‌تواند در آینده توسط برنامه‌های دیگر (مانند یک برنامه <em>رابط خط فرمان</em>) استفاده شود، در این دسته قرار می‌گیرد.
+<aside class="hint"><p>
+<strong>یادآوری:</strong> دایرکتوری <code>internal</code> برای نگه‌داری کد کمکی غیرخاص برنامه استفاده می‌شود، که به طور بالقوه می‌تواند دوباره استفاده شود. یک مدل پایگاه داده که می‌تواند در آینده توسط برنامه‌های دیگر (مانند یک برنامه <em>رابط خط فرمان</em>) استفاده شود، در اینجا مناسب است.
 </p></aside>
 
-<p>بیایید فایل <code>internal/models/snippets.go</code> را باز کنیم و یک ساختار <code>Snippet</code> جدید برای نمایش داده‌های یک قطعه کد منفرد، به همراه یک نوع <code>SnippetModel</code> با متدهایی برای دسترسی و دستکاری قطعه‌های کد در پایگاه داده‌مان اضافه کنیم. به این صورت:</p>
+<p>بیایید فایل <code>internal/models/snippets.go</code> را باز کنیم و یک ساختار جدید <code>Snippet</code> برای نمایش داده‌های یک snippet فردی اضافه کنیم، همراه با یک نوع <code>SnippetModel</code> با متدهای روی آن برای دسترسی و دستکاری snippetها در پایگاه داده ما. مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/snippets.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -97,13 +94,13 @@ $ touch internal/models/snippets.go</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<h3 id="using-the-snippetmodel">استفاده از SnippetModel (Using the SnippetModel)</h3>
+<h3 id="using-the-snippetmodel">استفاده از SnippetModel</h3>
 
-<p>برای استفاده از این مدل در هندلرهایمان، نیاز داریم یک ساختار <code>SnippetModel</code> جدید در تابع <code>main()</code> خود ایجاد کنیم و سپس آن را به عنوان یک وابستگی از طریق ساختار <code>application</code> تزریق کنیم - درست مانند کاری که با سایر وابستگی‌هایمان انجام داده‌ایم.</p>
+<p>برای استفاده از این مدل در handlerهای خود، باید یک ساختار جدید <code>SnippetModel</code> در تابع <code>main()</code> خود ایجاد کنیم و سپس آن را به عنوان یک وابستگی از طریق ساختار <code>application</code> تزریق کنیم — دقیقاً همانطور که با سایر وابستگی‌های خود داریم.</p>
 
-<p>به این صورت:</p>
+<p>اینطور است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -119,7 +116,7 @@ $ touch internal/models/snippets.go</pre>
 </span><span class="c1"></span>    <span class="c1">// a Module) so that the import statement looks like this:
 </span><span class="c1"></span>    <span class="c1">// &#34;{your-module-path}/internal/models&#34;. If you can&#39;t remember what module path you 
 </span><span class="c1"></span>    <span class="c1">// used, you can find it at the top of the go.mod file.
-</span><span class="c1"></span>    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span> 
+</span><span class="c1"></span>    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span> 
 
     <span class="nx">_</span> <span class="s">&#34;github.com/go-sql-driver/mysql&#34;</span>
 <span class="p">)</span>
@@ -164,81 +161,22 @@ $ touch internal/models/snippets.go</pre>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="benefits-of-this-structure">مزایای این ساختار (Benefits of this Structure)</h4>
+<h4 id="benefits-of-this-structure">مزایای این ساختار</h4>
 
-<p>اگر یک قدم به عقب بردارید، ممکن است بتوانید چند مزیت از راه‌اندازی پروژه به این روش را ببینید:</p>
+<p>اگر یک قدم به عقب بردارید، ممکن است بتوانید چند مزیت از راه‌اندازی پروژه خود به این روش ببینید:</p>
 
-<ul style="text-align: right;">
-<li><p>جداسازی تمیز دغدغه‌ها (Clean Separation of Concerns) وجود دارد. منطق پایگاه داده (Database Logic) ما به هندلرهایمان متصل نخواهد بود، که به این معنی است که مسئولیت‌های هندلر محدود به موارد HTTP است (یعنی اعتبارسنجی درخواست‌ها و نوشتن پاسخ‌ها). این در آینده نوشتن تست‌های واحد (Unit Tests) متمرکز و دقیق را آسان‌تر خواهد کرد.</p></li>
+<ul>
+<li><p>یک جدایی تمیز از نگرانی‌ها وجود دارد. منطق پایگاه داده ما به handlerهای ما گره خورده نخواهد بود، که به معنای محدود بودن مسئولیت‌های handler به چیزهای HTTP (یعنی اعتبارسنجی درخواست‌ها و نوشتن پاسخ‌ها) است. این نوشتن تست‌های واحد محکم، متمرکز را در آینده آسان‌تر می‌کند.</p></li>
 
-<li><p>با ایجاد یک نوع <code>SnippetModel</code> سفارشی و پیاده‌سازی متدها روی آن، توانسته‌ایم مدل خود را به یک شیء منظم و کپسوله شده (Encapsulated Object) تبدیل کنیم که می‌توانیم به راحتی آن را مقداردهی اولیه کرده و سپس به عنوان یک وابستگی (Dependency) به هندلرهایمان منتقل کنیم.</p></li>
+<li><p>با ایجاد یک نوع سفارشی <code>SnippetModel</code> و پیاده‌سازی متدهای روی آن، توانسته‌ایم مدل خود را به یک شیء واحد و به خوبی کپسوله شده تبدیل کنیم، که می‌توانیم به راحتی آن را مقداردهی اولیه کنیم و سپس به عنوان یک وابستگی به handlerهای خود ارسال کنیم. دوباره، این باعث کد قابل نگهداری‌تر و قابل تست می‌شود.</p></li>
 
-<li><p>از آنجایی که اعمال مدل به عنوان متدهایی روی یک شیء تعریف شده‌اند - در مورد ما <code>SnippetModel</code> - این فرصت وجود دارد که یک <em>رابط (Interface)</em> ایجاد کنیم و آن را برای اهداف تست واحد شبیه‌سازی (Mock) کنیم.</p></li>
+<li><p>چون اعمال مدل به عنوان متدهای روی یک شیء تعریف شده‌اند — در مورد ما <code>SnippetModel</code> — فرصت ایجاد یک <em>رابط</em> و mock کردن آن برای اهداف تست واحد وجود دارد.</p></li>
 
-<li><p><em>و در نهایت</em>، ما کنترل کامل بر روی اینکه کدام پایگاه داده در زمان اجرا (Runtime) استفاده می‌شود را داریم، فقط با استفاده از پرچم خط فرمان <code>-dsn</code>.</p></li>
+<li><p><em>و در نهایت</em>، کنترل کامل بر اینکه کدام پایگاه داده در زمان اجرا (runtime) استفاده می‌شود داریم، فقط با استفاده از پرچم خط فرمان <code>-dsn</code>.</p></li>
 </ul>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>مدل پایگاه داده</td>
-        <td>Database Model</td>
-        <td>ساختاری که نحوه ذخیره‌سازی و دسترسی به داده‌ها را تعریف می‌کند</td>
-    </tr>
-    <tr>
-        <td>لایه دسترسی به داده</td>
-        <td>Data Access Layer</td>
-        <td>بخشی از برنامه که مسئول تعامل با پایگاه داده است</td>
-    </tr>
-    <tr>
-        <td>بسته مستقل</td>
-        <td>Independent Package</td>
-        <td>بسته‌ای که می‌تواند به صورت مستقل از سایر بخش‌های برنامه استفاده شود</td>
-    </tr>
-    <tr>
-        <td>ساختار داده</td>
-        <td>Data Structure</td>
-        <td>روشی برای سازماندهی و ذخیره داده‌ها در برنامه</td>
-    </tr>
-    <tr>
-        <td>متدهای دسترسی</td>
-        <td>Access Methods</td>
-        <td>توابعی که برای خواندن و نوشتن داده‌ها در پایگاه داده استفاده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>منطق کسب و کار</td>
-        <td>Business Logic</td>
-        <td>قوانین و عملیاتی که داده‌ها را پردازش می‌کنند</td>
-    </tr>
-    <tr>
-        <td>جداسازی مسئولیت‌ها</td>
-        <td>Separation of Concerns</td>
-        <td>اصل طراحی که هر بخش از کد باید وظیفه مشخصی داشته باشد</td>
-    </tr>
-    <tr>
-        <td>واسط برنامه‌نویسی</td>
-        <td>Programming Interface</td>
-        <td>مجموعه‌ای از متدها برای تعامل با یک بخش از برنامه</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>مکانیزم‌های کنترل و پاسخ به خطاها در برنامه</td>
-    </tr>
-    <tr>
-        <td>کپسوله‌سازی</td>
-        <td>Encapsulation</td>
-        <td>پنهان کردن جزئیات پیاده‌سازی و ارائه یک رابط ساده</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">
@@ -257,12 +195,16 @@ $ touch internal/models/snippets.go</pre>
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "04.04-creating-a-database-connection-pool.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "04.06-executing-sql-statements.html";
 						break;
+						
 				}
 			};
 		</script>

@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>راه‌اندازی مسیرها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body dir="rtl">
+	<body>
 		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; تنظیم مسیرها</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; راه‌اندازی مسیرها</span>
 						
 					
 				</div>
@@ -26,19 +27,17 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 10.1.</div>
-			<h2 id="routes-setup">تنظیم مسیرها (Routes Setup)</h2>
+			<div class="chapter">فصل ۱۰.۱.</div>
+			<h2 id="routes-setup">راه‌اندازی مسیرها</h2>
 
-<p>در این بخش، نحوه <dfn>تنظیم مسیرها (Routes Setup)</dfn> برای <dfn>احراز هویت کاربر (User Authentication)</dfn> را بررسی می‌کنیم. این شامل <dfn>مسیرهای ثبت‌نام (Sign Up Routes)</dfn>، <dfn>مسیرهای ورود (Login Routes)</dfn> و <dfn>مسیرهای خروج (Logout Routes)</dfn> می‌شود.</p>
+<p>بیایید این بخش را با اضافه کردن پنج مسیر جدید به برنامه خود شروع کنیم، به طوری که به این صورت باشد:</p>
 
-<p>برای شروع، بیایید <dfn>مسیرهای جدید (New Routes)</dfn> را به <dfn>مسیریاب (Router)</dfn> خود اضافه کنیم:</p>
-
-<table>
+<table class="desc-table" dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>مدیر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -52,37 +51,37 @@
 <tr>
 <td>GET <span>/snippet/view/{id}</span></td>
 <td>snippetView</td>
-<td>نمایش یک قطعه خاص</td>
+<td>نمایش یک اسنیپت خاص</td>
 </tr>
 
 <tr>
 <td>GET /snippet/create</td>
 <td>snippetCreate</td>
-<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+<td>نمایش فرم ایجاد یک اسنیپت جدید</td>
 </tr>
 
 <tr>
 <td>POST /snippet/create</td>
 <td>snippetCreatePost</td>
-<td>ایجاد یک قطعه جدید</td>
+<td>ایجاد یک اسنیپت جدید</td>
 </tr>
 
 <tr>
 <td><strong>GET /user/signup</strong></td>
 <td><strong>userSignup</strong></td>
-<td><strong>نمایش فرم برای ثبت نام کاربر جدید</strong></td>
+<td><strong>نمایش فرم ثبت‌نام یک کاربر جدید</strong></td>
 </tr>
 
 <tr>
 <td><strong>POST /user/signup</strong></td>
 <td><strong>userSignupPost</strong></td>
-<td><strong>ایجاد کاربر جدید</strong></td>
+<td><strong>ایجاد یک کاربر جدید</strong></td>
 </tr>
 
 <tr>
 <td><strong>GET /user/login</strong></td>
 <td><strong>userLogin</strong></td>
-<td><strong>نمایش فرم برای ورود کاربر</strong></td>
+<td><strong>نمایش فرم ورود کاربر</strong></td>
 </tr>
 
 <tr>
@@ -100,13 +99,13 @@
 <tr>
 <td>GET /static/</td>
 <td>http.FileServer</td>
-<td>ارائه یک فایل استاتیک خاص</td>
+<td>سرو یک فایل استاتیک خاص</td>
 </tr>
 </tbody>
 </table>
-<p>توجه داشته باشید که مدیران جدید تغییر حالت &mdash; <code>userSignupPost</code>, <code>userLoginPost</code> و <code>userLogoutPost</code> &mdash; همگی از درخواست‌های <code>POST</code> استفاده می‌کنند، نه <code>GET</code>.</p>
+<p>توجه داشته باشید که handlerهای تغییردهنده وضعیت جدید — <code>userSignupPost</code>، <code>userLoginPost</code> و <code>userLogoutPost</code> — همه از درخواست‌های <code>POST</code> استفاده می‌کنند، نه <code>GET</code>.</p>
 
-<p>اگر در حال دنبال کردن هستید، فایل <code>handlers.go</code> خود را باز کنید و مکان‌نماهایی برای پنج تابع مدیر جدید به صورت زیر اضافه کنید:</p>
+<p>اگر در حال دنبال کردن هستید، فایل <code>handlers.go</code> خود را باز کنید و placeholderهایی برای پنج تابع handler جدید به این صورت اضافه کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -115,27 +114,27 @@
 <span class="o">...</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userSignup</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"نمایش فرم برای ثبت نام کاربر جدید..."</span><span class="p">)</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Display a form for signing up a new user...&#34;</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userSignupPost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"ایجاد کاربر جدید..."</span><span class="p">)</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Create a new user...&#34;</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userLogin</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"نمایش فرم برای ورود کاربر..."</span><span class="p">)</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Display a form for logging in a user...&#34;</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userLoginPost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"احراز هویت و ورود کاربر..."</span><span class="p">)</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Authenticate and login the user...&#34;</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">userLogoutPost</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">"خروج کاربر..."</span><span class="p">)</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintln</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Logout the user...&#34;</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>سپس وقتی که این کار انجام شد، بیایید مسیرهای مربوطه را در فایل <code>routes.go</code> ایجاد کنیم:</p>
+<p>سپس وقتی که انجام شد، بیایید مسیرهای مربوطه را در فایل <code>routes.go</code> ایجاد کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
@@ -156,7 +155,7 @@
     <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /snippet/create&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span>
     <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreatePost</span><span class="p">)</span><span class="p">)</span>
 
-    <span class="c1">// Add the five new routes, all of which use our 'dynamic' middleware chain.
+    <span class="c1">// Add the five new routes, all of which use our &#39;dynamic&#39; middleware chain.
 </span><span class="c1"></span>    <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignup</span><span class="p">)</span><span class="p">)</span>
     <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /user/signup&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userSignupPost</span><span class="p">)</span><span class="p">)</span>
     <span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;GET /user/login&#34;</span><span class="p">,</span> <span class="nx">dynamic</span><span class="p">.</span><span class="nf">ThenFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">userLogin</span><span class="p">)</span><span class="p">)</span>
@@ -168,98 +167,39 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>در نهایت، ما همچنین باید بخش <code>nav.tmpl</code> را به‌روزرسانی کنیم تا آیتم‌های ناوبری برای صفحات جدید را شامل شود:</p>
+<p>در نهایت، همچنین باید partial <code>nav.tmpl</code> را به‌روزرسانی کنیم تا آیتم‌های ناوبری برای صفحات جدید را شامل شود:</p>
 
 <figure class="code html" dir="ltr">
 <figcaption>File: ui/html/partials/nav.tmpl</figcaption>
-<pre>{{define "nav"}}
+<pre>{{define &#34;nav&#34;}}
 <span class="p">&lt;</span><span class="nt">nav</span><span class="p"></span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">'/'</span><span class="p"></span><span class="p">&gt;</span>خانه<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">'/snippet/create'</span><span class="p"></span><span class="p">&gt;</span>ایجاد قطعه<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/&#39;</span><span class="p"></span><span class="p">&gt;</span>Home<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/snippet/create&#39;</span><span class="p"></span><span class="p">&gt;</span>Create snippet<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="nt">div</span><span class="p"></span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">'/user/signup'</span><span class="p"></span><span class="p">&gt;</span>ثبت نام<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">'/user/login'</span><span class="p"></span><span class="p">&gt;</span>ورود<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
-        <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">'/user/logout'</span> <span class="na">method</span><span class="o">=</span><span class="s">'POST'</span><span class="p"></span><span class="p">&gt;</span>
-            <span class="p">&lt;</span><span class="nt">button</span><span class="p"></span><span class="p">&gt;</span>خروج<span class="p">&lt;</span><span class="p">/</span><span class="nt">button</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/signup&#39;</span><span class="p"></span><span class="p">&gt;</span>Signup<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;/user/login&#39;</span><span class="p"></span><span class="p">&gt;</span>Login<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">form</span> <span class="na">action</span><span class="o">=</span><span class="s">&#39;/user/logout&#39;</span> <span class="na">method</span><span class="o">=</span><span class="s">&#39;POST&#39;</span><span class="p"></span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="nt">button</span><span class="p"></span><span class="p">&gt;</span>Logout<span class="p">&lt;</span><span class="p">/</span><span class="nt">button</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="p">/</span><span class="nt">form</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">div</span><span class="p">&gt;</span>
 <span class="p">&lt;</span><span class="p">/</span><span class="nt">nav</span><span class="p">&gt;</span>
 {{end}}</pre>
 </figure>
 
-<p>اگر دوست دارید، می‌توانید در این نقطه برنامه را اجرا کنید و باید آیتم‌های جدید را در نوار ناوبری به این شکل ببینید:</p>
+<p>اگر دوست دارید، می‌توانید در این مرحله برنامه را اجرا کنید و باید آیتم‌های جدید را در نوار ناوبری به این صورت ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/10.01-01.png" alt="10.01-01.png" />
 </figure>
 
-<p>اگر روی لینک‌های جدید کلیک کنید، باید با پاسخ متنی ساده مربوطه پاسخ داده شود. به عنوان مثال، اگر روی لینک 'ثبت نام' کلیک کنید، باید پاسخی مشابه این ببینید:</p>
+<p>اگر روی لینک‌های جدید کلیک کنید، باید با پاسخ متنی placeholder مربوطه پاسخ دهند. به عنوان مثال، اگر روی لینک &lsquo;Signup&rsquo; کلیک کنید، باید پاسخی مشابه این ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/10.01-02.png" alt="10.01-02.png" />
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تنظیم مسیرها</td>
-        <td>Routes Setup</td>
-        <td>پیکربندی مسیرهای برنامه</td>
-    </tr>
-    <tr>
-        <td>احراز هویت کاربر</td>
-        <td>User Authentication</td>
-        <td>فرآیند تأیید هویت کاربران</td>
-    </tr>
-    <tr>
-        <td>مسیرهای ثبت‌نام</td>
-        <td>Sign Up Routes</td>
-        <td>مسیرهای مربوط به ثبت‌نام</td>
-    </tr>
-    <tr>
-        <td>مسیرهای ورود</td>
-        <td>Login Routes</td>
-        <td>مسیرهای مربوط به ورود</td>
-    </tr>
-    <tr>
-        <td>مسیرهای خروج</td>
-        <td>Logout Routes</td>
-        <td>مسیرهای مربوط به خروج</td>
-    </tr>
-    <tr>
-        <td>مسیرهای جدید</td>
-        <td>New Routes</td>
-        <td>مسیرهای اضافه شده</td>
-    </tr>
-    <tr>
-        <td>مسیریاب</td>
-        <td>Router</td>
-        <td>مدیریت کننده مسیرها</td>
-    </tr>
-    <tr>
-        <td>متد HTTP</td>
-        <td>HTTP Method</td>
-        <td>نوع درخواست HTTP</td>
-    </tr>
-    <tr>
-        <td>هندلر</td>
-        <td>Handler</td>
-        <td>پردازش کننده درخواست</td>
-    </tr>
-    <tr>
-        <td>الگوی مسیر</td>
-        <td>Route Pattern</td>
-        <td>قالب آدرس مسیر</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">

@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>هدایت مناسب کاربر بعد از ورود &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body dir="rtl">
+	<body>
 		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرینات راهنما</a> &rsaquo; هدایت کاربر به درستی پس از ورود به سیستم</span>
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="16.00-guided-exercises.html">تمرین‌های راهنما</a> &rsaquo; هدایت مناسب کاربر بعد از ورود</span>
+						
 					
 				</div>
 				<div>
@@ -24,22 +27,22 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 16.5.</div>
-			<h2 id="redirect-user-appropriately-after-login">هدایت کاربر به درستی پس از ورود به سیستم (Redirect User Appropriately After Login)</h2>
+			<div class="chapter">فصل ۱۶.۵.</div>
+			<h2 id="redirect-user-appropriately-after-login">هدایت مناسب کاربر بعد از ورود</h2>
 
-<p>اگر یک <dfn>کاربر غیرمجاز (Unauthenticated User)</dfn> سعی کند به <code>GET /account/view</code> دسترسی پیدا کند، به <dfn>صفحه ورود (Login Page)</dfn> هدایت می‌شود. سپس پس از <dfn>ورود موفقیت‌آمیز (Successful Login)</dfn>، به <dfn>فرم (Form)</dfn> <code>GET /snippet/create</code> هدایت می‌شود. این برای کاربر گیج‌کننده و نامناسب است، زیرا در صفحه‌ای متفاوت از جایی که در ابتدا می‌خواستند بروند، قرار می‌گیرند.</p>
+<p>اگر یک کاربر احراز هویت نشده سعی کند از <code>GET /account/view</code> بازدید کند، به صفحه ورود هدایت می‌شود. سپس پس از ورود موفق، به فرم <code>GET /snippet/create</code> هدایت می‌شود. این برای کاربر ناخوشایند و گیج‌کننده است، چون در صفحه‌ای متفاوت از جایی که در ابتدا می‌خواستند بروند قرار می‌گیرند.</p>
 
-<p>هدف شما در این تمرین این است که <dfn>برنامه (Application)</dfn> را به‌روزرسانی کنید تا کاربران پس از ورود به <dfn>صفحه مورد نظر (Target Page)</dfn> که در ابتدا می‌خواستند به آن بروند، هدایت شوند.</p>
+<p>هدف شما در این تمرین به‌روزرسانی برنامه است تا کاربران به صفحه‌ای که در ابتدا سعی می‌کردند بازدید کنند بعد از ورود هدایت شوند.</p>
 
-<h4 id="step-1">مرحله 1 (Step 1)</h4>
+<h4 id="step-1">مرحله 1</h4>
 
-<p><dfn>میان‌افزار (Middleware)</dfn> <code>requireAuthentication()</code> را به‌روزرسانی کنید تا قبل از اینکه یک کاربر غیرمجاز به صفحه ورود هدایت شود، <dfn>مسیر URL (URL Path)</dfn> که سعی در دسترسی به آن دارند به <dfn>داده‌های جلسه (Session Data)</dfn> آن‌ها اضافه شود.</p>
+<p>middleware <code>requireAuthentication()</code> را به‌روزرسانی کنید تا قبل از اینکه یک کاربر احراز هویت نشده به صفحه ورود هدایت شود، مسیر URL که سعی می‌کند بازدید کند به داده‌های نشست آن‌ها اضافه شود.</p>
 
 <p><a href="#17.05-suggested-code-for-step-1">نمایش کد پیشنهادی</a></p>
 
-<h4 id="step-2">مرحله 2 (Step 2)</h4>
+<h4 id="step-2">مرحله 2</h4>
 
-<p><dfn>مدیریت‌کننده (Handler)</dfn> <code>userLogin</code> را به‌روزرسانی کنید تا پس از ورود موفقیت‌آمیز کاربر، داده‌های جلسه کاربر را برای مسیر URL بررسی کند. اگر وجود دارد، آن را از داده‌های جلسه حذف کرده و کاربر را به آن مسیر URL هدایت کنید. در غیر این صورت، به‌طور <dfn>پیش‌فرض (Default)</dfn> کاربر را به <code>/snippet/create</code> هدایت کنید.</p>
+<p>handler <code>userLogin</code> را به‌روزرسانی کنید تا نشست کاربر را برای یک مسیر URL بعد از ورود موفق بررسی کند. اگر یکی وجود داشت، آن را از داده‌های نشست حذف کند و کاربر را به آن مسیر URL هدایت کند. در غیر این صورت، به طور پیش‌فرض کاربر را به <code>/snippet/create</code> هدایت کند.</p>
 
 <p><a href="#17.05-suggested-code-for-step-2">نمایش کد پیشنهادی</a></p>
 

@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مجوزدهی کاربر &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
 		<header>
-			<div class="wrapper" dir="rtl">
+			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; مجوز کاربر</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; مجوزدهی کاربر</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="10.05-user-logout.html">قبلی</a>
@@ -21,29 +26,25 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 10.6.</div>
-			<h2 id="user-authorization">مجوز کاربر (User Authorization)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۰.۶.</div>
+			<h2 id="user-authorization">مجوزدهی کاربر</h2>
 
-<p>در این بخش، نحوه پیاده‌سازی <dfn>مجوز کاربر (User Authorization)</dfn> را بررسی می‌کنیم. این شامل <dfn>کنترل دسترسی (Access Control)</dfn>، <dfn>محافظت از مسیرها (Route Protection)</dfn> و <dfn>میان‌افزار احراز هویت (Authentication Middleware)</dfn> می‌شود.</p>
+<p>توانایی احراز هویت کاربران برنامه ما خوب است، اما اکنون باید کاری مفید با آن اطلاعات انجام دهیم. در این فصل برخی بررسی‌های <em>مجوزدهی</em> را معرفی می‌کنیم تا:</p>
 
-<p>برای شروع، بیایید یک <dfn>میان‌افزار (Middleware)</dfn> برای <dfn>بررسی مجوز (Authorization Check)</dfn> ایجاد کنیم:</p>
-
-<p>احراز هویت کاربران برنامه ما خوب است، اما اکنون باید با آن اطلاعات کاری مفید انجام دهیم. در این فصل، برخی از بررسی‌های <em>مجوز</em> را معرفی خواهیم کرد تا:</p>
-
-<ol dir="rtl">
-<li>فقط کاربران احراز هویت شده (یعنی وارد شده) بتوانند یک قطعه جدید ایجاد کنند؛ و</li>
-<li>محتوای نوار ناوبری بسته به اینکه کاربر احراز هویت شده است (وارد شده) یا نه تغییر کند. به طور خاص:
+<ol>
+<li>فقط کاربران احراز هویت شده (یعنی لاگین شده) بتوانند یک اسنیپت جدید ایجاد کنند؛ و</li>
+<li>محتوای نوار ناوبری بسته به اینکه کاربر احراز هویت شده (لاگین شده) است یا نه تغییر کند. به طور خاص:
 
 <ul>
-<li>کاربران احراز هویت شده باید لینک‌های &lsquo;خانه&rsquo;، &lsquo;ایجاد قطعه&rsquo; و &lsquo;خروج&rsquo; را ببینند.</li>
-<li>کاربران احراز هویت نشده باید لینک‌های &lsquo;خانه&rsquo;، &lsquo;ثبت‌نام&rsquo; و &lsquo;ورود&rsquo; را ببینند.</li>
+<li>کاربران احراز هویت شده باید لینک‌هایی به &lsquo;خانه (Home)&rsquo;، &lsquo;ایجاد اسنیپت (Create snippet)&rsquo; و &lsquo;خروج (Logout)&rsquo; ببینند.</li>
+<li>کاربران احراز هویت نشده باید لینک‌هایی به &lsquo;خانه (Home)&rsquo;، &lsquo;ثبت‌نام (Signup)&rsquo; و &lsquo;ورود (Login)&rsquo; ببینند.</li>
 </ul></li>
 </ol>
 
-<p>همانطور که در فصل قبلی به طور مختصر اشاره کردم، می‌توانیم بررسی کنیم که آیا درخواست توسط یک کاربر احراز هویت شده انجام شده است یا نه با بررسی وجود یک مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های جلسه آنها.</p>
+<p>همانطور که در فصل قبل به طور خلاصه ذکر کردم، می‌توانیم بررسی کنیم که آیا یک درخواست توسط یک کاربر احراز هویت شده انجام می‌شود یا نه با بررسی وجود یک مقدار <code>&quot;authenticatedUserID&quot;</code> در داده‌های نشست آن‌ها.</p>
 
-<p>بنابراین بیایید با آن شروع کنیم. فایل <code>cmd/web/helpers.go</code> را باز کنید و یک تابع کمکی <code>isAuthenticated()</code> اضافه کنید تا وضعیت احراز هویت را به این صورت برگرداند:</p>
+<p>پس بیایید با آن شروع کنیم. فایل <code>cmd/web/helpers.go</code> را باز کنید و یک تابع helper <code>isAuthenticated()</code> اضافه کنید تا وضعیت احراز هویت را برگرداند، به این صورت:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
@@ -58,11 +59,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این عالی است. اکنون می‌توانیم بررسی کنیم که آیا درخواست از یک کاربر احراز هویت شده (وارد شده) است یا نه با فراخوانی ساده این تابع کمکی <code>isAuthenticated()</code>.</p>
+<p>عالی است. اکنون می‌توانیم بررسی کنیم که آیا درخواست از یک کاربر احراز هویت شده (لاگین شده) می‌آید یا نه با فراخوانی ساده این helper <code>isAuthenticated()</code>.</p>
 
-<p>گام بعدی این است که راهی پیدا کنیم تا این اطلاعات را به قالب‌های HTML خود منتقل کنیم، تا بتوانیم محتوای نوار ناوبری را به درستی تغییر دهیم.</p>
+<p>مرحله بعدی پیدا کردن راهی برای انتقال این اطلاعات به templateهای HTML ما است، تا بتوانیم محتوای نوار ناوبری را به درستی تغییر دهیم.</p>
 
-<p>دو بخش برای این کار وجود دارد. اول، باید یک فیلد جدید <code>IsAuthenticated</code> به ساختار <code>templateData</code> خود اضافه کنیم:</p>
+<p>دو بخش برای این وجود دارد. ابتدا، باید یک فیلد جدید <code>IsAuthenticated</code> به struct <code>templateData</code> خود اضافه کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -88,7 +89,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>و گام دوم این است که تابع کمکی <code>newTemplateData()</code> خود را به‌روزرسانی کنیم تا این اطلاعات به‌طور خودکار به ساختار <code>templateData</code> اضافه شود هر بار که یک قالب را رندر می‌کنیم. به این صورت:</p>
+<p>و مرحله دوم به‌روزرسانی helper <code>newTemplateData()</code> خود است تا این اطلاعات به طور خودکار هر بار که یک template را رندر می‌کنیم به struct <code>templateData</code> اضافه شود. به این صورت:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
@@ -108,7 +109,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>پس از انجام این کار، می‌توانیم فایل <code>ui/html/partials/nav.tmpl</code> را به‌روزرسانی کنیم تا لینک‌های ناوبری را با استفاده از عمل <code>{{if .IsAuthenticated}}</code> به این صورت تغییر دهیم:</p>
+<p>پس از انجام این کار، می‌توانیم فایل <code>ui/html/partials/nav.tmpl</code> را به‌روزرسانی کنیم تا لینک‌های ناوبری را با استفاده از اکشن <code>{{if .IsAuthenticated}}</code> تغییر دهیم، به این صورت:</p>
 
 <figure class="code html" dir="ltr">
 <figcaption>File: ui/html/partials/nav.tmpl</figcaption>
@@ -136,27 +137,27 @@
 {{end}}</pre>
 </figure>
 
-<p>تمام فایل‌ها را ذخیره کنید و اکنون برنامه را اجرا کنید. اگر در حال حاضر وارد نشده‌اید، صفحه اصلی برنامه شما باید به این صورت باشد:</p>
+<p>همه فایل‌ها را ذخیره کنید و اکنون سعی کنید برنامه را اجرا کنید. اگر در حال حاضر لاگین نیستید، صفحه اصلی برنامه شما باید به این صورت باشد:</p>
 
 <figure class="img">
 <img src="assets/img/10.06-01.png" alt="10.06-01.png" />
 </figure>
 
-<p>در غیر این صورت &mdash; اگر وارد شده‌اید &mdash; صفحه اصلی شما باید به این صورت باشد:</p>
+<p>در غیر این صورت — اگر لاگین هستید — صفحه اصلی شما باید به این صورت باشد:</p>
 
 <figure class="img">
 <img src="assets/img/10.06-02.png" alt="10.06-02.png" />
 </figure>
 
-<p>احساس راحتی کنید و با این کار بازی کنید و سعی کنید وارد و خارج شوید تا مطمئن شوید که نوار ناوبری به درستی تغییر می‌کند.</p>
+<p>احساس آزادی کنید که با این بازی کنید، و سعی کنید لاگین و خروج کنید تا مطمئن شوید که نوار ناوبری همان‌طور که انتظار دارید تغییر می‌کند.</p>
 
 <h3 id="restricting-access">محدود کردن دسترسی</h3>
 
-<p>همانطور که هست، ما لینک ناوبری &lsquo;ایجاد قطعه&rsquo; را برای هر کاربری که وارد نشده است پنهان می‌کنیم. اما یک کاربر احراز هویت نشده هنوز می‌تواند با مراجعه به صفحه <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> به طور مستقیم یک قطعه جدید ایجاد کند.</p>
+<p>همان‌طور که هست، ما لینک ناوبری &lsquo;ایجاد اسنیپت&rsquo; را برای هر کاربری که لاگین نیست پنهان می‌کنیم. اما یک کاربر احراز هویت نشده هنوز می‌تواند با مراجعه مستقیم به صفحه <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> یک اسنیپت جدید ایجاد کند.</p>
 
-<p>بیایید این را درست کنیم، به طوری که اگر یک کاربر احراز هویت نشده سعی کند به هر مسیری با مسیر URL <code>/snippet/create</code> مراجعه کند، به <code>/user/login</code> هدایت شود.</p>
+<p>بیایید این را اصلاح کنیم، تا اگر یک کاربر احراز هویت نشده سعی کند به هر مسیری با مسیر URL <code>/snippet/create</code> مراجعه کند، به جای آن به <code>/user/login</code> هدایت شود.</p>
 
-<p>ساده‌ترین راه برای انجام این کار از طریق برخی از میان‌افزارها است. فایل <code>cmd/web/middleware.go</code> را باز کنید و یک تابع میان‌افزار جدید <code>requireAuthentication()</code> ایجاد کنید، با پیروی از همان الگویی که <a href="06.01-how-middleware-works.html">قبلاً در کتاب</a> استفاده کردیم:</p>
+<p>ساده‌ترین راه برای انجام این کار از طریق برخی middleware است. فایل <code>cmd/web/middleware.go</code> را باز کنید و یک تابع middleware جدید <code>requireAuthentication()</code> ایجاد کنید، با دنبال کردن همان الگویی که <a href="06.01-how-middleware-works.html">قبلاً در کتاب</a> استفاده کردیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/middleware.go</figcaption>
@@ -185,13 +186,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>اکنون می‌توانیم این میان‌افزار را به فایل <code>cmd/web/routes.go</code> خود اضافه کنیم تا مسیرهای خاصی را محافظت کنیم.</p>
+<p>اکنون می‌توانیم این middleware را به فایل <code>cmd/web/routes.go</code> خود اضافه کنیم تا مسیرهای خاص را محافظت کنیم.</p>
 
-<p>در مورد ما، می‌خواهیم مسیرهای <code>GET /snippet/create</code> و <code>POST /snippet/create</code> را محافظت کنیم. و هیچ دلیلی برای خروج یک کاربر وجود ندارد اگر وارد نشده باشد، بنابراین منطقی است که از آن در مسیر <code>POST /user/logout</code> نیز استفاده کنیم.</p>
+<p>در مورد ما می‌خواهیم مسیرهای <code>GET /snippet/create</code> و <code>POST /snippet/create</code> را محافظت کنیم. و منطقی نیست کاربری را خارج کنیم اگر وارد نشده است، پس منطقی است که از آن در مسیر <code>POST /user/logout</code> نیز استفاده کنیم.</p>
 
-<p>برای کمک به این کار، بیایید مسیرهای برنامه خود را به دو &lsquo;گروه&rsquo; تقسیم کنیم.</p>
+<p>برای کمک به این، بیایید مسیرهای برنامه خود را به دو &lsquo;گروه&rsquo; مرتب کنیم.</p>
 
-<p>گروه اول شامل مسیرهای &lsquo;غیرمحافظت شده&rsquo; ما خواهد بود و از زنجیره میان‌افزار <code>dynamic</code> موجود ما استفاده خواهد کرد. گروه دوم شامل مسیرهای &lsquo;محافظت شده&rsquo; ما خواهد بود و از یک زنجیره میان‌افزار جدید <code>protected</code> استفاده خواهد کرد &mdash; که شامل زنجیره میان‌افزار <code>dynamic</code> <em>به‌علاوه</em> میان‌افزار جدید <code>requireAuthentication()</code> ما است.</p>
+<p>گروه اول شامل مسیرهای &lsquo;محافظت نشده&rsquo; ما خواهد بود و از زنجیره middleware موجود <code>dynamic</code> استفاده می‌کند. گروه دوم شامل مسیرهای &lsquo;محافظت شده&rsquo; ما خواهد بود و از یک زنجیره middleware جدید <code>protected</code> استفاده می‌کند — متشکل از زنجیره middleware <code>dynamic</code> <em>به علاوه</em> middleware جدید <code>requireAuthentication()</code> ما.</p>
 
 <p>به این صورت:</p>
 
@@ -230,11 +231,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>فایل‌ها را ذخیره کنید، برنامه را مجدداً راه‌اندازی کنید و مطمئن شوید که خارج شده‌اید.</p>
+<p>فایل‌ها را ذخیره کنید، برنامه را مجدداً راه‌اندازی کنید و مطمئن شوید که خروج هستید.</p>
 
-<p>سپس سعی کنید به طور مستقیم به <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> در مرورگر خود مراجعه کنید. باید متوجه شوید که بلافاصله به فرم ورود هدایت می‌شوید.</p>
+<p>سپس سعی کنید مستقیماً در مرورگر خود به <a href="https://localhost:4000/snippet/create"><code>https://localhost:4000/snippet/create</code></a> مراجعه کنید. باید متوجه شوید که فوراً به فرم لاگین هدایت می‌شوید.</p>
 
-<p>اگر دوست دارید، می‌توانید با curl نیز تأیید کنید که کاربران احراز هویت نشده برای مسیر <code>POST /snippet/create</code> نیز هدایت می‌شوند:</p>
+<p>اگر می‌خواهید، می‌توانید با curl نیز تأیید کنید که کاربران احراز هویت نشده برای مسیر <code>POST /snippet/create</code> نیز هدایت می‌شوند:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ curl -ki -d &#34;&#34; https://localhost:4000/snippet/create
@@ -257,74 +258,15 @@ date: Wed, 18 Mar 2024 11:29:23 GMT</samp></pre>
 
 <h4 id="without-using-alice">بدون استفاده از alice</h4>
 
-<p>اگر از بسته <code>justinas/alice</code> برای مدیریت میان‌افزار خود استفاده نمی‌کنید، مشکلی نیست &mdash; می‌توانید به صورت دستی هندلرهای خود را به این صورت بپیچید:</p>
+<p>اگر از بسته <code>justinas/alice</code> برای مدیریت middleware خود استفاده نمی‌کنید، مشکلی نیست — می‌توانید handlerهای خود را به صورت دستی به این صورت wrap کنید:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">mux</span><span class="p">.</span><span class="nf">Handle</span><span class="p">(</span><span class="s">&#34;POST /snippet/create&#34;</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">LoadAndSave</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nf">requireAuthentication</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="nx">app</span><span class="p">.</span><span class="nx">snippetCreate</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>مجوز کاربر</td>
-        <td>User Authorization</td>
-        <td>کنترل دسترسی کاربران</td>
-    </tr>
-    <tr>
-        <td>کنترل دسترسی</td>
-        <td>Access Control</td>
-        <td>مدیریت سطوح دسترسی</td>
-    </tr>
-    <tr>
-        <td>محافظت از مسیرها</td>
-        <td>Route Protection</td>
-        <td>امن‌سازی مسیرهای برنامه</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار احراز هویت</td>
-        <td>Authentication Middleware</td>
-        <td>کد واسط برای تأیید هویت</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار</td>
-        <td>Middleware</td>
-        <td>کد واسط پردازش درخواست</td>
-    </tr>
-    <tr>
-        <td>بررسی مجوز</td>
-        <td>Authorization Check</td>
-        <td>بررسی مجوز دسترسی</td>
-    </tr>
-    <tr>
-        <td>نشست کاربر</td>
-        <td>User Session</td>
-        <td>اطلاعات نشست کاربری</td>
-    </tr>
-    <tr>
-        <td>هدایت مجدد</td>
-        <td>Redirection</td>
-        <td>انتقال به صفحه دیگر</td>
-    </tr>
-    <tr>
-        <td>مسیر محافظت شده</td>
-        <td>Protected Route</td>
-        <td>مسیر نیازمند مجوز</td>
-    </tr>
-    <tr>
-        <td>سطح دسترسی</td>
-        <td>Access Level</td>
-        <td>میزان مجوز دسترسی</td>
-    </tr>
-</table>
 		</main>
 		<footer>
-			<div class="wrapper" dir="rtl">
+			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="10.05-user-logout.html">قبلی</a>
 				</div>
@@ -355,4 +297,3 @@ date: Wed, 18 Mar 2024 11:29:23 GMT</samp></pre>
 		</script>
 	</body>
 </html>
-

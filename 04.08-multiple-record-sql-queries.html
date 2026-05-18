@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>پرس‌وجوهای SQL چندرکوردی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</a> &rsaquo; پرس و جوهای SQL چند رکوردی (Multiple Record SQL Queries)</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; پرس‌وجوهای SQL چند رکوردی</span>
 						
 					
 				</div>
@@ -25,18 +26,16 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل 4.8.</div>
-			<h2 id="multiple-record-sql-queries">پرس و جوهای SQL چند رکوردی (Multiple Record SQL Queries)</h2>
+			<h2 id="multiple-record-sql-queries">پرس‌وجوهای SQL چند رکوردی</h2>
 
-<p>در نهایت، بیایید به الگوی اجرای دستورات SQL که چندین سطر را برمی‌گرداند، نگاهی بیندازیم. من این را با به‌روزرسانی متد <code>SnippetModel.Latest()</code> برای برگرداندن ده <dfn>قطعه اخیراً ایجاد شده (Recently Created Snippets)</dfn> (تا زمانی که منقضی نشده‌اند) با استفاده از پرس و جوی SQL (SQL Query) زیر نشان خواهم داد:</p>
+<p>در نهایت بیایید به الگوی اجرای دستورات SQL که چندین ردیف برمی‌گردانند نگاه کنیم. من این را با به‌روزرسانی متد <code>SnippetModel.Latest()</code> برای برگرداندن ده <em>snippet اخیراً ایجاد شده</em> (تا زمانی که منقضی نشده‌اند) با استفاده از پرس‌وجوی SQL زیر نشان می‌دهم:</p>
 
 <figure class="code sql" dir="ltr">
 <pre><span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span> <span class="k">FROM</span> <span class="n">snippets</span>
 <span class="k">WHERE</span> <span class="n">expires</span> <span class="o">&gt;</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">10</span></pre>
 </figure>
-
-<p>برای این کار، نیاز به اجرای یک <dfn>پرس و جوی SQL (SQL Query)</dfn> با استفاده از <dfn>محدودیت تعداد نتایج (Result Limit)</dfn> داریم.</p>
 
 <p>فایل <code>internal/models/snippets.go</code> را باز کنید و کد زیر را اضافه کنید:</p>
 
@@ -104,12 +103,12 @@
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> بستن یک مجموعه نتیجه (Result Set) با <code>defer rows.Close()</code> در کد بالا بسیار مهم است. تا زمانی که یک مجموعه نتیجه باز است، اتصال پایگاه داده زیرین (Underlying Database Connection) را باز نگه می‌دارد... بنابراین اگر در این روش مشکلی پیش بیاید و مجموعه نتیجه بسته نشود، می‌تواند به سرعت منجر به استفاده از تمام اتصالات در استخر (Connection Pool) شما شود.
+<strong>مهم:</strong> بستن یک resultset با <code>defer rows.Close()</code> در کد بالا حیاتی است. تا زمانی که یک resultset باز است، اتصال پایگاه داده زیرین را باز نگه می‌دارد&hellip; بنابراین اگر چیزی در این متد اشتباه شود و resultset بسته نشود، می‌تواند به سرعت منجر به استفاده از همه اتصالات در استخر شما شود.
 </p></aside>
 
-<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما (Using the Model in our Handlers)</h3>
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در handlerهای ما</h3>
 
-<p>به فایل <code>cmd/web/handlers.go</code> برگردید و هندلر <code>home</code> را به‌روزرسانی کنید تا از متد <code>SnippetModel.Latest()</code> استفاده کند و محتوای قطعه را به یک پاسخ HTTP بریزد. فعلاً فقط کد مربوط به رندر قالب را کامنت کنید، به این صورت:</p>
+<p>به فایل <code>cmd/web/handlers.go</code> خود برگردید و handler <code>home</code> را برای استفاده از متد <code>SnippetModel.Latest()</code> به‌روزرسانی کنید، محتوای snippetها را در پاسخ HTTP خالی چاپ کنید. برای حالا فقط کد مربوط به رندر قالب را کامنت کنید، مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -122,7 +121,7 @@
 </span><span class="c1"></span>    <span class="s">&#34;net/http&#34;</span>
     <span class="s">&#34;strconv&#34;</span>
 
-    <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">app</span> <span class="o">*</span><span class="nx">application</span><span class="p">)</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
@@ -165,62 +164,8 @@
 <img src="assets/img/04.08-01.png" alt="04.08-01.png" />
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>پرس و جوهای SQL چند رکوردی</td>
-        <td>Multiple Record SQL Queries</td>
-        <td>دستورات SQL که چندین رکورد را از پایگاه داده بازیابی می‌کنند</td>
-    </tr>
-    <tr>
-        <td>قطعه اخیراً ایجاد شده</td>
-        <td>Recently Created Snippet</td>
-        <td>قطعه‌های کدی که به تازگی در سیستم ذخیره شده‌اند</td>
-    </tr>
-    <tr>
-        <td>پرس و جوی SQL</td>
-        <td>SQL Query</td>
-        <td>دستوری برای درخواست یا تغییر داده در پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>محدودیت تعداد نتایج</td>
-        <td>Result Limit</td>
-        <td>تعیین حداکثر تعداد رکوردهایی که باید بازگردانده شوند</td>
-    </tr>
-    <tr>
-        <td>مجموعه نتیجه</td>
-        <td>Result Set</td>
-        <td>مجموعه‌ای از رکوردها که توسط یک پرس و جو برگردانده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>اتصال پایگاه داده زیرین</td>
-        <td>Underlying Database Connection</td>
-        <td>اتصال فیزیکی به پایگاه داده که برای اجرای دستورات استفاده می‌شود</td>
-    </tr>
-    <tr>
-        <td>مرتب‌سازی نتایج</td>
-        <td>Result Sorting</td>
-        <td>ترتیب‌بندی نتایج بر اساس یک یا چند فیلد</td>
-    </tr>
-    <tr>
-        <td>فیلترینگ نتایج</td>
-        <td>Result Filtering</td>
-        <td>محدود کردن نتایج بر اساس شرایط خاص</td>
-    </tr>
-    <tr>
-        <td>پیمایش نتایج</td>
-        <td>Result Iteration</td>
-        <td>مرور و پردازش تدریجی نتایج یک پرس و جو</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="04.07-single-record-sql-queries.html">قبلی</a>

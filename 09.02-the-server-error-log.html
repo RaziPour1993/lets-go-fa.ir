@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>لاگ خطای سرور &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<style>
-			.code.go, .code.html, .code.bash, .code.plain, .code.sql {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; گزارش خطای سرور</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; لاگ خطای سرور</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="09.01-the-http-server-struct.html">قبلی</a>
@@ -27,21 +26,17 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۹.۲.</div>
-			<h2 id="the-server-error-log">گزارش خطای سرور (Server Error Log)</h2>
+			<h2 id="the-server-error-log">لاگ خطای سرور</h2>
 
-<p>در این بخش، نحوه پیکربندی <dfn>گزارش خطای سرور (Server Error Log)</dfn> را بررسی می‌کنیم. این شامل <dfn>ثبت خطاها (Error Logging)</dfn>، <dfn>مدیریت خطا (Error Handling)</dfn> و <dfn>گزارش‌دهی (Reporting)</dfn> می‌شود.</p>
+<p>مهم است که بدانیم <code>http.Server</code> در Go ممکن است ورودی‌های لاگ خود را در مورد چیزهایی مانند panicهای بازیابی نشده، یا مشکلات پذیرش یا نوشتن در اتصال‌های HTTP بنویسد.</p>
 
-<p>برای شروع، بیایید یک <dfn>لاگر ساختاریافته (Structured Logger)</dfn> برای <dfn>ثبت خطاها (Error Logging)</dfn> ایجاد کنیم:</p>
+<p>به طور پیش‌فرض، این ورودی‌ها را با استفاده از لاگر استاندارد می‌نویسد — که به این معنی است که آن‌ها به جریان خطای استاندارد نوشته می‌شوند (به جای خروجی استاندارد مانند سایر ورودی‌های لاگ ما)، و آن‌ها در همان فرمت سایر ورودی‌های لاگ ساختاریافته ما نخواهند بود.</p>
 
-<p>مهم است که بدانید <code>http.Server</code> در Go ممکن است ورودی‌های لاگ خود را در رابطه با مواردی مانند پانیک‌های بازیابی نشده یا مشکلات پذیرش یا نوشتن در اتصالات HTTP بنویسد.</p>
+<p>برای نشان دادن این، بیایید یک خطای عمدی به برنامه خود اضافه کنیم و یک هدر <code>Content-Length</code> با مقدار نامعتبر در پاسخ‌های خود تنظیم کنیم. بروید و helper <code>render()</code> را به این صورت به‌روزرسانی کنید:</p>
 
-<p>به طور پیش‌فرض، این ورودی‌ها را با استفاده از لاگر استاندارد می‌نویسد &mdash; که به این معنی است که آنها به جریان خطای استاندارد نوشته می‌شوند (به جای خروجی استاندارد مانند سایر ورودی‌های لاگ ما)، و آنها در همان قالب ورودی‌های لاگ ساختاریافته ما نخواهند بود.</p>
-
-<p>برای نشان دادن این موضوع، بیایید یک خطای عمدی به برنامه خود اضافه کنیم و یک هدر <code>Content-Length</code> با یک مقدار نامعتبر در پاسخ‌های خود تنظیم کنیم. به روزرسانی <code>render()</code> به این صورت انجام دهید:</p>
-
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -63,6 +58,10 @@
         <span class="k">return</span>
     <span class="p">}</span>
     
+    <span class="c1">// Deliberate error: set a Content-Length header with an invalid (non-integer) 
+</span><span class="c1"></span>    <span class="c1">// value.
+</span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Content-Length&#34;</span><span class="p">,</span> <span class="s">&#34;this isn&#39;t an integer!&#34;</span><span class="p">)</span>
+
     <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">status</span><span class="p">)</span>
 
     <span class="nx">buf</span><span class="p">.</span><span class="nf">WriteTo</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span>
@@ -71,9 +70,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>سپس برنامه را اجرا کنید، یک درخواست به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> ارسال کنید و لاگ برنامه را بررسی کنید. باید ببینید که به این صورت است:</p>
+<p>سپس برنامه را اجرا کنید، یک درخواست به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> ارسال کنید و لاگ برنامه را بررسی کنید. باید ببینید که چیزی شبیه به این است:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web/
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:60824 proto=HTTP/1.1 method=GET uri=/
@@ -82,11 +81,11 @@ time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:60830 proto=HTTP/1.1 method=GET uri=/static/img/logo.png</samp></pre>
 </figure>
 
-<p>می‌توانیم ببینیم که ورودی سوم لاگ که ما را از مشکل <code>Content-Length</code> مطلع می‌کند، در قالبی بسیار متفاوت از دیگران است. این خوب نیست، به خصوص اگر بخواهید لاگ‌های خود را برای جستجوی خطاها فیلتر کنید یا از یک سرویس خارجی برای نظارت بر آنها و ارسال هشدارها استفاده کنید.</p>
+<p>می‌توانیم ببینیم که سومین ورودی لاگ در اینجا، که ما را از مشکل <code>Content-Length</code> مطلع می‌کند، در فرمتی بسیار متفاوت از سایرین است. این خوب نیست، به خصوص اگر می‌خواهید لاگ‌های خود را برای جستجوی خطاها فیلتر کنید، یا از یک سرویس خارجی برای نظارت بر آن‌ها و ارسال هشدار استفاده کنید.</p>
 
-<p>متأسفانه، امکان پیکربندی <code>http.Server</code> برای استفاده مستقیم از لاگر ساختاریافته جدید ما وجود ندارد. در عوض، باید لاگر ساختاریافته <em>handler</em> خود را به یک <code>*log.Logger</code> تبدیل کنیم که ورودی‌های لاگ را در یک سطح ثابت خاص می‌نویسد و سپس آن را با <code>http.Server</code> ثبت کنیم. می‌توانیم این تبدیل را با استفاده از تابع <a href="https://pkg.go.dev/log/slog@master#NewLogLogger"><code>slog.NewLogLogger()</code></a> انجام دهیم، به این صورت:</p>
+<p>متأسفانه، امکان پیکربندی <code>http.Server</code> برای استفاده مستقیم از لاگر ساختاریافته جدید ما وجود ندارد. در عوض، باید <em>handler</em> لاگر ساختاریافته خود را به یک <code>*log.Logger</code> تبدیل کنیم که ورودی‌های لاگ را در یک سطح ثابت خاص می‌نویسد، و سپس آن را با <code>http.Server</code> ثبت کنیم. می‌توانیم این تبدیل را با استفاده از تابع <a href="https://pkg.go.dev/log/slog@master#NewLogLogger"><code>slog.NewLogLogger()</code></a> انجام دهیم، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -121,9 +120,9 @@ time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=
 <span class="o">...</span></pre>
 </figure>
 
-<p>با این کار، هر پیام لاگی که <code>http.Server</code> به طور خودکار می‌نویسد، اکنون با استفاده از لاگر ساختاریافته ما در سطح <code>Error</code> نوشته می‌شود. اگر برنامه را مجدداً راه‌اندازی کنید و یک درخواست دیگر به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> ارسال کنید، باید ببینید که ورودی‌های لاگ اکنون به این صورت هستند:</p>
+<p>با این کار، هر پیام لاگی که <code>http.Server</code> به طور خودکار می‌نویسد اکنون با استفاده از لاگر ساختاریافته ما در سطح <code>Error</code> نوشته خواهد شد. اگر برنامه را مجدداً راه‌اندازی کنید و یک درخواست دیگر به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> ارسال کنید، باید ببینید که ورودی‌های لاگ اکنون به این صورت هستند:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web/
 <samp>time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;starting server&#34; addr=:4000
 time=2024-03-18T11:29:23.000+00:00 level=INFO msg=&#34;received request&#34; ip=127.0.0.1:40854 proto=HTTP/1.1 method=GET uri=/
@@ -132,7 +131,7 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;http: invalid Content-Le
 
 <p>قبل از اینکه بیشتر پیش برویم، به فایل <code>cmd/web/helpers.go</code> خود برگردید و خطای عمدی را از متد <code>render()</code> حذف کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -162,67 +161,8 @@ time=2024-03-18T11:29:23.000+00:00 level=ERROR msg=&#34;http: invalid Content-Le
 <span class="o">...</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>گزارش خطای سرور</td>
-        <td>Server Error Log</td>
-        <td>ثبت و نگهداری خطاهای سرور</td>
-    </tr>
-    <tr>
-        <td>ثبت خطاها</td>
-        <td>Error Logging</td>
-        <td>ذخیره و ثبت خطاها</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>نحوه برخورد با خطاها</td>
-    </tr>
-    <tr>
-        <td>گزارش‌دهی</td>
-        <td>Reporting</td>
-        <td>ارائه گزارش از خطاها</td>
-    </tr>
-    <tr>
-        <td>لاگر ساختاریافته</td>
-        <td>Structured Logger</td>
-        <td>سیستم ثبت خطای سازمان‌یافته</td>
-    </tr>
-    <tr>
-        <td>سطح خطا</td>
-        <td>Error Level</td>
-        <td>درجه اهمیت خطا</td>
-    </tr>
-    <tr>
-        <td>فرمت خطا</td>
-        <td>Error Format</td>
-        <td>قالب پیام خطا</td>
-    </tr>
-    <tr>
-        <td>خروجی خطا</td>
-        <td>Error Output</td>
-        <td>محل نمایش خطاها</td>
-    </tr>
-    <tr>
-        <td>پیام خطا</td>
-        <td>Error Message</td>
-        <td>متن توضیح خطا</td>
-    </tr>
-    <tr>
-        <td>ردیابی خطا</td>
-        <td>Error Trace</td>
-        <td>مسیر وقوع خطا</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="09.01-the-http-server-struct.html">قبلی</a>

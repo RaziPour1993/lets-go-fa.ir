@@ -3,22 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>نصب درایور پایگاه داده &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code.go, .code.html, .code.bash {
-				direction: ltr !important;
-				text-align: left !important;
-				unicode-bidi: embed;
-			}
-			.code.go pre, .code.html pre, .code.bash pre {
-				direction: ltr !important;
-				text-align: left !important;
-				unicode-bidi: embed;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -26,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&lsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &lsaquo; نصب درایور پایگاه داده (Installing a Database Driver)</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; نصب درایور پایگاه داده</span>
 						
 					
 				</div>
@@ -38,16 +27,16 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۴.۲.</div>
-			<h2 id="installing-a-database-driver">نصب درایور پایگاه داده (Installing a Database Driver)</h2>
+			<div class="chapter">فصل 4.2.</div>
+			<h2 id="installing-a-database-driver">نصب درایور پایگاه داده</h2>
 
-<p>برای استفاده از MySQL در برنامه وب Go ما، نیاز به نصب یک <dfn>درایور پایگاه داده (Database Driver)</dfn> داریم. این درایور اساساً به عنوان یک واسطه (Interface) عمل می‌کند و دستورات را بین Go و پایگاه داده MySQL ترجمه می‌کند.</p>
+<p>برای استفاده از MySQL از برنامه وب Go خود، باید یک <dfn>درایور پایگاه داده</dfn> نصب کنیم. این اساساً به عنوان یک میانجی عمل می‌کند و دستورات بین Go و خود پایگاه داده MySQL را ترجمه می‌کند.</p>
 
-<p>شما می‌توانید لیست جامعی از <a href="https://go.dev/wiki/SQLDrivers">درایورهای موجود (Available Drivers)</a> را در ویکی Go پیدا کنید، اما برای برنامه ما از درایور محبوب <a href="https://github.com/go-sql-driver/mysql"><code>go-sql-driver/mysql</code></a> استفاده خواهیم کرد.</p>
+<p>می‌توانید یک <a href="https://go.dev/wiki/SQLDrivers">فهرست جامع از درایورهای موجود</a> را در ویکی Go پیدا کنید، اما برای برنامه خود از درایور محبوب <a href="https://github.com/go-sql-driver/mysql"><code>go-sql-driver/mysql</code></a> استفاده خواهیم کرد.</p>
 
-<p>برای دانلود آن، به دایرکتوری پروژه خود بروید و دستور <code>go get</code> را به این صورت اجرا کنید:</p>
+<p>برای دانلود آن، به دایرکتوری پروژه خود بروید و دستور <code>go get</code> را مانند این اجرا کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
 $ go get github.com/go-sql-driver/mysql@v1
 <samp>go: added filippo.io/edwards25519 v1.1.0
@@ -55,84 +44,24 @@ go: added github.com/go-sql-driver/mysql v1.8.1</samp></pre>
 </figure>
 
 <aside class="note"><p>
-<strong>نکته:</strong> دستور <code>go get</code> به صورت بازگشتی تمام وابستگی‌های پکیج را دانلود می‌کند. در این مورد، پکیج <code>github.com/go-sql-driver/mysql</code> از پکیج <code>filippo.io/edwards25519</code> استفاده می‌کند، بنابراین این پکیج نیز دانلود خواهد شد.
+<strong>یادداشت:</strong> دستور <code>go get</code> به صورت بازگشتی هر وابستگی که پکیج دارد را دانلود می‌کند. در این مورد، خود پکیج <code>github.com/go-sql-driver/mysql</code> از پکیج <code>filippo.io/edwards25519</code> استفاده می‌کند، بنابراین این نیز دانلود خواهد شد.
 </p></aside>
 
-<p>توجه داشته باشید که ما پسوند <code>@v1</code> را به مسیر پکیج اضافه کرده‌ایم تا نشان دهیم که می‌خواهیم <a href="https://github.com/go-sql-driver/mysql/releases">آخرین نسخه موجود (Latest Version)</a> از <code>github.com/go-sql-driver/mysql</code> را با <em>شماره نسخه اصلی (Major Version Number) 1</em> دانلود کنیم.</p>
+<p>توجه کنید که در اینجا مسیر پکیج را با <code>@v1</code> پسوند می‌دهیم تا نشان دهیم که می‌خواهیم <a href="https://github.com/go-sql-driver/mysql/releases">آخرین نسخه موجود</a> از <code>github.com/go-sql-driver/mysql</code> <em>با شماره نسخه اصلی 1</em> را دانلود کنیم.</p>
 
-<p>در زمان نگارش این متن، آخرین نسخه <code>v1.8.1</code> است، اما نسخه‌ای که شما دانلود می‌کنید ممکن است <code>v1.8.2</code>، <code>v1.9.0</code> یا مشابه آن باشد - و این مشکلی ندارد. از آنجایی که پکیج <code>go-sql-driver/mysql</code> از <a href="https://semver.org/">نسخه‌گذاری معنایی (Semantic Versioning)</a> برای انتشارات خود استفاده می‌کند، هر نسخه <code>v1.x.x</code> باید با بقیه کدهای این کتاب سازگار باشد.</p>
+<p>در زمان نوشتن، آخرین نسخه <code>v1.8.1</code> است، اما نسخه‌ای که شما دانلود می‌کنید ممکن است <code>v1.8.2</code>، <code>v1.9.0</code> یا مشابه باشد — و این اشکالی ندارد. چون پکیج <code>go-sql-driver/mysql</code> از <a href="https://semver.org/">نسخه‌گذاری معنایی</a> برای انتشارات خود استفاده می‌کند، هر نسخه <code>v1.x.x</code> باید با بقیه کد در این کتاب سازگار باشد.</p>
 
-<p>به عنوان نکته جانبی، اگر می‌خواهید آخرین نسخه را، صرف نظر از شماره نسخه، دانلود کنید، می‌توانید به سادگی پسوند <code>@version</code> را حذف کنید:</p>
+<p>به عنوان یک نکته جانبی، اگر می‌خواهید آخرین نسخه را دانلود کنید، بدون توجه به شماره نسخه، می‌توانید به سادگی پسوند <code>@version</code> را حذف کنید، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go get github.com/go-sql-driver/mysql</pre>
 </figure>
 
-<p>یا اگر می‌خواهید نسخه خاصی از یک پکیج را دانلود کنید، می‌توانید از شماره نسخه کامل استفاده کنید. برای مثال:</p>
+<p>یا اگر می‌خواهید یک نسخه خاص از یک پکیج را دانلود کنید، می‌توانید از شماره نسخه کامل استفاده کنید. به عنوان مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go get github.com/go-sql-driver/mysql@v1.0.3</pre>
 </figure>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>درایور پایگاه داده</td>
-        <td>Database Driver</td>
-        <td>نرم‌افزار واسط بین برنامه و پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>واسطه</td>
-        <td>Interface</td>
-        <td>لایه میانی که ارتباط بین دو سیستم را برقرار می‌کند</td>
-    </tr>
-    <tr>
-        <td>درایورهای موجود</td>
-        <td>Available Drivers</td>
-        <td>مجموعه‌ای از درایورهای پایگاه داده که می‌توان از آنها استفاده کرد</td>
-    </tr>
-    <tr>
-        <td>آخرین نسخه</td>
-        <td>Latest Version</td>
-        <td>جدیدترین نسخه منتشر شده از یک نرم‌افزار</td>
-    </tr>
-    <tr>
-        <td>شماره نسخه اصلی</td>
-        <td>Major Version Number</td>
-        <td>عدد اول در شماره نسخه که تغییرات اساسی را نشان می‌دهد</td>
-    </tr>
-    <tr>
-        <td>نسخه‌گذاری معنایی</td>
-        <td>Semantic Versioning</td>
-        <td>روشی استاندارد برای شماره‌گذاری نسخه‌های نرم‌افزار</td>
-    </tr>
-    <tr>
-        <td>وابستگی‌های پکیج</td>
-        <td>Package Dependencies</td>
-        <td>سایر پکیج‌هایی که یک پکیج برای کار کردن به آنها نیاز دارد</td>
-    </tr>
-    <tr>
-        <td>دستور دانلود</td>
-        <td>Get Command</td>
-        <td>دستوری برای دانلود و نصب پکیج‌ها در Go</td>
-    </tr>
-    <tr>
-        <td>سازگاری</td>
-        <td>Compatibility</td>
-        <td>توانایی کار کردن با نسخه‌های مختلف نرم‌افزار</td>
-    </tr>
-    <tr>
-        <td>نسخه خاص</td>
-        <td>Specific Version</td>
-        <td>یک نسخه دقیق و مشخص از نرم‌افزار</td>
-    </tr>
-</table>
 
 		</main>
 		<footer>

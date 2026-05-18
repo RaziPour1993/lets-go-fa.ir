@@ -3,43 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>داده‌های پویای مشترک &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			/* Right align Persian text */
-			.chapter, h2, p {
-				text-align: right;
-			}
-			/* Keep code blocks left aligned and untranslated */
-			.code, pre, figure, 
-			.code.go, .code.html, .code.bash, .code.plain, .code.sql,
-			.code.go pre, .code.html pre, .code.bash pre, .code.plain pre, .code.sql pre {
-				text-align: left;
-				direction: ltr;
-				unicode-bidi: embed;
-			}
-			/* Header and footer alignment */
-			header .wrapper, footer .wrapper {
-				direction: rtl;
-			}
-			header .wrapper > div:first-child {
-				text-align: right;
-			}
-			header .wrapper > div:last-child {
-				text-align: left;
-			}
-			footer .wrapper > div {
-				text-align: center;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; داده‌های پویای مشترک</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; داده‌های پویای مشترک</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="05.04-catching-runtime-errors.html">قبلی</a>
@@ -49,16 +27,16 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۵.۵</div>
-			<h2 id="common-dynamic-data">داده‌های پویای مشترک (Common Dynamic Data)</h2>
+			<div class="chapter">فصل ۵.۵.</div>
+			<h2 id="common-dynamic-data">داده‌های پویای مشترک</h2>
 
-<p>در برخی از برنامه‌های وب، ممکن است <dfn>داده‌های پویای مشترک (Common Dynamic Data)</dfn> وجود داشته باشد که می‌خواهید در بیش از یک صفحه وب - یا حتی در تمام صفحات - گنجانده شوند. به عنوان مثال، ممکن است بخواهید <dfn>نام و تصویر پروفایل کاربر فعلی (Current User Profile)</dfn> یا <dfn>توکن CSRF (CSRF Token)</dfn> را در تمام صفحات دارای فرم قرار دهید.</p>
+<p>در برخی از برنامه‌های وب ممکن است داده‌های پویای مشترکی وجود داشته باشد که می‌خواهید در بیش از یک &mdash; یا حتی همه &mdash; صفحات وب قرار دهید. به عنوان مثال، ممکن است بخواهید نام و تصویر پروفایل کاربر فعلی یا یک توکن CSRF را در تمام صفحات دارای فرم قرار دهید.</p>
 
-<p>در مورد ما، بیایید با چیزی ساده شروع کنیم و بگوییم که می‌خواهیم <dfn>سال جاری (Current Year)</dfn> را در فوتر هر صفحه قرار دهیم.</p>
+<p>در مورد ما، بیایید با چیزی ساده شروع کنیم و بگوییم که می‌خواهیم سال جاری را در فوتر هر صفحه قرار دهیم.</p>
 
-<p>برای این کار، ابتدا یک فیلد جدید <code>CurrentYear</code> به ساختار <code>templateData</code> اضافه می‌کنیم، مانند این:</p>
+<p>برای انجام این کار، ابتدا یک فیلد جدید <code>CurrentYear</code> به ساختار <code>templateData</code> اضافه می‌کنیم، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -74,11 +52,11 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>گام بعدی اضافه کردن یک متد کمکی <code>newTemplateData()</code> به برنامه ما است که یک ساختار <code>templateData</code> مقداردهی شده با سال جاری را برمی‌گرداند.</p>
+<p>مرحله بعدی، افزودن یک متد کمکی <code>newTemplateData()</code> به برنامه ما است که یک ساختار <code>templateData</code> مقداردهی شده با سال جاری را برمی‌گرداند.</p>
 
-<p>من نشان می‌دهم:</p>
+<p>نمایش می‌دهم:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/helpers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -103,9 +81,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>حالا بیایید هندلرهای <code>home</code> و <code>snippetView</code> را به‌روزرسانی کنیم تا از کمکی <code>newTemplateData()</code> استفاده کنند، مانند این:</p>
+<p>سپس بیایید handlerهای <code>home</code> و <code>snippetView</code> خود را برای استفاده از متد کمکی <code>newTemplateData()</code> به‌روزرسانی کنیم، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -157,9 +135,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>و در نهایت، باید فایل <code>ui/html/base.tmpl</code> را به‌روزرسانی کنیم تا سال را در فوتر نمایش دهد، مانند این:</p>
+<p>و سپس آخرین کاری که باید انجام دهیم، به‌روزرسانی فایل <code>ui/html/base.tmpl</code> برای نمایش سال در فوتر است، به این صورت:</p>
 
-<figure class="code html">
+<figure class="code html" dir="ltr">
 <figcaption>File: ui/html/base.tmpl</figcaption>
 <pre>{{define &#34;base&#34;}}
 <span class="cp">&lt;!doctype html&gt;</span>
@@ -181,7 +159,7 @@
         <span class="p">&lt;</span><span class="p">/</span><span class="nt">main</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">footer</span><span class="p"></span><span class="p">&gt;</span>
             <span class="c">&lt;!--</span><span class="c"> Update the footer to include the current year </span><span class="c">--&gt;</span>
-            Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span> در {{.CurrentYear}}
+            Powered by <span class="p">&lt;</span><span class="nt">a</span> <span class="na">href</span><span class="o">=</span><span class="s">&#39;https://golang.org/&#39;</span><span class="p"></span><span class="p">&gt;</span>Go<span class="p">&lt;</span><span class="p">/</span><span class="nt">a</span><span class="p">&gt;</span> in {{.CurrentYear}}
         <span class="p">&lt;</span><span class="p">/</span><span class="nt">footer</span><span class="p">&gt;</span>
         <span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&#39;/static/js/main.js&#39;</span> <span class="na">type</span><span class="o">=</span><span class="s">&#39;text/javascript&#39;</span><span class="p"></span><span class="p">&gt;</span><span class="p">&lt;</span><span class="p">/</span><span class="nt">script</span><span class="p">&gt;</span>
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">body</span><span class="p">&gt;</span>
@@ -189,71 +167,12 @@
 {{end}}</pre>
 </figure>
 
-<p>اگر برنامه را مجدداً راه‌اندازی کنید و به صفحه اصلی در <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید، اکنون باید سال جاری را در فوتر مشاهده کنید. مانند این:</p>
+<p>اگر برنامه را مجدداً راه‌اندازی کنید و به صفحه اصلی در <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> مراجعه کنید، حالا باید سال جاری را در فوتر (footer) ببینید. مانند این:</p>
 
 <figure class="img">
 <img src="assets/img/05.05-01.png" alt="05.05-01.png" />
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>داده‌های پویای مشترک</td>
-        <td>Common Dynamic Data</td>
-        <td>اطلاعاتی که در چندین صفحه استفاده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>نام و تصویر پروفایل کاربر فعلی</td>
-        <td>Current User Profile</td>
-        <td>اطلاعات شناسایی کاربر در حال استفاده از سیستم</td>
-    </tr>
-    <tr>
-        <td>توکن CSRF</td>
-        <td>CSRF Token</td>
-        <td>کد امنیتی برای جلوگیری از حملات جعل درخواست</td>
-    </tr>
-    <tr>
-        <td>سال جاری</td>
-        <td>Current Year</td>
-        <td>سال فعلی که به صورت خودکار به‌روز می‌شود</td>
-    </tr>
-    <tr>
-        <td>ساختار داده قالب</td>
-        <td>Template Data Structure</td>
-        <td>ساختاری برای نگهداری داده‌های مورد نیاز قالب</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار</td>
-        <td>Middleware</td>
-        <td>کدی که بین درخواست و پاسخ اجرا می‌شود</td>
-    </tr>
-    <tr>
-        <td>متغیر محیطی</td>
-        <td>Environment Variable</td>
-        <td>متغیری که در محیط اجرای برنامه تعریف می‌شود</td>
-    </tr>
-    <tr>
-        <td>فرمت‌بندی زمان</td>
-        <td>Time Formatting</td>
-        <td>نحوه نمایش تاریخ و زمان</td>
-    </tr>
-    <tr>
-        <td>مدیریت وضعیت</td>
-        <td>State Management</td>
-        <td>کنترل و نگهداری وضعیت برنامه</td>
-    </tr>
-    <tr>
-        <td>داده‌های سراسری</td>
-        <td>Global Data</td>
-        <td>اطلاعاتی که در کل برنامه قابل دسترس هستند</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">

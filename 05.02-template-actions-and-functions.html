@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>عملیات و توابع قالب &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب های HTML پویا</a> &rsaquo; اقدامات و توابع قالب</span>
 						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="05.00-dynamic-html-templates.html">قالب‌های HTML پویا</a> &rsaquo; اعمال و توابع قالب</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="05.01-displaying-dynamic-data.html">قبلی</a>
@@ -23,108 +26,106 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل 5.2.</div>
-			<h2 id="template-actions-and-functions">عملکردها و توابع قالب (Template Actions and Functions)</h2>
+			<h2 id="template-actions-and-functions">اعمال و توابع قالب</h2>
 
-<p>در این بخش، به بررسی برخی از <dfn>عملکردهای قالب (Template Actions)</dfn> و <dfn>توابع داخلی (Built-in Functions)</dfn> که در بسته <code>html/template</code> Go در دسترس هستند می‌پردازیم.</p>
+<p>در این بخش، ما قصد داریم به <dfn>اعمال</dfn> و <dfn>توابع</dfn> قالب که Go ارائه می‌دهد نگاه کنیم.</p>
 
-<p>این ابزارها به شما امکان می‌دهند تا <dfn>منطق قالب (Template Logic)</dfn> را پیاده‌سازی کنید و <dfn>داده‌های پویا (Dynamic Data)</dfn> را به روش‌های مختلف نمایش دهید.</p>
+<p>ما قبلاً در مورد برخی از اعمال صحبت کرده‌ایم — <code>{{define}}</code>، <code>{{template}}</code> و <code>{{block}}</code> — اما سه مورد دیگر وجود دارد که می‌توانید برای کنترل نمایش داده‌های پویا استفاده کنید — <code>{{if}}</code>، <code>{{with}}</code> و <code>{{range}}</code>.</p>
 
-<p>ما قبلاً در مورد برخی از اقدامات صحبت کرده ایم &mdash; <code>{{define}}</code>, <code>{{template}}</code> و <code>{{block}}</code> &mdash; اما سه مورد دیگر وجود دارد که می توانید برای کنترل نمایش داده های پویا استفاده کنید &mdash; <code>{{if}}</code>, <code>{{with}}</code> و <code>{{range}}</code>.</p>
-
-<table dir="rtl">
+<table class="desc-table" dir="ltr">
 <thead>
 <tr>
-<th style="text-align: right;">توضیحات اقدام</th>
-<th>اقدام</th>
+<th>Action</th>
+<th>Description</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
-<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 <td><code>{{if .Foo}} C1 {{else}} C2 {{end}}</code></td>
+<td>اگر <code>.Foo</code> خالی نباشد، محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، نقطه را به مقدار <code>.Foo</code> تنظیم کنید و محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 <td><code>{{with .Foo}} C1 {{else}} C2 {{end}}</code></td>
+<td>اگر <code>.Foo</code> خالی نباشد، سپس dot را به مقدار <code>.Foo</code> تنظیم کنید و محتوای C1 را رندر کنید، در غیر این صورت محتوای C2 را رندر کنید.</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">اگر طول <code>.Foo</code> بیشتر از صفر باشد، بر روی هر عنصر حلقه بزنید، نقطه را به مقدار هر عنصر تنظیم کنید و محتوای C1 را رندر کنید. اگر طول <code>.Foo</code> صفر باشد، محتوای C2 را رندر کنید. نوع زیرین <code>.Foo</code> باید یک آرایه، برش، نقشه یا کانال باشد.</td>
 <td><code>{{range .Foo}} C1 {{else}} C2 {{end}}</code></td>
+<td>اگر طول <code>.Foo</code> بزرگتر از صفر باشد، سپس روی هر عنصر حلقه بزنید، dot را به مقدار هر عنصر تنظیم کنید و محتوای C1 را رندر کنید. اگر طول <code>.Foo</code> صفر باشد، محتوای C2 را رندر کنید. نوع زیرین <code>.Foo</code> باید یک آرایه، slice، map یا channel باشد.</td>
 </tr>
 </tbody>
 </table>
-<p>چند نکته در مورد این اقدامات وجود دارد:</p>
+<p>چند نکته در مورد این اعمال برای اشاره وجود دارد:</p>
 
 <ul>
-<li><p>برای هر سه اقدام، بند <code>{{else}}</code> اختیاری است. به عنوان مثال، می توانید <code>{{if .Foo}} C1 {{end}}</code> بنویسید اگر محتوای <code>C2</code> وجود ندارد که بخواهید رندر کنید.</p></li>
+<li><p>برای هر سه عمل، بند <code>{{else}}</code> اختیاری است. به عنوان مثال، می‌توانید <code>{{if .Foo}} C1 {{end}}</code> بنویسید اگر محتوای <code>C2</code> وجود ندارد که می‌خواهید رندر کنید.</p></li>
 
-<li><p>مقادیر <em>خالی</em> شامل false، 0، هر اشاره گر یا مقدار رابط nil و هر آرایه، برش، نقشه یا رشته با طول صفر است.</p></li>
+<li><p>مقادیر <em>خالی</em> false، 0، هر اشاره‌گر nil یا مقدار رابط، و هر آرایه، slice، map یا رشته با طول صفر هستند.</p></li>
 
-<li><p>مهم است که درک کنید که اقدامات <code>with</code> و <code>range</code> مقدار نقطه را تغییر می دهند. هنگامی که شروع به استفاده از آنها می کنید، <em>آنچه نقطه نشان می دهد می تواند بسته به جایی که در قالب هستید و کاری که انجام می دهید متفاوت باشد.</em></p></li>
+<li><p>مهم است که درک کنید که اعمال <code>with</code> و <code>range</code> مقدار dot را تغییر می‌دهند. وقتی شروع به استفاده از آن‌ها می‌کنید، <em>آنچه dot نشان می‌دهد می‌تواند بسته به اینکه در کجای قالب هستید و چه کاری انجام می‌دهید متفاوت باشد.</em></p></li>
 </ul>
 
-<p>بسته <code>html/template</code> همچنین برخی از توابع قالب را ارائه می دهد که می توانید برای افزودن منطق اضافی به قالب های خود و کنترل آنچه در زمان اجرا رندر می شود، استفاده کنید. می توانید لیست کامل توابع را <a href="https://pkg.go.dev/text/template/#hdr-Functions">اینجا</a> پیدا کنید، اما مهمترین آنها عبارتند از:</p>
+<p>پکیج <code>html/template</code> همچنین برخی توابع قالب ارائه می‌دهد که می‌توانید از آن‌ها برای افزودن منطق اضافی به قالب‌های خود و کنترل آنچه در زمان اجرا (runtime) رندر می‌شود استفاده کنید. می‌توانید یک فهرست کامل از توابع را <a href="https://pkg.go.dev/text/template/#hdr-Functions">اینجا</a> پیدا کنید، اما مهم‌ترین آن‌ها عبارتند از:</p>
 
-<table>
+<table class="desc-table" dir="ltr">
 <thead>
 <tr>
-<th style="text-align: right;">توضیحات تابع</th>
-<th>تابع</th>
+<th>Function</th>
+<th>Description</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
-<td style="text-align: right;">اگر <code>.Foo</code> برابر با <code>.Bar</code> باشد، true را برمی گرداند</td>
 <td><code>{{eq .Foo .Bar}}</code></td>
+<td>true را yield می‌کند اگر <code>.Foo</code> برابر با <code>.Bar</code> باشد</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">اگر <code>.Foo</code> برابر با <code>.Bar</code> نباشد، true را برمی گرداند</td>
 <td><code>{{ne .Foo .Bar}}</code></td>
+<td>true را yield می‌کند اگر <code>.Foo</code> برابر با <code>.Bar</code> نباشد</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">نفی منطقی <code>.Foo</code> را برمی گرداند</td>
 <td><code>{{not .Foo}}</code></td>
+<td>نفی بولی (boolean negation) <code>.Foo</code> را yield می‌کند</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">اگر <code>.Foo</code> خالی نباشد، <code>.Foo</code> را برمی گرداند؛ در غیر این صورت <code>.Bar</code> را برمی گرداند</td>
 <td><code>{{or .Foo .Bar}}</code></td>
+<td><code>.Foo</code> را yield می‌کند اگر <code>.Foo</code> خالی نباشد؛ در غیر این صورت <code>.Bar</code> را yield می‌کند</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">مقدار <code>.Foo</code> در شاخص <code>i</code> را برمی گرداند. نوع زیرین <code>.Foo</code> باید یک نقشه، برش یا آرایه باشد و <code>i</code> باید یک مقدار عدد صحیح باشد.</td>
 <td><code>{{index .Foo i}}</code></td>
+<td>مقدار <code>.Foo</code> در ایندکس <code>i</code> را yield می‌کند. نوع زیرین <code>.Foo</code> باید یک map، slice یا آرایه باشد، و <code>i</code> باید یک مقدار عدد صحیح باشد.</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">یک رشته قالب بندی شده حاوی مقادیر <code>.Foo</code> و <code>.Bar</code> را برمی گرداند. به همان روشی که fmt.Sprintf() کار می کند.</td>
 <td><code>{{printf &quot;%s-%s&quot; .Foo .Bar}}</code></td>
+<td>یک رشته فرمت شده حاوی مقادیر <code>.Foo</code> و <code>.Bar</code> را yield می‌کند. به همان روش fmt.Sprintf() کار می‌کند.</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">طول <code>.Foo</code> را به عنوان یک عدد صحیح برمی گرداند.</td>
 <td><code>{{len .Foo}}</code></td>
+<td>طول <code>.Foo</code> را به عنوان یک عدد صحیح yield می‌کند.</td>
 </tr>
 
 <tr>
-<td style="text-align: right;">طول <code>.Foo</code> را به متغیر قالب <code>$bar</code> اختصاص می دهد</td>
 <td><code>{{$bar := len .Foo}}</code></td>
+<td>طول <code>.Foo</code> را به متغیر قالب <code>$bar</code> اختصاص می‌دهد</td>
 </tr>
 </tbody>
 </table>
-<p>ردیف نهایی نمونه ای از اعلام یک <dfn>متغیر قالب</dfn> است. متغیرهای قالب به ویژه مفید هستند اگر بخواهید نتیجه یک تابع را ذخیره کنید و در چندین مکان در قالب خود از آن استفاده کنید. نام متغیرها باید با علامت دلار پیشوند شوند و فقط می توانند حاوی کاراکترهای الفبایی باشند.</p>
+<p>ردیف آخر مثالی از اعلان یک <dfn>متغیر قالب</dfn> است. متغیرهای قالب به خصوص مفید هستند اگر می‌خواهید نتیجه از یک تابع را ذخیره کنید و در چندین مکان در قالب خود استفاده کنید. نام‌های متغیر باید با علامت دلار پیشوند شوند و فقط می‌توانند شامل کاراکترهای الفبایی-عددی باشند.</p>
 
-<h3 id="using-the-with-action">استفاده از اقدام with</h3>
+<h3 id="using-the-with-action">استفاده از عمل with</h3>
 
-<p>یک فرصت خوب برای استفاده از اقدام <code>{{with}}</code> فایل <code>view.tmpl</code> است که در فصل قبلی ایجاد کردیم. ادامه دهید و آن را به این صورت به روز کنید:</p>
+<p>یک فرصت خوب برای استفاده از عمل (action) <code>{{with}}</code> فایل <code>view.tmpl</code> است که در فصل قبل ایجاد کردیم. ادامه دهید و آن را مانند این به‌روزرسانی کنید:</p>
 
 <figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/view.tmpl</figcaption>
@@ -148,21 +149,21 @@
 {{end}}</pre>
 </figure>
 
-<p>بنابراین اکنون، بین <code>{{with .Snippet}}</code> و تگ <code>{{end}}</code> مربوطه، مقدار نقطه به <code>.Snippet</code> تنظیم می شود. نقطه اساساً به ساختار <code>models.Snippet</code> تبدیل می شود به جای ساختار والد <code>templateData</code>.</p>
+<p>پس اکنون، بین <code>{{with .Snippet}}</code> و تگ مربوطه <code>{{end}}</code>، مقدار dot به <code>.Snippet</code> تنظیم می‌شود. Dot اساساً به ساختار <code>models.Snippet</code> به جای ساختار والد <code>templateData</code> تبدیل می‌شود.</p>
 
-<h3 id="using-the-if-and-range-actions">استفاده از اقدامات if و range</h3>
+<h3 id="using-the-if-and-range-actions">استفاده از اعمال if و range</h3>
 
-<p>بیایید همچنین از اقدامات <code>{{if}}</code> و <code>{{range}}</code> در یک مثال عملی استفاده کنیم و صفحه اصلی خود را به روز کنیم تا جدولی از آخرین قطعات را نمایش دهد، چیزی شبیه به این:</p>
+<p>بیایید همچنین از اعمال <code>{{if}}</code> و <code>{{range}}</code> در یک مثال ملموس استفاده کنیم و صفحه اصلی خود را برای نمایش یک جدول از آخرین snippetها به‌روزرسانی کنیم، کمی شبیه این:</p>
 
-<p><img class="sketch" src="assets/img/05.02-01.png" alt="05.02-01.png"></img></p>
+<p><img class="sketch" src="assets/img/05.02-01.png" alt="05.02-01.png" /></p>
 
-<p>ابتدا ساختار <code>templateData</code> را به روز کنید تا شامل یک فیلد <code>Snippets</code> برای نگهداری یک برش از قطعات باشد، به این صورت:</p>
+<p>ابتدا ساختار <code>templateData</code> را به‌روزرسانی کنید تا یک فیلد <code>Snippets</code> برای نگه‌داری یک slice از snippetها داشته باشد، مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
-<span class="kn">import</span> <span class="s">&#34;snippetbox.letsgofa.net/internal/models&#34;</span>
+<span class="kn">import</span> <span class="s">&#34;snippetbox.alexedwards.net/internal/models&#34;</span>
 
 <span class="c1">// Include a Snippets field in the templateData struct.
 </span><span class="c1"></span><span class="kd">type</span> <span class="nx">templateData</span> <span class="kd">struct</span> <span class="p">{</span>
@@ -171,7 +172,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>سپس تابع <code>home</code> handler را به روز کنید تا آخرین قطعات را از مدل پایگاه داده ما بگیرد و آنها را به قالب <code>home.tmpl</code> منتقل کند:</p>
+<p>سپس تابع handler <code>home</code> را به‌روزرسانی کنید تا آخرین snippetها را از مدل پایگاه داده ما واکشی کند و آن‌ها را به قالب <code>home.tmpl</code> ارسال کند:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -216,15 +217,15 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>حالا بیایید به فایل <code>ui/html/pages/home.tmpl</code> برویم و آن را به روز کنیم تا این قطعات را در یک جدول با استفاده از اقدامات <code>{{if}}</code> و <code>{{range}}</code> نمایش دهیم. به طور خاص:</p>
+<p>حالا بیایید به فایل <code>ui/html/pages/home.tmpl</code> برویم و آن را برای نمایش این snippetها در یک جدول با استفاده از اعمال <code>{{if}}</code> و <code>{{range}}</code> به‌روزرسانی کنیم. به طور خاص:</p>
 
 <ul>
-<li><p>ما می خواهیم از اقدام <code>{{if}}</code> استفاده کنیم تا بررسی کنیم که آیا برش قطعات خالی است یا خیر. اگر خالی است، می خواهیم یک پیام <code>&quot;هنوز چیزی برای دیدن اینجا نیست!</code> نمایش دهیم. در غیر این صورت، می خواهیم جدولی حاوی اطلاعات قطعه را رندر کنیم.</p></li>
+<li><p>می‌خواهیم از عمل <code>{{if}}</code> برای بررسی اینکه آیا slice از snippetها خالی است یا نه استفاده کنیم. اگر خالی است، می‌خواهیم یک پیام <code>&quot;There's nothing to see here yet!</code> نمایش دهیم. در غیر این صورت، می‌خواهیم یک جدول حاوی اطلاعات snippet را رندر کنیم.</p></li>
 
-<li><p>ما می خواهیم از اقدام <code>{{range}}</code> استفاده کنیم تا بر روی تمام قطعات در برش حلقه بزنیم و محتوای هر قطعه را در یک سطر جدول رندر کنیم.</p></li>
+<li><p>می‌خواهیم از عمل <code>{{range}}</code> برای تکرار روی همه snippetها در slice استفاده کنیم، محتوای هر snippet را در یک ردیف جدول رندر کنیم.</p></li>
 </ul>
 
-<p>در اینجا نشانه گذاری آمده است:</p>
+<p>این نشانه‌گذاری است:</p>
 
 <figure class="code html" dir="ltr">
 <figcaption>File: ui/html/pages/home.tmpl</figcaption>
@@ -249,12 +250,12 @@
         {{end}}
     <span class="p">&lt;</span><span class="p">/</span><span class="nt">table</span><span class="p">&gt;</span>
     {{else}}
-        <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>هنوز چیزی برای دیدن اینجا نیست...!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">p</span><span class="p"></span><span class="p">&gt;</span>There&#39;s nothing to see here... yet!<span class="p">&lt;</span><span class="p">/</span><span class="nt">p</span><span class="p">&gt;</span>
     {{end}}
 {{end}}</pre>
 </figure>
 
-<p>اطمینان حاصل کنید که همه فایل های شما ذخیره شده اند، برنامه را مجدداً راه اندازی کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> در یک مرورگر وب مراجعه کنید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه ای را ببینید که شبیه به این است:</p>
+<p>مطمئن شوید که همه فایل‌های شما ذخیره شده‌اند، برنامه را مجدداً راه‌اندازی کنید و به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> در یک مرورگر وب بروید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه‌ای ببینید که کمی شبیه این است:</p>
 
 <figure class="img">
 <img src="assets/img/05.02-02.png" alt="05.02-02.png" />
@@ -266,15 +267,15 @@
 
 <h4 id="combining-functions">ترکیب توابع</h4>
 
-<p>امکان ترکیب چندین تابع در برچسب های قالب شما وجود دارد، با استفاده از پرانتز <code>()</code> برای احاطه کردن توابع و آرگومان های آنها در صورت لزوم.</p>
+<p>ترکیب چندین تابع در تگ‌های قالب شما امکان‌پذیر است، با استفاده از پرانتز <code>()</code> برای احاطه کردن توابع و آرگومان‌های آن‌ها در صورت نیاز.</p>
 
-<p>به عنوان مثال، برچسب زیر محتوای <code>C1</code> را رندر می کند اگر طول <code>Foo</code> بیشتر از 99 باشد:</p>
+<p>به عنوان مثال، تگ زیر محتوای <code>C1</code> را رندر می‌کند اگر طول <code>Foo</code> بزرگتر از 99 باشد:</p>
 
 <figure class="code plain" dir="ltr">
 <pre>{{if (gt (len .Foo) 99)}} C1 {{end}}</pre>
 </figure>
 
-<p>یا به عنوان مثال دیگر، برچسب زیر محتوای <code>C1</code> را رندر می کند اگر <code>.Foo</code> برابر با 1 باشد <em>و</em> <code>.Bar</code> کمتر یا برابر با 20 باشد:</p>
+<p>یا به عنوان مثال دیگر، تگ زیر محتوای <code>C1</code> را رندر می‌کند اگر <code>.Foo</code> برابر با 1 باشد <em>و</em> <code>.Bar</code> کمتر یا مساوی 20 باشد:</p>
 
 <figure class="code plain" dir="ltr">
 <pre>{{if (and (eq .Foo 1) (le .Bar 20))}} C1 {{end}}</pre>
@@ -282,7 +283,7 @@
 
 <h4 id="controlling-loop-behavior">کنترل رفتار حلقه</h4>
 
-<p>در یک اقدام <code>{{range}}</code> می توانید از دستور <code>{{break}}</code> برای پایان دادن به حلقه زودهنگام استفاده کنید و <code>{{continue}}</code> برای بلافاصله شروع تکرار بعدی حلقه.</p>
+<p>درون یک عمل <code>{{range}}</code> می‌توانید از دستور <code>{{break}}</code> برای پایان زودهنگام حلقه، و <code>{{continue}}</code> برای شروع فوری تکرار بعدی حلقه استفاده کنید.</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="p">{</span><span class="p">{</span><span class="k">range</span> <span class="p">.</span><span class="nx">Foo</span><span class="p">}</span><span class="p">}</span>
@@ -304,67 +305,8 @@
 </span><span class="c1"></span><span class="p">{</span><span class="p">{</span><span class="nx">end</span><span class="p">}</span><span class="p">}</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>عملکردهای قالب</td>
-        <td>Template Actions</td>
-        <td>دستورات خاص برای کنترل جریان و پردازش داده در قالب‌ها</td>
-    </tr>
-    <tr>
-        <td>توابع داخلی</td>
-        <td>Built-in Functions</td>
-        <td>توابع از پیش تعریف شده در بسته html/template</td>
-    </tr>
-    <tr>
-        <td>منطق قالب</td>
-        <td>Template Logic</td>
-        <td>قواعد و شرایط برای پردازش و نمایش داده‌ها در قالب</td>
-    </tr>
-    <tr>
-        <td>داده‌های پویا</td>
-        <td>Dynamic Data</td>
-        <td>اطلاعاتی که در زمان اجرا تغییر می‌کنند</td>
-    </tr>
-    <tr>
-        <td>حلقه‌های تکرار</td>
-        <td>Iteration Loops</td>
-        <td>ساختارهای تکرار برای پردازش مجموعه‌ای از داده‌ها</td>
-    </tr>
-    <tr>
-        <td>عبارات شرطی</td>
-        <td>Conditional Statements</td>
-        <td>دستورات برای اجرای کد بر اساس شرایط خاص</td>
-    </tr>
-    <tr>
-        <td>قالب‌بندی متن</td>
-        <td>Text Formatting</td>
-        <td>تغییر شکل و ظاهر متن برای نمایش</td>
-    </tr>
-    <tr>
-        <td>متغیرهای قالب</td>
-        <td>Template Variables</td>
-        <td>متغیرهای موقت برای ذخیره داده در قالب</td>
-    </tr>
-    <tr>
-        <td>فراخوانی تابع</td>
-        <td>Function Call</td>
-        <td>استفاده از یک تابع برای انجام عملیات خاص</td>
-    </tr>
-    <tr>
-        <td>پردازش رشته</td>
-        <td>String Processing</td>
-        <td>عملیات مختلف روی متن‌ها و رشته‌ها</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="05.01-displaying-dynamic-data.html">قبلی</a>

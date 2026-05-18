@@ -1,26 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مدیریت تنظیمات پیکربندی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code.go,
-			.code.html,
-			.code.bash {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; مدیریت تنظیمات پیکربندی (Managing Configuration Settings)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; مدیریت تنظیمات پیکربندی</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="03.00-configuration-and-error-handling.html">قبلی</a>
@@ -29,41 +26,41 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل 3.1.</div>
-			<h2 id="managing-configuration-settings">مدیریت تنظیمات پیکربندی (Managing Configuration Settings)</h2>
+			<h2 id="managing-configuration-settings">مدیریت تنظیمات پیکربندی</h2>
 
-<p>فایل <code>main.go</code> برنامه وب ما در حال حاضر شامل چند تنظیمات پیکربندی هاردکد شده (Hardcoded Configuration Settings) است:</p>
+<p>فایل <code>main.go</code> برنامه وب ما در حال حاضر شامل چند تنظیم پیکربندی سخت‌کد شده است:</p>
 
 <ul>
-<li>آدرس شبکه برای سرور جهت گوش دادن (در حال حاضر <code>&quot;:4000&quot;</code>)</li>
+<li>آدرس شبکه برای گوش دادن سرور (در حال حاضر <code>&quot;:4000&quot;</code>)</li>
 <li>مسیر فایل برای دایرکتوری فایل‌های استاتیک (در حال حاضر <code>&quot;./ui/static&quot;</code>)</li>
 </ul>
 
-<p>داشتن این تنظیمات به صورت هاردکد ایده‌آل نیست. هیچ جدایی بین تنظیمات پیکربندی و کد ما وجود ندارد و نمی‌توانیم تنظیمات را در زمان اجرا تغییر دهیم (که این مهم اگر به تنظیمات مختلف برای محیط‌های توسعه، تست و تولید نیاز دارید).</p>
+<p>سخت‌کد کردن این موارد ایده‌آل نیست. هیچ جدایی بین تنظیمات پیکربندی و کد ما وجود ندارد، و نمی‌توانیم تنظیمات را در زمان اجرا (runtime) تغییر دهیم (که در صورت نیاز به تنظیمات مختلف برای محیط‌های توسعه، تست و تولید مهم است).</p>
 
-<p>در این فصل شروع به بهبود این موضوع خواهیم کرد، با شروع از قابل تنظیم کردن آدرس شبکه برای سرور در زمان اجرا.</p>
+<p>در این فصل، ما شروع به بهبود این وضعیت می‌کنیم و با قابل تنظیم کردن آدرس شبکه سرور خود در زمان اجرا (runtime) شروع می‌کنیم.</p>
 
-<h3 id="command-line-flags">پرچم‌های خط فرمان (Command-line Flags)</h3>
+<h3 id="command-line-flags">پرچم‌های خط فرمان</h3>
 
-<p>در Go، یک روش رایج و متداول برای مدیریت تنظیمات پیکربندی استفاده از <dfn>پرچم‌های خط فرمان (Command-line Flags)</dfn> هنگام شروع یک برنامه است. برای مثال:</p>
+<p>در Go، یک روش رایج در Go برای مدیریت تنظیمات پیکربندی، استفاده از <dfn>پرچم‌های خط فرمان</dfn> هنگام راه‌اندازی یک برنامه است. به عنوان مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web -addr=&#34;:80&#34;</pre>
 </figure>
 
-<p>ساده‌ترین راه برای پذیرش و تجزیه یک پرچم خط فرمان در برنامه شما با یک خط کد مانند این است:</p>
+<p>ساده‌ترین روش برای پذیرش و تجزیه یک پرچم خط فرمان در برنامه شما با یک خط کد مانند این است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">addr</span> <span class="o">:=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;addr&#34;</span><span class="p">,</span> <span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="s">&#34;HTTP network address&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>این اساساً یک پرچم خط فرمان جدید با نام <code>addr</code>، یک مقدار پیش‌فرض <code>&quot;:4000&quot;</code> و یک متن کمک کوتاه که توضیح می‌دهد پرچم چه چیزی را کنترل می‌کند، تعریف می‌کند. مقدار پرچم در زمان اجرا در متغیر <code>addr</code> ذخیره خواهد شد.</p>
+<p>این اساساً یک پرچم خط فرمان جدید با نام <code>addr</code>، مقدار پیش‌فرض <code>&quot;:4000&quot;</code> و متن راهنمای کوتاهی که توضیح می‌دهد پرچم چه چیزی را کنترل می‌کند تعریف می‌کند. مقدار پرچم در زمان اجرا (runtime) در متغیر <code>addr</code> ذخیره می‌شود.</p>
 
-<p>بیایید از این در برنامه خود استفاده کنیم و آدرس شبکه هاردکد شده را با یک پرچم خط فرمان جایگزین کنیم:</p>
+<p>بیایید این را در برنامه خود استفاده کنیم و آدرس شبکه سخت‌کد شده را با یک پرچم خط فرمان جایگزین کنیم:</p>
 
-<figure class="code go">
-<figcaption>File:  cmd/web/main.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -108,89 +105,89 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این فایل را ذخیره کنید و سعی کنید از پرچم <code>-addr</code> هنگام شروع برنامه استفاده کنید. باید متوجه شوید که سرور اکنون به هر آدرسی که مشخص می‌کنید گوش می‌دهد، به این صورت:</p>
+<p>این فایل را ذخیره کنید و هنگام راه‌اندازی برنامه، از پرچم <code>-addr</code> استفاده کنید. باید متوجه شوید که سرور اکنون روی هر آدرسی که مشخص می‌کنید گوش می‌دهد، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web -addr=&#34;:9999&#34;
 <samp>2024/03/18 11:29:23 starting server on :9999</samp></pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> پورت‌های 0-1023 محدود هستند و (معمولاً) فقط توسط سرویس‌هایی که دارای امتیازات ریشه هستند قابل استفاده هستند. اگر سعی کنید از یکی از این پورت‌ها استفاده کنید، باید یک پیام خطای <code>bind: permission denied</code> در هنگام راه‌اندازی دریافت کنید.
+<strong>یادداشت:</strong> پورت‌های (Ports) 0-1023 محدود هستند و (معمولاً) فقط می‌توانند توسط سرویس‌هایی که دسترسی root دارند استفاده شوند. اگر سعی کنید از یکی از این پورت‌ها استفاده کنید، باید یک پیام خطای <code>bind: permission denied</code> در زمان راه‌اندازی دریافت کنید.
 </p></aside>
 
-<h3 id="default-values">مقادیر پیش‌فرض (Default Values)</h3>
+<h3 id="default-values">مقادیر پیش‌فرض</h3>
 
-<p>پرچم‌های خط فرمان کاملاً اختیاری هستند. به عنوان مثال، اگر برنامه را بدون پرچم <code>-addr</code> اجرا کنید، سرور به آدرس <code>&quot;:4000&quot;</code> (که مقدار پیش‌فرضی است که مشخص کرده‌ایم) گوش خواهد داد.</p>
+<p>پرچم‌های خط فرمان کاملاً اختیاری هستند. به عنوان مثال، اگر برنامه را بدون پرچم <code>-addr</code> اجرا کنید، سرور به گوش دادن روی آدرس <code>&quot;:4000&quot;</code> بازمی‌گردد (که مقدار پیش‌فرض است که ما مشخص کردیم).</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web
 <samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
 </figure>
 
-<p>هیچ قانونی در مورد استفاده از مقادیر پیش‌فرض برای پرچم‌های خط فرمان وجود ندارد. من دوست دارم از پیش‌فرض‌هایی استفاده کنم که برای محیط توسعه من منطقی هستند، زیرا این کار در هنگام ساخت برنامه به من زمان و تایپ کردن را صرفه‌جویی می‌کند. اما ممکن است شما روش ایمن‌تری را ترجیح دهید که پیش‌فرض‌ها را برای محیط تولید خود تنظیم کنید.</p>
+<p>هیچ قانونی در مورد اینکه چه چیزی را به عنوان مقادیر پیش‌فرض برای پرچم‌های خط فرمان خود استفاده کنید وجود ندارد. من ترجیح می‌دهم از پیش‌فرض‌هایی استفاده کنم که برای محیط توسعه من منطقی هستند، زیرا در زمان ساخت یک برنامه در وقت و تایپ کردن صرفه‌جویی می‌کند. اما ممکن است نظر شما متفاوت باشد. ممکن است رویکرد امن‌تر تنظیم پیش‌فرض‌ها برای محیط تولید خود را ترجیح دهید.</p>
 
-<h3 id="type-conversions">تبدیلات نوع (Type Conversions)</h3>
+<h3 id="type-conversions">تبدیل نوع</h3>
 
-<p>در کد بالا از تابع <code>flag.String()</code> برای تعریف پرچم خط فرمان استفاده کرده‌ایم. این مزیت را دارد که هر مقداری که کاربر در زمان اجرا ارائه می‌دهد به نوع <code>string</code> تبدیل می‌شود. اگر مقدار <em>نتواند</em> به <code>string</code> تبدیل شود، برنامه یک پیام خطا چاپ کرده و خارج می‌شود.</p>
+<p>در کد بالا، ما از تابع <code>flag.String()</code> برای تعریف پرچم خط فرمان استفاده کرده‌ایم. این مزیت تبدیل هر مقداری که کاربر در زمان اجرا (runtime) ارائه می‌دهد به نوع <code>string</code> را دارد. اگر مقدار <em>نتواند</em> به <code>string</code> تبدیل شود، برنامه یک پیام خطا چاپ می‌کند و خارج می‌شود.</p>
 
-<p>Go همچنین دارای مجموعه‌ای از توابع دیگر از جمله <a href="https://pkg.go.dev/flag/#Int"><code>flag.Int()</code></a>، <a href="https://pkg.go.dev/flag/#Bool"><code>flag.Bool()</code></a>، <a href="https://pkg.go.dev/flag/#Float64"><code>flag.Float64()</code></a> و <a href="https://pkg.go.dev/flag#Duration"><code>flag.Duration()</code></a> برای تعریف پرچم‌ها است. این توابع دقیقاً به همان شیوه <code>flag.String()</code> کار می‌کنند، به جز اینکه به طور خودکار مقدار پرچم خط فرمان را به نوع مناسب تبدیل می‌کنند.</p>
+<p>Go همچنین مجموعه‌ای از توابع دیگر از جمله <a href="https://pkg.go.dev/flag/#Int"><code>flag.Int()</code></a>، <a href="https://pkg.go.dev/flag/#Bool"><code>flag.Bool()</code></a>، <a href="https://pkg.go.dev/flag/#Float64"><code>flag.Float64()</code></a> و <a href="https://pkg.go.dev/flag#Duration"><code>flag.Duration()</code></a> برای تعریف پرچم‌ها دارد. این‌ها دقیقاً مانند <code>flag.String()</code> کار می‌کنند، با این تفاوت که به طور خودکار مقدار پرچم خط فرمان را به نوع مناسب تبدیل می‌کنند.</p>
 
-<h3 id="automated-help">کمک خودکار (Automated Help)</h3>
+<h3 id="automated-help">راهنمای خودکار</h3>
 
-<p>یکی دیگر از ویژگی‌های عالی این است که می‌توانید از پرچم <code>-help</code> برای لیست کردن تمام پرچم‌های خط فرمان موجود برای یک برنامه و متن کمک همراه آنها استفاده کنید. امتحان کنید:</p>
+<p>ویژگی عالی دیگر این است که می‌توانید از پرچم <code>-help</code> برای فهرست کردن تمام پرچم‌های خط فرمان موجود برای یک برنامه و متن راهنمای همراه آن‌ها استفاده کنید. آن را امتحان کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./cmd/web -help
 <samp>Usage of /tmp/go-build3672328037/b001/exe/web:
   -addr string
         HTTP network address (default &#34;:4000&#34;)</samp></pre>
 </figure>
 
-<p>بنابراین، به طور کلی، این شروع به نظر می‌رسد که واقعاً خوب است. ما یک روش متداول برای مدیریت تنظیمات پیکربندی برنامه خود در زمان اجرا معرفی کرده‌ایم و به لطف پرچم <code>-help</code>، ما همچنین یک رابط صریح و مستند بین برنامه و پیکربندی عملیاتی آن داریم.</p>
+<p>بنابراین، در مجموع، این شروع به خوب شدن می‌کند. ما یک روش رایج در Go برای مدیریت تنظیمات پیکربندی برنامه خود در زمان اجرا (runtime) معرفی کرده‌ایم، و به لطف پرچم <code>-help</code>، ما همچنین یک رابط صریح و مستند بین برنامه و پیکربندی عملیاتی آن داریم.</p>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="environment-variables">متغیرهای محیطی (Environment Variables)</h4>
+<h4 id="environment-variables">متغیرهای محیطی</h4>
 
-<p>اگر قبلاً برنامه‌های وب ساخته و مستقر کرده‌اید، احتمالاً فکر می‌کنید <em>چه درباره متغیرهای محیطی؟ مطمئناً <a href="http://12factor.net/config">بهترین عمل</a> این است که تنظیمات پیکربندی را در آنجا ذخیره کنید؟</em></p>
+<p>اگر قبلاً برنامه‌های وب ساخته و مستقر کرده‌اید، احتمالاً فکر می‌کنید <em>متغیرهای محیطی چطور؟ مطمئناً <a href="http://12factor.net/config">بهترین روش</a> ذخیره تنظیمات پیکربندی در آنجا است؟</em></p>
 
-<p>اگر بخواهید، می‌توانید تنظیمات پیکربندی خود را در متغیرهای محیطی ذخیره کنید و آنها را مستقیماً از برنامه خود با استفاده از تابع <a href="https://pkg.go.dev/os/#Getenv"><code>os.Getenv()</code></a> به این صورت دسترسی پیدا کنید:</p>
+<p>اگر می‌خواهید، می‌توانید تنظیمات پیکربندی خود را در متغیرهای محیطی ذخیره کنید و با استفاده از تابع <a href="https://pkg.go.dev/os/#Getenv"><code>os.Getenv()</code></a> مستقیماً از برنامه خود به آن‌ها دسترسی پیدا کنید، مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">addr</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Getenv</span><span class="p">(</span><span class="s">&#34;SNIPPETBOX_ADDR&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>اما این نسبت به استفاده از پرچم‌های خط فرمان دارای برخی معایب است. نمی‌توانید یک تنظیم پیش‌فرض مشخص کنید (مقدار بازگشتی از <code>os.Getenv()</code> رشته خالی است اگر متغیر محیطی وجود نداشته باشد)، شما عملکرد <code>-help</code> را که با پرچم‌های خط فرمان دارید، دریافت نمی‌کنید و مقدار بازگشتی از <code>os.Getenv()</code> <em>همیشه</em> یک رشته است &mdash; شما تبدیل نوع خودکار مانند <code>flag.Int()</code>، <code>flag.Bool()</code> و سایر توابع پرچم خط فرمان را دریافت نمی‌کنید.</p>
+<p>اما این در مقایسه با استفاده از پرچم‌های خط فرمان معایبی دارد. نمی‌توانید یک تنظیم پیش‌فرض مشخص کنید (مقدار برگشتی از <code>os.Getenv()</code> در صورت عدم وجود متغیر محیطی، رشته خالی است)، قابلیت <code>-help</code> را که با پرچم‌های خط فرمان دارید دریافت نمی‌کنید، و مقدار برگشتی از <code>os.Getenv()</code> <em>همیشه</em> یک رشته است — تبدیل نوع خودکار مانند <code>flag.Int()</code>، <code>flag.Bool()</code> و سایر توابع پرچم خط فرمان را دریافت نمی‌کنید.</p>
 
-<p>در عوض، می‌توانید بهترین‌های هر دو جهان را با عبور دادن متغیر محیطی به عنوان یک پرچم خط فرمان هنگام شروع برنامه دریافت کنید. برای مثال:</p>
+<p>در عوض، می‌توانید بهترین هر دو دنیا را با ارسال متغیر محیطی به عنوان یک پرچم خط فرمان هنگام راه‌اندازی برنامه دریافت کنید. به عنوان مثال:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ export SNIPPETBOX_ADDR=&#34;:9999&#34;
 $ go run ./cmd/web -addr=$SNIPPETBOX_ADDR
 <samp>2024/03/18 11:29:23 starting server on :9999</samp></pre>
 </figure>
 
-<h4 id="boolean-flags">پرچم‌های بولی (Boolean Flags)</h4>
+<h4 id="boolean-flags">پرچم‌های بولی</h4>
 
-<p>برای پرچم‌هایی که با <code>flag.Bool()</code> تعریف شده‌اند، حذف یک مقدار هنگام شروع برنامه همانند نوشتن <code>-flag=true</code> است. دو دستور زیر معادل هستند:</p>
+<p>برای پرچم‌هایی که با <code>flag.Bool()</code> تعریف شده‌اند، حذف مقدار هنگام راه‌اندازی برنامه همان نوشتن <code>-flag=true</code> است. دو دستور زیر معادل هستند:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run ./example -flag=true
 $ go run ./example -flag</pre>
 </figure>
 
-<p>شما باید به صراحت از <code>-flag=false</code> استفاده کنید اگر می‌خواهید مقدار پرچم بولی را به false تنظیم کنید.</p>
+<p>اگر می‌خواهید مقدار یک پرچم بولی را روی false تنظیم کنید، باید صریحاً از <code>-flag=false</code> استفاده کنید.</p>
 
-<h4 id="pre-existing-variables">متغیرهای پیش‌فرض (Pre-existing Variables)</h4>
+<h4 id="pre-existing-variables">متغیرهای از پیش موجود</h4>
 
-<p>امکان تجزیه مقادیر پرچم خط فرمان به آدرس‌های حافظه متغیرهای پیش‌فرض با استفاده از <a href="https://pkg.go.dev/flag/#FlagSet.StringVar"><code>flag.StringVar()</code></a>، <a href="https://pkg.go.dev/flag/#FlagSet.IntVar"><code>flag.IntVar()</code></a>، <a href="https://pkg.go.dev/flag/#FlagSet.BoolVar"><code>flag.BoolVar()</code></a> و توابع مشابه برای انواع دیگر وجود دارد.</p>
+<p>امکان تجزیه مقادیر پرچم خط فرمان به آدرس‌های حافظه متغیرهای از پیش موجود با استفاده از <a href="https://pkg.go.dev/flag/#FlagSet.StringVar"><code>flag.StringVar()</code></a>، <a href="https://pkg.go.dev/flag/#FlagSet.IntVar"><code>flag.IntVar()</code></a>، <a href="https://pkg.go.dev/flag/#FlagSet.BoolVar"><code>flag.BoolVar()</code></a> و توابع مشابه برای انواع دیگر وجود دارد.</p>
 
-<p>این توابع به خصوص مفید هستند اگر بخواهید تمام تنظیمات پیکربندی خود را در یک ساختار واحد ذخیره کنید. به عنوان یک مثال تقریبی:</p>
+<p>این توابع به ویژه در صورتی مفید هستند که می‌خواهید تمام تنظیمات پیکربندی خود را در یک ساختار واحد ذخیره کنید. به عنوان یک مثال تقریبی:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">type</span> <span class="nx">config</span> <span class="kd">struct</span> <span class="p">{</span>
     <span class="nx">addr</span>      <span class="kt">string</span>
     <span class="nx">staticDir</span> <span class="kt">string</span>
@@ -206,68 +203,8 @@ $ go run ./example -flag</pre>
 <span class="nx">flag</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تنظیمات پیکربندی</td>
-        <td>Configuration Settings</td>
-        <td>پارامترها و تنظیماتی که رفتار برنامه را کنترل می‌کنند</td>
-    </tr>
-    <tr>
-        <td>پرچم‌های خط فرمان</td>
-        <td>Command-line Flags</td>
-        <td>پارامترهایی که هنگام اجرای برنامه از طریق خط فرمان به آن منتقل می‌شوند</td>
-    </tr>
-    <tr>
-        <td>مقادیر پیش‌فرض</td>
-        <td>Default Values</td>
-        <td>مقادیری که در صورت عدم تعیین مقدار توسط کاربر استفاده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>تبدیلات نوع</td>
-        <td>Type Conversions</td>
-        <td>تبدیل داده‌ها از یک نوع به نوع دیگر</td>
-    </tr>
-    <tr>
-        <td>متغیرهای محیطی</td>
-        <td>Environment Variables</td>
-        <td>متغیرهایی که در سطح سیستم عامل تعریف می‌شوند و می‌توانند توسط برنامه‌ها خوانده شوند</td>
-    </tr>
-    <tr>
-        <td>پرچم‌های بولی</td>
-        <td>Boolean Flags</td>
-        <td>پرچم‌هایی که فقط می‌توانند مقادیر درست یا نادرست داشته باشند</td>
-    </tr>
-    <tr>
-        <td>کمک خودکار</td>
-        <td>Automated Help</td>
-        <td>سیستم داخلی برای نمایش راهنمای استفاده از پرچم‌های خط فرمان</td>
-    </tr>
-    <tr>
-        <td>تنظیمات هاردکد شده</td>
-        <td>Hardcoded Settings</td>
-        <td>تنظیماتی که مستقیماً در کد برنامه نوشته شده‌اند و به راحتی قابل تغییر نیستند</td>
-    </tr>
-    <tr>
-        <td>آدرس شبکه</td>
-        <td>Network Address</td>
-        <td>آدرس و پورتی که سرور روی آن به درخواست‌ها گوش می‌دهد</td>
-    </tr>
-    <tr>
-        <td>ساختار پیکربندی</td>
-        <td>Configuration Structure</td>
-        <td>ساختار داده‌ای که تمام تنظیمات پیکربندی برنامه را در خود نگه می‌دارد</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="03.00-configuration-and-error-handling.html">قبلی</a>

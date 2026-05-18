@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>خروج کاربر &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; خروج کاربر</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; خروج کاربر</span>
 						
 					
 				</div>
@@ -25,18 +26,18 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۱۰.۵.</div>
-			<h2 id="user-logout">خروج کاربر (User Logout)</h2>
+			<h2 id="user-logout">خروج کاربر</h2>
 
-<p>در این بخش، نحوه پیاده‌سازی <dfn>خروج کاربر (User Logout)</dfn> را بررسی می‌کنیم. این شامل <dfn>پایان نشست (Session Termination)</dfn>، <dfn>پاکسازی کوکی‌ها (Cookie Cleanup)</dfn> و <dfn>هدایت کاربر (User Redirection)</dfn> می‌شود.</p>
+<p>این ما را به خوبی به خروج دادن یک کاربر می‌رساند. پیاده‌سازی خروج کاربر در مقایسه با ثبت‌نام و لاگین ساده است — اساساً همه کاری که باید انجام دهیم حذف مقدار <code>&quot;authenticatedUserID&quot;</code> از نشست آن‌ها است.</p>
 
-<p>در عین حال، بهتر است شناسه جلسه را دوباره تجدید کنیم و همچنین یک پیام فلش به داده‌های جلسه اضافه کنیم تا به کاربر تأیید کنیم که از سیستم خارج شده است.</p>
+<p>در همان زمان، تجدید شناسه نشست دوباره یک عمل خوب است، و همچنین یک پیام flash به داده‌های نشست اضافه می‌کنیم تا به کاربر تأیید کنیم که خارج شده است.</p>
 
 <p>بیایید handler <code>userLogoutPost</code> را به‌روزرسانی کنیم تا دقیقاً این کار را انجام دهد.</p>
 
 <figure class="code go" dir="ltr">
-<figcaption>File:  cmd/web/handlers.go</figcaption>
+<figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
@@ -63,74 +64,14 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>فایل را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. اگر اکنون روی لینک &lsquo;خروج&rsquo; در نوار ناوبری کلیک کنید، باید از سیستم خارج شده و به صفحه اصلی هدایت شوید، به این صورت:</p>
+<p>فایل را ذخیره کنید و برنامه را مجدداً راه‌اندازی کنید. اگر اکنون روی لینک &lsquo;خروج (Logout)&rsquo; در نوار ناوبری کلیک کنید، باید خارج شوید و به صفحه اصلی هدایت شوید، به این صورت:</p>
 
 <figure class="img">
 <img src="assets/img/10.05-01.png" alt="10.05-01.png" />
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>خروج کاربر</td>
-        <td>User Logout</td>
-        <td>فرآیند خروج از حساب کاربری</td>
-    </tr>
-    <tr>
-        <td>پایان نشست</td>
-        <td>Session Termination</td>
-        <td>پایان دادن به نشست کاربری</td>
-    </tr>
-    <tr>
-        <td>پاکسازی کوکی‌ها</td>
-        <td>Cookie Cleanup</td>
-        <td>حذف کوکی‌های نشست</td>
-    </tr>
-    <tr>
-        <td>هدایت کاربر</td>
-        <td>User Redirection</td>
-        <td>انتقال کاربر به صفحه دیگر</td>
-    </tr>
-    <tr>
-        <td>هندلر خروج</td>
-        <td>Logout Handler</td>
-        <td>پردازش‌کننده درخواست خروج</td>
-    </tr>
-    <tr>
-        <td>کد برنامه</td>
-        <td>Application Code</td>
-        <td>کد منبع برنامه</td>
-    </tr>
-    <tr>
-        <td>امنیت نشست</td>
-        <td>Session Security</td>
-        <td>حفاظت از نشست کاربری</td>
-    </tr>
-    <tr>
-        <td>مدیریت نشست</td>
-        <td>Session Management</td>
-        <td>کنترل نشست‌های کاربری</td>
-    </tr>
-    <tr>
-        <td>حذف نشست</td>
-        <td>Session Removal</td>
-        <td>پاک کردن اطلاعات نشست</td>
-    </tr>
-    <tr>
-        <td>صفحه خروج</td>
-        <td>Logout Page</td>
-        <td>صفحه پردازش خروج</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="10.04-user-login.html">قبلی</a>

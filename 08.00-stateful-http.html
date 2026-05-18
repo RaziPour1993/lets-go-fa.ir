@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>HTTP با حالت &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo;  حالت دار HTTP</span>
 						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; HTTP با حالت</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="07.06-automatic-form-parsing.html">قبلی</a>
@@ -23,97 +26,28 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۸.</div>
-			<h1 id="stateful-http">HTTP حالت‌دار (Stateful HTTP)</h1>
+			<h1 id="stateful-http">HTTP با حالت</h1>
 
-<p>در این فصل، نحوه استفاده از <dfn>جلسات (Sessions)</dfn> برای ایجاد <dfn>HTTP حالت‌دار (Stateful HTTP)</dfn> را بررسی می‌کنیم. این به ما امکان می‌دهد <dfn>داده‌های کاربر (User Data)</dfn> را بین <dfn>درخواست‌های HTTP (HTTP Requests)</dfn> مختلف حفظ کنیم.</p>
+<p>یک لمس خوب برای بهبود تجربه کاربری ما نمایش یک پیام تأیید یکباره است که کاربر <em>بعد از</em> افزودن یک اسنیپت جدید می‌بیند. به این صورت:</p>
 
-<p>در این فصل خواهیم آموخت:</p>
+<p><img class="sketch" src="assets/img/08.00-01.png" alt="08.00-01.png" /></p>
+
+<p>یک پیام تأیید مانند این باید فقط یک بار برای کاربر نمایش داده شود (بلافاصله پس از ایجاد اسنیپت) و هیچ کاربر دیگری نباید هرگز این پیام را ببیند. اگر مدتی است که برنامه‌نویسی می‌کنید، ممکن است این نوع عملکرد را به عنوان یک <dfn>پیام فلش</dfn> یا یک <dfn>توست</dfn> بشناسید.</p>
+
+<p>برای این کار باید داده (یا <dfn>حالت</dfn>) را بین درخواست‌های HTTP یک کاربر به اشتراک بگذاریم. رایج‌ترین راه، استفاده از <dfn>نشست</dfn> (session) است.</p>
+
+<p>در این بخش یاد خواهید گرفت:</p>
 
 <ul>
-<li>چرا <dfn>جلسات (Sessions)</dfn> برای ایجاد <dfn>برنامه‌های وب تعاملی (Interactive Web Applications)</dfn> مهم هستند.</li>
-<li>چگونه <dfn>جلسات (Sessions)</dfn> را در Go پیاده‌سازی کنیم.</li>
-<li>چگونه <dfn>داده‌های جلسه (Session Data)</dfn> را به صورت ایمن ذخیره و بازیابی کنیم.</li>
+<li><a href="08.01-choosing-a-session-manager.html">انتخاب مدیر نشست</a> مناسب برای پروژه.</li>
+<li><a href="08.02-setting-up-the-session-manager.html">راه‌اندازی مدیر نشست</a> و middleware مربوط به آن.</li>
+<li><a href="08.03-working-with-session-data.html">کار با داده‌های نشست</a> برای پیام فلش و موارد مشابه.</li>
 </ul>
 
-<p>یک لمس خوب برای بهبود تجربه کاربری ما نمایش یک پیام تأیید یک‌باره است که کاربر پس از افزودن یک قطعه جدید می‌بیند. مانند این:</p>
-
-<p><img class="sketch" src="assets/img/08.00-01.png" alt="08.00-01.png"></img></p>
-
-<p>یک پیام تأیید مانند این باید فقط یک بار برای کاربر نمایش داده شود (بلافاصله پس از ایجاد قطعه) و هیچ کاربر دیگری نباید این پیام را ببیند. اگر مدتی است که برنامه‌نویسی می‌کنید، ممکن است این نوع عملکرد را به عنوان یک <dfn>پیام فلش</dfn> یا یک <dfn>تست</dfn> بشناسید.</p>
-
-<p>برای اینکه این کار را انجام دهیم، باید شروع به اشتراک‌گذاری داده‌ها (یا <dfn>حالت</dfn>) بین درخواست‌های HTTP حالت دار برای همان کاربر کنیم. رایج‌ترین راه برای انجام این کار پیاده‌سازی یک <dfn>جلسه</dfn> برای کاربر است.</p>
-
-<p>در این بخش شما یاد خواهید گرفت:</p>
-
-<ul dir="rtl">
-<li>چه <a href="08.01-choosing-a-session-manager.html">مدیران جلسه</a> برای کمک به ما در پیاده‌سازی جلسات در Go در دسترس هستند.</li>
-<li>چگونه می‌توانید از <a href="08.03-working-with-session-data.html">جلسات</a> برای به اشتراک‌گذاری ایمن و مطمئن داده‌ها بین درخواست‌ها برای یک کاربر خاص استفاده کنید.</li>
-<li>چگونه می‌توانید <a href="08.02-setting-up-the-session-manager.html">رفتار جلسه</a> (از جمله زمان‌های انقضا و تنظیمات کوکی) را بر اساس نیازهای برنامه خود سفارشی کنید.</li>
-</ul>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>جلسات</td>
-        <td>Sessions</td>
-        <td>مکانیزمی برای حفظ وضعیت کاربر بین درخواست‌ها</td>
-    </tr>
-    <tr>
-        <td>HTTP حالت‌دار</td>
-        <td>Stateful HTTP</td>
-        <td>حفظ اطلاعات وضعیت بین درخواست‌های HTTP</td>
-    </tr>
-    <tr>
-        <td>داده‌های کاربر</td>
-        <td>User Data</td>
-        <td>اطلاعات مربوط به کاربر در برنامه</td>
-    </tr>
-    <tr>
-        <td>درخواست‌های HTTP</td>
-        <td>HTTP Requests</td>
-        <td>درخواست‌های ارسالی از مرورگر به سرور</td>
-    </tr>
-    <tr>
-        <td>برنامه‌های وب تعاملی</td>
-        <td>Interactive Web Applications</td>
-        <td>برنامه‌های وب با قابلیت تعامل با کاربر</td>
-    </tr>
-    <tr>
-        <td>داده‌های جلسه</td>
-        <td>Session Data</td>
-        <td>اطلاعات ذخیره شده در جلسه کاربر</td>
-    </tr>
-    <tr>
-        <td>مدیریت جلسه</td>
-        <td>Session Management</td>
-        <td>کنترل و مدیریت جلسات کاربران</td>
-    </tr>
-    <tr>
-        <td>امنیت جلسه</td>
-        <td>Session Security</td>
-        <td>حفاظت از داده‌های جلسه</td>
-    </tr>
-    <tr>
-        <td>کوکی‌های جلسه</td>
-        <td>Session Cookies</td>
-        <td>کوکی‌های حاوی شناسه جلسه</td>
-    </tr>
-    <tr>
-        <td>ذخیره‌سازی جلسه</td>
-        <td>Session Storage</td>
-        <td>محل نگهداری داده‌های جلسه</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="07.06-automatic-form-parsing.html">قبلی</a>

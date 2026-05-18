@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>context درخواست برای احراز هویت و مجوزدهی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
-	<body dir="rtl">
+	<body>
 		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">استفاده از زمینه درخواست</a> &rsaquo; زمینه درخواست برای احراز هویت و مجوزدهی</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="11.00-using-request-context.html">استفاده از context درخواست</a> &rsaquo; context درخواست برای احراز هویت و مجوزدهی</span>
 						
 					
 				</div>
@@ -26,14 +27,12 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 11.2.</div>
-			<h2 id="request-context-for-authentication-authorization">زمینه درخواست برای احراز هویت و مجوزدهی (Request Context for Authentication and Authorization)</h2>
+			<div class="chapter">فصل ۱۱.۲.</div>
+			<h2 id="request-context-for-authentication-authorization">context درخواست برای احراز هویت و مجوزدهی</h2>
 
-<p>در این بخش، نحوه استفاده از <dfn>زمینه درخواست (Request Context)</dfn> برای <dfn>احراز هویت (Authentication)</dfn> و <dfn>مجوزدهی (Authorization)</dfn> را بررسی می‌کنیم. این شامل <dfn>ذخیره‌سازی اطلاعات کاربر (User Information Storage)</dfn> و <dfn>بررسی دسترسی‌ها (Access Checks)</dfn> می‌شود.</p>
+<p>پس، با این توضیحات، بیایید شروع به استفاده از قابلیت context درخواست در برنامه خود کنیم.</p>
 
-<p>بنابراین، با توضیحات فوق، بیایید از قابلیت زمینه درخواست در برنامه خود استفاده کنیم.</p>
-
-<p>ما با بازگشت به فایل <code>internal/models/users.go</code> و تکمیل متد <code>UserModel.Exists()</code> شروع می‌کنیم، به طوری که اگر کاربری با شناسه خاصی در جدول <code>users</code> وجود داشته باشد، <code>true</code> برگرداند و در غیر این صورت <code>false</code>. به این صورت:</p>
+<p>با بازگشت به فایل <code>internal/models/users.go</code> خود شروع می‌کنیم و متد <code>UserModel.Exists()</code> را تکمیل می‌کنیم، تا اگر کاربری با ID مشخص در جدول <code>users</code> ما وجود داشته باشد <code>true</code> برگرداند، و در غیر این صورت <code>false</code>. به این صورت:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
@@ -51,13 +50,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>سپس بیایید یک فایل جدید <code>cmd/web/context.go</code> ایجاد کنیم. در این فایل، یک نوع سفارشی <code>contextKey</code> و یک متغیر <code>isAuthenticatedContextKey</code> تعریف می‌کنیم، به طوری که یک کلید منحصر به فرد برای ذخیره و بازیابی وضعیت احراز هویت از زمینه درخواست داشته باشیم (بدون خطر برخورد نام).</p>
+<p>سپس بیایید یک فایل جدید <code>cmd/web/context.go</code> ایجاد کنیم. در این فایل یک نوع سفارشی <code>contextKey</code> و یک متغیر <code>isAuthenticatedContextKey</code> تعریف می‌کنیم، تا یک کلید یکتا داشته باشیم که می‌توانیم از آن برای ذخیره و بازیابی وضعیت احراز هویت (authentication status) از یک context درخواست استفاده کنیم (بدون خطر برخورد نام (naming collisions)).</p>
 
-<figure class="code bash" style="text-align: left;">
+<figure class="code bash" dir="ltr">
 <pre>$ touch cmd/web/context.go</pre>
 </figure>
 
-<figure class="code go" style="text-align: left;">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/context.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -66,15 +65,15 @@
 <span class="kd">const</span> <span class="nx">isAuthenticatedContextKey</span> <span class="p">=</span> <span class="nf">contextKey</span><span class="p">(</span><span class="s">&#34;isAuthenticated&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>و اکنون برای بخش هیجان‌انگیز. بیایید یک متد میان‌افزار جدید <code>authenticate()</code> ایجاد کنیم که:</p>
+<p>و حالا برای بخش هیجان‌انگیز. بیایید یک متد middleware جدید <code>authenticate()</code> ایجاد کنیم که:</p>
 
 <ol>
-<li>شناسه کاربر را از داده‌های جلسه او بازیابی می‌کند.</li>
-<li>پایگاه داده را بررسی می‌کند تا ببیند آیا شناسه با یک کاربر معتبر مطابقت دارد یا خیر، با استفاده از متد <code>UserModel.Exists()</code>.</li>
-<li>زمینه درخواست را به‌روزرسانی می‌کند تا شامل یک کلید <code>isAuthenticatedContextKey</code> با مقدار <code>true</code> باشد.</li>
+<li>ID کاربر را از داده‌های نشست آن‌ها بازیابی می‌کند.</li>
+<li>پایگاه داده را بررسی می‌کند تا ببیند آیا ID با یک کاربر معتبر مطابقت دارد یا نه با استفاده از متد <code>UserModel.Exists()</code>.</li>
+<li>context درخواست را به‌روزرسانی می‌کند تا یک کلید <code>isAuthenticatedContextKey</code> با مقدار <code>true</code> را شامل شود.</li>
 </ol>
 
-<p>در اینجا کد آمده است:</p>
+<p>کد به این صورت است:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/middleware.go</figcaption>
@@ -94,7 +93,7 @@
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// Retrieve the authenticatedUserID value from the session using the
 </span><span class="c1"></span>        <span class="c1">// GetInt() method. This will return the zero value for an int (0) if no
-</span><span class="c1"></span>        <span class="c1">// "authenticatedUserID" value is in the session -- in which case we
+</span><span class="c1"></span>        <span class="c1">// &#34;authenticatedUserID&#34; value is in the session -- in which case we
 </span><span class="c1"></span>        <span class="c1">// call the next handler in the chain as normal and return.
 </span><span class="c1"></span>        <span class="nx">id</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">sessionManager</span><span class="p">.</span><span class="nf">GetInt</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">Context</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="s">&#34;authenticatedUserID&#34;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nx">id</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
@@ -125,14 +124,14 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>نکته مهمی که باید در اینجا تأکید کرد، تفاوت زیر است:</p>
+<p>نکته مهمی که باید در اینجا تأکید کنم تفاوت زیر است:</p>
 
 <ul>
-<li>وقتی کاربر معتبر نداریم، درخواست اصلی و بدون تغییر <code>*http.Request</code> را به هندلر بعدی در زنجیره می‌فرستیم.</li>
-<li>وقتی کاربر معتبر داریم، یک نسخه از درخواست با یک کلید <code>isAuthenticatedContextKey</code> و مقدار <code>true</code> در زمینه درخواست ایجاد می‌کنیم. سپس این نسخه از <code>*http.Request</code> را به هندلر بعدی در زنجیره می‌فرستیم.</li>
+<li>وقتی یک کاربر احراز هویت شده معتبر <em>نداریم</em>، <code>*http.Request</code> اصلی و بدون تغییر را به handler بعدی در زنجیره منتقل می‌کنیم.</li>
+<li>وقتی یک کاربر احراز هویت شده معتبر <em>داریم</em>، یک کپی از درخواست با یک کلید <code>isAuthenticatedContextKey</code> و مقدار <code>true</code> ذخیره شده در context درخواست ایجاد می‌کنیم. سپس این کپی از <code>*http.Request</code> را به handler بعدی در زنجیره منتقل می‌کنیم.</li>
 </ul>
 
-<p>خوب، بیایید فایل <code>cmd/web/routes.go</code> را به‌روزرسانی کنیم تا میان‌افزار <code>authenticate()</code> را در زنجیره میان‌افزار <code>dynamic</code> قرار دهیم:</p>
+<p>خوب، بیایید فایل <code>cmd/web/routes.go</code> را به‌روزرسانی کنیم تا middleware <code>authenticate()</code> را در زنجیره middleware <code>dynamic</code> خود شامل کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
@@ -167,7 +166,7 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>آخرین کاری که باید انجام دهیم این است که کمک‌کننده <code>isAuthenticated()</code> خود را به‌روزرسانی کنیم، به طوری که به جای بررسی داده‌های جلسه، اکنون زمینه درخواست را بررسی کند تا تعیین کند که آیا کاربر احراز هویت شده است یا خیر.</p>
+<p>آخرین کاری که باید انجام دهیم به‌روزرسانی helper <code>isAuthenticated()</code> ما است، تا به جای بررسی داده‌های نشست، اکنون context درخواست را بررسی کند تا تعیین کند که آیا یک کاربر احراز هویت شده است یا نه.</p>
 
 <p>می‌توانیم این کار را به این صورت انجام دهیم:</p>
 
@@ -187,94 +186,35 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>نکته مهمی که باید در اینجا اشاره کرد این است که اگر در زمینه درخواست با کلید <code>isAuthenticatedContextKey</code> مقداری وجود نداشته باشد، یا مقدار زیرین یک <code>bool</code> نباشد، این تأیید نوع شکست خواهد خورد. در این صورت، ما یک بازگشت ایمن انجام می‌دهیم و <code>false</code> برمی‌گردانیم (یعنی فرض می‌کنیم که کاربر احراز هویت نشده است).</p>
+<p>نکته مهمی که باید در اینجا اشاره کنم این است که اگر مقداری در context درخواست با کلید <code>isAuthenticatedContextKey</code> وجود نداشته باشد، یا مقدار زیرین یک <code>bool</code> نباشد، این تبدیل نوع ناموفق خواهد بود. در آن صورت ما یک بازگشت &lsquo;امن&rsquo; می‌گیریم و false برمی‌گردانیم (یعنی فرض می‌کنیم که کاربر احراز هویت نشده است).</p>
 
-<p>اگر دوست دارید، برنامه را دوباره اجرا کنید. باید به درستی کامپایل شود و اگر به عنوان یک کاربر خاص وارد شوید و در برنامه مرور کنید، باید دقیقاً مانند قبل کار کند.</p>
+<p>اگر می‌خواهید، دوباره برنامه را اجرا کنید. باید به درستی کامپایل شود و اگر به عنوان یک کاربر خاص وارد شوید و در برنامه گشت‌زنی کنید، باید دقیقاً مانند قبل کار کند.</p>
 
-<p>سپس، اگر می‌خواهید، MySQL را باز کنید و رکورد کاربری که به عنوان آن وارد شده‌اید را از پایگاه داده حذف کنید. برای مثال:</p>
+<p>سپس، اگر می‌خواهید، MySQL را باز کنید و رکورد کاربری که به عنوان آن وارد شده‌اید را از پایگاه داده حذف کنید. به عنوان مثال:</p>
 
-<figure class="code bash" style="text-align: left;">
+<figure class="code bash" dir="ltr">
 <pre>mysql&gt; USE snippetbox;
 mysql&gt; DELETE FROM users WHERE email = &#39;bob@example.com&#39;;</pre>
 </figure>
 
-<p>و وقتی به مرورگر خود برگردید و صفحه را تازه کنید، برنامه اکنون به اندازه کافی هوشمند است که تشخیص دهد کاربر حذف شده است و شما به عنوان یک کاربر غیرمعتبر (خارج شده) رفتار خواهید شد.</p>
+<p>و وقتی به مرورگر خود برمی‌گردید و صفحه را رفرش می‌کنید، برنامه اکنون به اندازه کافی هوشمند است که تشخیص دهد کاربر حذف شده است، و خود را به عنوان یک کاربر احراز هویت نشده (خروج کرده) می‌بینید.</p>
 
 <hr />
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="misusing-request-context">استفاده نادرست از زمینه درخواست</h4>
+<h4 id="misusing-request-context">سوء استفاده از context درخواست</h4>
 
-<p>مهم است که تأکید کنیم که زمینه درخواست باید فقط برای ذخیره اطلاعات مربوط به طول عمر یک درخواست خاص استفاده شود. مستندات Go برای <code>context.Context</code> هشدار می‌دهد:</p>
+<p>نکته مهمی که باید تأکید کنم این است که context درخواست باید فقط برای ذخیره اطلاعات مرتبط با طول عمر یک درخواست خاص استفاده شود. مستندات Go برای <code>context.Context</code> هشدار می‌دهد:</p>
 
 <blockquote>
-<p>از مقادیر زمینه فقط برای داده‌های محدود به درخواست که از فرآیندها و API‌ها عبور می‌کنند، استفاده کنید.</p>
+<p>از context Values فقط برای داده‌های محدود به درخواست که بین فرآیندها و APIها عبور می‌کنند استفاده کنید.</p>
 </blockquote>
 
-<p>این بدان معناست که نباید از آن برای انتقال وابستگی‌هایی که <em>خارج از طول عمر یک درخواست</em> وجود دارند &mdash; مانند لاگرها، کش‌های قالب و استخر اتصال پایگاه داده شما &mdash; به میان‌افزار و هندلرهای خود استفاده کنید.</p>
+<p>این یعنی نباید از آن برای انتقال وابستگی‌هایی که <em>خارج از طول عمر یک درخواست</em> وجود دارند &mdash; مانند loggerها، cacheهای template و connection pool پایگاه داده شما &mdash; به middleware و handlerهای خود استفاده کنید.</p>
 
-<p>به دلایل ایمنی نوع و وضوح کد، تقریباً همیشه بهتر است این وابستگی‌ها را به‌طور صریح در دسترس هندلرهای خود قرار دهید، با این که یا هندلرهای خود را به عنوان متدهایی در برابر یک ساختار <code>application</code> (مانند آنچه در این کتاب داریم) یا با انتقال آنها در یک بسته (مانند <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">این Gist</a>) قرار دهید.</p>
+<p>به دلایل امنیت نوع و وضوح کد، تقریباً همیشه بهتر است این وابستگی‌ها را به‌طور صریح در دسترس handlerهای خود قرار دهید، یا با تبدیل handlerهای خود به متدهایی در برابر یک struct <code>application</code> (مانند آنچه در این کتاب داریم) یا با انتقال آن‌ها در یک closure (مانند <a href="https://gist.github.com/alexedwards/5cd712192b4831058b21">این Gist</a>).</p>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>زمینه درخواست</td>
-        <td>Request Context</td>
-        <td>محیط اجرای درخواست</td>
-    </tr>
-    <tr>
-        <td>احراز هویت</td>
-        <td>Authentication</td>
-        <td>تأیید هویت کاربر</td>
-    </tr>
-    <tr>
-        <td>مجوزدهی</td>
-        <td>Authorization</td>
-        <td>کنترل دسترسی کاربر</td>
-    </tr>
-    <tr>
-        <td>ذخیره‌سازی اطلاعات کاربر</td>
-        <td>User Information Storage</td>
-        <td>نگهداری داده‌های کاربر</td>
-    </tr>
-    <tr>
-        <td>بررسی دسترسی‌ها</td>
-        <td>Access Checks</td>
-        <td>کنترل مجوزهای دسترسی</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار احراز هویت</td>
-        <td>Authentication Middleware</td>
-        <td>کد واسط برای تأیید هویت</td>
-    </tr>
-    <tr>
-        <td>کلید زمینه</td>
-        <td>Context Key</td>
-        <td>کلید ذخیره داده در زمینه</td>
-    </tr>
-    <tr>
-        <td>مدل کاربر</td>
-        <td>User Model</td>
-        <td>ساختار داده‌ای کاربر</td>
-    </tr>
-    <tr>
-        <td>نشست کاربر</td>
-        <td>User Session</td>
-        <td>جلسه کاری کاربر</td>
-    </tr>
-    <tr>
-        <td>کنترل دسترسی</td>
-        <td>Access Control</td>
-        <td>مدیریت مجوزها</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">

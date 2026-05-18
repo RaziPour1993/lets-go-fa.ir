@@ -132,10 +132,10 @@ nav ol li.indent { font-weight: 400; margin-left: 24px; list-style-type: circle;
 .text code, .text table, .text pre, .text samp, .text figcaption { font-family: "Ubuntu Mono", monospace; }
 .text blockquote { font-style: italic; border-left: solid 4px #EDEDED; padding-left: 1em; }
 .text blockquote code { font-style: normal; }
-.text figure.code { font-size: 16px; background-color: #F9F9F9; border: solid 1px #EDEDED; overflow-x: auto; }
-.text figure.code figcaption { padding: 14px 1em; border-bottom: solid 1px #EDEDED; margin-bottom: -3px; }
-.text figure.code pre { padding: 1em; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4; }
-.text figure.bash { background-color: #283C46; color: #FFFFFF; border: none; }
+.text figure.code { font-size: 16px; background-color: #F9F9F9; border: solid 1px #EDEDED; overflow-x: auto; direction: ltr; text-align: left; }
+.text figure.code figcaption { padding: 14px 1em; border-bottom: solid 1px #EDEDED; margin-bottom: -3px; direction: ltr; text-align: left; }
+.text figure.code pre { padding: 1em; tab-size: 4; -moz-tab-size: 4; -o-tab-size: 4; direction: ltr; text-align: left; }
+.text figure.bash { background-color: #283C46; color: #FFFFFF; border: none; direction: ltr; text-align: left; }
 .text figure.bash samp { color: silver; }
 .text figure, .text table { margin: 30px 0; }
 .text p, .text ul, .text ol, .text aside { margin: 20px 0; }
@@ -165,6 +165,33 @@ nav ol li.indent { font-weight: 400; margin-left: 24px; list-style-type: circle;
 .text table th { padding: 10px 9px 9px; background-color: #283C46; border-left: solid 1px #283C46; border-right: solid 1px #283C46; border-bottom: solid 1px #283C46; color: #FFFFFF; }
 .text table tr:nth-child(2n) { background-color: #F9F9F9; }
 .text table span { white-space: nowrap; }
+.text table.glossary th:first-child,
+.text table.glossary td:first-child {
+	text-align: right;
+	direction: rtl;
+}
+.text table.glossary th:last-child,
+.text table.glossary td:last-child {
+	text-align: left;
+	white-space: nowrap;
+}
+.text table.desc-table th:last-child,
+.text table.desc-table td:last-child {
+	text-align: right;
+	direction: rtl;
+}
+.text table.desc-table th:first-child,
+.text table.desc-table td:first-child {
+	text-align: left;
+	white-space: nowrap;
+}
+.text ul.en-links {
+	direction: ltr;
+	text-align: left;
+}
+.text ul.en-links li {
+	text-align: left;
+}
 .text .chapter { color: #818181; font-size: 16px; color: #818181; margin-bottom: 5px; }
 .text ul ul { list-style-type: circle; }
 .text ul ul li { margin-top: 5px; }

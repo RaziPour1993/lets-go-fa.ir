@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>پیکربندی و مدیریت خطا &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; پیکربندی و مدیریت خطا (Configuration and Error Handling)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; پیکربندی و مدیریت خطا</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="02.10-the-http-handler-interface.html">قبلی</a>
@@ -21,83 +26,24 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل ۳.</div>
-			<h1 id="configuration-and-error-handling">پیکربندی و مدیریت خطا (Configuration and Error Handling)</h1>
+		<main class="wrapper text">
+			<div class="chapter">فصل 3.</div>
+			<h1 id="configuration-and-error-handling">پیکربندی و مدیریت خطا</h1>
 
-<p>در این بخش از کتاب، قصد داریم به برخی از بهبود ساختار و نگهداری کد بپردازیم. ما عملکرد جدید زیادی به برنامه خود اضافه نخواهیم کرد، بلکه بر بهبودهایی تمرکز خواهیم کرد که توسعه و مدیریت آن را آسان‌تر می‌کند.</p>
+<p>در این بخش از کتاب، ما قصد داریم برخی از کارهای نگهداری را انجام دهیم. ما عملکرد جدید زیادی به برنامه خود اضافه نخواهیم کرد، بلکه بر بهبودهایی تمرکز می‌کنیم که توسعه و مدیریت آن را آسان‌تر می‌کند.</p>
 
 <p>شما یاد خواهید گرفت که چگونه:</p>
 
 <ul>
-<li>تنظیمات پیکربندی برنامه خود را به روشی آسان و ایدئوماتیک با استفاده از <a href="03.01-managing-configuration-settings.html">پرچم‌های خط فرمان (Command-line Flags)</a> در زمان اجرا منتقل کنید.</li>
-<li>یک <a href="03.02-structured-logging.html">لاگر سفارشی (Custom Logger)</a> برای نوشتن ورودی‌های لاگ ساختاریافته و سطح‌بندی شده ایجاد کنید و از آن در سراسر برنامه خود استفاده کنید.</li>
-<li> <a href="03.03-dependency-injection.html">وابستگی‌ها (Dependencies)</a> را به روشی که قابل توسعه، ایمن از نظر نوع و در هنگام نوشتن تست‌ها مزاحمتی ایجاد نمی‌کند، در اختیار هندلرهای خود قرار دهید.</li>
-<li> <a href="03.04-centralized-error-handling.html">مدیریت خطای متمرکز (Centralized Error Handling)</a> را پیاده‌سازی کنید تا نیازی به تکرار خود در هنگام نوشتن کد نداشته باشید.</li>
+<li>با <a href="03.01-managing-configuration-settings.html">پرچم‌های خط فرمان</a> تنظیمات را در زمان اجرا مدیریت کنید.</li>
+<li>با <a href="03.02-structured-logging.html">لاگ‌گیری ساختاریافته</a> رویدادها را با سطح و قالب مشخص ثبت کنید.</li>
+<li>با <a href="03.03-dependency-injection.html">تزریق وابستگی</a> logger و سایر وابستگی‌ها را به‌صورت type-safe به handlerها برسانید.</li>
+<li>با <a href="03.04-centralized-error-handling.html">مدیریت متمرکز خطا</a> از تکرار کد جلوگیری کنید.</li>
+<li>با <a href="03.05-isolating-the-application-routes.html">جداسازی مسیرها</a> فایل <code>routes.go</code> را از <code>main.go</code> جدا کنید.</li>
 </ul>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>پیکربندی</td>
-        <td>Configuration</td>
-        <td>تنظیمات و پارامترهایی که رفتار برنامه را کنترل می‌کنند</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>مکانیزم‌های کنترل و پاسخ به خطاها در برنامه</td>
-    </tr>
-    <tr>
-        <td>پرچم‌های خط فرمان</td>
-        <td>Command-line Flags</td>
-        <td>پارامترهایی که هنگام اجرای برنامه از طریق خط فرمان به آن منتقل می‌شوند</td>
-    </tr>
-    <tr>
-        <td>لاگر سفارشی</td>
-        <td>Custom Logger</td>
-        <td>سیستم ثبت رویدادها که برای نیازهای خاص برنامه سفارشی‌سازی شده است</td>
-    </tr>
-    <tr>
-        <td>لاگ ساختاریافته</td>
-        <td>Structured Logging</td>
-        <td>ثبت رویدادها در قالبی ساختاریافته که امکان پردازش و تحلیل آسان‌تر را فراهم می‌کند</td>
-    </tr>
-    <tr>
-        <td>وابستگی‌ها</td>
-        <td>Dependencies</td>
-        <td>اجزا و سرویس‌هایی که یک بخش از برنامه برای عملکرد صحیح به آن‌ها نیاز دارد</td>
-    </tr>
-    <tr>
-        <td>تزریق وابستگی</td>
-        <td>Dependency Injection</td>
-        <td>الگوی طراحی که در آن وابستگی‌های یک شیء از بیرون به آن تزریق می‌شوند</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطای متمرکز</td>
-        <td>Centralized Error Handling</td>
-        <td>رویکردی که در آن مدیریت خطاها در یک مکان مرکزی انجام می‌شود</td>
-    </tr>
-    <tr>
-        <td>ایمن از نظر نوع</td>
-        <td>Type-safe</td>
-        <td>ویژگی که تضمین می‌کند عملیات‌های مرتبط با نوع داده در زمان کامپایل صحیح هستند</td>
-    </tr>
-    <tr>
-        <td>قابل توسعه</td>
-        <td>Scalable</td>
-        <td>قابلیت گسترش و تغییر سیستم بدون نیاز به تغییرات اساسی در ساختار آن</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="02.10-the-http-handler-interface.html">قبلی</a>

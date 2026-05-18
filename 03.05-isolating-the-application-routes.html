@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>جداسازی مسیرهای برنامه &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">	
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; جداسازی مسیرهای برنامه (Isolating Application Routes)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="03.00-configuration-and-error-handling.html">پیکربندی و مدیریت خطا</a> &rsaquo; جداسازی مسیرهای برنامه</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="03.04-centralized-error-handling.html">قبلی</a>
@@ -27,20 +26,20 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل 3.5.</div>
-			<h2 id="isolating-the-application-routes">جداسازی مسیرهای برنامه (Isolating Application Routes)</h2>
+			<h2 id="isolating-the-application-routes">جداسازی مسیرهای برنامه</h2>
 
-<p>در حالی که در حال بازسازی کد خود هستیم، یک تغییر دیگر هم ارزش انجام دادن دارد.</p>
+<p>در حالی که در حال بازسازی کد خود هستیم، یک تغییر دیگر ارزش انجام دارد.</p>
 
-<p>تابع <code>main()</code> ما شروع به شلوغ شدن کرده است، بنابراین برای اینکه آن را واضح و متمرکز نگه داریم، می‌خواهم اعلان‌های مسیر برای برنامه را به یک فایل مستقل <code>routes.go</code> منتقل کنم، به این صورت:</p>
+<p>تابع <code>main()</code> ما شروع به شلوغ شدن کرده است، بنابراین برای نگه داشتن آن واضح و متمرکز، می‌خواهم اعلان‌های مسیر برنامه را به یک فایل مستقل <code>routes.go</code> منتقل کنم، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ touch cmd/web/routes.go</pre>
 </figure>
 
-<figure class="code go">
-<figcaption>File:  cmd/web/routes.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="s">&#34;net/http&#34;</span>
@@ -61,10 +60,10 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>سپس می‌توانیم فایل <code>main.go</code> را به این صورت به‌روزرسانی کنیم:</p>
+<p>سپس می‌توانیم فایل <code>main.go</code> را برای استفاده از این به‌روزرسانی کنیم:</p>
 
-<figure class="code go">
-<figcaption>File:  cmd/web/main.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="o">...</span>
@@ -89,76 +88,16 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این بسیار مرتب‌تر است. مسیرهای برنامه ما اکنون در متد <code>app.routes()</code> جدا و کپسوله شده‌اند و مسئولیت‌های تابع <code>main()</code> ما محدود به موارد زیر است:</p>
+<p>این بسیار مرتب‌تر است. مسیرهای برنامه ما اکنون جدا شده و در متد <code>app.routes()</code> کپسوله شده‌اند، و مسئولیت‌های تابع <code>main()</code> ما محدود به:</p>
 
 <ul>
-<li>تجزیه تنظیمات پیکربندی زمان اجرا (Runtime Configuration Settings) برای برنامه؛</li>
-<li>ایجاد وابستگی‌ها (Dependencies) برای هندلرها؛ و</li>
-<li>اجرای سرور HTTP (HTTP Server).</li>
+<li>تجزیه تنظیمات پیکربندی زمان اجرا (runtime) برای برنامه؛</li>
+<li>ایجاد وابستگی‌ها برای handlerها؛ و</li>
+<li>اجرای سرور HTTP.</li>
 </ul>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>جداسازی مسیرهای برنامه</td>
-        <td>Isolating Application Routes</td>
-        <td>فرآیند جداسازی و سازماندهی مسیرهای برنامه در یک فایل مستقل</td>
-    </tr>
-    <tr>
-        <td>مسیرهای برنامه</td>
-        <td>Application Routes</td>
-        <td>تعاریف مسیرهای HTTP و هندلرهای مرتبط با آنها</td>
-    </tr>
-    <tr>
-        <td>تنظیمات پیکربندی زمان اجرا</td>
-        <td>Runtime Configuration Settings</td>
-        <td>تنظیمات برنامه که در زمان اجرا قابل تغییر هستند</td>
-    </tr>
-    <tr>
-        <td>وابستگی‌ها</td>
-        <td>Dependencies</td>
-        <td>اجزای مورد نیاز برنامه مانند لاگرها و اتصالات پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>سرور HTTP</td>
-        <td>HTTP Server</td>
-        <td>برنامه‌ای که درخواست‌های HTTP را دریافت و پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>کپسوله‌سازی</td>
-        <td>Encapsulation</td>
-        <td>مخفی کردن جزئیات پیاده‌سازی و ارائه یک رابط مشخص</td>
-    </tr>
-    <tr>
-        <td>مسئولیت‌ها</td>
-        <td>Responsibilities</td>
-        <td>وظایف و کارهایی که هر بخش از کد انجام می‌دهد</td>
-    </tr>
-    <tr>
-        <td>فایل مستقل</td>
-        <td>Independent File</td>
-        <td>فایلی که مسئولیت مشخص و مستقلی دارد</td>
-    </tr>
-    <tr>
-        <td>هندلر</td>
-        <td>Handler</td>
-        <td>تابع یا متدی که درخواست‌های HTTP را پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>سرور فایل</td>
-        <td>File Server</td>
-        <td>سیستمی که فایل‌های استاتیک را به مرورگر ارائه می‌دهد</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="03.04-centralized-error-handling.html">قبلی</a>
@@ -175,12 +114,16 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "03.04-centralized-error-handling.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "04.00-database-driven-responses.html";
 						break;
+						
 				}
 			};
 		</script>

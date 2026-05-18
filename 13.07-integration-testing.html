@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تست یکپارچگی &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست یکپارچه‌سازی</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست یکپارچگی</span>
 						
 					
 				</div>
@@ -25,26 +26,21 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۱۳.۷.</div>
+			<h2 id="integration-testing">تست یکپارچگی</h2>
 
-			<h2 id="integration-testing">تست یکپارچه‌سازی (Integration Testing)</h2>
+<p>اجرای تست‌های end-to-end با dependencyهای mock شده کار خوبی است، اما می‌توانیم اطمینان بیشتری به برنامه خود داشته باشیم اگر همچنین تأیید کنیم که modelهای پایگاه داده MySQL واقعی ما به درستی کار می‌کنند.</p>
 
-<p>در این بخش، نحوه <dfn>تست یکپارچه‌سازی (Integration Testing)</dfn> را بررسی می‌کنیم. این شامل <dfn>تست پایگاه داده (Database Testing)</dfn> و <dfn>تست API (API Testing)</dfn> می‌شود.</p>
+<p>برای انجام این کار می‌توانیم <dfn>تست‌های یکپارچه‌سازی</dfn> را در برابر یک نسخه تست از پایگاه داده MySQL خود اجرا کنیم که <em>پایگاه داده production ما را تقلید می‌کند</em> اما فقط برای اهداف تست وجود دارد.</p>
 
-<p>همچنین با <dfn>محیط تست (Test Environment)</dfn> و <dfn>داده‌های آزمایشی (Test Data)</dfn> آشنا خواهیم شد.</p>
+<p>به عنوان یک نمایش، در این فصل یک تست یکپارچگی تنظیم می‌کنیم تا اطمینان حاصل کنیم که متد <code>models.UserModel.Exists()</code> ما به درستی کار می‌کند.</p>
 
-<p>اجرای تست‌های انتها به انتها با وابستگی‌های شبیه‌سازی شده کار خوبی است، اما می‌توانیم اعتماد به برنامه خود را حتی بیشتر کنیم اگر اطمینان حاصل کنیم که مدل‌های واقعی پایگاه داده MySQL ما همانطور که انتظار می‌رود کار می‌کنند.</p>
+<h3 id="test-database-setup-and-teardown">راه‌اندازی و teardown پایگاه داده تست</h3>
 
-<p>برای انجام این کار می‌توانیم <dfn>تست‌های یکپارچه‌سازی</dfn> را در برابر نسخه آزمایشی پایگاه داده MySQL خود اجرا کنیم، که <em>پایگاه داده تولیدی ما را شبیه‌سازی می‌کند</em> اما فقط برای اهداف آزمایشی وجود دارد.</p>
+<p>اولین قدم ایجاد نسخه تست از پایگاه داده MySQL ما است.</p>
 
-<p>به عنوان یک نمایش، در این فصل یک تست یکپارچه‌سازی را تنظیم خواهیم کرد تا اطمینان حاصل کنیم که متد <code>models.UserModel.Exists()</code> ما به درستی کار می‌کند.</p>
-
-<h3 id="test-database-setup-and-teardown">راه‌اندازی و تخریب پایگاه داده آزمایشی</h3>
-
-<p>اولین قدم ایجاد نسخه آزمایشی پایگاه داده MySQL ما است.</p>
-
-<p>اگر در حال دنبال کردن هستید، از پنجره ترمینال خود به MySQL به عنوان کاربر <code>root</code> متصل شوید و دستورات SQL زیر را برای ایجاد یک پایگاه داده جدید <code>test_snippetbox</code> و کاربر <code>test_web</code> اجرا کنید:</p>
+<p>اگر همراه با ما پیش می‌روید، از پنجره ترمینال خود به عنوان کاربر <code>root</code> به MySQL متصل شوید و دستورات SQL زیر را برای ایجاد یک پایگاه داده جدید <code>test_snippetbox</code> و کاربر <code>test_web</code> اجرا کنید:</p>
 
 <figure class="code sql" dir="ltr">
 <pre><span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">test_snippetbox</span> <span class="nb">CHARACTER</span> <span class="k">SET</span> <span class="n">utf8mb4</span> <span class="k">COLLATE</span> <span class="n">utf8mb4_unicode_ci</span><span class="p">;</span></pre>
@@ -56,17 +52,17 @@
 <span class="k">ALTER</span> <span class="k">USER</span> <span class="s1">&#39;</span><span class="s1">test_web</span><span class="s1">&#39;</span><span class="o">@</span><span class="s1">&#39;</span><span class="s1">localhost</span><span class="s1">&#39;</span> <span class="n">IDENTIFIED</span> <span class="k">BY</span> <span class="s1">&#39;</span><span class="s1">pass</span><span class="s1">&#39;</span><span class="p">;</span></pre>
 </figure>
 
-<p>پس از انجام این کار، بیایید دو اسکریپت SQL ایجاد کنیم:</p>
+<p>پس از انجام این کار، بیایید دو اسکریپت SQL بسازیم:</p>
 
 <ol>
-<li><p>یک <dfn>اسکریپت راه‌اندازی</dfn> برای ایجاد جداول پایگاه داده (به طوری که پایگاه داده تولیدی ما را شبیه‌سازی کنند) و وارد کردن مجموعه‌ای از داده‌های آزمایشی که می‌توانیم در تست‌های خود با آن کار کنیم.</p></li>
+<li><p>یک <dfn>اسکریپت setup</dfn> برای ایجاد جداول پایگاه داده (تا پایگاه داده production ما را تقلید کنند) و درج یک مجموعه داده تست شناخته شده که بتوانیم در تست‌های خود با آن کار کنیم.</p></li>
 
-<li><p>یک <dfn>اسکریپت تخریب</dfn> که جداول و داده‌های پایگاه داده را حذف می‌کند.</p></li>
+<li><p>یک <dfn>اسکریپت teardown</dfn> که جداول و داده‌های پایگاه داده را حذف می‌کند.</p></li>
 </ol>
 
-<p>ایده این است که این اسکریپت‌ها را در ابتدای هر تست یکپارچه‌سازی و در پایان آن فراخوانی کنیم، به طوری که پایگاه داده آزمایشی هر بار به طور کامل بازنشانی شود. این کمک می‌کند تا اطمینان حاصل شود که هر تغییری که در طول یک تست ایجاد می‌کنیم به نتایج تست دیگری نشت نمی‌کند و تأثیر نمی‌گذارد.</p>
+<p>ایده این است که این اسکریپت‌ها را در ابتدا و انتهای هر تست یکپارچگی فراخوانی کنیم، تا پایگاه داده تست هر بار به طور کامل reset شود. این کمک می‌کند تا اطمینان حاصل کنیم که هر تغییری که در طول یک تست ایجاد می‌کنیم &lsquo;نشت&rsquo; نمی‌کند و نتایج تست دیگر را تحت تأثیر قرار نمی‌دهد.</p>
 
-<p>بیایید این اسکریپت‌ها را در یک دایرکتوری جدید <code>internal/models/testdata</code> ایجاد کنیم:</p>
+<p>بیایید پیش برویم و این اسکریپت‌ها را در یک دایرکتوری جدید <code>internal/models/testdata</code> به این شکل ایجاد کنیم:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ mkdir internal/models/testdata
@@ -112,21 +108,21 @@ $ touch internal/models/testdata/teardown.sql</pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> ابزار Go هر دایرکتوری به نام <code>testdata</code> را نادیده می‌گیرد، بنابراین این اسکریپت‌ها هنگام کامپایل برنامه شما نادیده گرفته می‌شوند. به عنوان یک نکته جانبی، همچنین هر دایرکتوری یا فایلی که نام آن با کاراکتر <code>_</code> یا <code>.</code> شروع می‌شود را نیز نادیده می‌گیرد.
+<strong>یادداشت:</strong> ابزار Go هر دایرکتوری به نام <code>testdata</code> را نادیده می‌گیرد، بنابراین این اسکریپت‌ها هنگام کامپایل برنامه شما نادیده گرفته می‌شوند. به عنوان یک نکته جانبی، همچنین هر دایرکتوری یا فایلی که نام آن با کاراکتر <code>_</code> یا <code>.</code> شروع می‌شود را نیز نادیده می‌گیرد.
 </p></aside>
 
-<p>خوب، حالا که اسکریپت‌ها را در جای خود داریم، بیایید یک فایل جدید برای نگهداری برخی از توابع کمکی برای تست‌های یکپارچه‌سازی خود ایجاد کنیم:</p>
+<p>خوب، حالا که اسکریپت‌ها در جای خود قرار دارند، بیایید یک فایل جدید برای نگه‌داری برخی توابع helper برای تست‌های یکپارچه‌سازی خود بسازیم:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ touch internal/models/testutils_test.go</pre>
 </figure>
 
-<p>در این فایل بیایید یک تابع کمکی <code>newTestDB()</code> ایجاد کنیم که:</p>
+<p>در این فایل بیایید یک تابع helper <code>newTestDB()</code> ایجاد کنیم که:</p>
 
 <ul>
-<li>یک استخر اتصال <code>*sql.DB</code> جدید برای پایگاه داده آزمایشی ایجاد می‌کند؛</li>
-<li>اسکریپت <code>setup.sql</code> را برای ایجاد جداول پایگاه داده و داده‌های آزمایشی اجرا می‌کند؛</li>
-<li>یک تابع 'پاکسازی' ثبت می‌کند که اسکریپت <code>teardown.sql</code> را اجرا می‌کند و استخر اتصال را می‌بندد.</li>
+<li>یک connection pool جدید <code>*sql.DB</code> برای پایگاه داده تست ایجاد می‌کند؛</li>
+<li>اسکریپت <code>setup.sql</code> را برای ایجاد جداول پایگاه داده و داده‌های dummy اجرا می‌کند؛</li>
+<li>یک تابع cleanup ثبت می‌کند که اسکریپت <code>teardown.sql</code> را اجرا می‌کند و connection pool را می‌بندد.</li>
 </ul>
 
 <figure class="code go" dir="ltr">
@@ -185,22 +181,22 @@ $ touch internal/models/testdata/teardown.sql</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>نکته مهمی که باید از اینجا بگیرید این است:</p>
+<p>نکته مهمی که باید از اینجا بگیریم این است:</p>
 
-<p><em>هر زمان که این تابع <code>newTestDB()</code> را در یک تست (یا زیرتست) فراخوانی کنیم، اسکریپت راه‌اندازی را در برابر پایگاه داده آزمایشی اجرا خواهد کرد. و هنگامی که تست یا زیرتست به پایان می‌رسد، تابع پاکسازی به طور خودکار اجرا می‌شود و اسکریپت تخریب اجرا خواهد شد.</em></p>
+<p><em>هر زمان که این تابع <code>newTestDB()</code> را در داخل یک تست (یا sub-test) فراخوانی کنیم، اسکریپت setup را در برابر پایگاه داده تست اجرا می‌کند. و وقتی تست یا sub-test تمام می‌شود، تابع cleanup به طور خودکار اجرا می‌شود و اسکریپت teardown اجرا می‌شود.</em></p>
 
 <h3 id="testing-the-usermodel-exists-method">تست متد UserModel.Exists</h3>
 
-<p>حالا که کارهای مقدماتی انجام شده است، آماده‌ایم تا واقعاً تست یکپارچه‌سازی خود را برای متد <code>models.UserModel.Exists()</code> بنویسیم.</p>
+<p>حالا که کارهای مقدماتی انجام شده است، آماده‌ایم که در واقع تست یکپارچگی خود را برای متد <code>models.UserModel.Exists()</code> بنویسیم.</p>
 
-<p>ما می‌دانیم که اسکریپت <code>setup.sql</code> ما یک جدول <code>users</code> ایجاد می‌کند که حاوی یک رکورد است (که باید شناسه کاربر <code>1</code> و آدرس ایمیل <code>alice@example.com</code> داشته باشد). بنابراین می‌خواهیم تست کنیم که:</p>
+<p>می‌دانیم که اسکریپت <code>setup.sql</code> ما یک جدول <code>users</code> حاوی یک رکورد ایجاد می‌کند (که باید ID کاربر <code>1</code> و آدرس ایمیل <code>alice@example.com</code> داشته باشد). بنابراین می‌خواهیم تست کنیم که:</p>
 
 <ul>
-<li>فراخوانی <code>models.UserModel.Exists(1)</code> یک مقدار بولی <code>true</code> و یک مقدار خطای <code>nil</code> برمی‌گرداند.</li>
-<li>فراخوانی <code>models.UserModel.Exists()</code> با هر شناسه کاربر دیگری یک مقدار بولی <code>false</code> و یک مقدار خطای <code>nil</code> برمی‌گرداند.</li>
+<li>فراخوانی <code>models.UserModel.Exists(1)</code> یک مقدار boolean <code>true</code> و یک مقدار error <code>nil</code> برمی‌گرداند.</li>
+<li>فراخوانی <code>models.UserModel.Exists()</code> با هر ID کاربر دیگر یک مقدار boolean <code>false</code> و یک مقدار error <code>nil</code> برمی‌گرداند.</li>
 </ul>
 
-<p>بیایید ابتدا به بسته <code>internal/assert</code> خود برویم و یک <code>NilError()</code> جدید ایجاد کنیم، که از آن برای بررسی اینکه مقدار خطا <code>nil</code> است استفاده خواهیم کرد. به این صورت:</p>
+<p>ابتدا بیایید به package <code>internal/assert</code> خود برویم و یک assertion جدید <code>NilError()</code> ایجاد کنیم که از آن برای بررسی اینکه یک مقدار error <code>nil</code> است استفاده خواهیم کرد. به این شکل:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/assert/assert.go</figcaption>
@@ -217,13 +213,13 @@ $ touch internal/models/testdata/teardown.sql</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>سپس بیایید طبق کنوانسیون‌های Go یک فایل جدید <code>users_test.go</code> برای تست خود ایجاد کنیم، مستقیماً در کنار کدی که تست می‌شود:</p>
+<p>سپس بیایید از قراردادهای Go پیروی کنیم و یک فایل جدید <code>users_test.go</code> برای تست خود ایجاد کنیم، مستقیماً در کنار کدی که تست می‌شود:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ touch internal/models/users_test.go</pre>
 </figure>
 
-<p>و یک تست <code>TestUserModelExists</code> حاوی کد زیر اضافه کنیم:</p>
+<p>و یک تست <code>TestUserModelExists</code> حاوی کد زیر اضافه کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users_test.go</figcaption>
@@ -236,16 +232,52 @@ $ touch internal/models/testdata/teardown.sql</pre>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="nf">TestUserModelExists</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// Skip the test if the &#34;-short&#34; flag is provided when running the test.
-</span><span class="c1"></span>    <span class="k">if</span> <span class="nx">testing</span><span class="p">.</span><span class="nf">Short</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">t</span><span class="p">.</span><span class="nf">Skip</span><span class="p">(</span><span class="s">&#34;models: skipping integration test&#34;</span><span class="p">)</span>
+    <span class="c1">// Set up a suite of table-driven tests and expected results.
+</span><span class="c1"></span>    <span class="nx">tests</span> <span class="o">:=</span> <span class="p">[</span><span class="p">]</span><span class="kd">struct</span> <span class="p">{</span>
+        <span class="nx">name</span>   <span class="kt">string</span>
+        <span class="nx">userID</span> <span class="kt">int</span>
+        <span class="nx">want</span>   <span class="kt">bool</span>
+    <span class="p">}</span><span class="p">{</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Valid ID&#34;</span><span class="p">,</span>
+            <span class="nx">userID</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span>   <span class="kc">true</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Zero ID&#34;</span><span class="p">,</span>
+            <span class="nx">userID</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span>   <span class="kc">false</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="nx">name</span><span class="p">:</span>   <span class="s">&#34;Non-existent ID&#34;</span><span class="p">,</span>
+            <span class="nx">userID</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nx">want</span><span class="p">:</span>   <span class="kc">false</span><span class="p">,</span>
+        <span class="p">}</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="o">...</span>
+    <span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">tt</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">tests</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Call the newTestDB() helper function to get a connection pool to
+</span><span class="c1"></span>            <span class="c1">// our test database. Calling this here -- inside t.Run() -- means
+</span><span class="c1"></span>            <span class="c1">// that fresh database tables and data will be set up and torn down
+</span><span class="c1"></span>            <span class="c1">// for each sub-test.
+</span><span class="c1"></span>            <span class="nx">db</span> <span class="o">:=</span> <span class="nf">newTestDB</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+
+            <span class="c1">// Create a new instance of the UserModel.
+</span><span class="c1"></span>            <span class="nx">m</span> <span class="o">:=</span> <span class="nx">UserModel</span><span class="p">{</span><span class="nx">db</span><span class="p">}</span>
+
+            <span class="c1">// Call the UserModel.Exists() method and check that the return
+</span><span class="c1"></span>            <span class="c1">// value and error match the expected values for the sub-test.
+</span><span class="c1"></span>            <span class="nx">exists</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="nx">tt</span><span class="p">.</span><span class="nx">userID</span><span class="p">)</span>
+
+            <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">exists</span><span class="p">,</span> <span class="nx">tt</span><span class="p">.</span><span class="nx">want</span><span class="p">)</span>
+            <span class="nx">assert</span><span class="p">.</span><span class="nf">NilError</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+        <span class="p">}</span><span class="p">)</span>
+    <span class="p">}</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>اگر این تست را اجرا کنید، همه چیز باید بدون هیچ مشکلی عبور کند.</p>
+<p>اگر این تست را اجرا کنید، همه چیز باید بدون هیچ مشکلی پاس شود.</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -v ./internal/models
@@ -261,17 +293,17 @@ PASS
 ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
 </figure>
 
-<p>خط آخر در خروجی تست اینجا ارزش ذکر دارد. زمان اجرای کل این تست (در مورد من 1.023 ثانیه) بسیار طولانی‌تر از تست‌های قبلی ما است &mdash; همه آنها چند میلی‌ثانیه طول کشیدند. این افزایش بزرگ در زمان اجرا عمدتاً به دلیل تعداد زیادی از عملیات پایگاه داده است که در طول تست‌ها نیاز داشتیم انجام دهیم.</p>
+<p>آخرین خط در خروجی تست اینجا ارزش ذکر دارد. زمان کل اجرا برای این تست (1.023 ثانیه در مورد من) بسیار طولانی‌تر از تست‌های قبلی ما است &mdash; که همه آن‌ها چند میلی‌ثانیه طول کشیدند. این افزایش بزرگ در زمان اجرا عمدتاً به دلیل تعداد زیاد عملیات پایگاه داده است که در طول تست‌ها نیاز داشتیم انجام دهیم.</p>
 
-<p>در حالی که 1 ثانیه زمان کاملاً قابل قبولی برای انتظار برای این تست به تنهایی است، اگر صدها تست یکپارچه‌سازی مختلف را در برابر پایگاه داده خود اجرا کنید، ممکن است به طور معمول منتظر دقیقه‌ها &mdash; به جای ثانیه‌ها &mdash; برای اتمام تست‌های خود باشید.</p>
+<p>در حالی که 1 ثانیه زمان کاملاً قابل قبولی برای انتظار برای این تست به صورت جداگانه است، اگر صدها تست یکپارچگی مختلف را در برابر پایگاه داده خود اجرا می‌کنید، ممکن است به طور معمول دقیقه‌ها &mdash; به جای ثانیه‌ها &mdash; منتظر بمانید تا تست‌های شما تمام شوند.</p>
 
-<h3 id="skipping-long-running-tests">رد کردن تست‌های طولانی مدت</h3>
+<h3 id="skipping-long-running-tests">رد کردن تست‌های طولانی</h3>
 
-<p>وقتی تست‌های شما زمان زیادی می‌برند، ممکن است تصمیم بگیرید که می‌خواهید تست‌های خاصی را تحت شرایط خاصی رد کنید. به عنوان مثال، ممکن است تصمیم بگیرید که فقط تست‌های یکپارچه‌سازی خود را قبل از تعهد یک تغییر اجرا کنید، به جای اینکه بیشتر در طول توسعه اجرا کنید.</p>
+<p>وقتی تست‌های شما زمان زیادی می‌برند، ممکن است تصمیم بگیرید که می‌خواهید تست‌های طولانی خاص را در شرایط خاصی رد کنید. برای مثال، ممکن است تصمیم بگیرید که فقط تست‌های یکپارچه‌سازی خود را قبل از commit کردن یک تغییر اجرا کنید، به جای اینکه بیشتر در طول توسعه اجرا کنید.</p>
 
-<p>یک روش رایج و ایدئومیک برای رد کردن تست‌های طولانی مدت استفاده از تابع <a href="https://pkg.go.dev/testing/#Short"><code>testing.Short()</code></a> برای بررسی وجود یک پرچم <code>-short</code> در فرمان <code>go test</code> شما است، و سپس متد <a href="https://pkg.go.dev/testing#T.Skip"><code>t.Skip()</code></a> را برای رد کردن تست اگر پرچم وجود دارد، فراخوانی کنید.</p>
+<p>یک راه رایج و idiomatic برای رد کردن تست‌های طولانی، استفاده از تابع <a href="https://pkg.go.dev/testing/#Short"><code>testing.Short()</code></a> برای بررسی وجود flag <code>-short</code> در دستور <code>go test</code> است، و سپس فراخوانی متد <a href="https://pkg.go.dev/testing#T.Skip"><code>t.Skip()</code></a> برای رد کردن تست در صورت وجود flag.</p>
 
-<p>بیایید سریعاً <code>TestUserModelExists</code> را به این صورت به‌روزرسانی کنیم <em>قبل از اجرای تست‌های واقعی آن</em>، به این صورت:</p>
+<p>بیایید به سرعت <code>TestUserModelExists</code> را برای انجام این کار <em>قبل از اجرای تست‌های واقعی آن</em> به‌روزرسانی کنیم، به این شکل:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users_test.go</figcaption>
@@ -293,7 +325,7 @@ ok      snippetbox.alexedwards.net/internal/models      1.023s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>و سپس می‌توانید سعی کنید تمام تست‌های پروژه را با پرچم <code>-short</code> فعال اجرا کنید. خروجی باید شبیه به این باشد:</p>
+<p>و سپس می‌توانید سعی کنید همه تست‌های پروژه را با flag <code>-short</code> فعال اجرا کنید. خروجی باید مشابه این باشد:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -v -short ./...
@@ -355,72 +387,12 @@ ok      snippetbox.alexedwards.net/internal/models      0.003s
 ?       snippetbox.alexedwards.net/ui   [no test files]</samp></pre>
 </figure>
 
-<p>آیا متوجه علامت <code>SKIP</code> در خروجی بالا شدید؟ این تأیید می‌کند که Go تست <code>TestUserModelExists</code> ما را در طول این اجرا رد کرده است.</p>
+<p>متوجه حاشیه‌نویسی <code>SKIP</code> در خروجی بالا شدید؟ این تأیید می‌کند که Go تست <code>TestUserModelExists</code> ما را در این اجرا رد کرد.</p>
 
-<p>اگر دوست دارید، می‌توانید این را دوباره بدون پرچم <code>-short</code> اجرا کنید، و باید ببینید که تست <code>TestUserModelExists</code> به طور عادی اجرا می‌شود.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تست یکپارچه‌سازی</td>
-        <td>Integration Testing</td>
-        <td>آزمایش تعامل اجزا</td>
-    </tr>
-    <tr>
-        <td>تست پایگاه داده</td>
-        <td>Database Testing</td>
-        <td>آزمایش ذخیره‌سازی</td>
-    </tr>
-    <tr>
-        <td>تست API</td>
-        <td>API Testing</td>
-        <td>آزمایش رابط برنامه‌نویسی</td>
-    </tr>
-    <tr>
-        <td>محیط تست</td>
-        <td>Test Environment</td>
-        <td>محیط اجرای آزمایش</td>
-    </tr>
-    <tr>
-        <td>داده‌های آزمایشی</td>
-        <td>Test Data</td>
-        <td>داده‌های نمونه</td>
-    </tr>
-    <tr>
-        <td>پایگاه داده تست</td>
-        <td>Test Database</td>
-        <td>پایگاه داده آزمایشی</td>
-    </tr>
-    <tr>
-        <td>تراکنش‌ها</td>
-        <td>Transactions</td>
-        <td>عملیات پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>بازیابی داده</td>
-        <td>Data Recovery</td>
-        <td>برگرداندن داده‌ها</td>
-    </tr>
-    <tr>
-        <td>اتصال پایگاه داده</td>
-        <td>Database Connection</td>
-        <td>ارتباط با پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>مهاجرت داده</td>
-        <td>Data Migration</td>
-        <td>انتقال داده‌ها</td>
-    </tr>
-</table>
+<p>اگر دوست دارید، آزادانه این را دوباره بدون flag <code>-short</code> اجرا کنید، و باید ببینید که تست <code>TestUserModelExists</code> به طور عادی اجرا می‌شود.</p>
 
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="13.06-testing-html-forms.html">قبلی</a>

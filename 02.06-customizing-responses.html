@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>سفارشی‌سازی پاسخ‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
-	<body dir="rtl">
+	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; سفارشی‌سازی پاسخ‌ها</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; سفارشی‌سازی پاسخ‌ها</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="02.05-method-based-routing.html">قبلی</a>
@@ -22,10 +27,10 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 2.6.</div>
-			<h2 id="customizing-responses">سفارشی‌سازی پاسخ‌ها (Customizing Responses)</h2>
+			<div class="chapter">فصل ۲.۶.</div>
+			<h2 id="customizing-responses">سفارشی‌سازی پاسخ‌ها</h2>
 
-<p>به طور پیش‌فرض، هر پاسخی که هندلرهای شما ارسال می‌کنند دارای <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">کد وضعیت HTTP (HTTP Status Code)</a> <code>200 OK</code> است (که به کاربر نشان می‌دهد درخواست او دریافت و با موفقیت پردازش شده است)، به علاوه سه هدر <em>سیستم‌تولید (System-generated)</em> خودکار: یک هدر <code>Date</code>، و <code>Content-Length</code> و <code>Content-Type</code> بدنه پاسخ (Response Body).</p>
+<p>به طور پیش‌فرض، هر پاسخی که handlerهای شما ارسال می‌کنند دارای <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">کد وضعیت HTTP</a> <code>200 OK</code> است (که به کاربر نشان می‌دهد که درخواست آن‌ها دریافت و با موفقیت پردازش شد)، به علاوه سه هدر خودکار <em>تولید شده توسط سیستم</em>: یک هدر <code>Date</code>، و <code>Content-Length</code> و <code>Content-Type</code> بدنه پاسخ. برای مثال:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ curl -i localhost:4000/
@@ -37,11 +42,11 @@ Content-Type: text/plain; charset=utf-8
 Hello from Snippetbox</samp></pre>
 </figure>
 
-<p>در این فصل به چگونگی سفارشی‌سازی هدرهای پاسخ که هندلرهای شما ارسال می‌کنند می‌پردازیم و همچنین به چند روش دیگر برای ارسال پاسخ‌های متنی ساده به کاربران نگاه می‌کنیم.</p>
+<p>در این فصل به نحوه سفارشی‌سازی هدرهای پاسخ (response headers) که handlerهای شما ارسال می‌کنند می‌پردازیم، و همچنین به چند روش دیگر که می‌توانید پاسخ‌های متنی ساده به کاربران ارسال کنید نگاه می‌کنیم.</p>
 
-<h3 id="http-status-codes">کدهای وضعیت HTTP (HTTP Status Codes)</h3>
+<h3 id="http-status-codes">کدهای وضعیت HTTP</h3>
 
-<p>ابتدا، بیایید هندلر <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا به جای <code>200 OK</code> کد وضعیت <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201"><code>201 Created</code></a> ارسال کند. برای انجام این کار، می‌توانید از متد <code>w.WriteHeader()</code> در هندلرهای خود به این صورت استفاده کنید:</p>
+<p>اول از همه، بیایید handler <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا یک کد وضعیت <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201"><code>201 Created</code></a> به جای <code>200 OK</code> ارسال کند. برای انجام این کار، می‌توانید از متد <code>w.WriteHeader()</code> در handlerهای خود مانند این استفاده کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
@@ -60,17 +65,17 @@ Hello from Snippetbox</samp></pre>
 <span class="o">...</span></pre>
 </figure>
 
-<p>(بله، این کمی احمقانه است زیرا هندلر هنوز چیزی ایجاد نمی‌کند! اما به خوبی الگوی تنظیم یک کد وضعیت سفارشی را نشان می‌دهد.)</p>
+<p>(بله، این کمی احمقانه است چون handler هنوز واقعاً چیزی ایجاد نمی‌کند! اما به خوبی الگوی تنظیم یک کد وضعیت سفارشی را نشان می‌دهد.)</p>
 
-<p>اگرچه این تغییر به نظر ساده می‌آید، اما چند نکته ظریف وجود دارد که باید توضیح دهم:</p>
+<p>اگرچه این تغییر ساده به نظر می‌رسد، چند نکته ظریف وجود دارد که باید توضیح دهم:</p>
 
 <ul>
-<li><p>فقط می‌توانید یک بار <code>w.WriteHeader()</code> را برای هر پاسخ فراخوانی کنید و پس از اینکه کد وضعیت نوشته شد، نمی‌توان آن را تغییر داد. اگر سعی کنید <code>w.WriteHeader()</code> را برای بار دوم فراخوانی کنید، Go یک پیام هشدار ثبت خواهد کرد.</p></li>
+<li><p>فقط امکان فراخوانی <code>w.WriteHeader()</code> یک بار در هر پاسخ وجود دارد، و پس از نوشته شدن کد وضعیت نمی‌تواند تغییر کند. اگر سعی کنید <code>w.WriteHeader()</code> را بار دوم فراخوانی کنید، Go یک پیام هشدار لاگ می‌کند.</p></li>
 
-<li><p>اگر <code>w.WriteHeader()</code> را به‌طور صریح فراخوانی نکنید، اولین فراخوانی به <code>w.Write()</code> به‌طور خودکار یک کد وضعیت <code>200</code> به کاربر ارسال می‌کند. بنابراین، اگر می‌خواهید یک کد وضعیت غیر 200 ارسال کنید، باید <code>w.WriteHeader()</code> را <em>قبل از</em> هر فراخوانی به <code>w.Write()</code> فراخوانی کنید.</p></li>
+<li><p>اگر <code>w.WriteHeader()</code> را به صراحت فراخوانی نکنید، سپس اولین فراخوانی به <code>w.Write()</code> به طور خودکار یک کد وضعیت <code>200</code> به کاربر ارسال می‌کند. پس، اگر می‌خواهید یک کد وضعیت غیر 200 ارسال کنید، باید <code>w.WriteHeader()</code> را <em>قبل از</em> هر فراخوانی به <code>w.Write()</code> فراخوانی کنید.</p></li>
 </ul>
 
-<p>سرور را مجدداً راه‌اندازی کنید، سپس از curl برای ارسال یک درخواست <code>POST</code> به <code>http://localhost:4000/snippet/create</code> استفاده کنید. باید ببینید که پاسخ HTTP اکنون دارای یک کد وضعیت <code>201 Created</code> مشابه این است:</p>
+<p>سرور را دوباره راه‌اندازی کنید، سپس از curl برای ارسال یک درخواست <code>POST</code> به <code>http://localhost:4000/snippet/create</code> دوباره استفاده کنید. باید ببینید که پاسخ HTTP اکنون یک کد وضعیت <code>201 Created</code> دارد شبیه به این:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ curl -i -d &#34;&#34; http://localhost:4000/snippet/create
@@ -82,11 +87,11 @@ Content-Type: text/plain; charset=utf-8
 Save a new snippet...</samp></pre>
 </figure>
 
-<h3 id="status-code-constants">ثابت‌های کد وضعیت (Status Code Constants)</h3>
+<h3 id="status-code-constants">ثابت‌های کد وضعیت</h3>
 
-<p>پکیج <code>net/http</code> <a href="https://pkg.go.dev/net/http#pkg-constants">ثابت‌هایی برای کدهای وضعیت HTTP</a> فراهم می‌کند که می‌توانیم به جای نوشتن شماره کد وضعیت خودمان از آن‌ها استفاده کنیم. استفاده از این ثابت‌ها یک عمل خوب است زیرا به جلوگیری از اشتباهات ناشی از تایپ اشتباه کمک می‌کند و همچنین می‌تواند کد شما را واضح‌تر و خودمستند کند &mdash; به‌ویژه هنگام کار با کدهای وضعیت کمتر استفاده‌شده.</p>
+<p>بسته <code>net/http</code> <a href="https://pkg.go.dev/net/http#pkg-constants">ثابت‌هایی برای کدهای وضعیت HTTP</a> فراهم می‌کند، که می‌توانیم به جای نوشتن شماره کد وضعیت خودمان از آن‌ها استفاده کنیم. استفاده از این ثابت‌ها تمرین خوبی است چون به جلوگیری از اشتباهات ناشی از تایپ‌های اشتباه کمک می‌کند، و همچنین می‌تواند به واضح‌تر و خود-مستند کردن کد شما کمک کند — به خصوص هنگام کار با کدهای وضعیت کمتر استفاده شده.</p>
 
-<p>بیایید هندلر <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا از ثابت <code>http.StatusCreated</code> به جای عدد <code>201</code> استفاده کند، به این صورت:</p>
+<p>بیایید handler <code>snippetCreatePost</code> خود را به‌روزرسانی کنیم تا از ثابت <code>http.StatusCreated</code> به جای عدد صحیح <code>201</code> استفاده کند، مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
@@ -103,11 +108,11 @@ Save a new snippet...</samp></pre>
 <span class="o">...</span></pre>
 </figure>
 
-<h3 id="customizing-headers">سفارشی‌سازی هدرها (Customizing Headers)</h3>
+<h3 id="customizing-headers">سفارشی‌سازی هدرها</h3>
 
-<p>شما همچنین می‌توانید هدرهای HTTP ارسال‌شده به کاربر را با تغییر <em>نقشه هدر پاسخ (Response Header Map)</em> سفارشی کنید. احتمالاً رایج‌ترین کاری که می‌خواهید انجام دهید این است که یک هدر اضافی به نقشه اضافه کنید، که می‌توانید با استفاده از متد <code>w.Header().Add()</code> این کار را انجام دهید.</p>
+<p>همچنین می‌توانید هدرهای HTTP ارسال شده به یک کاربر را با تغییر <em>نقشه هدر پاسخ</em> سفارشی کنید. احتمالاً رایج‌ترین کاری که می‌خواهید انجام دهید شامل کردن یک هدر اضافی در نقشه است، که می‌توانید با استفاده از متد <code>w.Header().Add()</code> انجام دهید.</p>
 
-<p>برای نشان دادن این موضوع، بیایید یک هدر <code>Server: Go</code> به پاسخی که هندلر <code>home</code> ما ارسال می‌کند اضافه کنیم. اگر در حال دنبال کردن هستید، کد هندلر را به این صورت به‌روزرسانی کنید:</p>
+<p>برای نشان دادن این، بیایید یک هدر <code>Server: Go</code> به پاسخی که handler <code>home</code> ما ارسال می‌کند اضافه کنیم. اگر همراه هستید، بروید و کد handler را مانند این به‌روزرسانی کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
@@ -116,7 +121,7 @@ Save a new snippet...</samp></pre>
 <span class="o">...</span>
 
 <span class="kd">func</span> <span class="nf">home</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="c1">// Use the Header().Add() method to add a 'Server: Go' header to the
+    <span class="c1">// Use the Header().Add() method to add a &#39;Server: Go&#39; header to the
 </span><span class="c1"></span>    <span class="c1">// response header map. The first parameter is the header name, and
 </span><span class="c1"></span>    <span class="c1">// the second parameter is the header value.
 </span><span class="c1"></span>    <span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">&#34;Server&#34;</span><span class="p">,</span> <span class="s">&#34;Go&#34;</span><span class="p">)</span>
@@ -128,10 +133,10 @@ Save a new snippet...</samp></pre>
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> شما باید مطمئن شوید که نقشه هدر پاسخ شما شامل تمام هدرهایی است که می‌خواهید <em>قبل از</em> اینکه <code>w.WriteHeader()</code> یا <code>w.Write()</code> را فراخوانی کنید. هر تغییری که بعد از فراخوانی <code>w.WriteHeader()</code> یا <code>w.Write()</code> در نقشه هدر پاسخ ایجاد کنید، هیچ تأثیری بر هدرهایی که کاربر دریافت می‌کند نخواهد داشت.
+<strong>مهم:</strong> باید مطمئن شوید که نقشه هدر پاسخ شما شامل همه هدرهایی که می‌خواهید است <em>قبل از</em> فراخوانی <code>w.WriteHeader()</code> یا <code>w.Write()</code>. هر تغییری که پس از فراخوانی <code>w.WriteHeader()</code> یا <code>w.Write()</code> در نقشه هدر پاسخ ایجاد می‌کنید هیچ تأثیری روی هدرهایی که کاربر دریافت می‌کند نخواهد داشت.
 </p></aside>
 
-<p>بیایید این را امتحان کنیم و با استفاده از curl یک درخواست دیگر به <code>http://localhost:4000/</code> ارسال کنیم. این بار باید ببینید که پاسخ اکنون شامل یک هدر جدید <code>Server: Go</code> است، به این صورت:</p>
+<p>بیایید این را با استفاده از curl برای ارسال یک درخواست دیگر به <code>http://localhost:4000/</code> امتحان کنیم. این بار باید ببینید که پاسخ اکنون شامل یک هدر جدید <code>Server: Go</code> است، مانند این:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ curl -i http://localhost:4000
@@ -144,17 +149,17 @@ Content-Type: text/plain; charset=utf-8
 Hello from Snippetbox</samp></pre>
 </figure>
 
-<h3 id="writing-response-bodies">نوشتن بدنه‌های پاسخ (Writing Response Bodies)</h3>
+<h3 id="writing-response-bodies">نوشتن بدنه‌های پاسخ</h3>
 
-<p>تا کنون در این کتاب از <code>w.Write()</code> برای ارسال بدنه‌های پاسخ HTTP خاص به کاربر استفاده کرده‌ایم. و در حالی که این ساده‌ترین و اساسی‌ترین راه برای ارسال یک پاسخ است، در عمل بسیار رایج‌تر است که مقدار <code>http.ResponseWriter</code> خود را به <em>یک تابع دیگر</em> که پاسخ را برای شما می‌نویسد، ارسال کنید.</p>
+<p>تا کنون در این کتاب از <code>w.Write()</code> برای ارسال بدنه‌های پاسخ HTTP خاص به یک کاربر استفاده کرده‌ایم. و در حالی که این ساده‌ترین و اساسی‌ترین روش برای ارسال یک پاسخ است، در عمل بسیار رایج‌تر است که مقدار <code>http.ResponseWriter</code> خود را به <em>تابع دیگری</em> ارسال کنید که پاسخ را برای شما می‌نویسد.</p>
 
-<p>در واقع، توابع زیادی وجود دارند که می‌توانید برای نوشتن یک پاسخ استفاده کنید!</p>
+<p>در واقع، توابع زیادی وجود دارد که می‌توانید برای نوشتن یک پاسخ استفاده کنید!</p>
 
-<p>نکته کلیدی که باید درک کنید این است&hellip; <em>زیرا مقدار <code>http.ResponseWriter</code> در هندلرهای شما یک متد <code>Write()</code> دارد، آن <a href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a> را برآورده می‌کند</em>.</p>
+<p>نکته کلیدی برای درک این است&hellip; <em>چون مقدار <code>http.ResponseWriter</code> در handlerهای شما یک متد <code>Write()</code> دارد، رابط <a href="https://pkg.go.dev/io#Writer"><code>io.Writer</code></a> را برآورده می‌کند</em>.</p>
 
-<p>اگر در Go تازه‌کار هستید، ممکن است <a href="https://www.letsgofa.net/blog/interfaces-explained">مفهوم اینترفیس‌ها</a> کمی گیج‌کننده باشد و نمی‌خواهم در حال حاضر خیلی به آن بپردازم. اما در سطح عملی، این به این معناست که هر تابعی که یک پارامتر <code>io.Writer</code> دارد، می‌توانید مقدار <code>http.ResponseWriter</code> خود را به آن ارسال کنید و هر چیزی که نوشته می‌شود به عنوان بدنه پاسخ HTTP ارسال خواهد شد.</p>
+<p>اگر تازه با Go شروع کرده‌اید، <a href="https://www.alexedwards.net/blog/interfaces-explained">مفهوم رابط‌ها (interfaces)</a> می‌تواند کمی گیج‌کننده باشد و نمی‌خواهم الان خیلی روی آن تأکید کنم. اما در سطح عملی، به این معنی است که در هر تابعی که یک پارامتر <code>io.Writer</code> می‌بینید، می‌توانید مقدار <code>http.ResponseWriter</code> خود را ارسال کنید و هر چیزی که نوشته می‌شود به عنوان بدنه پاسخ HTTP ارسال خواهد شد.</p>
 
-<p>این به این معناست که می‌توانید از توابع کتابخانه استاندارد مانند <a href="https://pkg.go.dev/io#WriteString"><code>io.WriteString()</code></a> و خانواده <a href="https://pkg.go.dev/fmt#Fprint"><code>fmt.Fprint*()</code></a> (همه آن‌ها یک پارامتر <code>io.Writer</code> می‌پذیرند) برای نوشتن بدنه‌های پاسخ متنی ساده نیز استفاده کنید.</p>
+<p>این به این معنی است که می‌توانید از توابع کتابخانه استاندارد مانند <a href="https://pkg.go.dev/io#WriteString"><code>io.WriteString()</code></a> و خانواده <a href="https://pkg.go.dev/fmt#Fprint"><code>fmt.Fprint*()</code></a> (همه آن‌ها یک پارامتر <code>io.Writer</code> می‌پذیرند) برای نوشتن بدنه‌های پاسخ متنی ساده نیز استفاده کنید.</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">// Instead of this...
@@ -165,7 +170,7 @@ Hello from Snippetbox</samp></pre>
 <span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello world&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<p>بیایید از این استفاده کنیم و کد در هندلر <code>snippetView</code> خود را به‌روزرسانی کنیم تا از تابع <code>fmt.Fprintf()</code> استفاده کند. این به ما اجازه می‌دهد تا مقدار <code>id</code> وایلدکارد را در پیام بدنه پاسخ خود جای‌گذاری کنیم <em>و</em> پاسخ را در یک خط بنویسیم، به این صورت:</p>
+<p>بیایید از این استفاده کنیم و کد در handler <code>snippetView</code> خود را به‌روزرسانی کنیم تا از تابع <code>fmt.Fprintf()</code> استفاده کند. این به ما اجازه می‌دهد مقدار wildcard <code>id</code> را در پیام بدنه پاسخ خود درج کنیم <em>و</em> پاسخ را در یک خط بنویسیم، مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
@@ -190,20 +195,20 @@ Hello from Snippetbox</samp></pre>
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="content-sniffing">تشخیص محتوا (Content Sniffing)</h4>
+<h4 id="content-sniffing">Content sniffing</h4>
 
-<p>برای تنظیم خودکار هدر <code>Content-Type</code>، Go <em>محتوای بدنه پاسخ را تشخیص می‌دهد</em> با استفاده از تابع <a href="https://pkg.go.dev/net/http/#DetectContentType"><code>http.DetectContentType()</code></a>. اگر این تابع نتواند نوع محتوا را حدس بزند، Go به جای آن هدر <code>Content-Type: application/octet-stream</code> را تنظیم می‌کند.</p>
+<p>برای تنظیم خودکار هدر <code>Content-Type</code>، Go بدنه پاسخ را با تابع <a href="https://pkg.go.dev/net/http/#DetectContentType"><code>http.DetectContentType()</code></a> <em>content sniff</em> می‌کند. اگر این تابع نتواند نوع محتوا را حدس بزند، Go به تنظیم هدر <code>Content-Type: application/octet-stream</code> به جای آن بازمی‌گردد.</p>
 
-<p>تابع <code>http.DetectContentType()</code> به‌طور کلی به خوبی کار می‌کند، اما یک مشکل رایج برای توسعه‌دهندگان وب این است که نمی‌تواند JSON را از متن ساده تشخیص دهد. بنابراین، به‌طور پیش‌فرض، پاسخ‌های JSON با هدر <code>Content-Type: text/plain; charset=utf-8</code> ارسال می‌شوند. می‌توانید با تنظیم دستی هدر صحیح در هندلر خود از این اتفاق جلوگیری کنید، به این صورت:</p>
+<p>تابع <code>http.DetectContentType()</code> به طور کلی به خوبی کار می‌کند، اما یک مشکل رایج برای توسعه‌دهندگان وب این است که نمی‌تواند JSON را از متن ساده تشخیص دهد. پس، به طور پیش‌فرض، پاسخ‌های JSON با یک هدر <code>Content-Type: text/plain; charset=utf-8</code> ارسال می‌شوند. می‌توانید از این جلوگیری کنید با تنظیم دستی هدر صحیح در handler خود مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Set</span><span class="p">(</span><span class="s">&#34;Content-Type&#34;</span><span class="p">,</span> <span class="s">&#34;application/json&#34;</span><span class="p">)</span>
-<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`</span><span class="s">{</span><span class="s">&#34;name&#34;:&#34;letsgofa&#34;}</span><span class="s">`</span><span class="p">)</span><span class="p">)</span></pre>
+<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`</span><span class="s">{</span><span class="s">&#34;name&#34;:&#34;Alex&#34;}</span><span class="s">`</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<h4 id="manipulating-the-header-map">دستکاری نقشه هدر (Manipulating the Header Map)</h4>
+<h4 id="manipulating-the-header-map">دستکاری نقشه هدر</h4>
 
-<p>در این فصل از <code>w.Header().Add()</code> برای افزودن یک هدر جدید به نقشه هدر پاسخ استفاده کردیم. اما همچنین متدهای <code>Set()</code>، <code>Del()</code>، <code>Get()</code> و <code>Values()</code> وجود دارند که می‌توانید برای دستکاری و خواندن از نقشه هدر استفاده کنید.</p>
+<p>در این فصل از <code>w.Header().Add()</code> برای افزودن یک هدر جدید به نقشه هدر پاسخ استفاده کردیم. اما همچنین متدهای <code>Set()</code>، <code>Del()</code>، <code>Get()</code> و <code>Values()</code> وجود دارد که می‌توانید برای دستکاری و خواندن از نقشه هدر نیز استفاده کنید.</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">// Set a new cache-control header. If an existing &#34;Cache-Control&#34; header exists
@@ -225,79 +230,19 @@ Hello from Snippetbox</samp></pre>
 </span><span class="c1"></span><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nf">Values</span><span class="p">(</span><span class="s">&#34;Cache-Control&#34;</span><span class="p">)</span></pre>
 </figure>
 
-<h4 id="header-canonicalization">قانونی‌سازی هدر (Header Canonicalization)</h4>
+<h4 id="header-canonicalization">استانداردسازی هدر</h4>
 
-<p>هنگامی که از متدهای <code>Set()</code>، <code>Add()</code>، <code>Del()</code>، <code>Get()</code> و <code>Values()</code> بر روی نقشه هدر استفاده می‌کنید، نام هدر همیشه با استفاده از تابع <a href="https://pkg.go.dev/net/textproto/#CanonicalMIMEHeaderKey"><code>textproto.CanonicalMIMEHeaderKey()</code></a> قانونی‌سازی می‌شود. این تابع اولین حرف و هر حرفی که بعد از یک خط تیره می‌آید را به حروف بزرگ تبدیل می‌کند و بقیه حروف را به حروف کوچک تبدیل می‌کند. این به این معناست که هنگام فراخوانی این متدها، نام هدر <em>غیر حساس به حروف بزرگ و کوچک</em> است.</p>
+<p>وقتی از متدهای <code>Set()</code>، <code>Add()</code>، <code>Del()</code>، <code>Get()</code> و <code>Values()</code> روی نقشه هدر استفاده می‌کنید، نام هدر همیشه با استفاده از تابع <a href="https://pkg.go.dev/net/textproto/#CanonicalMIMEHeaderKey"><code>textproto.CanonicalMIMEHeaderKey()</code></a> استانداردسازی می‌شود. این اولین حرف و هر حرفی که بعد از یک خط تیره می‌آید را به حروف بزرگ تبدیل می‌کند، و بقیه حروف را به حروف کوچک. این به این معنی عملی است که هنگام فراخوانی این متدها نام هدر <em>به حروف حساس نیست</em>.</p>
 
-<p>اگر نیاز دارید که از این رفتار قانونی‌سازی جلوگیری کنید، می‌توانید نقشه هدر زیرین را به‌طور مستقیم ویرایش کنید. این نقشه در پشت صحنه نوع <code>map[string][]string</code> دارد. برای مثال:</p>
+<p>اگر نیاز به اجتناب از این رفتار استانداردسازی دارید، می‌توانید نقشه هدر زیرین را مستقیماً ویرایش کنید. این در پشت صحنه نوع <code>map[string][]string</code> دارد. برای مثال:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">w</span><span class="p">.</span><span class="nf">Header</span><span class="p">(</span><span class="p">)</span><span class="p">[</span><span class="s">&#34;X-XSS-Protection&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="p">[</span><span class="p">]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1; mode=block&#34;</span><span class="p">}</span></pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> اگر از یک اتصال HTTP/2 استفاده می‌شود، Go <em>همیشه</em> به‌طور خودکار نام و مقادیر هدر را برای شما به حروف کوچک تبدیل می‌کند هنگام نوشتن پاسخ، طبق <a href="https://tools.ietf.org/html/rfc7540#section-8.1.2">مشخصات HTTP/2</a>.
+<strong>نکته:</strong> اگر از یک اتصال HTTP/2 استفاده می‌شود، Go <em>همیشه</em> به طور خودکار نام‌ها و مقادیر هدر را هنگام نوشتن پاسخ به حروف کوچک برای شما تبدیل می‌کند، طبق <a href="https://tools.ietf.org/html/rfc7540#section-8.1.2">مشخصات HTTP/2</a>.
 </p></aside>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>سفارشی‌سازی پاسخ‌ها</td>
-        <td>Customizing Responses</td>
-        <td>تنظیم و تغییر جنبه‌های مختلف پاسخ HTTP مانند هدرها، کد وضعیت و بدنه پاسخ</td>
-    </tr>
-    <tr>
-        <td>کد وضعیت HTTP</td>
-        <td>HTTP Status Code</td>
-        <td>عددی سه رقمی که نتیجه پردازش درخواست HTTP را نشان می‌دهد</td>
-    </tr>
-    <tr>
-        <td>هدر سیستم‌تولید</td>
-        <td>System-generated Header</td>
-        <td>هدرهایی که به طور خودکار توسط سرور HTTP تولید می‌شوند</td>
-    </tr>
-    <tr>
-        <td>بدنه پاسخ</td>
-        <td>Response Body</td>
-        <td>محتوای اصلی که در پاسخ HTTP به کاربر ارسال می‌شود</td>
-    </tr>
-    <tr>
-        <td>نقشه هدر پاسخ</td>
-        <td>Response Header Map</td>
-        <td>مجموعه‌ای از جفت‌های کلید-مقدار که هدرهای HTTP را در پاسخ نگهداری می‌کند</td>
-    </tr>
-    <tr>
-        <td>تشخیص محتوا</td>
-        <td>Content Sniffing</td>
-        <td>فرآیند تشخیص خودکار نوع محتوا با بررسی داده‌های واقعی</td>
-    </tr>
-    <tr>
-        <td>قانونی‌سازی هدر</td>
-        <td>Header Canonicalization</td>
-        <td>فرآیند استانداردسازی نام‌های هدر به یک فرمت یکسان</td>
-    </tr>
-    <tr>
-        <td>نویسنده</td>
-        <td>Writer</td>
-        <td>اینترفیسی در Go که قابلیت نوشتن داده را فراهم می‌کند</td>
-    </tr>
-    <tr>
-        <td>ثابت‌های کد وضعیت</td>
-        <td>Status Code Constants</td>
-        <td>مقادیر ثابت تعریف شده در Go برای کدهای وضعیت HTTP</td>
-    </tr>
-    <tr>
-        <td>دستکاری نقشه هدر</td>
-        <td>Header Map Manipulation</td>
-        <td>عملیات افزودن، حذف یا تغییر هدرهای HTTP در پاسخ</td>
-    </tr>
-</table>
 
 		</main>
 		<footer>
@@ -332,4 +277,3 @@ Hello from Snippetbox</samp></pre>
 		</script>
 	</body>
 </html>
-

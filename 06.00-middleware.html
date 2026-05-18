@@ -1,34 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>میدل‌ور &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.text p, .text h1, .text .chapter {
-				text-align: right;
-				direction: rtl;
-			}
-			.text ul {
-				text-align: right;
-				direction: rtl;
-				padding-right: 20px;
-				padding-left: 0;
-			}
-			[class^="code"] {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; میان‌افزار</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; میدل‌ور</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="05.06-custom-template-functions.html">قبلی</a>
@@ -39,82 +28,24 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۶.</div>
-			<h1 id="middleware">میان‌افزار (Middleware)</h1>
+			<h1 id="middleware">میدل‌ور</h1>
 
-<p>در این فصل، ما در مورد <dfn>میان‌افزار (Middleware)</dfn> صحبت خواهیم کرد - کدی که قبل یا بعد از <dfn>هندلرهای HTTP (HTTP Handlers)</dfn> شما اجرا می‌شود و می‌تواند <dfn>درخواست‌ها (Requests)</dfn> و <dfn>پاسخ‌ها (Responses)</dfn> را بررسی و دستکاری کند.</p>
+<p>هنگام ساخت برنامهٔ وب، معمولاً قابلیت‌هایی دارید که باید روی بسیاری از درخواست‌ها (یا همهٔ آن‌ها) اجرا شوند: ثبت لاگ، فشرده‌سازی پاسخ، بررسی کش، تنظیم هدرهای امنیتی و غیره.</p>
 
-<p>شما یاد خواهید گرفت:</p>
+<p>یک روش رایج برای سازماندهی این قابلیت‌ها، پیاده‌سازی آن‌ها به‌صورت <dfn>میدل‌ور</dfn> است: کدی مستقل که قبل یا بعد از handler اصلی، روی هر درخواست HTTP اجرا می‌شود.</p>
+
+<p>در این بخش از کتاب یاد خواهید گرفت:</p>
 
 <ul>
-<li>یک الگوی اصولی برای <a href="06.01-how-middleware-works.html">ساخت و استفاده از میان‌افزار سفارشی (Custom Middleware)</a> که با <code>net/http</code> و بسیاری از پکیج‌های شخص ثالث سازگار است.</li>
-<li>نحوه ایجاد میان‌افزاری که <a href="06.02-setting-common-headers.html">هدرهای HTTP مشترک (Common HTTP Headers)</a> را روی هر پاسخ HTTP تنظیم می‌کند.</li>
-<li>نحوه ایجاد میان‌افزاری که <a href="06.03-request-logging.html">درخواست‌ها (Requests)</a> را در برنامه شما ثبت می‌کند.</li>
-<li>نحوه ایجاد میان‌افزاری که <a href="06.04-panic-recovery.html">پنیک‌ها را بازیابی می‌کند (Panic Recovery)</a> تا به طور مناسب توسط برنامه شما مدیریت شوند.</li>
-<li>نحوه ایجاد و استفاده از <a href="06.05-composable-middleware-chains.html">زنجیره‌های میان‌افزار قابل ترکیب (Composable Middleware Chains)</a> برای کمک به مدیریت و سازماندهی میان‌افزار شما.</li>
+<li>یک الگوی رایج برای <a href="06.01-how-middleware-works.html">ساخت و استفاده از میدل‌ور سفارشی</a> که با <code>net/http</code> و بسیاری از بسته‌های شخص ثالث سازگار است.</li>
+<li>نحوه ایجاد میدل‌وری که <a href="06.02-setting-common-headers.html">هدرهای HTTP مشترک</a> را روی هر پاسخ HTTP تنظیم می‌کند.</li>
+<li>با <a href="06.03-request-logging.html">لاگ‌گیری درخواست‌ها</a> جزئیات هر درخواست HTTP را ثبت کنید.</li>
+<li>با <a href="06.04-panic-recovery.html">بازیابی از panic</a> از crash کل سرور جلوگیری کنید.</li>
+<li>با <a href="06.05-composable-middleware-chains.html">زنجیره‌های میدل‌ور ترکیبی</a> (بستهٔ alice) چند middleware را مرتب کنید.</li>
 </ul>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>میان‌افزار</td>
-        <td>Middleware</td>
-        <td>کدی که بین درخواست و پاسخ HTTP اجرا می‌شود</td>
-    </tr>
-    <tr>
-        <td>هندلرهای HTTP</td>
-        <td>HTTP Handlers</td>
-        <td>توابعی که درخواست‌های HTTP را پردازش می‌کنند</td>
-    </tr>
-    <tr>
-        <td>درخواست‌ها</td>
-        <td>Requests</td>
-        <td>درخواست‌های HTTP که از سمت کلاینت دریافت می‌شوند</td>
-    </tr>
-    <tr>
-        <td>پاسخ‌ها</td>
-        <td>Responses</td>
-        <td>پاسخ‌های HTTP که به کلاینت ارسال می‌شوند</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار سفارشی</td>
-        <td>Custom Middleware</td>
-        <td>میان‌افزاری که برای نیازهای خاص برنامه نوشته می‌شود</td>
-    </tr>
-    <tr>
-        <td>هدرهای HTTP مشترک</td>
-        <td>Common HTTP Headers</td>
-        <td>هدرهایی که معمولاً در اکثر پاسخ‌های HTTP استفاده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>بازیابی پنیک</td>
-        <td>Panic Recovery</td>
-        <td>مدیریت خطاهای پیش‌بینی نشده در برنامه</td>
-    </tr>
-    <tr>
-        <td>زنجیره‌های میان‌افزار</td>
-        <td>Middleware Chains</td>
-        <td>ترکیب چندین میان‌افزار به صورت پشت سر هم</td>
-    </tr>
-    <tr>
-        <td>پردازش درخواست</td>
-        <td>Request Processing</td>
-        <td>عملیات انجام شده روی درخواست‌های دریافتی</td>
-    </tr>
-    <tr>
-        <td>مدیریت خطا</td>
-        <td>Error Handling</td>
-        <td>نحوه برخورد با خطاها در برنامه</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="05.06-custom-template-functions.html">قبلی</a>

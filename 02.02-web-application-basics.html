@@ -3,16 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مبانی برنامه‌های وب &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -20,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; مبانی برنامه‌های وب</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; مبانی برنامه‌های وب</span>
 						
 					
 				</div>
@@ -35,19 +30,19 @@
 			<div class="chapter">فصل ۲.۲.</div>
 			<h2 id="web-application-basics">مبانی برنامه‌های وب</h2>
 
-<p>حالا که همه چیز به درستی تنظیم شده است، بیایید اولین نسخه برنامه وب (Web Application) خود را بسازیم. ما با سه مورد کاملاً ضروری شروع می‌کنیم:</p>
+<p>حالا که همه چیز به درستی راه‌اندازی شده است، بیایید اولین نسخه برنامه وب خود را بسازیم. ما با سه مورد ضروری مطلق شروع می‌کنیم:</p>
 
 <ul>
-<li><p>اولین چیزی که نیاز داریم یک <dfn>handler</dfn> است. اگر قبلاً برنامه‌های وب را با الگوی MVC ساخته‌اید، می‌توانید handler ها را کمی شبیه کنترلرها (Controllers) در نظر بگیرید. آنها مسئول اجرای منطق برنامه و نوشتن هدرها (Headers) و بدنه پاسخ HTTP (HTTP Response Body) هستند.</p></li>
+<li><p>اولین چیزی که نیاز داریم یک <dfn>handler</dfn> است. اگر قبلاً برنامه‌های وب با استفاده از الگوی MVC ساخته‌اید، می‌توانید handlerها را کمی شبیه به controllerها در نظر بگیرید. آن‌ها مسئول اجرای منطق برنامه شما و نوشتن هدرها و بدنه پاسخ HTTP هستند.</p></li>
 
-<li><p>دومین جزء یک router (یا <dfn>servemux</dfn> در اصطلاح Go) است. این جزء نگاشت بین الگوهای مسیریابی URL (URL Routing Patterns) برنامه و handler های متناظر را ذخیره می‌کند. معمولاً یک servemux برای برنامه خود دارید که شامل تمام مسیرهای شماست.</p></li>
+<li><p>مؤلفه دوم یک router (یا <dfn>servemux</dfn> در اصطلاحات Go) است. این یک نگاشت بین الگوهای مسیریابی URL برای برنامه شما و handlerهای مربوطه را ذخیره می‌کند. معمولاً یک servemux برای برنامه خود دارید که شامل تمام مسیرهای شماست.</p></li>
 
-<li><p>آخرین چیزی که نیاز داریم یک <dfn>سرور وب (Web Server)</dfn> است. یکی از نکات عالی Go این است که می‌توانید یک سرور وب را راه‌اندازی کنید و به عنوان بخشی از برنامه خود به درخواست‌های ورودی (Incoming Requests) گوش دهید. شما نیازی به سرور خارجی شخص ثالث مانند Nginx، Apache یا Caddy ندارید.</p></li>
+<li><p>آخرین چیزی که نیاز داریم یک <dfn>سرور وب</dfn> است. یکی از چیزهای عالی درباره Go این است که می‌توانید یک سرور وب راه‌اندازی کنید و برای درخواست‌های ورودی گوش دهید <em>به عنوان بخشی از خود برنامه</em>. شما نیازی به یک سرور شخص ثالث خارجی مانند Nginx، Apache یا Caddy ندارید.</p></li>
 </ul>
 
-<p>بیایید این اجزا را در فایل <code>main.go</code> کنار هم قرار دهیم تا یک برنامه کاربردی بسازیم.</p>
+<p>بیایید این مؤلفه‌ها را در فایل <code>main.go</code> کنار هم قرار دهیم تا یک برنامه کارآمد بسازیم.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -82,117 +77,52 @@
 </figure>
 
 <aside class="note"><p>
-<strong>نکته:</strong> تابع handler <code>home</code> فقط یک تابع معمولی Go با دو پارامتر است. پارامتر <code>http.ResponseWriter</code> متدهایی برای مونتاژ پاسخ HTTP (HTTP Response) و ارسال آن به کاربر فراهم می‌کند، و پارامتر <code>*http.Request</code> اشاره‌گری به یک ساختار است که اطلاعات درخواست فعلی (مانند متد HTTP و URL درخواستی) را نگه می‌دارد. ما در ادامه کتاب بیشتر در مورد این پارامترها صحبت خواهیم کرد و نحوه استفاده از آنها را نشان خواهیم داد.
+<strong>نکته:</strong> تابع handler <code>home</code> فقط یک تابع Go معمولی با دو پارامتر است. پارامتر <code>http.ResponseWriter</code> متدهایی برای مونتاژ یک پاسخ HTTP و ارسال آن به کاربر فراهم می‌کند، و پارامتر <code>*http.Request</code> یک اشاره‌گر (pointer) به یک struct است که اطلاعات مربوط به درخواست فعلی را نگه می‌دارد (مانند متد HTTP و URL درخواست شده). در ادامه کتاب بیشتر در مورد این پارامترها صحبت خواهیم کرد و نحوه استفاده از آن‌ها را نشان خواهیم داد.
 </p></aside>
 
-<p>وقتی این کد را اجرا می‌کنید، یک سرور وب را روی پورت ۴۰۰۰ ماشین محلی (Local Machine) شما شروع می‌کند. هر بار که سرور یک درخواست HTTP جدید دریافت می‌کند، آن را به servemux منتقل می‌کند و servemux مسیر URL را بررسی کرده و درخواست را به handler متناظر ارسال می‌کند.</p>
+<p>وقتی این کد را اجرا می‌کنید، یک سرور وب را روی پورت 4000 ماشین محلی شما راه‌اندازی می‌کند. هر بار که سرور یک درخواست HTTP جدید دریافت می‌کند، آن را به servemux ارسال می‌کند و — به نوبه خود — servemux مسیر URL را بررسی می‌کند و درخواست را به handler مطابق ارسال می‌کند.</p>
 
-<p>بیایید این را امتحان کنیم. فایل <code>main.go</code> خود را ذخیره کنید و سپس با استفاده از دستور <code>go run</code> آن را از ترمینال اجرا کنید.</p>
+<p>بیایید این را امتحان کنیم. فایل <code>main.go</code> خود را ذخیره کنید و سپس سعی کنید آن را از ترمینال خود با استفاده از دستور <code>go run</code> اجرا کنید.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
 $ go run .
 <samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
 </figure>
 
-<p>در حالی که سرور در حال اجراست، یک مرورگر وب باز کنید و سعی کنید به <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بروید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه‌ای شبیه این را ببینید:</p>
+<p>در حالی که سرور در حال اجرا است، یک مرورگر وب باز کنید و سعی کنید از <a href="http://localhost:4000/"><code>http://localhost:4000</code></a> بازدید کنید. اگر همه چیز طبق برنامه پیش رفته باشد، باید صفحه‌ای ببینید که کمی شبیه به این است:</p>
 
 <figure class="img">
 <img src="assets/img/02.02-01.png" alt="02.02-01.png" />
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> قبل از ادامه، باید توضیح دهم که servemux در Go الگوی مسیر <code>&quot;/&quot;</code> را مانند یک catch-all در نظر می‌گیرد. بنابراین در حال حاضر <em>همه</em> درخواست‌های HTTP به سرور ما توسط تابع <code>home</code> پردازش می‌شوند، صرف نظر از مسیر URL آنها. برای مثال، می‌توانید به یک مسیر URL متفاوت مانند <a href="http://localhost:4000/foo/bar"><code>http://localhost:4000/foo/bar</code></a> بروید و دقیقاً همان پاسخ را دریافت خواهید کرد.
+<strong>مهم:</strong> قبل از ادامه، باید توضیح دهم که servemux در Go الگوی مسیر <code>&quot;/&quot;</code> را مانند یک catch-all در نظر می‌گیرد. پس در حال حاضر <em>همه</em> درخواست‌های HTTP به سرور ما توسط تابع <code>home</code> مدیریت می‌شوند، صرف نظر از مسیر URL آن‌ها. برای مثال، می‌توانید یک مسیر URL متفاوت مانند <a href="http://localhost:4000/foo/bar"><code>http://localhost:4000/foo/bar</code></a> را بازدید کنید و دقیقاً همان پاسخ را دریافت خواهید کرد.
 </p></aside>
 
-<p>اگر به پنجره ترمینال خود برگردید، می‌توانید با فشار دادن <code>Ctrl+C</code> روی صفحه کلید خود سرور را متوقف کنید.</p>
+<p>اگر به پنجره ترمینال خود برگردید، می‌توانید سرور را با فشردن <code>Ctrl+C</code> روی صفحه کلید خود متوقف کنید.</p>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="network-addresses">آدرس‌های شبکه (Network Addresses)</h4>
+<h4 id="network-addresses">آدرس‌های شبکه</h4>
 
-<p>آدرس شبکه TCP که به <code>http.ListenAndServe()</code> می‌دهید باید به فرمت <code>&quot;host:port&quot;</code> باشد. اگر host را حذف کنید (مثل ما که <code>&quot;:4000&quot;</code> را استفاده کردیم) سرور روی تمام رابط‌های شبکه (Network Interfaces) موجود در کامپیوتر شما گوش خواهد داد. به طور کلی، فقط زمانی نیاز به مشخص کردن host در آدرس دارید که کامپیوتر شما چندین رابط شبکه داشته باشد و بخواهید فقط روی یکی از آنها گوش دهید.</p>
+<p>آدرس شبکه TCP که به <code>http.ListenAndServe()</code> ارسال می‌کنید باید به فرمت <code>&quot;host:port&quot;</code> باشد. اگر host را حذف کنید (مانند کاری که ما با <code>&quot;:4000&quot;</code> انجام دادیم) سپس سرور روی همه رابط‌های شبکه موجود کامپیوتر شما گوش می‌دهد. به طور کلی، فقط در صورتی نیاز به مشخص کردن host در آدرس دارید که کامپیوتر شما چندین رابط شبکه داشته باشد و بخواهید فقط روی یکی از آن‌ها گوش دهید.</p>
 
-<p>در پروژه‌ها یا مستندات دیگر Go ممکن است گاهی اوقات آدرس‌های شبکه را با پورت‌های نام‌گذاری شده (Named Ports) مانند <code>&quot;:http&quot;</code> یا <code>&quot;:http-alt&quot;</code> به جای عدد ببینید. اگر از یک پورت نام‌گذاری شده استفاده کنید، تابع <code>http.ListenAndServe()</code> سعی می‌کند شماره پورت مربوطه را از فایل <code>/etc/services</code> شما هنگام شروع سرور جستجو کند و در صورت عدم یافتن تطابق، خطا برمی‌گرداند.</p>
+<p>در پروژه‌ها یا مستندات Go دیگر ممکن است گاهی اوقات آدرس‌های شبکه نوشته شده با استفاده از پورت‌های نام‌گذاری شده مانند <code>&quot;:http&quot;</code> یا <code>&quot;:http-alt&quot;</code> به جای یک عدد را ببینید. اگر از یک پورت نام‌گذاری شده استفاده کنید، تابع <code>http.ListenAndServe()</code> سعی می‌کند شماره پورت مربوطه را از فایل <code>/etc/services</code> شما هنگام راه‌اندازی سرور جستجو کند، و در صورت عدم یافتن تطابق، یک خطا برمی‌گرداند.</p>
 
-<h4 id="using-go-run">استفاده از go run (Using go run)</h4>
+<h4 id="using-go-run">استفاده از go run</h4>
 
-<p>در طول توسعه، دستور <code>go run</code> روشی مناسب برای امتحان کد شماست. این اساساً میانبری است که کد شما را کامپایل می‌کند، یک فایل اجرایی باینری (Binary Executable) در دایرکتوری <code>/tmp</code> شما ایجاد می‌کند و سپس این باینری را در یک مرحله اجرا می‌کند.</p>
+<p>در طول توسعه، دستور <code>go run</code> یک روش راحت برای امتحان کردن کد شماست. اساساً یک میانبر است که کد شما را کامپایل می‌کند، یک باینری قابل اجرا در دایرکتوری <code>/tmp</code> شما ایجاد می‌کند، و سپس این باینری را در یک مرحله اجرا می‌کند.</p>
 
-<p>این دستور یا لیستی از فایل‌های <code>.go</code> را با فاصله جدا شده، یا مسیر یک پکیج خاص (که کاراکتر <code>.</code> دایرکتوری فعلی شما را نشان می‌دهد)، یا مسیر کامل ماژول را می‌پذیرد. برای برنامه ما در حال حاضر، سه دستور زیر معادل هستند:</p>
+<p>این دستور یا یک لیست جدا شده با فاصله از فایل‌های <code>.go</code>، یا مسیر به یک بسته خاص (جایی که کاراکتر <code>.</code> دایرکتوری فعلی شما را نشان می‌دهد)، یا مسیر کامل ماژول را می‌پذیرد. برای برنامه ما در حال حاضر، سه دستور زیر همگی معادل هستند:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ go run .
 $ go run main.go
-$ go run snippetbox.letsgofa.net</pre>
+$ go run snippetbox.alexedwards.net</pre>
 </figure>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>برنامه وب</td>
-        <td>Web Application</td>
-        <td>برنامه‌ای که از طریق مرورگر وب قابل دسترسی است و با پروتکل HTTP ارتباط برقرار می‌کند</td>
-    </tr>
-    <tr>
-        <td>کنترلر</td>
-        <td>Controller</td>
-        <td>جزء در الگوی MVC که منطق برنامه را مدیریت می‌کند</td>
-    </tr>
-    <tr>
-        <td>هدر</td>
-        <td>Header</td>
-        <td>بخشی از پیام HTTP که شامل اطلاعات متا در مورد درخواست یا پاسخ است</td>
-    </tr>
-    <tr>
-        <td>بدنه پاسخ HTTP</td>
-        <td>HTTP Response Body</td>
-        <td>بخشی از پاسخ HTTP که شامل محتوای اصلی است</td>
-    </tr>
-    <tr>
-        <td>الگوهای مسیریابی URL</td>
-        <td>URL Routing Patterns</td>
-        <td>الگوهایی که مشخص می‌کنند کدام درخواست‌ها به کدام handler ارسال شوند</td>
-    </tr>
-    <tr>
-        <td>سرور وب</td>
-        <td>Web Server</td>
-        <td>برنامه‌ای که درخواست‌های HTTP را دریافت و پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>درخواست‌های ورودی</td>
-        <td>Incoming Requests</td>
-        <td>درخواست‌های HTTP که به سرور وب ارسال می‌شوند</td>
-    </tr>
-    <tr>
-        <td>ماشین محلی</td>
-        <td>Local Machine</td>
-        <td>کامپیوتری که برنامه روی آن اجرا می‌شود</td>
-    </tr>
-    <tr>
-        <td>رابط‌های شبکه</td>
-        <td>Network Interfaces</td>
-        <td>سخت‌افزارها یا نرم‌افزارهایی که کامپیوتر را به شبکه متصل می‌کنند</td>
-    </tr>
-    <tr>
-        <td>پورت‌های نام‌گذاری شده</td>
-        <td>Named Ports</td>
-        <td>پورت‌های استاندارد که با نام‌های خاصی شناخته می‌شوند</td>
-    </tr>
-    <tr>
-        <td>فایل اجرایی باینری</td>
-        <td>Binary Executable</td>
-        <td>فایلی که شامل کد ماشین قابل اجرا است</td>
-    </tr>
-</table>
 
 		</main>
 		<footer>

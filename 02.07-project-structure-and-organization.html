@@ -1,28 +1,23 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>ساختار و سازماندهی پروژه &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			body {
-				direction: rtl;
-				text-align: right;
-			}
-			pre, code {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; ساختار و سازماندهی پروژه</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; ساختار و سازماندهی پروژه</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="02.06-customizing-responses.html">قبلی</a>
@@ -32,20 +27,20 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 2.7.</div>
-			<h2 id="project-structure-and-organization">ساختار و سازماندهی پروژه (Project Structure and Organization)</h2>
+			<div class="chapter">فصل ۲.۷.</div>
+			<h2 id="project-structure-and-organization">ساختار و سازماندهی پروژه</h2>
 
-<p>قبل از اینکه کد بیشتری به فایل <code>main.go</code> اضافه کنیم، زمان خوبی است که به نحوه سازماندهی و ساختاردهی این پروژه فکر کنیم.</p>
+<p>قبل از اینکه کد بیشتری به فایل <code>main.go</code> خود اضافه کنیم، زمان خوبی است که فکر کنیم چگونه این پروژه را سازماندهی و ساختاردهی کنیم.</p>
 
-<p>مهم است که از ابتدا توضیح دهیم که هیچ روش درست یا حتی توصیه‌شده‌ای برای ساختاردهی برنامه‌های وب در Go وجود ندارد. و این هم خوب است و هم بد. این به این معناست که شما آزادی و انعطاف‌پذیری در نحوه سازماندهی کد خود دارید، اما همچنین به راحتی می‌توانید در یک مسیر نامشخص گیر کنید وقتی که سعی می‌کنید بهترین ساختار را انتخاب کنید.</p>
+<p>مهم است از ابتدا توضیح دهم که هیچ روش درست واحدی — یا حتی توصیه شده — برای ساختاردهی برنامه‌های وب در Go وجود ندارد. و این هم خوب است و هم بد. به این معنی است که شما آزادی و انعطاف‌پذیری در نحوه سازماندهی کد خود دارید، اما همچنین آسان است که در تلاش برای تصمیم‌گیری در مورد اینکه بهترین ساختار باید چه باشد، در یک چاه عدم اطمینان گیر کنید.</p>
 
-<p>با کسب تجربه در Go، شما احساس خواهید کرد که کدام الگوها در موقعیت‌های مختلف برای شما خوب کار می‌کنند. اما به عنوان نقطه شروع، بهترین توصیه‌ای که می‌توانم به شما بدهم این است که <em>چیزها را بیش از حد پیچیده نکنید</em>. سعی کنید سخت تلاش کنید تا ساختار و پیچیدگی را فقط زمانی اضافه کنید که به وضوح نیاز باشد.</p>
+<p>همانطور که با Go تجربه کسب می‌کنید، احساسی برای الگوهایی که در موقعیت‌های مختلف برای شما خوب کار می‌کنند پیدا خواهید کرد. اما به عنوان نقطه شروع، بهترین توصیه‌ای که می‌توانم به شما بدهم این است که <em>چیزها را بیش از حد پیچیده نکنید</em>. سخت تلاش کنید که ساختار و پیچیدگی را فقط زمانی اضافه کنید که به وضوح نیاز است.</p>
 
-<p>برای این پروژه، ما یک ساختار کلی را پیاده‌سازی خواهیم کرد که از یک <a href="https://go.dev/doc/modules/layout#server-project">رویکرد محبوب و آزمایش‌شده (Popular and Proven Approach)</a> پیروی می‌کند. این یک نقطه شروع محکم است و شما باید بتوانید ساختار کلی را در طیف وسیعی از پروژه‌ها مجدداً استفاده کنید.</p>
+<p>برای این پروژه، یک ساختار کلی را پیاده‌سازی می‌کنیم که از یک رویکرد <a href="https://go.dev/doc/modules/layout#server-project">محبوب و آزموده شده</a> پیروی می‌کند. این یک نقطه شروع محکم است، و باید بتوانید ساختار کلی را در انواع مختلف پروژه‌ها دوباره استفاده کنید.</p>
 
-<p>اگر شما هم دنبال می‌کنید، مطمئن شوید که در ریشه مخزن پروژه خود هستید و دستورات زیر را اجرا کنید:</p>
+<p>اگر همراه هستید، مطمئن شوید که در ریشه مخزن پروژه خود هستید و دستورات زیر را اجرا کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
 $ rm main.go
 $ mkdir -p cmd/web internal ui/html ui/static
@@ -53,20 +48,20 @@ $ touch cmd/web/main.go
 $ touch cmd/web/handlers.go</pre>
 </figure>
 
-<p>ساختار مخزن پروژه شما اکنون باید به این صورت باشد:</p>
+<p>ساختار مخزن پروژه شما اکنون باید شبیه به این باشد:</p>
 
 <figure class="img">
 <img src="assets/img/02.07-01.png" alt="02.07-01.png" />
 </figure>
 
-<p>بیایید لحظه‌ای وقت بگذاریم تا در مورد اینکه هر یک از این دایرکتوری‌ها برای چه استفاده می‌شوند صحبت کنیم.</p>
+<p>بیایید لحظه‌ای وقت بگذاریم تا بحث کنیم که هر یک از این دایرکتوری‌ها برای چه استفاده می‌شوند.</p>
 
 <ul>
-<li><p>دایرکتوری <code>cmd</code> شامل کد <em>خاص برنامه (Application-specific Code)</em> برای برنامه‌های اجرایی در پروژه خواهد بود. فعلاً پروژه ما فقط یک برنامه اجرایی خواهد داشت &mdash; برنامه وب &mdash; که در دایرکتوری <code>cmd/web</code> قرار خواهد گرفت.</p></li>
+<li><p>دایرکتوری <code>cmd</code> شامل کد <em>خاص برنامه</em> برای برنامه‌های قابل اجرا در پروژه خواهد بود. برای حالا پروژه ما فقط یک برنامه قابل اجرا خواهد داشت — برنامه وب — که در زیر دایرکتوری <code>cmd/web</code> قرار خواهد گرفت.</p></li>
 
-<li><p>دایرکتوری <code>internal</code> شامل کد <em>غیر خاص برنامه (Non-application-specific Code)</em> کمکی استفاده‌شده در پروژه خواهد بود. ما از آن برای نگهداری کدهای قابل استفاده مجدد مانند کمک‌کننده‌های اعتبارسنجی و مدل‌های پایگاه داده SQL برای پروژه استفاده خواهیم کرد.</p></li>
+<li><p>دایرکتوری <code>internal</code> شامل کد کمکی <em>غیر خاص برنامه</em> استفاده شده در پروژه خواهد بود. از آن برای نگه‌داری کدهای بالقوه قابل استفاده مجدد مانند helperهای اعتبارسنجی و مدل‌های پایگاه داده SQL برای پروژه استفاده خواهیم کرد.</p></li>
 
-<li><p>دایرکتوری <code>ui</code> شامل <em>دارایی‌های رابط کاربری (UI Assets)</em> استفاده‌شده توسط برنامه وب خواهد بود. به طور خاص، دایرکتوری <code>ui/html</code> شامل قالب‌های HTML خواهد بود و دایرکتوری <code>ui/static</code> شامل فایل‌های استاتیک (Static Files) (مانند CSS و تصاویر) خواهد بود.</p></li>
+<li><p>دایرکتوری <code>ui</code> شامل <em>دارایی‌های رابط کاربری</em> استفاده شده توسط برنامه وب خواهد بود. به طور خاص، دایرکتوری <code>ui/html</code> شامل قالب‌های HTML خواهد بود، و دایرکتوری <code>ui/static</code> شامل فایل‌های استاتیک (مانند CSS و تصاویر) خواهد بود.</p></li>
 </ul>
 
 <p><em>پس چرا از این ساختار استفاده می‌کنیم؟</em></p>
@@ -74,17 +69,17 @@ $ touch cmd/web/handlers.go</pre>
 <p>دو مزیت بزرگ وجود دارد:</p>
 
 <ol>
-<li><p>این یک جداسازی تمیز بین دارایی‌های Go و غیر Go ایجاد می‌کند. تمام کد Go که می‌نویسیم به طور انحصاری در دایرکتوری‌های <code>cmd</code> و <code>internal</code> قرار خواهد گرفت و ریشه پروژه را آزاد می‌گذارد تا دارایی‌های غیر Go مانند فایل‌های رابط کاربری، فایل‌های ساخت و تعریف ماژول‌ها (از جمله فایل <code>go.mod</code> ما) را نگه دارد.</p></li>
+<li><p>جدایی تمیزی بین دارایی‌های Go و غیر Go ایجاد می‌کند. همه کد Go که می‌نویسیم به طور انحصاری در زیر دایرکتوری‌های <code>cmd</code> و <code>internal</code> قرار خواهد گرفت، ریشه پروژه را آزاد می‌گذارد تا دارایی‌های غیر Go مانند فایل‌های UI، makefile‌ها و تعاریف ماژول (شامل فایل <code>go.mod</code> ما) را نگه دارد.</p></li>
 
-<li><p>این به خوبی مقیاس‌پذیر است اگر بخواهید یک برنامه اجرایی دیگر به پروژه خود اضافه کنید. به عنوان مثال، ممکن است بخواهید یک CLI (رابط خط فرمان) برای خودکارسازی برخی از وظایف مدیریتی در آینده اضافه کنید. با این ساختار، می‌توانید این برنامه CLI را در زیر <code>cmd/cli</code> ایجاد کنید و قادر خواهید بود تمام کدی که در زیر دایرکتوری <code>internal</code> نوشته‌اید را وارد و مجدداً استفاده کنید.</p></li>
+<li><p>اگر می‌خواهید یک برنامه قابل اجرای دیگر به پروژه خود اضافه کنید، به خوبی مقیاس می‌شود. برای مثال، ممکن است بخواهید یک CLI (رابط خط فرمان) برای خودکارسازی برخی کارهای مدیریتی در آینده اضافه کنید. با این ساختار، می‌توانید این برنامه CLI را در زیر <code>cmd/cli</code> ایجاد کنید و قادر خواهد بود همه کدی که در زیر دایرکتوری <code>internal</code> نوشته‌اید را import و دوباره استفاده کند.</p></li>
 </ol>
 
-<h3 id="refactoring-your-existing-code">بازسازی کد موجود شما (Refactoring Your Existing Code)</h3>
+<h3 id="refactoring-your-existing-code">بازسازی کد موجود شما</h3>
 
 <p>بیایید به سرعت کدی که قبلاً نوشته‌ایم را به این ساختار جدید منتقل کنیم.</p>
 
-<figure class="code go">
-<figcaption style="text-align: left;">File: cmd/web/main.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -106,8 +101,8 @@ $ touch cmd/web/handlers.go</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<figure class="code go">
-<figcaption style="text-align: left;">File: cmd/web/handlers.go</figcaption>
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -141,9 +136,9 @@ $ touch cmd/web/handlers.go</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>بنابراین اکنون برنامه وب ما شامل چندین فایل <code>.go</code> در زیر دایرکتوری <code>cmd/web</code> است. برای اجرای این‌ها، می‌توانیم از دستور <code>go run</code> به این صورت استفاده کنیم:</p>
+<p>پس اکنون برنامه وب ما شامل چندین فایل <code>.go</code> در زیر دایرکتوری <code>cmd/web</code> است. برای اجرای این‌ها، می‌توانیم از دستور <code>go run</code> مانند این استفاده کنیم:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ cd $HOME/code/snippetbox
 $ go run ./cmd/web
 <samp>2024/03/18 11:29:23 starting server on :4000</samp></pre>
@@ -153,73 +148,13 @@ $ go run ./cmd/web
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="the-internal-directory">دایرکتوری internal (The Internal Directory)</h4>
+<h4 id="the-internal-directory">دایرکتوری internal</h4>
 
-<p>مهم است که اشاره کنیم که نام دایرکتوری <code>internal</code> در Go معنای خاص و رفتار خاصی دارد: هر بسته‌ای که در زیر این دایرکتوری قرار دارد فقط می‌تواند توسط کد <em>داخل والد دایرکتوری <code>internal</code></em> وارد شود. در مورد ما، این به این معناست که هر بسته‌ای که در <code>internal</code> قرار دارد فقط می‌تواند توسط کد داخل دایرکتوری پروژه <code>snippetbox</code> وارد شود.</p>
+<p>مهم است اشاره کنم که نام دایرکتوری <code>internal</code> معنای خاص و رفتار خاصی در Go دارد: هر بسته که در زیر این دایرکتوری قرار دارد فقط می‌تواند توسط کد <em>داخل والد دایرکتوری <code>internal</code></em> import شود. در مورد ما، این به این معنی است که هر بسته‌ای که در <code>internal</code> قرار دارد فقط می‌تواند توسط کد داخل دایرکتوری پروژه <code>snippetbox</code> ما import شود.</p>
 
-<p>یا، از طرف دیگر، این به این معناست که هر بسته‌ای که در <code>internal</code> قرار دارد <em>نمی‌تواند توسط کد خارج از پروژه ما وارد شود</em>.</p>
+<p>یا، از نگاه دیگر، این به این معنی است که هر بسته‌ای در زیر <code>internal</code> <em>نمی‌تواند توسط کد خارج از پروژه ما import شود</em>.</p>
 
-<p>این مفید است زیرا از وارد کردن و وابستگی دیگر کدها به بسته‌های (احتمالاً بدون نسخه و پشتیبانی نشده) در دایرکتوری <code>internal</code> جلوگیری می‌کند &mdash; حتی اگر کد پروژه به صورت عمومی در جایی مانند GitHub در دسترس باشد.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>ساختار و سازماندهی پروژه</td>
-        <td>Project Structure and Organization</td>
-        <td>نحوه چیدمان و سازماندهی فایل‌ها و دایرکتوری‌های یک پروژه نرم‌افزاری</td>
-    </tr>
-    <tr>
-        <td>کد خاص برنامه</td>
-        <td>Application-specific Code</td>
-        <td>کدی که مختص به یک برنامه خاص است و قابل استفاده مجدد در برنامه‌های دیگر نیست</td>
-    </tr>
-    <tr>
-        <td>کد غیر خاص برنامه</td>
-        <td>Non-application-specific Code</td>
-        <td>کدی که می‌تواند در چندین برنامه مورد استفاده مجدد قرار گیرد</td>
-    </tr>
-    <tr>
-        <td>دارایی‌های رابط کاربری</td>
-        <td>UI Assets</td>
-        <td>فایل‌هایی که برای ساخت رابط کاربری استفاده می‌شوند، مانند قالب‌های HTML و فایل‌های CSS</td>
-    </tr>
-    <tr>
-        <td>فایل‌های استاتیک</td>
-        <td>Static Files</td>
-        <td>فایل‌هایی که بدون تغییر به کاربر ارسال می‌شوند، مانند تصاویر و فایل‌های CSS</td>
-    </tr>
-    <tr>
-        <td>رویکرد محبوب و آزمایش‌شده</td>
-        <td>Popular and Proven Approach</td>
-        <td>روشی که توسط بسیاری از توسعه‌دهندگان استفاده شده و کارایی آن ثابت شده است</td>
-    </tr>
-    <tr>
-        <td>بازسازی کد</td>
-        <td>Code Refactoring</td>
-        <td>تغییر ساختار کد بدون تغییر در عملکرد آن</td>
-    </tr>
-    <tr>
-        <td>برنامه اجرایی</td>
-        <td>Executable Program</td>
-        <td>برنامه‌ای که می‌تواند به طور مستقیم توسط سیستم عامل اجرا شود</td>
-    </tr>
-    <tr>
-        <td>کد قابل استفاده مجدد</td>
-        <td>Reusable Code</td>
-        <td>کدی که می‌تواند در بخش‌های مختلف یک برنامه یا در برنامه‌های مختلف استفاده شود</td>
-    </tr>
-    <tr>
-        <td>مقیاس‌پذیری</td>
-        <td>Scalability</td>
-        <td>توانایی یک ساختار برای رشد و گسترش بدون نیاز به تغییرات اساسی</td>
-    </tr>
-</table>
+<p>این مفید است چون از import و وابستگی کدبیس‌های دیگر به بسته‌های (احتمالاً بدون نسخه و پشتیبانی نشده) در دایرکتوری <code>internal</code> ما جلوگیری می‌کند — حتی اگر کد پروژه به صورت عمومی در جایی مانند GitHub در دسترس باشد.</p>
 
 		</main>
 		<footer>
@@ -239,15 +174,18 @@ $ go run ./cmd/web
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "02.06-customizing-responses.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "02.08-html-templating-and-inheritance.html";
 						break;
+						
 				}
 			};
 		</script>
 	</body>
 </html>
-

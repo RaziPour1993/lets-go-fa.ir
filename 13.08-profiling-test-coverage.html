@@ -1,41 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>پروفایلینگ پوشش تست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; پروفایل‌سازی پوشش تست</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; پروفایلینگ پوشش تست</span>
 						
 					
 				</div>
 				<div>
 					&lsaquo; <a href="13.07-integration-testing.html">قبلی</a>
-					&middot; <a href="00.01-contents.html">محتوا</a> &middot;
+					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
 					<a href="14.00-conclusion.html">بعدی</a> &rsaquo;
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 13.8.</div>
-			<h2 id="profiling-test-coverage">پروفایل‌سازی پوشش تست (Profiling Test Coverage)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۳.۸.</div>
+			<h2 id="profiling-test-coverage">پروفایلینگ پوشش تست</h2>
 
-<p dir="rtl">در این بخش، نحوه <dfn>پروفایل‌سازی پوشش تست (Profiling Test Coverage)</dfn> را بررسی می‌کنیم. این شامل <dfn>گزارش پوشش (Coverage Report)</dfn> و <dfn>تحلیل کد (Code Analysis)</dfn> می‌شود.</p>
+<p>یک ویژگی عالی ابزار <code>go test</code>، معیارها و تجسم‌هایی است که برای <dfn>پوشش تست</dfn> ارائه می‌دهد.</p>
 
-<p dir="rtl">همچنین با <dfn>نقاط کور تست (Test Blind Spots)</dfn> و <dfn>بهبود کیفیت (Quality Improvement)</dfn> آشنا خواهیم شد.</p>
-
-<p dir="rtl">یکی از ویژگی‌های عالی ابزار <code>go test</code>، متریک‌ها و تجسم‌هایی است که برای <dfn>پوشش تست</dfn> ارائه می‌دهد.</p>
-
-<p dir="rtl">بروید و تست‌ها را در پروژه ما با استفاده از فلگ <code>-cover</code> به این صورت اجرا کنید:</p>
+<p>پیش بروید و سعی کنید تست‌های پروژه خود را با استفاده از flag <code>-cover</code> به این شکل اجرا کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -cover ./...
@@ -47,21 +44,21 @@ ok      snippetbox.alexedwards.net/cmd/web	0.013s          coverage: 45.7% of st
 ok      snippetbox.alexedwards.net/internal/models	0.128s  coverage: 11.3% of statements</samp></pre>
 </figure>
 
-<p dir="rtl">از نتایج اینجا می‌توانیم ببینیم که 46.9% از دستورات در بسته <code>cmd/web</code> ما در طول تست‌ها اجرا می‌شوند، و برای بسته <code>internal/models</code> این رقم 11.3% است.</p>
+<p>از نتایج اینجا می‌بینیم که 46.9% از statementهای package <code>cmd/web</code> ما در طول تست‌های ما اجرا می‌شوند، و برای package <code>internal/models</code> این رقم 11.3% است.</p>
 
-<aside class="note"><p dir="rtl">
-<strong>توجه:</strong> اعداد شما ممکن است کمی متفاوت باشند بسته به نسخه دقیق کتابی که می‌خوانید، یا هر گونه تطبیقاتی که در کد انجام داده‌اید.
+<aside class="note"><p>
+<strong>یادداشت:</strong> اعداد شما ممکن است بسته به نسخه دقیق کتابی که می‌خوانید، یا هر تطبیقی که در کد ایجاد کرده‌اید، کمی متفاوت باشد.
 </p></aside>
 
-<p dir="rtl">ما می‌توانیم با استفاده از فلگ <code>-coverprofile</code> یک تجزیه و تحلیل دقیق‌تر از پوشش تست <em>توسط روش و تابع</em> دریافت کنیم:</p>
+<p>می‌توانیم یک تجزیه دقیق‌تر از پوشش تست <em>بر اساس متد و تابع</em> با استفاده از flag <code>-coverprofile</code> به این شکل به دست آوریم:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -coverprofile=/tmp/profile.out ./...</pre>
 </figure>
 
-<p dir="rtl">این تست‌های شما را به صورت عادی اجرا می‌کند و &mdash; اگر همه تست‌های شما پاس شوند &mdash; سپس یک <dfn>پروفایل پوشش</dfn> را به مکان خاصی می‌نویسد. در مثال بالا، ما به آن دستور داده‌ایم که پروفایل را به <code>/tmp/profile.out</code> بنویسد.</p>
+<p>این تست‌های شما را به طور عادی اجرا می‌کند و &mdash; اگر همه تست‌های شما پاس شوند &mdash; سپس یک <dfn>پروفایل پوشش</dfn> را در یک مکان خاص می‌نویسد. در مثال بالا، به آن دستور داده‌ایم که پروفایل را در <code>/tmp/profile.out</code> بنویسد.</p>
 
-<p dir="rtl">سپس می‌توانید پروفایل پوشش را با استفاده از دستور <code>go tool cover</code> به این صورت مشاهده کنید:</p>
+<p>سپس می‌توانید پروفایل پوشش را با استفاده از دستور <code>go tool cover</code> به این شکل مشاهده کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go tool cover -func=/tmp/profile.out
@@ -102,107 +99,47 @@ snippetbox.alexedwards.net/internal/models/users.go:98:     Exists              
 total:                                                      (statements)            38.1%</samp></pre>
 </figure>
 
-<p dir="rtl">یک روش جایگزین و بصری‌تر برای مشاهده پروفایل پوشش استفاده از فلگ <code>-html</code> به جای <code>-func</code> است.</p>
+<p>یک راه جایگزین و بصری‌تر برای مشاهده پروفایل پوشش، استفاده از flag <code>-html</code> به جای <code>-func</code> است.</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go tool cover -html=/tmp/profile.out</pre>
 </figure>
 
-<p dir="rtl">این یک پنجره مرورگر حاوی نمایشی قابل پیمایش و برجسته از کد شما باز می‌کند، مشابه این:</p>
+<p>این یک پنجره مرورگر حاوی یک نمایش قابل پیمایش و برجسته از کد شما باز می‌کند، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/13.08-01.png" alt="13.08-01.png" />
 </figure>
 
-<p dir="rtl">دستورات که در طول تست‌های شما اجرا می‌شوند به رنگ سبز و آن‌هایی که اجرا نمی‌شوند به رنگ قرمز هستند. این کار باعث می‌شود که به راحتی ببینید که کدام کد در حال حاضر توسط تست‌های شما پوشش داده شده است (مگر اینکه کوررنگی قرمز-سبز داشته باشید).</p>
+<p>Statementهایی که در طول تست‌های شما اجرا می‌شوند به رنگ سبز و آن‌هایی که اجرا نمی‌شوند به رنگ قرمز رنگ‌آمیزی می‌شوند. این دیدن دقیق کدی که در حال حاضر توسط تست‌های شما پوشش داده شده است را آسان می‌کند (مگر اینکه کوررنگی قرمز-سبز داشته باشید).</p>
 
-<p dir="rtl">می‌توانید این کار را یک قدم جلوتر ببرید و از گزینه <code>-covermode=count</code> هنگام اجرای <code>go test</code> به این صورت استفاده کنید:</p>
+<p>می‌توانید این را یک قدم جلوتر ببرید و از گزینه <code>-covermode=count</code> هنگام اجرای <code>go test</code> به این شکل استفاده کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -covermode=count -coverprofile=/tmp/profile.out ./...
 $ go tool cover -html=/tmp/profile.out</pre>
 </figure>
 
-<p dir="rtl">به جای فقط برجسته کردن دستورات به رنگ سبز و قرمز، استفاده از <code>-covermode=count</code> باعث می‌شود که پروفایل پوشش تعداد دقیق <em>دفعاتی که</em> هر دستور در طول تست‌ها اجرا می‌شود را ثبت کند.</p>
+<p>به جای اینکه فقط statementها را به رنگ سبز و قرمز برجسته کند، استفاده از <code>-covermode=count</code> باعث می‌شود پروفایل پوشش <em>تعداد دقیق دفعات</em> اجرای هر statement را در طول تست‌ها ثبت کند.</p>
 
-<p dir="rtl">هنگامی که در مرورگر مشاهده می‌شود، دستورات که بیشتر اجرا می‌شوند در سایه‌ای اشباع‌تر از سبز نشان داده می‌شوند، مشابه این:</p>
+<p>هنگام مشاهده در مرورگر، statementهایی که بیشتر اجرا می‌شوند سپس در سایه سبز اشباع‌شده‌تری نمایش داده می‌شوند، مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/13.08-02.png" alt="13.08-02.png" />
 </figure>
 
-<aside class="note"><p dir="rtl">
-<strong>توجه:</strong> اگر برخی از تست‌های خود را به صورت موازی اجرا می‌کنید، باید از فلگ <code>-covermode=atomic</code> (به جای <code>-covermode=count</code>) برای اطمینان از شمارش دقیق استفاده کنید.
+<aside class="note"><p>
+<strong>یادداشت:</strong> اگر برخی از تست‌های خود را به صورت موازی اجرا می‌کنید، باید از flag <code>-covermode=atomic</code> (به جای <code>-covermode=count</code>) استفاده کنید تا یک شمارش دقیق اطمینان حاصل شود.
 </p></aside>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>پروفایل‌سازی پوشش تست</td>
-        <td>Profiling Test Coverage</td>
-        <td>تحلیل پوشش تست</td>
-    </tr>
-    <tr>
-        <td>گزارش پوشش</td>
-        <td>Coverage Report</td>
-        <td>گزارش تست‌ها</td>
-    </tr>
-    <tr>
-        <td>تحلیل کد</td>
-        <td>Code Analysis</td>
-        <td>بررسی کد</td>
-    </tr>
-    <tr>
-        <td>نقاط کور تست</td>
-        <td>Test Blind Spots</td>
-        <td>بخش‌های تست نشده</td>
-    </tr>
-    <tr>
-        <td>بهبود کیفیت</td>
-        <td>Quality Improvement</td>
-        <td>ارتقای کیفیت</td>
-    </tr>
-    <tr>
-        <td>نسبت پوشش</td>
-        <td>Coverage Ratio</td>
-        <td>درصد تست شده</td>
-    </tr>
-    <tr>
-        <td>گزارش HTML</td>
-        <td>HTML Report</td>
-        <td>گزارش وب</td>
-    </tr>
-    <tr>
-        <td>تحلیل عملکرد</td>
-        <td>Performance Analysis</td>
-        <td>بررسی کارایی</td>
-    </tr>
-    <tr>
-        <td>بهینه‌سازی</td>
-        <td>Optimization</td>
-        <td>بهبود عملکرد</td>
-    </tr>
-    <tr>
-        <td>معیارهای کیفیت</td>
-        <td>Quality Metrics</td>
-        <td>شاخص‌های کیفیت</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="13.07-integration-testing.html">قبلی</a>
 				</div>
 				<div>
-					<a href="00.01-contents.html">محتوا</a>
+					<a href="00.01-contents.html">فهرست</a>
 				</div>
 				<div>
 					<a href="14.00-conclusion.html">بعدی</a> &rsaquo;

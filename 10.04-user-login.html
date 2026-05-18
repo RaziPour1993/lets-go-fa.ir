@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>ورود کاربر &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ورود کاربر</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="10.00-user-authentication.html">احراز هویت کاربر</a> &rsaquo; ورود کاربر</span>
 						
 					
 				</div>
@@ -25,21 +26,17 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 10.4.</div>
-			<h2 id="user-login">ورود کاربر (User Login)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۰.۴.</div>
+			<h2 id="user-login">ورود کاربر</h2>
 
-<p>در این بخش، نحوه پیاده‌سازی <dfn>ورود کاربر (User Login)</dfn> را بررسی می‌کنیم. این شامل <dfn>فرم ورود (Login Form)</dfn>، <dfn>احراز هویت (Authentication)</dfn> و <dfn>مدیریت نشست (Session Management)</dfn> می‌شود.</p>
+<p>در این فصل ما قصد داریم بر ایجاد صفحه ورود کاربر برای برنامه خود تمرکز کنیم.</p>
 
-<p>برای شروع، بیایید یک <dfn>فرم HTML (HTML Form)</dfn> برای <dfn>ورود کاربر (User Login)</dfn> ایجاد کنیم:</p>
+<p>قبل از اینکه به بخش اصلی این کار بپردازیم، بیایید به سرعت بسته <code>internal/validator</code> که قبلاً ساختیم بازگردیم و آن را به‌روزرسانی کنیم تا از خطاهای اعتبارسنجی <em>که با یک فیلد فرم خاص مرتبط نیستند</em> پشتیبانی کند.</p>
 
-<p>در این فصل قصد داریم روی ایجاد صفحه ورود کاربر برای برنامه خود تمرکز کنیم.</p>
+<p>ما بعداً در این فصل از این استفاده خواهیم کرد تا در صورت شکست ورود، یک پیام عمومی  “<em>آدرس ایمیل یا رمز عبور شما اشتباه است”</em> به کاربر نمایش دهیم، زیرا این <a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses">امن‌تر</a> از نشان دادن صریح دلیل شکست ورود در نظر گرفته می‌شود.</p>
 
-<p>قبل از اینکه به بخش اصلی این کار بپردازیم، بیایید به سرعت به بسته <code>internal/validator</code> که قبلاً ساخته‌ایم نگاهی بیندازیم و آن را به‌روزرسانی کنیم تا از خطاهای اعتبارسنجی <em>که به یک فیلد خاص فرم مرتبط نیستند</em> پشتیبانی کند.</p>
-
-<p>ما از این بعداً در فصل استفاده خواهیم کرد تا به کاربر یک پیام عمومی "<em>آدرس ایمیل یا رمز عبور شما اشتباه است</em>" نشان دهیم اگر ورود آنها ناموفق باشد، زیرا این کار <a href="https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#authentication-responses">امن‌تر</a> از بیان صریح دلیل شکست ورود است.</p>
-
-<p>لطفاً فایل <code>internal/validator/validator.go</code> خود را به صورت زیر به‌روزرسانی کنید:</p>
+<p>لطفاً ادامه دهید و فایل <code>internal/validator/validator.go</code> خود را به این صورت به‌روزرسانی کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/validator/validator.go</figcaption>
@@ -69,7 +66,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>بعد، بیایید یک قالب جدید <code>ui/html/pages/login.tmpl</code> ایجاد کنیم که حاوی نشانه‌گذاری برای صفحه ورود ما باشد. ما از همان الگوی نمایش خطاهای اعتبارسنجی و نمایش مجدد داده‌ها که برای صفحه ثبت‌نام خود استفاده کردیم، پیروی خواهیم کرد.</p>
+<p>سپس بیایید یک template جدید <code>ui/html/pages/login.tmpl</code> حاوی نشانه‌گذاری برای صفحه ورود خود ایجاد کنیم. همان الگویی را برای نمایش خطاهای اعتبارسنجی و نمایش مجدد داده که برای صفحه ثبت‌نام استفاده کردیم دنبال خواهیم کرد.</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ touch ui/html/pages/login.tmpl</pre>
@@ -107,7 +104,7 @@
 {{end}}</pre>
 </figure>
 
-<p>سپس به فایل <code>cmd/web/handlers.go</code> خود بروید و یک ساختار جدید <code>userLoginForm</code> ایجاد کنید (برای نمایش و نگهداری داده‌های فرم)، و handler <code>userLogin</code> خود را برای نمایش صفحه ورود تطبیق دهید.</p>
+<p>سپس بیایید به فایل <code>cmd/web/handlers.go</code> خود برویم و یک struct جدید <code>userLoginForm</code> ایجاد کنیم (برای نمایش و نگهداری داده‌های فرم)، و handler <code>userLogin</code> خود را برای render کردن صفحه ورود تطبیق دهیم.</p>
 
 <p>به این صورت:</p>
 
@@ -134,7 +131,7 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>اگر برنامه را اجرا کنید و به <a href="https://localhost:4000/user/login"><code>https://localhost:4000/user/login</code></a> بروید، اکنون باید صفحه ورود را به این شکل ببینید:</p>
+<p>اگر برنامه را اجرا کنید و به <a href="https://localhost:4000/user/login"><code>https://localhost:4000/user/login</code></a> مراجعه کنید، اکنون باید صفحه ورود را به این صورت ببینید:</p>
 
 <figure class="img">
 <img src="assets/img/10.04-01.png" alt="10.04-01.png" />
@@ -142,17 +139,17 @@
 
 <h3 id="verifying-the-user-details">تأیید جزئیات کاربر</h3>
 
-<p>گام بعدی بخش جالب است: <em>چگونه می‌توانیم تأیید کنیم که ایمیل و رمز عبور ارسال شده توسط کاربر صحیح است؟</em></p>
+<p>مرحله بعدی بخش جالب است: <em>چگونه تأیید می‌کنیم که ایمیل و رمز عبور ارسال شده توسط کاربر صحیح است؟</em></p>
 
-<p>بخش اصلی این منطق تأیید در متد <code>UserModel.Authenticate()</code> مدل کاربر ما انجام خواهد شد. به طور خاص، ما به دو چیز نیاز داریم:</p>
+<p>بخش اصلی این منطق تأیید در متد <code>UserModel.Authenticate()</code> مدل کاربر ما انجام می‌شود. به طور خاص، باید دو کار انجام دهیم:</p>
 
 <ol>
-<li><p>ابتدا باید رمز عبور هش شده مرتبط با آدرس ایمیل را از جدول MySQL <code>users</code> بازیابی کنیم. اگر ایمیل در پایگاه داده وجود نداشته باشد، خطای <code>ErrInvalidCredentials</code> را که قبلاً ساخته‌ایم برمی‌گردانیم.</p></li>
+<li><p>ابتدا باید hash رمز عبور مرتبط با آدرس ایمیل را از جدول MySQL <code>users</code> ما بازیابی کند. اگر ایمیل در پایگاه داده وجود نداشته باشد، خطای <code>ErrInvalidCredentials</code> که قبلاً ساختیم را برمی‌گردانیم.</p></li>
 
-<li><p>در غیر این صورت، می‌خواهیم رمز عبور هش شده از جدول <code>users</code> را با رمز عبور متنی که کاربر هنگام ورود ارائه کرده است مقایسه کنیم. اگر آنها مطابقت نداشته باشند، می‌خواهیم دوباره خطای <code>ErrInvalidCredentials</code> را برگردانیم. اما اگر مطابقت داشته باشند، می‌خواهیم مقدار <code>id</code> کاربر را از پایگاه داده برگردانیم.</p></li>
+<li><p>در غیر این صورت، می‌خواهیم hash رمز عبور از جدول <code>users</code> را با رمز عبور متنی ساده که کاربر هنگام ورود ارائه داده است مقایسه کنیم. اگر مطابقت نداشته باشند، می‌خواهیم دوباره خطای <code>ErrInvalidCredentials</code> را برگردانیم. اما اگر مطابقت داشته باشند، می‌خواهیم مقدار <code>id</code> کاربر را از پایگاه داده برگردانیم.</p></li>
 </ol>
 
-<p>بیایید دقیقاً این کار را انجام دهیم. کد زیر را به فایل <code>internal/models/users.go</code> خود اضافه کنید:</p>
+<p>بیایید دقیقاً این کار را انجام دهیم. بروید و کد زیر را به فایل <code>internal/models/users.go</code> خود اضافه کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: internal/models/users.go</figcaption>
@@ -193,11 +190,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>گام بعدی ما شامل به‌روزرسانی handler <code>userLoginPost</code> است تا داده‌های فرم ورود ارسال شده را تجزیه کند و این متد <code>UserModel.Authenticate()</code> را فراخوانی کند.</p>
+<p>مرحله بعدی ما شامل به‌روزرسانی handler <code>userLoginPost</code> است تا داده‌های فرم ورود ارسال شده را تجزیه کند و این متد <code>UserModel.Authenticate()</code> را فراخوانی کند.</p>
 
-<p>اگر جزئیات ورود معتبر باشند، سپس می‌خواهیم <code>id</code> کاربر را به داده‌های جلسه آنها اضافه کنیم تا &mdash; برای درخواست‌های آینده &mdash; بدانیم که آنها با موفقیت احراز هویت شده‌اند و کدام کاربر هستند.</p>
+<p>اگر جزئیات ورود معتبر باشند، سپس می‌خواهیم <code>id</code> کاربر را به داده‌های نشست آن‌ها اضافه کنیم تا — برای درخواست‌های آینده — بدانیم که آن‌ها با موفقیت احراز هویت شده‌اند و کدام کاربر هستند.</p>
 
-<p>به فایل <code>handlers.go</code> خود بروید و آن را به صورت زیر به‌روزرسانی کنید:</p>
+<p>به فایل <code>handlers.go</code> خود بروید و آن را به این صورت به‌روزرسانی کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
@@ -229,8 +226,7 @@
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="c1">// Check whether the credentials are valid. If they&#39;re not, add a generic
-</span><span class="c1"></span>    <span class="c1">// non-field error message and re-display the login page.
+    <span class="c1">// Check whether the credentials are valid. If they&#39;re not, add </span><span class="c1"></span>    <span class="c1">// non-field error message and re-display the login page.
 </span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">app</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nf">Authenticate</span><span class="p">(</span><span class="nx">form</span><span class="p">.</span><span class="nx">Email</span><span class="p">,</span> <span class="nx">form</span><span class="p">.</span><span class="nx">Password</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
         <span class="k">if</span> <span class="nx">errors</span><span class="p">.</span><span class="nf">Is</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">models</span><span class="p">.</span><span class="nx">ErrInvalidCredentials</span><span class="p">)</span> <span class="p">{</span>
@@ -267,24 +263,24 @@
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> متد <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.RenewToken"><code>SessionManager.RenewToken()</code></a> که در کد بالا استفاده می‌کنیم، شناسه جلسه کاربر فعلی را تغییر می‌دهد <em>اما هر داده‌ای که با جلسه مرتبط است را حفظ می‌کند</em>. این کار قبل از ورود به سیستم برای کاهش خطر حمله تثبیت جلسه، یک عمل خوب است. برای اطلاعات بیشتر و پس‌زمینه در این مورد، لطفاً به <a href="https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change">برگه تقلب مدیریت جلسه OWASP</a> مراجعه کنید.
+<strong>یادداشت:</strong> متد <a href="https://pkg.go.dev/github.com/alexedwards/scs/v2#SessionManager.RenewToken"><code>SessionManager.RenewToken()</code></a> که در کد بالا استفاده می‌کنیم شناسه نشست کاربر فعلی را تغییر می‌دهد <em>اما هر داده مرتبط با نشست را حفظ می‌کند</em>. انجام این کار قبل از ورود برای کاهش خطر حمله تثبیت نشست (session fixation) یک عمل خوب است. برای اطلاعات بیشتر، <a href="https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change">راهنمای مدیریت نشست OWASP</a> را ببینید.
 </p></aside>
 
-<p>بسیار خوب، بیایید این را امتحان کنیم!</p>
+<p>خوب، بیایید این را امتحان کنیم!</p>
 
-<p>برنامه را مجدداً راه‌اندازی کنید و سعی کنید برخی از اعتبارنامه‌های کاربر نامعتبر را ارسال کنید&hellip;</p>
+<p>برنامه را مجدداً راه‌اندازی کنید و سعی کنید برخی اعتبارنامه‌های کاربر نامعتبر را ارسال کنید&hellip;</p>
 
 <figure class="img">
 <img src="assets/img/10.04-02.png" alt="10.04-02.png" />
 </figure>
 
-<p>باید یک پیام خطای اعتبارسنجی غیر فیلدی دریافت کنید که به این شکل است:</p>
+<p>باید یک پیام خطای اعتبارسنجی غیرفیلدی (non-field validation error) دریافت کنید که به این صورت است:</p>
 
 <figure class="img">
 <img src="assets/img/10.04-03.png" alt="10.04-03.png" />
 </figure>
 
-<p>اما وقتی برخی از اعتبارنامه‌های صحیح را وارد می‌کنید (از آدرس ایمیل و رمز عبور برای کاربری که در فصل قبلی ایجاد کرده‌اید استفاده کنید)، برنامه باید شما را وارد کند و به صفحه ایجاد قطعه هدایت کند، به این صورت:</p>
+<p>اما وقتی اعتبارنامه‌های صحیحی را وارد می‌کنید (از آدرس ایمیل و رمز عبور کاربری که در فصل قبل ایجاد کردید استفاده کنید)، برنامه باید شما را وارد کند و به صفحه ایجاد snippet هدایت کند، به این صورت:</p>
 
 <figure class="img">
 <img src="assets/img/10.04-04.png" alt="10.04-04.png" />
@@ -294,75 +290,16 @@
 <img src="assets/img/10.04-05.png" alt="10.04-05.png" />
 </figure>
 
-<p>ما در دو فصل گذشته کارهای زیادی انجام داده‌ایم، بنابراین بیایید به سرعت بررسی کنیم که وضعیت چگونه است.</p>
+<p>ما در دو فصل گذشته مسیر زیادی را پوشش داده‌ایم، بنابراین بیایید به سرعت وضعیت فعلی را بررسی کنیم.</p>
 
 <ul>
-<li><p>کاربران اکنون می‌توانند با استفاده از فرم <code>GET /user/signup</code> در سایت <em>ثبت‌نام</em> کنند. ما جزئیات کاربران ثبت‌نام شده (از جمله نسخه هش شده رمز عبور آنها) را در جدول <code>users</code> پایگاه داده خود ذخیره می‌کنیم.</p></li>
+<li><p>کاربران اکنون می‌توانند با استفاده از فرم <code>GET /user/signup</code> در سایت <em>ثبت‌نام</em> کنند. جزئیات کاربران ثبت‌نام شده (شامل نسخه hash شده رمز عبور آن‌ها) را در جدول <code>users</code> پایگاه داده خود ذخیره می‌کنیم.</p></li>
 
-<li><p>کاربران ثبت‌نام شده سپس می‌توانند با استفاده از فرم <code>GET /user/login</code> برای ارائه آدرس ایمیل و رمز عبور خود <em>احراز هویت</em> کنند. اگر این موارد با جزئیات یک کاربر ثبت‌نام شده مطابقت داشته باشد، ما آنها را به عنوان احراز هویت موفقیت‌آمیز می‌دانیم و مقدار <code>&quot;authenticatedUserID&quot;</code> مربوطه را به داده‌های جلسه آنها اضافه می‌کنیم.</p></li>
+<li><p>کاربران ثبت‌نام شده سپس می‌توانند با استفاده از فرم <code>GET /user/login</code> برای ارائه آدرس ایمیل و رمز عبور خود <em>احراز هویت</em> کنند. اگر این‌ها با جزئیات یک کاربر ثبت‌نام شده مطابقت داشته باشند، آن‌ها را به عنوان احراز هویت موفق می‌دانیم و مقدار <code>&quot;authenticatedUserID&quot;</code> مربوطه را به داده‌های نشست آن‌ها اضافه می‌کنیم.</p></li>
 </ul>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>ورود کاربر</td>
-        <td>User Login</td>
-        <td>فرآیند دسترسی به حساب کاربری</td>
-    </tr>
-    <tr>
-        <td>فرم ورود</td>
-        <td>Login Form</td>
-        <td>فرم ورود اطلاعات کاربر</td>
-    </tr>
-    <tr>
-        <td>احراز هویت</td>
-        <td>Authentication</td>
-        <td>تأیید هویت کاربر</td>
-    </tr>
-    <tr>
-        <td>مدیریت نشست</td>
-        <td>Session Management</td>
-        <td>کنترل نشست‌های کاربری</td>
-    </tr>
-    <tr>
-        <td>فرم HTML</td>
-        <td>HTML Form</td>
-        <td>فرم ورود اطلاعات</td>
-    </tr>
-    <tr>
-        <td>اعتبارسنجی</td>
-        <td>Validation</td>
-        <td>بررسی صحت اطلاعات</td>
-    </tr>
-    <tr>
-        <td>رمز عبور</td>
-        <td>Password</td>
-        <td>کلمه عبور کاربر</td>
-    </tr>
-    <tr>
-        <td>کوکی نشست</td>
-        <td>Session Cookie</td>
-        <td>کوکی نگهداری اطلاعات نشست</td>
-    </tr>
-    <tr>
-        <td>خطای ورود</td>
-        <td>Login Error</td>
-        <td>پیام خطای ورود ناموفق</td>
-    </tr>
-    <tr>
-        <td>امنیت</td>
-        <td>Security</td>
-        <td>حفاظت از حساب کاربری</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="10.03-user-signup-and-password-encryption.html">قبلی</a>

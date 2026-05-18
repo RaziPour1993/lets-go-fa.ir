@@ -3,20 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تنظیم هدرهای مشترک &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			body { direction: rtl; }
-			.code.go, .code.html, .code.bash, .code.plain, .code.sql { direction: ltr; text-align: left; }
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; تنظیم هدرهای مشترک</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میدل‌ور</a> &rsaquo; تنظیم هدرهای مشترک</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="06.01-how-middleware-works.html">قبلی</a>
@@ -26,18 +27,44 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۶.۲</div>
-			<h2 id="setting-common-headers">تنظیم هدرهای مشترک (Setting Common Headers)</h2>
+			<div class="chapter">فصل ۶.۲.</div>
+			<h2 id="setting-common-headers">تنظیم هدرهای مشترک</h2>
 
-<p>بیایید با ایجاد یک <dfn>میان‌افزار (Middleware)</dfn> ساده شروع کنیم که <dfn>هدرهای HTTP (HTTP Headers)</dfn> را روی تمام <dfn>پاسخ‌های (Responses)</dfn> برنامه ما تنظیم می‌کند.</p>
+<p>بیایید الگویی که در فصل قبلی یاد گرفتیم را به کار ببریم و میدل‌وری ایجاد کنیم که به طور خودکار هدر <code>Server: Go</code> ما را به هر پاسخ اضافه می‌کند، همراه با هدرهای امنیتی HTTP زیر (مطابق با <a href="https://owasp.org/www-project-secure-headers">راهنمای فعلی OWASP</a>).</p>
 
-<p>یک فایل جدید <code>cmd/web/middleware.go</code> ایجاد کنید و کد زیر را در آن قرار دهید:</p>
+<figure class="code plain" dir="ltr">
+<pre>Content-Security-Policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
+Referrer-Policy: origin-when-cross-origin
+X-Content-Type-Options: nosniff
+X-Frame-Options: deny
+X-XSS-Protection: 0</pre>
+</figure>
 
-<figure class="code bash">
+<p>اگر با این هدرها آشنا نیستید، به سرعت توضیح می‌دهم که چه کاری انجام می‌دهند.</p>
+
+<ul>
+<li><p>هدرهای <code>Content-Security-Policy</code> (که اغلب به <em>CSP</em> خلاصه می‌شوند) برای محدود کردن مکان‌هایی که منابع صفحه وب شما (مثلاً JavaScript، تصاویر، فونت‌ها و غیره) می‌توانند از آن‌ها بارگذاری شوند، استفاده می‌شوند. تنظیم یک سیاست CSP سخت‌گیرانه به جلوگیری از انواع مختلف حملات اسکریپت‌نویسی بین سایتی، کلیک‌جکینگ و سایر حملات تزریق کد کمک می‌کند.</p>
+
+<p>هدرهای CSP و نحوه کار آن‌ها یک موضوع بزرگ است و اگر قبلاً با آن‌ها برخورد نکرده‌اید، توصیه می‌کنم <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP">این مقدمه</a> را بخوانید. اما، در مورد ما، هدر به مرورگر می‌گوید که بارگذاری فونت‌ها از <code>fonts.gstatic.com</code>، استایل‌شیت‌ها از <code>fonts.googleapis.com</code> و <code>self</code> (منبع خودمان) مجاز است، و سپس <em>همه چیز دیگر</em> فقط از <code>self</code>. JavaScript درون خطی به طور پیش‌فرض مسدود می‌شود.</p></li>
+
+<li><p><code>Referrer-Policy</code> برای کنترل اطلاعاتی که در هدر <code>Referer</code> هنگام ناوبری کاربر از صفحه وب شما گنجانده می‌شود، استفاده می‌شود. در مورد ما، مقدار را به <code>origin-when-cross-origin</code> تنظیم می‌کنیم، که به این معنی است که URL کامل برای <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">درخواست‌های هم‌منبع</a> گنجانده می‌شود، اما برای همه درخواست‌های دیگر، اطلاعاتی مانند مسیر URL و هر مقدار رشته پرس‌وجو حذف می‌شوند.</p></li>
+
+<li><p><code>X-Content-Type-Options: nosniff</code> به مرورگرها دستور می‌دهد که <em>نکند</em> نوع MIME نوع محتوا پاسخ را بو بکشند، که به نوبه خود به جلوگیری از <a href="https://security.stackexchange.com/questions/7506/using-file-extension-and-mime-type-as-output-by-file-i-b-combination-to-dete/7531#7531">حملات بو کشیدن محتوا</a> کمک می‌کند.</p></li>
+
+<li><p><code>X-Frame-Options: deny</code> برای کمک به جلوگیری از حملات <a href="https://developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#click-jacking">کلیک‌جکینگ</a> در مرورگرهای قدیمی‌تر که از هدرهای CSP پشتیبانی نمی‌کنند، استفاده می‌شود.</p></li>
+
+<li><p><code>X-XSS-Protection: 0</code> برای <em>غیرفعال کردن</em> مسدودسازی حملات اسکریپت‌نویسی بین سایتی استفاده می‌شود. قبلاً خوب بود که این هدر را به <code>X-XSS-Protection: 1; mode=block</code> تنظیم کنید، اما وقتی از هدرهای CSP مانند ما استفاده می‌کنید، <a href="https://owasp.org/www-project-secure-headers/#x-xss-protection">توصیه</a> این است که این ویژگی را به طور کامل غیرفعال کنید.</p></li>
+</ul>
+
+<p>خوب، بیایید به کد Go خود برگردیم و با ایجاد یک فایل جدید <code>middleware.go</code> شروع کنیم. از این فایل برای نگهداری تمام میدل‌ورهای سفارشی که در طول این کتاب می‌نویسیم، استفاده خواهیم کرد.</p>
+
+<figure class="code bash" dir="ltr">
 <pre>$ touch cmd/web/middleware.go</pre>
 </figure>
 
-<figure class="code go">
+<p>سپس آن را باز کنید و یک تابع <code>commonHeaders()</code> با استفاده از الگویی که در فصل قبلی معرفی کردیم، اضافه کنید:</p>
+
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/middleware.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -64,17 +91,15 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این <dfn>میان‌افزار امنیتی (Security Middleware)</dfn> چندین <dfn>هدر امنیتی (Security Headers)</dfn> را به تمام پاسخ‌های HTTP اضافه می‌کند، از جمله:</p>
+<p>چون می‌خواهیم این میدل‌ور روی هر درخواستی که دریافت می‌شود عمل کند، باید <em>قبل از</em> رسیدن درخواست به servemux ما اجرا شود. می‌خواهیم جریان کنترل در برنامه ما به این صورت باشد:</p>
 
-<ul>
-<li><dfn>سیاست امنیت محتوا (Content Security Policy)</dfn> برای کنترل منابع مجاز بارگذاری</li>
-<li><dfn>سیاست ارجاع‌دهنده (Referrer Policy)</dfn> برای کنترل اطلاعات ارجاع‌دهنده</li>
-<li><dfn>محافظت در برابر XSS (XSS Protection)</dfn> برای جلوگیری از حملات تزریق اسکریپت</li>
-</ul>
+<figure class="code plain" dir="ltr">
+<pre>commonHeaders → servemux → application handler</pre>
+</figure>
 
-<p>حالا باید <dfn>مسیریاب (Router)</dfn> خود را با این میان‌افزار بسته‌بندی کنیم. فایل <code>cmd/web/routes.go</code> را به‌روزرسانی کنید:</p>
+<p>برای انجام این کار، باید تابع میدل‌ور <code>commonHeaders</code> را <em>دور servemux ما بپیچیم</em>. بیایید فایل <code>routes.go</code> را به‌روزرسانی کنیم تا دقیقاً این کار را انجام دهد:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -101,12 +126,12 @@
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> اطمینان حاصل کنید که امضای متد <code>routes()</code> را به‌روزرسانی کرده‌اید تا یک <code>http.Handler</code> برگرداند، در غیر این صورت با خطای زمان کامپایل مواجه خواهید شد.
+<strong>مهم:</strong> مطمئن شوید که امضای متد <code>routes()</code> را به‌روزرسانی کنید تا یک <code>http.Handler</code> برگرداند، در غیر این صورت خطای زمان کامپایل دریافت خواهید کرد.
 </p></aside>
 
-<p>همچنین باید سریعاً کد هندلر <code>home</code> خود را به‌روزرسانی کنیم تا خط <code>w.Header().Add(&quot;Server&quot;, &quot;Go&quot;)</code> را حذف کنیم، در غیر این صورت این هدر را دو بار در پاسخ‌های صفحه اصلی اضافه خواهیم کرد.</p>
+<p>همچنین باید کد handler <code>home</code> خود را به سرعت به‌روزرسانی کنیم تا خط <code>w.Header().Add(&quot;Server&quot;, &quot;Go&quot;)</code> را حذف کنیم، در غیر این صورت آن هدر را دو بار در پاسخ‌های صفحه اصلی اضافه خواهیم کرد.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -128,9 +153,9 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>پیش بروید و این را امتحان کنید. برنامه را اجرا کنید و سپس یک پنجره ترمینال باز کنید و سعی کنید با curl درخواست‌هایی ارسال کنید. باید ببینید که هدرهای امنیتی اکنون در هر پاسخ گنجانده شده‌اند.</p>
+<p>بروید و این را امتحان کنید. برنامه را اجرا کنید سپس یک پنجره ترمینال باز کنید و با curl درخواست‌هایی انجام دهید. باید ببینید که هدرهای امنیتی حالا در هر پاسخ گنجانده شده‌اند.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl --head http://localhost:4000/
 <samp>HTTP/1.1 200 OK
 Content-Security-Policy: default-src &#39;self&#39;; style-src &#39;self&#39; fonts.googleapis.com; font-src fonts.gstatic.com
@@ -146,121 +171,62 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
 <h4 id="flow-of-control">جریان کنترل</h4>
 
-<p>مهم است بدانید که وقتی آخرین هندلر در زنجیره برمی‌گردد، کنترل در جهت معکوس به بالای زنجیره برمی‌گردد. بنابراین وقتی کد ما در حال اجراست، جریان کنترل در واقع به این شکل است:</p>
+<p>مهم است بدانید که وقتی آخرین handler در زنجیره برمی‌گردد، کنترل در جهت معکوس به بالا در زنجیره منتقل می‌شود. بنابراین وقتی کد ما در حال اجرا است، جریان کنترل در واقع به این صورت است:</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <pre>commonHeaders → servemux → application handler → servemux → commonHeaders</pre>
 </figure>
 
-<p>در هر هندلر میان‌افزار، کدی که قبل از <code>next.ServeHTTP()</code> می‌آید در مسیر پایین زنجیره اجرا می‌شود، و هر کدی که بعد از <code>next.ServeHTTP()</code> &mdash; یا در یک تابع deferred &mdash; می‌آید در مسیر برگشت به بالا اجرا خواهد شد.</p>
+<p>در هر handler میدل‌ور، کدی که قبل از <code>next.ServeHTTP()</code> می‌آید در مسیر پایین زنجیره اجرا می‌شود و هر کدی که بعد از <code>next.ServeHTTP()</code> می‌آید &mdash; یا در یک تابع deferred &mdash; در مسیر برگشت به بالا اجرا می‌شود.</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// Any code here will be executed on the way down the chain
+        <span class="c1">// Any code here will execute on the way down the chain.
 </span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
-        <span class="c1">// Any code here will be executed on the way back up the chain
+        <span class="c1">// Any code here will execute on the way back up the chain.
 </span><span class="c1"></span>    <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="early-returns">برگشت‌های زودهنگام</h4>
+<h4 id="early-returns">بازگشت‌های زودهنگام</h4>
 
-<p>نکته دیگری که باید ذکر شود این است که اگر شما <code>return</code> را در تابع میان‌افزار خود <em>قبل</em> از فراخوانی <code>next.ServeHTTP()</code> صدا بزنید، زنجیره متوقف خواهد شد و کنترل به بالا برمی‌گردد.</p>
+<p>چیز دیگری که باید ذکر شود این است که اگر در تابع میدل‌ور خود <em>قبل از</em> فراخوانی <code>next.ServeHTTP()</code>، <code>return</code> را فراخوانی کنید، زنجیره از اجرا متوقف می‌شود و کنترل به سمت بالا جریان می‌یابد.</p>
 
-<p>به عنوان مثال، یک مورد استفاده رایج برای برگشت‌های زودهنگام، میان‌افزار احراز هویت است که فقط در صورتی اجازه ادامه اجرای زنجیره را می‌دهد که یک بررسی خاص موفقیت‌آمیز باشد. به عنوان مثال:</p>
+<p>به عنوان مثال، یک مورد استفاده رایج برای بازگشت‌های زودهنگام، میدل‌ور احراز هویت است که فقط در صورت گذراندن یک بررسی خاص، ادامه اجرای زنجیره را مجاز می‌کند. به عنوان مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// If user is not authorized, send a 403 Forbidden status
-</span><span class="c1"></span>        <span class="c1">// and return to stop the chain execution
+        <span class="c1">// If the user isn&#39;t authorized, send a 403 Forbidden status and
+</span><span class="c1"></span>        <span class="c1">// return to stop executing the chain.
 </span><span class="c1"></span>        <span class="k">if</span> <span class="p">!</span><span class="nf">isAuthorized</span><span class="p">(</span><span class="nx">r</span><span class="p">)</span> <span class="p">{</span>
             <span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusForbidden</span><span class="p">)</span>
             <span class="k">return</span>
         <span class="p">}</span>
 
-        <span class="c1">// Otherwise, call the next handler in the chain
+        <span class="c1">// Otherwise, call the next handler in the chain.
 </span><span class="c1"></span>        <span class="nx">next</span><span class="p">.</span><span class="nf">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
     <span class="p">}</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>ما از این الگوی 'برگشت زودهنگام' <a href="10.06-user-authorization.html">بعداً در کتاب</a> برای محدود کردن دسترسی به بخش‌های خاصی از برنامه‌مان استفاده خواهیم کرد.</p>
+<p>از این الگوی 'بازگشت زودهنگام' (early return) <a href="10.06-user-authorization.html">بعداً در کتاب</a> برای محدود کردن دسترسی به بخش‌های خاصی از برنامه خود استفاده خواهیم کرد.</p>
 
-<h4 id="debugging-csp-issues">رفع اشکال مسائل CSP</h4>
+<h4 id="debugging-csp-issues">اشکال‌زدایی مشکلات CSP</h4>
 
-<p>در حالی که هدرهای CSP عالی هستند و قطعاً باید از آنها استفاده کنید، ارزش گفتن دارد که من ساعت‌های زیادی را صرف رفع اشکال مشکلات کرده‌ام، فقط برای اینکه در نهایت متوجه شوم که یک منبع یا اسکریپت حیاتی توسط قوانین CSP خودم مسدود شده است 🤦.</p>
+<p>در حالی که هدرهای CSP عالی هستند و قطعاً باید از آن‌ها استفاده کنید، ارزش دارد بگویم که ساعات زیادی را صرف اشکال‌زدایی مشکلات کرده‌ام، فقط برای اینکه در نهایت متوجه شوم که یک منبع یا اسکریپت حیاتی توسط قوانین CSP خودم مسدود شده است 🤦.</p>
 
-<p>اگر روی پروژه‌ای کار می‌کنید که از هدرهای CSP استفاده می‌کند، مانند این پروژه، توصیه می‌کنم ابزارهای توسعه‌دهنده مرورگر وب خود را در دسترس داشته باشید و عادت کنید که اگر با مشکلات غیرمنتظره‌ای مواجه شدید، لاگ‌ها را زود بررسی کنید. در Firefox، هر منبع مسدود شده به عنوان یک خطا در لاگ‌های کنسول نمایش داده می‌شود &mdash; مشابه این:</p>
+<p>اگر روی پروژه‌ای کار می‌کنید که از هدرهای CSP استفاده می‌کند، مانند این یکی، توصیه می‌کنم ابزارهای توسعه‌دهنده مرورگر وب خود را در دسترس نگه دارید و عادت کنید که در صورت برخورد با هر مشکل غیرمنتظره‌ای، زود لاگ‌ها را بررسی کنید. در Firefox، هر منبع مسدود شده به عنوان خطا در لاگ‌های کنسول نمایش داده می‌شود &mdash; مشابه این:</p>
 
 <figure class="img">
 <img src="assets/img/06.02-01.png" alt="06.02-01.png" />
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>میان‌افزار</td>
-        <td>Middleware</td>
-        <td>کدی که بین درخواست و پاسخ HTTP اجرا می‌شود</td>
-    </tr>
-    <tr>
-        <td>هدرهای HTTP</td>
-        <td>HTTP Headers</td>
-        <td>متادیتای اضافه شده به درخواست‌ها و پاسخ‌های HTTP</td>
-    </tr>
-    <tr>
-        <td>پاسخ‌ها</td>
-        <td>Responses</td>
-        <td>پاسخ‌های HTTP که به کلاینت ارسال می‌شوند</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار امنیتی</td>
-        <td>Security Middleware</td>
-        <td>میان‌افزاری که تنظیمات امنیتی را اعمال می‌کند</td>
-    </tr>
-    <tr>
-        <td>هدر امنیتی</td>
-        <td>Security Headers</td>
-        <td>هدرهای HTTP که برای افزایش امنیت استفاده می‌شوند</td>
-    </tr>
-    <tr>
-        <td>سیاست امنیت محتوا</td>
-        <td>Content Security Policy</td>
-        <td>مکانیزمی برای کنترل منابع مجاز در صفحه</td>
-    </tr>
-    <tr>
-        <td>سیاست ارجاع‌دهنده</td>
-        <td>Referrer Policy</td>
-        <td>کنترل اطلاعات ارجاع‌دهنده در درخواست‌ها</td>
-    </tr>
-    <tr>
-        <td>محافظت در برابر XSS</td>
-        <td>XSS Protection</td>
-        <td>مکانیزم‌های محافظت در برابر حملات تزریق اسکریپت</td>
-    </tr>
-    <tr>
-        <td>مسیریاب</td>
-        <td>Router</td>
-        <td>بخشی که درخواست‌ها را به هندلرها هدایت می‌کند</td>
-    </tr>
-    <tr>
-        <td>سرور فایل</td>
-        <td>File Server</td>
-        <td>بخشی که فایل‌های استاتیک را سرو می‌کند</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">
@@ -279,12 +245,16 @@ Content-Type: text/html; charset=utf-8</samp></pre>
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "06.01-how-middleware-works.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "06.03-request-logging.html";
 						break;
+						
 				}
 			};
 		</script>

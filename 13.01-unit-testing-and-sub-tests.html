@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تست واحد و زیرتست‌ها &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">Testing</a> &rsaquo; Unit testing and sub-tests</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست واحد و زیرتست‌ها</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="13.00-testing.html">قبلی</a>
@@ -21,17 +26,13 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 13.1.</div>
-			<h2 id="unit-testing-and-sub-tests">تست واحد و تست‌های فرعی (Unit Testing and Sub-Tests)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۳.۱.</div>
+			<h2 id="unit-testing-and-sub-tests">تست واحد و زیرتست‌ها</h2>
 
-<p>در این بخش، با <dfn>تست واحد (Unit Testing)</dfn> و <dfn>تست‌های فرعی (Sub-Tests)</dfn> در Go آشنا می‌شویم. این شامل <dfn>تست جدول‌محور (Table-Driven Testing)</dfn> و <dfn>تست موازی (Parallel Testing)</dfn> می‌شود.</p>
+<p>در این فصل یک تست واحد ایجاد می‌کنیم تا مطمئن شویم که تابع <code>humanDate()</code> ما (که در فصل <a href="05.06-custom-template-functions.html">توابع template سفارشی</a> ساختیم) مقادیر <code>time.Time</code> را در فرمت دقیقی که می‌خواهیم خروجی می‌دهد.</p>
 
-<p>همچنین با <dfn>توابع کمکی تست (Test Helper Functions)</dfn> و <dfn>مقایسه نتایج (Result Comparison)</dfn> آشنا خواهیم شد.</p>
-
-<p>در این فصل، ما یک تست واحد ایجاد خواهیم کرد تا مطمئن شویم که تابع <code>humanDate()</code> (که در فصل <a href="05.06-custom-template-functions.html">توابع قالب سفارشی</a> ایجاد کردیم) مقادیر <code>time.Time</code> را در قالب دقیق مورد نظر ما خروجی می‌دهد.</p>
-
-<p>اگر به یاد نمی‌آورید، تابع <code>humanDate()</code> به این شکل است:</p>
+<p>اگر یادتان نیست، تابع <code>humanDate()</code> به این صورت است:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates.go</figcaption>
@@ -46,19 +47,19 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>دلیل اینکه می‌خواهم با تست این تابع شروع کنم این است که تابع ساده‌ای است. ما می‌توانیم نحو و الگوهای پایه برای نوشتن تست‌ها را بدون گرفتار شدن در <em>عملکرد</em>ی که در حال تست آن هستیم، بررسی کنیم.</p>
+<p>دلیل اینکه می‌خواهم با تست این شروع کنم این است که یک تابع ساده است. می‌توانیم نحو و الگوهای پایه برای نوشتن تست‌ها را بدون اینکه خیلی درگیر <em>عملکرد</em> مورد تست شویم، بررسی کنیم.</p>
 
 <h3 id="creating-a-unit-test">ایجاد یک تست واحد</h3>
 
-<p>بیایید مستقیماً وارد شویم و یک <dfn>تست واحد</dfn> برای این تابع ایجاد کنیم.</p>
+<p>بیایید مستقیماً شروع کنیم و یک <dfn>تست واحد</dfn> برای این تابع ایجاد کنیم.</p>
 
-<p>در Go، معمولاً تست‌های خود را در فایل‌های <code>*_test.go</code> می‌نویسید که مستقیماً در کنار کدی که در حال تست آن هستید قرار دارند. بنابراین، در این مورد، اولین کاری که انجام خواهیم داد ایجاد یک فایل جدید <code>cmd/web/templates_test.go</code> برای نگهداری تست است:</p>
+<p>در Go، یک عمل استاندارد این است که تست‌های خود را در فایل‌های <code>*_test.go</code> بنویسید که مستقیماً در کنار کدی که تست می‌کنید قرار دارند. بنابراین، در این مورد، اولین کاری که می‌خواهیم انجام دهیم ایجاد یک فایل جدید <code>cmd/web/templates_test.go</code> برای نگه‌داری تست است:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ touch cmd/web/templates_test.go</pre>
 </figure>
 
-<p>و سپس می‌توانیم یک تست واحد جدید برای تابع <code>humanDate</code> به این شکل ایجاد کنیم:</p>
+<p>و سپس می‌توانیم یک تست واحد جدید برای تابع <code>humanDate</code> به این صورت ایجاد کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates_test.go</figcaption>
@@ -84,28 +85,28 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این الگو، الگوی پایه‌ای است که برای تقریباً تمام تست‌هایی که در Go می‌نویسید استفاده خواهید کرد. نکات مهمی که باید به خاطر بسپارید عبارتند از:</p>
+<p>این الگو الگوی پایه‌ای است که برای تقریباً همه تست‌هایی که در Go می‌نویسید استفاده خواهید کرد. نکات مهمی که باید به خاطر بسپارید:</p>
 
 <ul>
-<li><p>تست فقط کد معمولی Go است که تابع <code>humanDate()</code> را فراخوانی می‌کند و بررسی می‌کند که نتیجه با آنچه انتظار داریم مطابقت دارد.</p></li>
+<li><p>تست فقط کد Go معمولی است که تابع <code>humanDate()</code> را فراخوانی می‌کند و بررسی می‌کند که نتیجه با آنچه انتظار داریم مطابقت دارد.</p></li>
 
-<li><p>تست‌های واحد شما در یک تابع معمولی Go با امضای <code>func(*testing.T)</code> قرار دارند.</p></li>
+<li><p>تست‌های واحد شما در یک تابع Go معمولی با امضای <code>func(*testing.T)</code> قرار دارند.</p></li>
 
-<li><p>برای اینکه یک تست واحد معتبر باشد، نام این تابع <em>باید</em> با کلمه <code>Test</code> شروع شود. معمولاً این نام سپس با نام تابع، متد یا نوعی که در حال تست آن هستید دنبال می‌شود تا به وضوح نشان دهد <em>چه</em> چیزی در حال تست است.</p></li>
+<li><p>برای اینکه یک تست واحد معتبر باشد، نام این تابع <em>باید</em> با کلمه <code>Test</code> شروع شود. معمولاً پس از آن نام تابع، متد یا نوعی که تست می‌کنید می‌آید تا در یک نگاه مشخص شود <em>چه چیزی</em> در حال تست است.</p></li>
 
-<li><p>می‌توانید از تابع <a href="https://pkg.go.dev/testing/#T.Errorf"><code>t.Errorf()</code></a> برای علامت‌گذاری یک تست به عنوان <em>ناموفق</em> و ثبت یک پیام توصیفی درباره شکست استفاده کنید. مهم است که توجه داشته باشید که فراخوانی <code>t.Errorf()</code> <em>اجرای تست شما را متوقف نمی‌کند</em> &mdash; پس از فراخوانی آن، Go به اجرای هر کد تست باقی‌مانده به صورت عادی ادامه خواهد داد.</p></li>
+<li><p>می‌توانید از تابع <a href="https://pkg.go.dev/testing/#T.Errorf"><code>t.Errorf()</code></a> برای علامت‌گذاری یک تست به عنوان <em>ناموفق</em> و ثبت یک پیام توصیفی درباره شکست استفاده کنید. نکته مهم این است که فراخوانی <code>t.Errorf()</code> <em>اجرای تست شما را متوقف نمی‌کند</em> &mdash; پس از فراخوانی آن، Go به اجرای هر کد تست باقی‌مانده به صورت عادی ادامه می‌دهد.</p></li>
 </ul>
 
-<p>بیایید این را امتحان کنیم. فایل را ذخیره کنید، سپس از دستور <code>go test</code> برای اجرای تمام تست‌ها در بسته <code>cmd/web</code> ما به این شکل استفاده کنید:</p>
+<p>بیایید این را امتحان کنیم. فایل را ذخیره کنید، سپس از دستور <code>go test</code> برای اجرای همه تست‌ها در بسته <code>cmd/web</code> خود استفاده کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test ./cmd/web
 <samp>ok      snippetbox.alexedwards.net/cmd/web    0.005s</samp></pre>
 </figure>
 
-<p>بنابراین، این چیز خوبی است. <code>ok</code> در این خروجی نشان می‌دهد که تمام تست‌ها در بسته (فعلاً، فقط تست <code>TestHumanDate()</code> ما) بدون هیچ مشکلی گذرانده شده‌اند.</p>
+<p>پس، این چیز خوبی است. <code>ok</code> در این خروجی نشان می‌دهد که همه تست‌ها در بسته (فعلاً فقط تست <code>TestHumanDate()</code> ما) بدون هیچ مشکلی پاس شدند.</p>
 
-<p>اگر جزئیات بیشتری می‌خواهید، می‌توانید دقیقاً ببینید که کدام تست‌ها در حال اجرا هستند با استفاده از پرچم <code>-v</code> برای دریافت خروجی <em>مفصل</em>:</p>
+<p>اگر جزئیات بیشتری می‌خواهید، می‌توانید دقیقاً ببینید کدام تست‌ها در حال اجرا هستند با استفاده از پرچم <code>-v</code> برای دریافت خروجی <em>verbose</em>:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -v ./cmd/web
@@ -117,19 +118,19 @@ ok      snippetbox.alexedwards.net/cmd/web    0.007s</samp></pre>
 
 <h3 id="table-driven-tests">تست‌های مبتنی بر جدول</h3>
 
-<p>بیایید اکنون تابع <code>TestHumanDate()</code> خود را گسترش دهیم تا برخی موارد <dfn>تست</dfn> اضافی را پوشش دهیم. به طور خاص، ما قصد داریم آن را به‌روزرسانی کنیم تا همچنین بررسی کند که:</p>
+<p>حالا بیایید تابع <code>TestHumanDate()</code> خود را گسترش دهیم تا برخی <dfn>موردهای تست</dfn> اضافی را پوشش دهد. به طور خاص، می‌خواهیم آن را به‌روزرسانی کنیم تا همچنین بررسی کند که:</p>
 
 <ol>
-<li><p>اگر ورودی به <code>humanDate()</code> زمان <a href="https://pkg.go.dev/time/#Time.IsZero">صفر</a> باشد، سپس رشته خالی <code>&quot;&quot;</code> را برمی‌گرداند.</p></li>
+<li><p>اگر ورودی به <code>humanDate()</code> <a href="https://pkg.go.dev/time/#Time.IsZero">zero time</a> است، سپس رشته خالی <code>&quot;&quot;</code> را برمی‌گرداند.</p></li>
 
-<li><p>خروجی از تابع <code>humanDate()</code> همیشه از منطقه زمانی UTC استفاده می‌کند.</p></li>
+<li><p>خروجی از تابع <code>humanDate()</code> همیشه از time zone UTC استفاده می‌کند.</p></li>
 </ol>
 
-<p>در Go، یک روش ایدئال برای اجرای چندین مورد تست استفاده از <dfn>تست‌های مبتنی بر جدول</dfn> است.</p>
+<p>در Go، یک روش idiomatic برای اجرای چندین مورد تست استفاده از <dfn>تست‌های مبتنی بر جدول</dfn> است.</p>
 
-<p>اساساً، ایده پشت تست‌های مبتنی بر جدول این است که یک &lsquo;جدول&rsquo; از موارد تست حاوی ورودی‌ها و خروجی‌های مورد انتظار ایجاد کنید و سپس بر روی این‌ها حلقه بزنید و هر مورد تست را در یک <dfn>زیرتست</dfn> اجرا کنید. چندین روش برای تنظیم این وجود دارد، اما یک روش معمول این است که موارد تست خود را در یک برش از ساختارهای ناشناس تعریف کنید.</p>
+<p>اساساً، ایده پشت تست‌های مبتنی بر جدول ایجاد یک &lsquo;جدول&rsquo; از موردهای تست حاوی ورودی‌ها و خروجی‌های مورد انتظار است، و سپس حلقه زدن روی این‌ها، اجرای هر مورد تست در یک <dfn>زیرتست</dfn>. چند روش برای تنظیم این وجود دارد، اما یک رویکرد رایج تعریف موردهای تست خود در یک slice از structهای anonymous است.</p>
 
-<p>من نشان خواهم داد:</p>
+<p>نشان می‌دهم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates_test.go</figcaption>
@@ -184,7 +185,7 @@ ok      snippetbox.alexedwards.net/cmd/web    0.007s</samp></pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> در مورد سوم تست، ما از CET (زمان اروپای مرکزی) به عنوان منطقه زمانی استفاده می‌کنیم که یک ساعت جلوتر از UTC است. بنابراین ما می‌خواهیم خروجی از <code>humanDate()</code> (که باید در UTC باشد) <code>17 Mar 2024 at 09:15</code> باشد، نه <code>17 Mar 2024 at 10:15</code>.
+<strong>یادداشت:</strong> در مورد تست سوم از CET (Central European Time) به عنوان time zone استفاده می‌کنیم که یک ساعت جلوتر از UTC است. بنابراین می‌خواهیم خروجی از <code>humanDate()</code> (که باید در UTC باشد) <code>17 Mar 2024 at 09:15</code> باشد، نه <code>17 Mar 2024 at 10:15</code>.
 </p></aside>
 
 <p>خوب، بیایید این را اجرا کنیم و ببینیم چه اتفاقی می‌افتد:</p>
@@ -206,7 +207,7 @@ FAIL    snippetbox.alexedwards.net/cmd/web      0.003s
 FAIL</samp></pre>
 </figure>
 
-<p>بنابراین در اینجا می‌توانیم خروجی فردی برای هر یک از زیرتست‌های خود را ببینیم. همانطور که ممکن است حدس زده باشید، مورد اول تست ما گذشت اما تست‌های <code>Empty</code> و <code>CET</code> هر دو شکست خوردند. توجه کنید که &mdash; برای موارد تست ناموفق &mdash; ما پیام شکست مربوطه و نام فایل و شماره خط را در خروجی دریافت می‌کنیم؟</p>
+<p>پس در اینجا می‌توانیم خروجی جداگانه برای هر یک از زیرتست‌های خود را ببینیم. همان‌طور که ممکن است حدس زده باشید، مورد تست اول ما پاس شد اما تست‌های <code>Empty</code> و <code>CET</code> هر دو ناموفق بودند. توجه کنید که &mdash; برای موردهای تست ناموفق &mdash; پیام شکست مربوطه و نام فایل و شماره خط را در خروجی دریافت می‌کنیم؟</p>
 
 <p>بیایید به تابع <code>humanDate()</code> خود برگردیم و آن را به‌روزرسانی کنیم تا این دو مشکل را برطرف کنیم:</p>
 
@@ -216,7 +217,7 @@ FAIL</samp></pre>
 
 <span class="o">...</span>
 
-<span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{
+<span class="kd">func</span> <span class="nf">humanDate</span><span class="p">(</span><span class="nx">t</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Time</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
     <span class="c1">// Return the empty string if time has the zero value.
 </span><span class="c1"></span>    <span class="k">if</span> <span class="nx">t</span><span class="p">.</span><span class="nf">IsZero</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">return</span> <span class="s">&#34;&#34;</span>
@@ -229,7 +230,7 @@ FAIL</samp></pre>
 <span class="o">...</span></pre>
 </figure>
 
-<p>و هنگامی که دوباره تست‌ها را اجرا کنید، همه چیز باید اکنون بگذرد.</p>
+<p>و وقتی دوباره تست‌ها را اجرا می‌کنید، همه چیز باید اکنون پاس شود.</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ go test -v ./cmd/web
@@ -245,9 +246,9 @@ PASS
 ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
 </figure>
 
-<h3 id="helpers-for-test-assertions">کمک‌کننده‌ها برای ادعاهای تست</h3>
+<h3 id="helpers-for-test-assertions">تابع‌های helper برای assertionهای تست</h3>
 
-<p>همانطور که قبلاً در کتاب به طور مختصر اشاره کردم، در فصل‌های بعدی ما تعداد زیادی <em>ادعای تست</em> خواهیم نوشت که یک تغییر از این الگو هستند:</p>
+<p>همان‌طور که قبلاً به طور خلاصه در کتاب اشاره کردم، در چند فصل بعدی <em>assertionهای تست</em> زیادی می‌نویسیم که تغییراتی از این الگو هستند:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="k">if</span> <span class="nx">actualValue</span> <span class="o">!=</span> <span class="nx">expectedValue</span> <span class="p">{</span>
@@ -255,9 +256,9 @@ ok      snippetbox.alexedwards.net/cmd/web      0.003s</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>بیایید به سرعت این کد را به یک تابع کمک‌کننده انتزاع کنیم.</p>
+<p>بیایید به سرعت این کد را به یک تابع helper تبدیل کنیم.</p>
 
-<p>اگر در حال دنبال کردن هستید، بروید و یک بسته جدید <code>internal/assert</code> ایجاد کنید:</p>
+<p>اگر همراه ما هستید، بروید و یک بسته جدید <code>internal/assert</code> ایجاد کنید:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ mkdir internal/assert
@@ -283,13 +284,13 @@ $ touch internal/assert/assert.go</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<p>توجه کنید که <code>Equal()</code> یک <em>تابع عمومی</em> است؟ این به این معنی است که ما قادر خواهیم بود از آن استفاده کنیم بدون توجه به اینکه نوع مقادیر <code>actual</code> و <code>expected</code> چیست. تا زمانی که هر دو <code>actual</code> و <code>expected</code> نوع <em>یکسانی</em> داشته باشند و بتوانند با استفاده از عملگر <code>!=</code> مقایسه شوند (برای مثال، هر دو مقادیر <code>string</code> یا هر دو مقادیر <code>int</code> باشند) کد تست ما باید کامپایل شود و به خوبی کار کند وقتی که <code>Equal()</code> را فراخوانی می‌کنیم.</p>
+<p>توجه کردید که <code>Equal()</code> یک <em>تابع generic</em> است؟ این یعنی که می‌توانیم از آن بدون توجه به نوع مقادیر <code>actual</code> و <code>expected</code> استفاده کنیم. تا زمانی که هر دو <code>actual</code> و <code>expected</code> <em>همان</em> نوع را داشته باشند و بتوان با استفاده از عملگر <code>!=</code> آن‌ها را مقایسه کرد (مثلاً هر دو مقدار <code>string</code> هستند، یا هر دو مقدار <code>int</code>) کد تست ما باید کامپایل شود و وقتی <code>Equal()</code> را فراخوانی می‌کنیم به خوبی کار کند.</p>
 
 <aside class="note"><p>
-<strong>توجه:</strong> تابع <a href="https://pkg.go.dev/testing#T.Helper"><code>t.Helper()</code></a> که در کد بالا استفاده می‌کنیم به اجراگر تست Go نشان می‌دهد که تابع <code>Equal()</code> ما یک کمک‌کننده تست است. این به این معنی است که وقتی <code>t.Errorf()</code> از تابع <code>Equal()</code> ما فراخوانی می‌شود، اجراگر تست Go نام فایل و شماره خط کدی که <code>Equal()</code> ما را فراخوانی کرده است را در خروجی گزارش خواهد کرد.
+<strong>یادداشت:</strong> تابع <a href="https://pkg.go.dev/testing#T.Helper"><code>t.Helper()</code></a> که در کد بالا استفاده می‌کنیم به Go test runner نشان می‌دهد که تابع <code>Equal()</code> ما یک test helper است. این یعنی وقتی <code>t.Errorf()</code> از تابع <code>Equal()</code> ما فراخوانی می‌شود، Go test runner نام فایل و شماره خط کدی که <code>Equal()</code> ما را <em>فراخوانی کرد</em> را در خروجی گزارش می‌دهد.
 </p></aside>
 
-<p>با این کار، ما می‌توانیم تست <code>TestHumanDate()</code> خود را به این شکل ساده کنیم:</p>
+<p>با این در جای خود، می‌توانیم تست <code>TestHumanDate()</code> خود را به این صورت ساده کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/templates_test.go</figcaption>
@@ -341,9 +342,9 @@ $ touch internal/assert/assert.go</pre>
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="sub-tests-without-a-table-of-test-cases">زیرتست‌ها بدون جدول موارد تست</h4>
+<h4 id="sub-tests-without-a-table-of-test-cases">زیرتست‌ها بدون جدول موردهای تست</h4>
 
-<p>مهم است که اشاره کنیم که نیازی نیست که زیرتست‌ها را همراه با تست‌های مبتنی بر جدول (مانند آنچه تا کنون در این فصل انجام داده‌ایم) استفاده کنید. اجرای زیرتست‌ها با فراخوانی <code>t.Run()</code> به صورت متوالی در توابع تست شما کاملاً معتبر است، مشابه این:</p>
+<p>نکته مهمی که باید اشاره کنم این است که لازم نیست از زیرتست‌ها در کنار تست‌های مبتنی بر جدول استفاده کنید (مانند آنچه تا کنون در این فصل انجام داده‌ایم). کاملاً معتبر است که زیرتست‌ها را با فراخوانی متوالی <code>t.Run()</code> در توابع تست خود اجرا کنید، شبیه به این:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">TestExample</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
@@ -361,68 +362,8 @@ $ touch internal/assert/assert.go</pre>
 <span class="p">}</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تست واحد</td>
-        <td>Unit Testing</td>
-        <td>آزمایش بخش‌های کوچک کد</td>
-    </tr>
-    <tr>
-        <td>تست‌های فرعی</td>
-        <td>Sub-Tests</td>
-        <td>آزمایش‌های زیرمجموعه</td>
-    </tr>
-    <tr>
-        <td>تست جدول‌محور</td>
-        <td>Table-Driven Testing</td>
-        <td>آزمایش با داده‌های متعدد</td>
-    </tr>
-    <tr>
-        <td>تست موازی</td>
-        <td>Parallel Testing</td>
-        <td>اجرای همزمان تست‌ها</td>
-    </tr>
-    <tr>
-        <td>توابع کمکی تست</td>
-        <td>Test Helper Functions</td>
-        <td>توابع کمکی برای تست</td>
-    </tr>
-    <tr>
-        <td>مقایسه نتایج</td>
-        <td>Result Comparison</td>
-        <td>بررسی نتایج مورد انتظار</td>
-    </tr>
-    <tr>
-        <td>پیش‌نیازهای تست</td>
-        <td>Test Prerequisites</td>
-        <td>شرایط لازم برای تست</td>
-    </tr>
-    <tr>
-        <td>داده‌های تست</td>
-        <td>Test Data</td>
-        <td>داده‌های مورد نیاز تست</td>
-    </tr>
-    <tr>
-        <td>گزارش خطا</td>
-        <td>Error Reporting</td>
-        <td>گزارش مشکلات تست</td>
-    </tr>
-    <tr>
-        <td>پاکسازی تست</td>
-        <td>Test Cleanup</td>
-        <td>پاکسازی بعد از تست</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="13.00-testing.html">قبلی</a>

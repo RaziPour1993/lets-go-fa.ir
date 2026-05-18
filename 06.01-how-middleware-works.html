@@ -3,21 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>میدل‌ور چگونه کار می‌کند &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			body { direction: rtl; }
-			.code { direction: ltr; text-align: left; }
-			header, .chapter { text-align: right; }
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میان‌افزار</a> &rsaquo; نحوه کار میان‌افزار</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="06.00-middleware.html">میدل‌ور</a> &rsaquo; نحوه کار میدل‌ور</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="06.00-middleware.html">قبلی</a>
@@ -27,26 +27,26 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۶.۱</div>
-			<h2 id="how-middleware-works">نحوه کار میان‌افزار (How Middleware Works)</h2>
+			<div class="chapter">فصل ۶.۱.</div>
+			<h2 id="how-middleware-works">نحوه کار میدل‌ور</h2>
 
-<p><a href="02.10-the-http-handler-interface.html">پیش‌تر در کتاب</a> مطلبی را گفتم که می‌خواهم در این فصل آن را گسترش دهم:</p>
+<p><a href="02.10-the-http-handler-interface.html">قبلاً در کتاب</a> چیزی گفتم که می‌خواهم در این فصل گسترش دهم:</p>
 
 <blockquote>
-<p>"می‌توانید یک برنامه وب Go را به عنوان زنجیره‌ای از متدهای <code>ServeHTTP()</code> در نظر بگیرید که یکی پس از دیگری فراخوانی می‌شوند."</p>
+<p>&ldquo;می‌توانید یک برنامه وب Go را به عنوان زنجیره‌ای از متدهای <code>ServeHTTP()</code> که یکی پس از دیگری فراخوانی می‌شوند، تصور کنید.&rdquo;</p>
 </blockquote>
 
-<p>در حال حاضر، در برنامه ما، وقتی سرور یک درخواست HTTP جدید دریافت می‌کند، متد <code>ServeHTTP()</code> مربوط به servemux را فراخوانی می‌کند. این متد بر اساس متد درخواست و مسیر URL، هندلر مربوطه را پیدا کرده و به نوبه خود متد <code>ServeHTTP()</code> آن هندلر را فراخوانی می‌کند.</p>
+<p>در حال حاضر، در برنامه ما، هنگامی که سرور ما یک درخواست HTTP جدید دریافت می‌کند، متد <code>ServeHTTP()</code> servemux را فراخوانی می‌کند. این متد handler مربوطه را بر اساس متد درخواست و مسیر URL جستجو می‌کند و به نوبه خود متد <code>ServeHTTP()</code> آن handler را فراخوانی می‌کند.</p>
 
-<p>ایده اصلی میان‌افزار، وارد کردن یک هندلر دیگر در این زنجیره است. هندلر میان‌افزار منطقی را اجرا می‌کند، مانند ثبت یک درخواست، و سپس متد <code>ServeHTTP()</code> هندلر <em>بعدی</em> را در زنجیره فراخوانی می‌کند.</p>
+<p>ایده اصلی میدل‌ور، درج یک handler دیگر در این زنجیره است. handler میدل‌ور برخی منطق را اجرا می‌کند، مانند ثبت یک درخواست، و سپس متد <code>ServeHTTP()</code> handler <em>بعدی</em> در زنجیره را فراخوانی می‌کند.</p>
 
-<p>در واقع، ما در حال حاضر از یک میان‌افزار در برنامه‌مان استفاده می‌کنیم - تابع <code>http.StripPrefix()</code> از <a href="02.09-serving-static-files.html">سرو فایل‌های استاتیک</a>، که پیشوند خاصی را از مسیر URL درخواست قبل از ارسال درخواست به فایل سرور حذف می‌کند.</p>
+<p>در واقع، ما در حال حاضر در برنامه خود از برخی میدل‌ور استفاده می‌کنیم &mdash; تابع <code>http.StripPrefix()</code> از <a href="02.09-serving-static-files.html">سرو کردن فایل‌های استاتیک</a>، که یک پیشوند خاص را از مسیر URL درخواست حذف می‌کند قبل از ارسال درخواست به سرور فایل.</p>
 
 <h3 id="the-pattern">الگو</h3>
 
-<p>الگوی استاندارد برای ایجاد میان‌افزار خودتان به این شکل است:</p>
+<p>الگوی استاندارد برای ایجاد میدل‌ور خود به این صورت است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="nx">fn</span> <span class="o">:=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// TODO: Execute our middleware logic here...
@@ -57,25 +57,25 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>کد خودش نسبتاً مختصر است، اما نکات زیادی برای درک در آن وجود دارد.</p>
+<p>خود کد بسیار مختصر است، اما چیزهای زیادی در آن وجود دارد که باید درک کنید.</p>
 
 <ul>
-<li><p>تابع <code>myMiddleware()</code> اساساً یک wrapper برای هندلر <code>next</code> است که به عنوان پارامتر به آن منتقل می‌کنیم.</p></li>
+<li><p>تابع <code>myMiddleware()</code> اساساً یک پوشش در اطراف handler <code>next</code> است که آن را به عنوان یک پارامتر به آن می‌دهیم.</p></li>
 
-<li><p>این تابع یک تابع <code>fn</code> را ایجاد می‌کند که هندلر <code>next</code> را برای تشکیل یک closure در بر می‌گیرد. وقتی <code>fn</code> اجرا می‌شود، منطق میان‌افزار ما را اجرا کرده و سپس کنترل را به هندلر <code>next</code> با فراخوانی متد <code>ServeHTTP()</code> آن منتقل می‌کند.</p></li>
+<li><p>یک تابع <code>fn</code> ایجاد می‌کند که <em>روی</em> handler <code>next</code> <em>بسته می‌شود</em> تا یک closure تشکیل دهد. هنگامی که <code>fn</code> اجرا می‌شود، منطق میدل‌ور ما را اجرا می‌کند و سپس کنترل را با فراخوانی متد <code>ServeHTTP()</code> آن به handler <code>next</code> منتقل می‌کند.</p></li>
 
-<li><p>صرف نظر از اینکه با closure چه می‌کنید، همیشه می‌تواند به متغیرهایی که در محدوده ایجاد شده‌اش محلی هستند دسترسی داشته باشد - که در این مورد به این معنی است که <code>fn</code> همیشه به متغیر <code>next</code> دسترسی خواهد داشت.</p></li>
+<li><p>صرف نظر از اینکه با یک closure چه می‌کنید، همیشه می‌تواند به متغیرهایی که در محدوده ایجاد شده‌اند دسترسی داشته باشد &mdash; که در این مورد به این معنی است که <code>fn</code> همیشه به متغیر <code>next</code> دسترسی خواهد داشت.</p></li>
 
-<li><p>در آخرین خط کد، ما این closure را به یک <code>http.Handler</code> تبدیل کرده و با استفاده از آداپتور <code>http.HandlerFunc()</code> آن را برمی‌گردانیم.</p></li>
+<li><p>در خط آخر کد، این closure را به یک <code>http.Handler</code> تبدیل می‌کنیم و با استفاده از adapter <code>http.HandlerFunc()</code> آن را برمی‌گردانیم.</p></li>
 </ul>
 
-<p>اگر این موضوع گیج‌کننده به نظر می‌رسد، می‌توانید ساده‌تر به آن فکر کنید: <code>myMiddleware()</code> تابعی است که هندلر بعدی را در یک زنجیره به عنوان پارامتر می‌پذیرد. این تابع <em>یک هندلر را برمی‌گرداند</em> که منطقی را اجرا کرده و سپس هندلر بعدی را فراخوانی می‌کند.</p>
+<p>اگر این گیج‌کننده به نظر می‌رسد، می‌توانید آن را ساده‌تر تصور کنید: <code>myMiddleware()</code> تابعی است که handler بعدی (next handler) در یک زنجیره را به عنوان پارامتر می‌پذیرد. این تابع <em>یک handler برمی‌گرداند</em> که برخی منطق را اجرا می‌کند و سپس handler بعدی را فراخوانی می‌کند.</p>
 
-<h3 id="simplifying-the-middleware">ساده‌سازی میان‌افزار</h3>
+<h3 id="simplifying-the-middleware">ساده‌سازی میدل‌ور</h3>
 
-<p>یک تغییر در این الگو، استفاده از تابع بی‌نام در داخل میان‌افزار <code>myMiddleware()</code> است، به این صورت:</p>
+<p>یک تغییر در این الگو، استفاده از یک تابع ناشناس در داخل میدل‌ور <code>myMiddleware()</code> است، به این صورت:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">myMiddleware</span><span class="p">(</span><span class="nx">next</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// TODO: Execute our middleware logic here...
@@ -84,89 +84,29 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>این الگو در دنیای واقعی بسیار رایج است و احتمالاً اگر کد منبع برنامه‌های دیگر یا پکیج‌های شخص ثالث را می‌خوانید، بیشتر با این الگو مواجه خواهید شد.</p>
+<p>این الگو در دنیای واقعی بسیار رایج است و احتمالاً بیشترین چیزی است که اگر کد منبع برنامه‌های دیگر یا بسته‌های شخص ثالث را می‌خوانید، خواهید دید.</p>
 
-<h3 id="positioning-the-middleware">موقعیت‌دهی میان‌افزار</h3>
+<h3 id="positioning-the-middleware">موقعیت‌یابی میدل‌ور</h3>
 
-<p>مهم است توضیح دهیم که موقعیت میان‌افزار در زنجیره هندلرها بر رفتار برنامه شما تأثیر خواهد گذاشت.</p>
+<p>مهم است توضیح دهیم که موقعیت میدل‌ور در زنجیره handlerها بر رفتار برنامه شما تأثیر می‌گذارد.</p>
 
-<p>اگر میان‌افزار خود را قبل از servemux در زنجیره قرار دهید، روی هر درخواستی که برنامه شما دریافت می‌کند تأثیر خواهد گذاشت.</p>
+<p>اگر میدل‌ور خود را قبل از servemux در زنجیره قرار دهید، روی هر درخواستی که برنامه شما دریافت می‌کند عمل خواهد کرد.</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <pre>myMiddleware → servemux → application handler</pre>
 </figure>
 
-<p>مثال خوبی از جایی که این مورد مفید خواهد بود، میان‌افزار برای ثبت درخواست‌ها است - زیرا این معمولاً چیزی است که می‌خواهید برای <em>تمام</em> درخواست‌ها انجام دهید.</p>
+<p>یک مثال خوب از جایی که این مفید خواهد بود، میدل‌وری برای ثبت درخواست‌ها است &mdash; زیرا این معمولاً چیزی است که می‌خواهید برای <em>همه</em> درخواست‌ها انجام دهید.</p>
 
-<p>به طور جایگزین، می‌توانید میان‌افزار را بعد از servemux در زنجیره قرار دهید - با پوشاندن یک هندلر برنامه خاص. این باعث می‌شود میان‌افزار شما فقط برای یک مسیر خاص اجرا شود.</p>
+<p>به طور جایگزین، می‌توانید میدل‌ور را بعد از servemux در زنجیره قرار دهید &mdash; با پوشاندن یک handler برنامه خاص. این باعث می‌شود میدل‌ور شما فقط برای یک مسیر خاص اجرا شود.</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <pre>servemux → myMiddleware → application handler</pre>
 </figure>
 
-<p>مثالی از این مورد می‌تواند میان‌افزار احراز هویت باشد که ممکن است بخواهید فقط روی مسیرهای خاصی اجرا شود.</p>
+<p>یک مثال از این مورد، چیزی مانند میدل‌ور احراز هویت است که ممکن است فقط بخواهید روی مسیرهای خاص اجرا شود.</p>
 
-<p>همانطور که در طول کتاب پیش می‌رویم، نحوه انجام هر دوی این موارد را در عمل نشان خواهیم داد.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>میان‌افزار</td>
-        <td>Middleware</td>
-        <td>کدی که بین درخواست و پاسخ HTTP اجرا می‌شود</td>
-    </tr>
-    <tr>
-        <td>تابع بسته‌بندی</td>
-        <td>Wrapper Function</td>
-        <td>تابعی که یک تابع دیگر را دریافت و تغییر می‌دهد</td>
-    </tr>
-    <tr>
-        <td>هندلر HTTP</td>
-        <td>HTTP Handler</td>
-        <td>تابعی که درخواست‌های HTTP را پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>میان‌افزار ثبت</td>
-        <td>Logging Middleware</td>
-        <td>میان‌افزاری که درخواست‌ها را ثبت می‌کند</td>
-    </tr>
-    <tr>
-        <td>زنجیره‌های میان‌افزار</td>
-        <td>Middleware Chains</td>
-        <td>ترکیب چندین میان‌افزار به صورت پشت سر هم</td>
-    </tr>
-    <tr>
-        <td>مسیریاب</td>
-        <td>Router</td>
-        <td>بخشی که درخواست‌ها را به هندلرها هدایت می‌کند</td>
-    </tr>
-    <tr>
-        <td>پردازش درخواست</td>
-        <td>Request Processing</td>
-        <td>عملیات انجام شده روی درخواست‌های دریافتی</td>
-    </tr>
-    <tr>
-        <td>پاسخ‌دهنده</td>
-        <td>Response Writer</td>
-        <td>ابزاری برای نوشتن پاسخ HTTP</td>
-    </tr>
-    <tr>
-        <td>درخواست‌دهنده</td>
-        <td>Request</td>
-        <td>شیء حاوی اطلاعات درخواست HTTP</td>
-    </tr>
-    <tr>
-        <td>مدیریت مسیر</td>
-        <td>Route Handling</td>
-        <td>پردازش درخواست‌ها بر اساس مسیر URL</td>
-    </tr>
-</table>
+<p>همانطور که در کتاب پیش می‌رویم، نحوه انجام هر دو این کارها را در عمل نشان خواهیم داد.</p>
 
 		</main>
 		<footer>
@@ -186,12 +126,16 @@
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "06.00-middleware.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "06.02-setting-common-headers.html";
 						break;
+						
 				}
 			};
 		</script>

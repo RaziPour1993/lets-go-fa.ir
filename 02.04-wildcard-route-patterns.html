@@ -3,16 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>الگوهای مسیر با کاراکترهای جایگزین &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			.code, .terminal {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -20,7 +15,7 @@
 				<div>
 					
 						
-						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; الگوهای مسیریابی wildcard</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; الگوهای مسیر با کاراکترهای جایگزین</span>
 						
 					
 				</div>
@@ -33,81 +28,81 @@
 		</header>
 		<main class="wrapper text">
 			<div class="chapter">فصل ۲.۴.</div>
-			<h2 id="wildcard-route-patterns">الگوهای مسیریابی wildcard</h2>
+			<h2 id="wildcard-route-patterns">الگوهای مسیر با کاراکترهای جایگزین</h2>
 
-<p>همچنین می‌توانید الگوهای مسیریابی را تعریف کنید که شامل <em>بخش‌های wildcard (Wildcard Segments)</em> هستند. می‌توانید از این‌ها برای ایجاد قوانین مسیریابی انعطاف‌پذیرتر استفاده کنید و همچنین متغیرها را از طریق URL درخواست (Request URL) به برنامه Go خود منتقل کنید. اگر قبلاً برنامه‌های وب را با استفاده از فریم‌ورک‌ها در زبان‌های دیگر ساخته‌اید، مفاهیم این فصل احتمالاً برای شما آشنا خواهد بود.</p>
+<p>همچنین امکان تعریف الگوهای مسیر که شامل <em>بخش‌های wildcard</em> هستند وجود دارد. می‌توانید از این‌ها برای ایجاد قوانین مسیریابی انعطاف‌پذیرتر استفاده کنید، و همچنین برای ارسال متغیرها به برنامه Go خود از طریق URL درخواست. اگر قبلاً برنامه‌های وب با استفاده از فریم‌ورک‌ها در زبان‌های دیگر ساخته‌اید، مفاهیم این فصل احتمالاً برای شما آشنا به نظر می‌رسند.</p>
 
 <p>بیایید برای لحظه‌ای از ساخت برنامه خود فاصله بگیریم تا توضیح دهیم چگونه کار می‌کند.</p>
 
-<p>بخش‌های wildcard در یک الگوی مسیریابی با یک <em>شناسه (Identifier)</em> ویژه داخل براکت‌های <code>{}</code> مشخص می‌شوند. مانند این:</p>
+<p>بخش‌های wildcard در یک الگوی مسیر با یک <em>شناسه</em> wildcard داخل براکت‌های <code>{}</code> نشان داده می‌شوند. مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/products/{category}/item/{itemID}&#34;</span><span class="p">,</span> <span class="nx">exampleHandler</span><span class="p">)</span></pre>
 </figure>
 
-<p>در این مثال، الگوی مسیریابی شامل دو بخش wildcard است. بخش اول دارای شناسه <code>category</code> و بخش دوم دارای شناسه <code>itemID</code> است.</p>
+<p>در این مثال، الگوی مسیر شامل دو بخش wildcard است. بخش اول شناسه <code>category</code> دارد و بخش دوم شناسه <code>itemID</code> دارد.</p>
 
-<p>قوانین تطبیق (Matching Rules) برای الگوهای مسیریابی حاوی بخش‌های wildcard همان‌هایی هستند که در فصل قبل دیدیم، با این قانون اضافی که مسیر درخواست می‌تواند شامل <em>هر</em> مقدار غیر خالی برای بخش‌های wildcard باشد. بنابراین، برای مثال، درخواست‌های زیر همگی با مسیری که در بالا تعریف کردیم مطابقت دارند:</p>
+<p>قوانین تطبیق برای الگوهای مسیر حاوی بخش‌های wildcard همان‌هایی هستند که در فصل قبل دیدیم، با قانون اضافی که مسیر درخواست می‌تواند شامل <em>هر</em> مقدار غیر خالی برای بخش‌های wildcard باشد. پس، برای مثال، درخواست‌های زیر همگی با مسیری که در بالا تعریف کردیم تطبیق داده می‌شوند:</p>
 
-<figure class="code plain">
+<figure class="code plain" dir="ltr">
 <pre>/products/hammocks/item/sku123456789
 /products/seasonal-plants/item/pdt-1234-wxyz
 /products/experimental_foods/item/quantum%20bananas</pre>
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> هنگام تعریف یک الگوی مسیریابی، هر بخش مسیر (Path Segment) (قسمت بین کاراکترهای اسلش) فقط می‌تواند شامل یک کاراکتر ویژه (Special Character) باشد و کاراکتر ویژه باید <em>کل</em> بخش مسیر را پر کند. الگوهایی مانند <code>&quot;/products/c_{category}&quot;</code>، <code>/date/{y}-{m}-{d}</code> یا <code>/{slug}.html</code> معتبر نیستند.
+<strong>مهم:</strong> هنگام تعریف یک الگوی مسیر، هر بخش مسیر (قسمتی بین کاراکترهای اسلش رو به جلو) فقط می‌تواند شامل یک wildcard باشد و wildcard باید کل بخش مسیر را پر کند. الگوهایی مانند <code>&quot;/products/c_{category}&quot;</code>، <code>/date/{y}-{m}-{d}</code> یا <code>/{slug}.html</code> معتبر نیستند.
 </p></aside>
 
-<p>در داخل handler خود، می‌توانید مقدار متناظر برای یک بخش wildcard را با استفاده از شناسه آن و متد <a href="https://pkg.go.dev/net/http#Request.PathValue"><code>()r.PathValue</code></a> بازیابی کنید. برای مثال:</p>
+<p>داخل handler خود، می‌توانید مقدار مربوطه برای یک بخش wildcard را با استفاده از شناسه آن و متد <a href="https://pkg.go.dev/net/http#Request.PathValue"><code>r.PathValue()</code></a> بازیابی کنید. برای مثال:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="kd">func</span> <span class="nf">exampleHandler</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">category</span> <span class="o">:=</span> <span class="p">()</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">"category"</span><span class="p">)</span>
-    <span class="nx">itemID</span> <span class="o">:=</span> <span class="p">()</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">"itemID"</span><span class="p">)</span>
+    <span class="nx">category</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;category&#34;</span><span class="p">)</span>
+    <span class="nx">itemID</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;itemID&#34;</span><span class="p">)</span>
 
     <span class="o">...</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>متد <code>()r.PathValue</code> همیشه یک مقدار <code>string</code> برمی‌گرداند، و مهم است به یاد داشته باشید که این می‌تواند <em>هر مقداری</em> باشد که کاربر در URL قرار می‌دهد &mdash; بنابراین باید قبل از انجام هر کار مهمی با آن، مقدار را اعتبارسنجی یا بررسی کنید.</p>
+<p>متد <code>r.PathValue()</code> همیشه یک مقدار <code>string</code> برمی‌گرداند، و مهم است به یاد داشته باشید که این می‌تواند <em>هر مقداری</em> باشد که کاربر در URL قرار می‌دهد — پس باید مقدار را اعتبارسنجی یا بررسی کنید قبل از انجام هر کار مهمی با آن.</p>
 
-<h3 id="using-wildcard-segments-in-practice">استفاده از بخش‌های wildcard در عمل (Using Wildcard Segments in Practice)</h3>
+<h3 id="using-wildcard-segments-in-practice">استفاده از بخش‌های wildcard در عمل</h3>
 
-<p>خب، بیایید به برنامه خود برگردیم و آن را به‌روزرسانی کنیم تا شامل یک بخش wildcard جدید <code>{id}</code> در مسیر <code>/snippet/view</code> باشد، به طوری که مسیرهای ما به این شکل باشند:</p>
+<p>خوب، بیایید به برنامه خود برگردیم و آن را به‌روزرسانی کنیم تا شامل یک بخش wildcard جدید <code>{id}</code> در مسیر <code>/snippet/view</code> شود، تا مسیرهای ما شبیه به این شوند:</p>
 
-<table style="direction: rtl;">
+<table dir="ltr">
 <thead>
 <tr>
-<th style="text-align: right;">عملیات</th>
-<th>هندلر</th>
-<th>الگوی مسیر</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
-<td style="text-align: right;">نمایش صفحه اصلی</td>
+<td>/{$}</td>
 <td>home</td>
-<td>{$}/</td>
+<td>نمایش صفحه اصلی</td>
 </tr>
 
 <tr>
-<td style="text-align: right;"><strong>نمایش یک اسنیپت خاص</strong></td>
+<td><strong>/snippet/view/{id}</strong></td>
 <td><strong>snippetView</strong></td>
-<td><strong>snippet/view/{id}/</strong></td>
+<td><strong>نمایش یک تکه متن خاص</strong></td>
 </tr>
 
 <tr>
-<td style="text-align: right;">نمایش فرم ایجاد اسنیپت جدید</td>
+<td>/snippet/create</td>
 <td>snippetCreate</td>
-<td>snippet/create/</td>
+<td>نمایش فرم برای ایجاد یک تکه متن جدید</td>
 </tr>
 </tbody>
 </table>
-<p>فایل <code>main.go</code> خود را باز کنید و این تغییر را به این صورت اعمال کنید:</p>
+<p>فایل <code>main.go</code> خود را باز کنید و این تغییر را مانند این انجام دهید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -126,13 +121,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>حالا بیایید به handler <code>snippetView</code> خود برویم و آن را به‌روزرسانی کنیم تا مقدار <code>id</code> را از مسیر URL درخواست بازیابی کند. بعداً در کتاب، از این مقدار <code>id</code> برای انتخاب یک اسنیپت خاص از پایگاه داده استفاده خواهیم کرد، اما برای حالا فقط مقدار <code>id</code> را به عنوان بخشی از پاسخ HTTP به کاربر برمی‌گردانیم.</p>
+<p>حالا بیایید به handler <code>snippetView</code> خود برویم و آن را به‌روزرسانی کنیم تا مقدار <code>id</code> را از مسیر URL درخواست بازیابی کند. بعداً در کتاب، از این مقدار <code>id</code> برای انتخاب یک تکه متن خاص از پایگاه داده استفاده خواهیم کرد، اما برای حالا فقط <code>id</code> را به عنوان بخشی از پاسخ HTTP به کاربر برمی‌گردانیم.</p>
 
-<p>از آنجایی که مقدار <code>id</code> ورودی غیرقابل اعتماد کاربر است، باید آن را اعتبارسنجی کنیم تا مطمئن شویم منطقی و معقول است قبل از استفاده از آن. برای هدف برنامه ما می‌خواهیم بررسی کنیم که مقدار <code>id</code> شامل یک عدد صحیح مثبت است، که می‌توانیم با تبدیل مقدار رشته به عدد صحیح با استفاده از تابع <a href="https://pkg.go.dev/strconv/#Atoi"><code>strconv.Atoi()</code></a> و سپس بررسی اینکه مقدار بزرگتر از صفر است انجام دهیم.</p>
+<p>چون مقدار <code>id</code> ورودی کاربر غیرقابل اعتماد است، باید آن را اعتبارسنجی کنیم تا مطمئن شویم که معقول و منطقی است قبل از استفاده از آن. برای هدف برنامه ما می‌خواهیم بررسی کنیم که مقدار <code>id</code> شامل یک عدد صحیح مثبت است، که می‌توانیم با تلاش برای تبدیل مقدار رشته به یک عدد صحیح با تابع <a href="https://pkg.go.dev/strconv/#Atoi"><code>strconv.Atoi()</code></a> و سپس بررسی اینکه مقدار بزرگ‌تر از صفر است انجام دهیم.</p>
 
-<p>اینجا چگونگی انجام آن:</p>
+<p>اینجا نحوه انجام آن است:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -150,7 +145,7 @@
 </span><span class="c1"></span>    <span class="c1">// and try to convert it to an integer using the strconv.Atoi() function. If
 </span><span class="c1"></span>    <span class="c1">// it can&#39;t be converted to an integer, or the value is less than 1, we
 </span><span class="c1"></span>    <span class="c1">// return a 404 page not found response.
-</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="p">()</span><span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="p">()</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">"id"</span><span class="p">)</span><span class="p">)</span>
+</span><span class="c1"></span>    <span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Atoi</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nf">PathValue</span><span class="p">(</span><span class="s">&#34;id&#34;</span><span class="p">)</span><span class="p">)</span>
     <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">||</span> <span class="nx">id</span> <span class="p">&lt;</span> <span class="mi">1</span> <span class="p">{</span>
         <span class="nx">http</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">)</span>
         <span class="k">return</span>
@@ -165,15 +160,15 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>تغییرات خود را ذخیره کنید، برنامه را مجدداً راه‌اندازی کنید، سپس مرورگر خود را باز کنید و سعی کنید به آدرسی مانند <a href="http://localhost:4000/snippet/view/123"><code>http://localhost:4000/snippet/view/123</code></a> بروید. باید پاسخی حاوی مقدار <code>id</code> برگشتی از URL درخواست را ببینید، مشابه این:</p>
+<p>تغییرات خود را ذخیره کنید، برنامه را دوباره راه‌اندازی کنید، سپس مرورگر خود را باز کنید و سعی کنید از URL مانند <a href="http://localhost:4000/snippet/view/123"><code>http://localhost:4000/snippet/view/123</code></a> بازدید کنید. باید یک پاسخ حاوی مقدار wildcard <code>id</code> برگردانده شده از URL درخواست را ببینید، شبیه به این:</p>
 
 <figure class="img">
 <img src="assets/img/02.04-01.png" alt="02.04-01.png" />
 </figure>
 
-<p>همچنین ممکن است بخواهید به برخی از URL‌ها که مقادیر نامعتبر برای <code>id</code> دارند یا اصلاً مقدار ویژه ندارند بروید. برای مثال:</p>
+<p>همچنین ممکن است بخواهید سعی کنید از برخی URL‌هایی که مقادیر نامعتبر برای wildcard <code>id</code> دارند، یا اصلاً مقدار wildcard ندارند بازدید کنید. برای مثال:</p>
 
-<ul style="text-align: left; direction: ltr;">
+<ul>
 <li><a href="http://localhost:4000/snippet/view/"><code>http://localhost:4000/snippet/view/</code></a></li>
 <li><a href="http://localhost:4000/snippet/view/-1"><code>http://localhost:4000/snippet/view/-1</code></a></li>
 <li><a href="http://localhost:4000/snippet/view/foo"><code>http://localhost:4000/snippet/view/foo</code></a></li>
@@ -185,96 +180,41 @@
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="precedence-and-conflicts">اولویت و تعارضات (Precedence and Conflicts)</h4>
+<h4 id="precedence-and-conflicts">اولویت و تعارض</h4>
 
-<p>هنگام تعریف الگوهای مسیریابی با بخش‌های wildcard، ممکن است برخی از الگوهای شما 'همپوشانی (Overlap)' داشته باشند. برای مثال، اگر مسیرهایی با الگوهای <code>&quot;/post/edit&quot;</code> و <code>&quot;/post/{id}&quot;</code> تعریف کنید، آنها همپوشانی دارند زیرا یک درخواست HTTP ورودی با مسیر <code>/post/edit</code> یک تطابق معتبر برای <em>هر دو</em> الگو است.</p>
+<p>هنگام تعریف الگوهای مسیر با بخش‌های wildcard، ممکن است برخی از الگوهای شما &lsquo;همپوشانی&rsquo; داشته باشند. برای مثال، اگر مسیرهایی با الگوهای <code>&quot;/post/edit&quot;</code> و <code>&quot;/post/{id}&quot;</code> تعریف کنید، آن‌ها همپوشانی دارند چون یک درخواست HTTP ورودی با مسیر <code>/post/edit</code> یک تطبیق معتبر برای <em>هر دو</em> الگو است.</p>
 
-<p>هنگامی که الگوهای مسیریابی همپوشانی دارند، servemux Go باید تصمیم بگیرد که کدام الگو اولویت دارد تا بتواند درخواست را به handler مناسب ارسال کند.</p>
+<p>وقتی الگوهای مسیر همپوشانی دارند، servemux در Go باید تصمیم بگیرد که کدام الگو اولویت دارد تا بتواند درخواست را به handler مناسب ارسال کند.</p>
 
-<p>قانون برای این بسیار منظم و مختصر است: <em>الگوی مسیریابی خاص‌تر برنده می‌شود</em>. به طور رسمی، Go یک الگو را خاص‌تر از دیگری تعریف می‌کند اگر فقط زیرمجموعه‌ای از درخواست‌هایی را که الگوی دیگر تطبیق می‌دهد، تطبیق دهد.</p>
+<p>قانون برای این کار بسیار مرتب و مختصر است: <em>الگوی مسیر خاص‌تر برنده می‌شود</em>. به طور رسمی، Go یک الگو را خاص‌تر از دیگری تعریف می‌کند اگر فقط یک زیرمجموعه از درخواست‌هایی که الگوی دیگر تطبیق می‌دهد را تطبیق دهد.</p>
 
-<p>با ادامه مثال بالا، الگوی مسیر <code>&quot;/post/edit&quot;</code> <em>فقط</em> با درخواست‌های دارای مسیر دقیق <code>/post/edit</code> تطبیق می‌دهد، در حالی که الگوی <code>&quot;/post/{id}&quot;</code> با درخواست‌های دارای مسیر <code>/post/edit</code>، <code>/post/123</code>، <code>/post/abc</code> و بسیاری دیگر تطبیق می‌دهد. بنابراین <code>&quot;/post/edit&quot;</code> الگوی مسیریابی خاص‌تر است و اولویت خواهد داشت.</p>
+<p>با ادامه مثال بالا، الگوی مسیر <code>&quot;/post/edit&quot;</code> <em>فقط</em> درخواست‌هایی با مسیر دقیق <code>/post/edit</code> را تطبیق می‌دهد، در حالی که الگوی <code>&quot;/post/{id}&quot;</code> درخواست‌هایی با مسیر <code>/post/edit</code>، <code>/post/123</code>، <code>/post/abc</code> و موارد بیشتر را تطبیق می‌دهد. بنابراین <code>&quot;/post/edit&quot;</code> الگوی مسیر خاص‌تر است و اولویت خواهد داشت.</p>
 
-<p>در حالی که در مورد این موضوع هستیم، چند نکته دیگر ارزش ذکر دارد:</p>
+<p>در حالی که روی این موضوع هستیم، چند چیز دیگر ارزش ذکر دارد:</p>
 
 <ul>
-<li><p>یک اثر جانبی خوب قانون <em>الگوی خاص‌تر برنده می‌شود</em> این است که می‌توانید الگوها را به هر ترتیبی ثبت کنید <em>و رفتار servemux تغییر نخواهد کرد</em>.</p></li>
+<li><p>یک عارضه جانبی خوب از قانون <em>الگوی خاص‌تر برنده می‌شود</em> این است که می‌توانید الگوها را به هر ترتیبی ثبت کنید <em>و این نحوه رفتار servemux را تغییر نمی‌دهد</em>.</p></li>
 
-<li><p>یک مورد خاص بالقوه وجود دارد که در آن دو الگوی مسیریابی همپوشانی دارند اما هیچ کدام به طور واضح خاص‌تر از دیگری نیست. برای مثال، الگوهای <code>&quot;/post/new/{id}&quot;</code> و <code>&quot;/post/{author}/latest&quot;</code> همپوشانی دارند زیرا هر دو با مسیر درخواست <code>/post/new/latest</code> تطبیق می‌دهند، اما مشخص نیست که کدام یک باید اولویت داشته باشد. در این سناریو، servemux Go الگوها را <em>تعارض‌دار</em> در نظر می‌گیرد و در زمان اجرا هنگام مقداردهی اولیه مسیرها panic می‌کند.</p></li>
+<li><p>یک مورد خاص (edge case) بالقوه وجود دارد که در آن دو الگوی مسیر همپوشانی دارید اما هیچ کدام به وضوح خاص‌تر از دیگری نیست. برای مثال، الگوهای <code>&quot;/post/new/{id}&quot;</code> و <code>&quot;/post/{author}/latest&quot;</code> همپوشانی دارند چون هر دو مسیر درخواست <code>/post/new/latest</code> را تطبیق می‌دهند، اما واضح نیست که کدام یک باید اولویت داشته باشد. در این سناریو، servemux در Go الگوها را <em>در تعارض (conflict)</em> در نظر می‌گیرد، و هنگام مقداردهی اولیه (initializing) مسیرها در زمان اجرا panic می‌کند.</p></li>
 
-<li><p>فقط به این دلیل که servemux Go از مسیرهای همپوشانی پشتیبانی می‌کند، به این معنی نیست که باید از آنها استفاده کنید! داشتن الگوهای مسیریابی همپوشانی خطر باگ‌ها و رفتارهای ناخواسته را در برنامه شما افزایش می‌دهد، و اگر آزادی طراحی ساختار URL را برای برنامه خود دارید، به طور کلی یک تمرین خوب است که همپوشانی‌ها را به حداقل برسانید یا کاملاً از آنها اجتناب کنید.</p></li>
+<li><p>فقط به این دلیل که servemux در Go از مسیرهای همپوشانی پشتیبانی می‌کند، به این معنی نیست که باید از آن‌ها استفاده کنید! داشتن الگوهای مسیر همپوشانی خطر باگ‌ها و رفتارهای ناخواسته در برنامه شما را افزایش می‌دهد، و اگر آزادی طراحی ساختار URL برای برنامه خود را دارید، به طور کلی تمرین خوبی است که همپوشانی‌ها را به حداقل برسانید یا کاملاً از آن‌ها اجتناب کنید.</p></li>
 </ul>
 
-<h4 id="subtree-path-patterns-with-wildcards">الگوهای مسیر زیرشاخه با wildcard (Subtree Path Patterns with Wildcards)</h4>
+<h4 id="subtree-path-patterns-with-wildcards">الگوهای مسیر زیردرختی با wildcard</h4>
 
-<p>مهم است درک کنیم که قوانین مسیریابی که در فصل قبل توضیح دادیم همچنان اعمال می‌شوند، حتی زمانی که از بخش‌های wildcard استفاده می‌کنید. به طور خاص، اگر الگوی مسیر شما به اسلش ختم شود و در انتها <code>{$}</code> نداشته باشد، به عنوان یک <em>الگوی مسیر زیرشاخه</em> در نظر گرفته می‌شود و فقط نیاز دارد که <em>شروع</em> مسیر URL درخواست تطبیق داشته باشد.</p>
+<p>مهم است درک کنیم که قوانین مسیریابی که در فصل قبل توضیح دادیم هنوز اعمال می‌شوند، حتی وقتی از بخش‌های wildcard استفاده می‌کنید. به طور خاص، اگر الگوی مسیر شما با یک اسلش انتهایی به پایان می‌رسد و <code>{$}</code> در انتها ندارد، سپس به عنوان یک <em>الگوی مسیر زیردرختی (subtree path pattern)</em> در نظر گرفته می‌شود و فقط نیاز دارد که <em>شروع</em> مسیر URL درخواست تطبیق داشته باشد.</p>
 
-<p>بنابراین، اگر یک الگوی مسیر زیرشاخه مانند <code>&quot;/user/{id}/&quot;</code> در مسیرهای خود دارید (به اسلش انتهایی توجه کنید)، این الگو با درخواست‌هایی مانند <code>/user/1/</code>، <code>/user/2/a</code>، <code>/user/2/a/b/c</code> و غیره تطبیق خواهد داشت.</p>
+<p>پس، اگر یک الگوی مسیر زیردرختی مانند <code>&quot;/user/{id}/&quot;</code> در مسیرهای خود دارید (توجه کنید به اسلش انتهایی)، این الگو درخواست‌هایی مانند <code>/user/1/</code>، <code>/user/2/a</code>، <code>/user/2/a/b/c</code> و غیره را تطبیق می‌دهد.</p>
 
-<p>دوباره، اگر نمی‌خواهید آن رفتار را داشته باشید، یک <code>{$}</code> در انتها قرار دهید &mdash; مانند <br /><code style="direction: ltr; text-align: left; display: block;">&quot;/user/{id}/{$}&quot;</code></p>
+<p>دوباره، اگر نمی‌خواهید آن رفتار را داشته باشید، یک <code>{$}</code> در انتها قرار دهید — مانند <code>&quot;/user/{id}/{$}&quot;</code>.</p>
 
-<h4 id="remainder-wildcards">wildcardهای باقیمانده (Remainder Wildcards)</h4>
+<h4 id="remainder-wildcards">Wildcard‌های باقیمانده</h4>
 
-<p>کاراکترهای ویژه در الگوهای مسیریابی معمولاً فقط با یک بخش غیر خالی از مسیر درخواست تطبیق می‌دهند. اما یک مورد خاص وجود دارد.</p>
+<p>Wildcard‌ها در الگوهای مسیر به طور معمول فقط یک بخش غیر خالی از مسیر درخواست را تطبیق می‌دهند. اما یک مورد خاص وجود دارد.</p>
 
-<p>اگر یک الگوی مسیریابی با یک کاراکتر ویژه به پایان می‌رسد، و این شناسه کاراکتر ویژه در انتها به <code>...</code> ختم می‌شود، پس کاراکتر ویژه با هر و همه بخش‌های باقیمانده مسیر درخواست تطبیق خواهد داشت.</p>
+<p>اگر یک الگوی مسیر با یک wildcard به پایان می‌رسد، و این شناسه wildcard نهایی با <code>...</code> به پایان می‌رسد، سپس wildcard هر و همه بخش‌های باقیمانده یک مسیر درخواست را تطبیق می‌دهد.</p>
 
-<p>برای مثال، اگر یک الگوی مسیریابی مانند <code>&quot;/post/{path...}&quot;</code> تعریف کنید، با درخواست‌هایی مانند <code>/post/a</code>، <code>/post/a/b</code>، <code>/post/a/b/c</code> و غیره تطبیق خواهد داشت &mdash; بسیار شبیه به یک الگوی مسیر زیرشاخه. اما تفاوت این است که می‌توانید کل بخش کاراکتر ویژه را از طریق متد <code>r.PathValue("path")</code> در handler‌های خود دسترسی پیدا کنید. در این مثال، می‌توانید مقدار کاراکتر ویژه برای <code>{path...}</code> را با فراخوانی <code>r.PathValue("path")</code> دریافت کنید.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>بخش‌های wildcard</td>
-        <td>Wildcard Segments</td>
-        <td>بخش‌هایی از مسیر URL که می‌توانند با هر مقدار معتبری مطابقت داشته باشند</td>
-    </tr>
-    <tr>
-        <td>URL درخواست</td>
-        <td>Request URL</td>
-        <td>آدرس وبی که کاربر برای دسترسی به یک منبع خاص استفاده می‌کند</td>
-    </tr>
-    <tr>
-        <td>شناسه</td>
-        <td>Identifier</td>
-        <td>نامی که برای شناسایی یک بخش wildcard در الگوی مسیر استفاده می‌شود</td>
-    </tr>
-    <tr>
-        <td>قوانین تطبیق</td>
-        <td>Matching Rules</td>
-        <td>قوانینی که تعیین می‌کنند چه زمانی یک مسیر درخواست با یک الگوی مسیر مطابقت دارد</td>
-    </tr>
-    <tr>
-        <td>بخش مسیر</td>
-        <td>Path Segment</td>
-        <td>بخشی از یک URL که بین دو کاراکتر اسلش قرار دارد</td>
-    </tr>
-    <tr>
-        <td>کاراکتر ویژه</td>
-        <td>Special Character</td>
-        <td>کاراکتری که در الگوی مسیر معنای خاصی دارد</td>
-    </tr>
-    <tr>
-        <td>همپوشانی</td>
-        <td>Overlap</td>
-        <td>وضعیتی که در آن یک مسیر درخواست می‌تواند با چندین الگوی مسیر مطابقت داشته باشد</td>
-    </tr>
-    <tr>
-        <td>الگوی مسیر زیرشاخه</td>
-        <td>Subtree Path Pattern</td>
-        <td>الگوی مسیری که با اسلش انتهایی ختم می‌شود و می‌تواند با مسیرهای زیرشاخه مطابقت داشته باشد</td>
-    </tr>
-    <tr>
-        <td>wildcardهای باقیمانده</td>
-        <td>Remainder Wildcards</td>
-        <td>نوع خاصی از wildcard که می‌تواند با تمام بخش‌های باقیمانده یک مسیر مطابقت داشته باشد</td>
-    </tr>
-</table>
+<p>برای مثال، اگر یک الگوی مسیر مانند <code>&quot;/post/{path...}&quot;</code> اعلام کنید، درخواست‌هایی مانند <code>/post/a</code>، <code>/post/a/b</code>، <code>/post/a/b/c</code> و غیره را تطبیق می‌دهد — بسیار شبیه به کاری که یک الگوی مسیر زیردرختی انجام می‌دهد. اما تفاوت این است که می‌توانید به کل بخش wildcard از طریق متد <code>r.PathValue()</code> در handlerهای خود دسترسی داشته باشید. در این مثال، می‌توانید مقدار wildcard برای <code>{path...}</code> را با فراخوانی <code>r.PathValue(&quot;path&quot;)</code> دریافت کنید.</p>
 
 		</main>
 		<footer>
@@ -309,4 +249,3 @@
 		</script>
 	</body>
 </html>
-

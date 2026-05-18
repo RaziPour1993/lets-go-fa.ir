@@ -3,22 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>اجرای دستورات SQL &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			body { direction: rtl; text-align: right; }
-			.code, pre, .code pre { direction: ltr; text-align: left; }
-			header .wrapper div:first-child { text-align: right; }
-			header .wrapper div:last-child { text-align: left; }
-		</style>
 	</head>
 	<body>
 		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; اجرای دستورات SQL (Executing SQL Statements)</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="04.00-database-driven-responses.html">پاسخ‌های مبتنی بر پایگاه داده</a> &rsaquo; اجرای دستورات SQL</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="04.05-designing-a-database-model.html">قبلی</a>
@@ -28,35 +27,35 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل ۴.۶</div>
-			<h2 id="executing-sql-statements">اجرای دستورات SQL (Executing SQL Statements)</h2>
+			<div class="chapter">فصل 4.6.</div>
+			<h2 id="executing-sql-statements">اجرای دستورات SQL</h2>
 
-<p>حالا بیایید متد <code>SnippetModel.Insert()</code> را که تازه ایجاد کرده‌ایم به‌روزرسانی کنیم تا یک رکورد جدید (New Record) در جدول <code>snippets</code> ما ایجاد کند و سپس شناسه عددی <code>id</code> برای رکورد جدید را برگرداند.</p>
+<p>حالا بیایید متد <code>SnippetModel.Insert()</code> را به‌روزرسانی کنیم — که تازه ساختیم — تا یک رکورد جدید در جدول <code>snippets</code> ما ایجاد کند و سپس عدد صحیح <code>id</code> برای رکورد جدید را برگرداند.</p>
 
-<p>برای انجام این کار، می‌خواهیم کوئری SQL (SQL Query) زیر را در پایگاه داده خود اجرا کنیم:</p>
+<p>برای انجام این کار، می‌خواهیم پرس‌وجوی SQL زیر را روی پایگاه داده خود اجرا کنیم:</p>
 
-<figure class="code sql">
+<figure class="code sql" dir="ltr">
 <pre><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">snippets</span> <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">expires</span><span class="p">)</span>
 <span class="k">VALUES</span><span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">,</span> <span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="n">DATE_ADD</span><span class="p">(</span><span class="n">UTC_TIMESTAMP</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="nb">INTERVAL</span> <span class="o">?</span> <span class="k">DAY</span><span class="p">)</span><span class="p">)</span></pre>
 </figure>
 
-<p>توجه کنید که در این کوئری از کاراکتر <code>?</code> برای نشان دادن <em>پارامترهای جایگزین (Placeholder Parameters)</em> برای داده‌هایی که می‌خواهیم در پایگاه داده وارد کنیم استفاده می‌کنیم؟ از آنجایی که داده‌هایی که استفاده خواهیم کرد در نهایت ورودی غیرقابل اعتماد کاربر (Untrusted User Input) از یک فرم خواهد بود، استفاده از پارامترهای جایگزین به جای درج مستقیم داده در کوئری SQL یک روش خوب است.</p>
+<p>توجه کنید که در این پرس‌وجو چگونه از کاراکتر <code>?</code> برای نشان دادن <em>پارامترهای placeholder</em> برای داده‌هایی که می‌خواهیم در پایگاه داده درج کنیم استفاده می‌کنیم؟ چون داده‌هایی که استفاده می‌کنیم در نهایت ورودی کاربر غیرقابل اعتماد از یک فرم خواهد بود، استفاده از پارامترهای placeholder به جای درون‌یابی داده در پرس‌وجوی SQL یک روش خوب است.</p>
 
-<h3 id="executing-the-query">اجرای کوئری (Executing the Query)</h3>
+<h3 id="executing-the-query">اجرای پرس‌وجو</h3>
 
-<p>Go سه روش مختلف برای اجرای کوئری‌های پایگاه داده ارائه می‌دهد:</p>
+<p>Go سه متد مختلف برای اجرای پرس‌وجوهای پایگاه داده ارائه می‌دهد:</p>
 
 <ul>
-<li><a href="https://pkg.go.dev/database/sql/#DB.Query"><code>DB.Query()</code></a> برای کوئری‌های <code>SELECT</code> که چندین سطر برمی‌گردانند استفاده می‌شود.</li>
-<li><a href="https://pkg.go.dev/database/sql/#DB.QueryRow"><code>DB.QueryRow()</code></a> برای کوئری‌های <code>SELECT</code> که یک سطر برمی‌گردانند استفاده می‌شود.</li>
-<li><a href="https://pkg.go.dev/database/sql/#DB.Exec"><code>DB.Exec()</code></a> برای دستوراتی که سطری برنمی‌گردانند (مانند <code>INSERT</code> و <code>DELETE</code>) استفاده می‌شود.</li>
+<li><a href="https://pkg.go.dev/database/sql/#DB.Query"><code>DB.Query()</code></a> برای پرس‌وجوهای <code>SELECT</code> که چندین ردیف برمی‌گردانند استفاده می‌شود.</li>
+<li><a href="https://pkg.go.dev/database/sql/#DB.QueryRow"><code>DB.QueryRow()</code></a> برای پرس‌وجوهای <code>SELECT</code> که یک ردیف برمی‌گردانند استفاده می‌شود.</li>
+<li><a href="https://pkg.go.dev/database/sql/#DB.Exec"><code>DB.Exec()</code></a> برای دستوراتی که ردیف برنمی‌گردانند (مانند <code>INSERT</code> و <code>DELETE</code>) استفاده می‌شود.</li>
 </ul>
 
-<p>بنابراین، در مورد ما، مناسب‌ترین ابزار برای این کار <code>DB.Exec()</code> است. بیایید مستقیماً وارد عمل شویم و نحوه استفاده از آن را در متد <code>SnippetModel.Insert()</code> نشان دهیم. جزئیات را بعداً بررسی خواهیم کرد.</p>
+<p>بنابراین، در مورد ما، مناسب‌ترین ابزار برای کار <code>DB.Exec()</code> است. بیایید مستقیماً شروع کنیم و نحوه استفاده از این را در متد <code>SnippetModel.Insert()</code> خود نشان دهیم. جزئیات را بعداً بحث خواهیم کرد.</p>
 
-<p>فایل <code>internal/models/snippets.go</code> خود را باز کنید و آن را به این صورت به‌روزرسانی کنید:</p>
+<p>فایل <code>internal/models/snippets.go</code> خود را باز کنید و آن را مانند این به‌روزرسانی کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: internal/models/snippets.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">models</span>
 
@@ -98,26 +97,29 @@
 <span class="o">...</span></pre>
 </figure>
 
-<p>بیایید سریعاً درباره نوع <a href="https://pkg.go.dev/database/sql/#Result"><code>sql.Result</code></a> که توسط <code>DB.Exec()</code> برگردانده می‌شود صحبت کنیم. این دو متد را ارائه می‌دهد:</p>
+<p>بیایید به سرعت نوع <a href="https://pkg.go.dev/database/sql/#Result"><code>sql.Result</code></a> بازگشتی از <code>DB.Exec()</code> را بحث کنیم. این دو متد ارائه می‌دهد:</p>
 
 <ul>
-<li><p><code>LastInsertId()</code> - که عدد صحیح (یک <code>int64</code>) تولید شده توسط پایگاه داده در پاسخ به یک دستور را برمی‌گرداند. معمولاً این از یک ستون "افزایش خودکار" هنگام درج یک سطر جدید است، که دقیقاً همان چیزی است که در مورد ما اتفاق می‌افتد.</p></li>
+<li><p><code>LastInsertId()</code> — که عدد صحیح (یک <code>int64</code>) تولید شده توسط پایگاه داده در پاسخ به یک دستور را برمی‌گرداند. به طور معمول این از یک ستون «افزایش خودکار» هنگام درج یک ردیف جدید خواهد بود، که دقیقاً همان چیزی است که در مورد ما اتفاق می‌افتد.</p></li>
 
-<li><p><code>RowsAffected()</code> - که تعداد سطرهای (به صورت <code>int64</code>) تحت تأثیر دستور را برمی‌گرداند.</p></li>
+<li><p><code>RowsAffected()</code> — که تعداد ردیف‌های (به عنوان یک <code>int64</code>) تحت تأثیر قرار گرفته توسط دستور را برمی‌گرداند.</p></li>
 </ul>
 
 <aside class="important"><p>
-<strong>مهم:</strong> همچنین، کاملاً قابل قبول (و رایج) است که مقدار برگشتی <code>sql.Result</code> را نادیده بگیرید اگر به آن نیاز ندارید. مانند این:</p></aside>
+<strong>مهم:</strong> همه درایورها و پایگاه‌های داده از متدهای <code>LastInsertId()</code> و <code>RowsAffected()</code> پشتیبانی نمی‌کنند. به عنوان مثال، <code>LastInsertId()</code> توسط PostgreSQL <a href="https://github.com/lib/pq/issues/24">پشتیبانی نمی‌شود</a>. بنابراین اگر قصد استفاده از این متدها را دارید، مهم است که ابتدا مستندات درایور خاص خود را بررسی کنید.
+</p></aside>
 
-<figure class="code go">
+<p>همچنین، کاملاً قابل قبول (و رایج) است که مقدار برگشتی <code>sql.Result</code> را نادیده بگیرید اگر به آن نیاز ندارید. مانند این:</p>
+
+<figure class="code go" dir="ltr">
 <pre><span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;INSERT INTO ...&#34;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="using-the-model-in-our-handlers">استفاده از مدل در هندلرهای ما (Using the Model in our Handlers)</h3>
+<h3 id="using-the-model-in-our-handlers">استفاده از مدل در handlerهای ما</h3>
 
-<p>بیایید این را به چیزی ملموس‌تر برگردانیم و نشان دهیم چگونه این کد جدید را از هندلرهای خود فراخوانی کنیم. فایل <code>cmd/web/handlers.go</code> خود را باز کنید و هندلر <code>snippetCreatePost</code> را به این صورت به‌روزرسانی کنید:</p>
+<p>بیایید این را به چیزی ملموس‌تر برگردانیم و نحوه فراخوانی این کد جدید را از handlerهای خود نشان دهیم. فایل <code>cmd/web/handlers.go</code> خود را باز کنید و handler <code>snippetCreatePost</code> را مانند این به‌روزرسانی کنید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -143,9 +145,9 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>برنامه را اجرا کنید، سپس یک پنجره ترمینال دوم باز کنید و از curl برای ارسال یک درخواست <code>POST /snippet/create</code> استفاده کنید، به این صورت (توجه کنید که پرچم <code>-L</code> به curl دستور می‌دهد که به طور خودکار ریدایرکت‌ها را دنبال کند):</p>
+<p>برنامه را راه‌اندازی کنید، سپس یک پنجره ترمینال دوم باز کنید و از curl برای ایجاد یک درخواست <code>POST /snippet/create</code> استفاده کنید، مانند این (توجه کنید که پرچم <code>-L</code> به curl دستور می‌دهد که به طور خودکار redirectها را دنبال کند):</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -iL -d &#34;&#34; http://localhost:4000/snippet/create
 <samp>HTTP/1.1 303 See Other
 Location: /snippet/view/4
@@ -160,11 +162,11 @@ Content-Type: text/plain; charset=utf-8
 Display a specific snippet with ID 4...</samp></pre>
 </figure>
 
-<p>پس این به خوبی کار می‌کند. ما یک درخواست HTTP ارسال کردیم که هندلر <code>snippetCreatePost</code> ما را فعال کرد، که به نوبه خود متد <code>SnippetModel.Insert()</code> ما را فراخوانی کرد. این یک رکورد جدید در پایگاه داده درج کرد و شناسه این رکورد جدید را برگرداند. سپس هندلر ما یک ریدایرکت به URL دیگری با شناسه درج شده صادر کرد.</p>
+<p>پس این به خوبی کار می‌کند. ما تازه یک درخواست HTTP ارسال کردیم که handler <code>snippetCreatePost</code> ما را فعال کرد، که به نوبه خود متد <code>SnippetModel.Insert()</code> ما را فراخوانی کرد. این یک رکورد جدید در پایگاه داده درج کرد و ID این رکورد جدید را برگرداند. سپس handler ما یک redirect به URL دیگری با ID درون‌یابی شده صادر کرد.</p>
 
-<p>راحت باشید و نگاهی به جدول <code>snippets</code> در پایگاه داده MySQL خود بیندازید. باید رکورد جدید با شناسه <code>4</code> مشابه این را ببینید:</p>
+<p>می‌توانید در جدول <code>snippets</code> پایگاه داده MySQL خود نگاهی بیندازید. باید رکورد جدید با ID <code>4</code> مشابه این را ببینید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>mysql&gt; SELECT id, title, expires FROM snippets;
 <samp>+----+------------------------+---------------------+
 | id | title                  | expires             |
@@ -179,84 +181,30 @@ Display a specific snippet with ID 4...</samp></pre>
 
 <hr />
 
-<h3 id="additional-information">اطلاعات تکمیلی (Additional Information)</h3>
+<h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="placeholder-parameters">پارامترهای جایگزین (Placeholder Parameters)</h4>
+<h4 id="placeholder-parameters">پارامترهای placeholder</h4>
 
-<p>در کد بالا، ما عبارت SQL خود را با استفاده از پارامترهای جایگزین ساختیم، جایی که <code>?</code> به عنوان جایگزینی برای داده‌هایی که می‌خواهیم درج کنیم عمل می‌کرد.</p>
+<p>در کد بالا، دستور SQL خود را با استفاده از پارامترهای placeholder ساختیم، جایی که <code>?</code> به عنوان یک placeholder برای داده‌هایی که می‌خواهیم درج کنیم عمل می‌کرد.</p>
 
-<p>دلیل استفاده از پارامترهای جایگزین برای ساخت کوئری ما (به جای درج مستقیم رشته) کمک به جلوگیری از حملات تزریق SQL (SQL Injection Attacks) از هر ورودی غیرقابل اعتماد کاربر است.</p>
+<p>دلیل استفاده از پارامترهای placeholder برای ساخت پرس‌وجوی ما (به جای درون‌یابی رشته) کمک به جلوگیری از حملات تزریق SQL (SQL injection) از هر ورودی ارائه شده توسط کاربر غیرقابل اعتماد است.</p>
 
 <p>در پشت صحنه، متد <code>DB.Exec()</code> در سه مرحله کار می‌کند:</p>
 
 <ol>
-<li><p>یک <a href="https://en.wikipedia.org/wiki/Prepared_statement">دستور آماده (Prepared Statement)</a> جدید در پایگاه داده با استفاده از عبارت SQL ارائه شده ایجاد می‌کند. پایگاه داده عبارت را تجزیه و کامپایل می‌کند، سپس آن را برای اجرا آماده نگه می‌دارد.</p></li>
+<li><p>یک <a href="https://en.wikipedia.org/wiki/Prepared_statement">دستور آماده</a> جدید روی پایگاه داده با استفاده از دستور SQL ارائه شده ایجاد می‌کند. پایگاه داده دستور را تجزیه و کامپایل می‌کند، سپس آن را برای اجرا ذخیره می‌کند.</p></li>
 
-<li><p>در یک مرحله جداگانه دوم، <code>DB.Exec()</code> مقادیر پارامتر (Parameter Values) را به پایگاه داده منتقل می‌کند. پایگاه داده سپس دستور آماده را با استفاده از این پارامترها اجرا می‌کند.</p></li>
+<li><p>در یک مرحله جداگانه دوم، <code>DB.Exec()</code> مقادیر پارامتر را به پایگاه داده ارسال می‌کند. سپس پایگاه داده دستور آماده را با استفاده از این پارامترها اجرا می‌کند. چون پارامترها بعداً، پس از کامپایل شدن دستور، منتقل می‌شوند، پایگاه داده آن‌ها را به عنوان داده خالص در نظر می‌گیرد. آن‌ها نمی‌توانند <em>قصد</em> دستور را تغییر دهند. تا زمانی که دستور اصلی از داده‌های غیرقابل اعتماد مشتق نشده باشد، تزریق نمی‌تواند رخ دهد.</p></li>
 
-<li><p>سپس دستور آماده را در پایگاه داده می‌بندد (یا <em>آزاد می‌کند (Deallocates)</em>).</p></li>
+<li><p>سپس دستور آماده را روی پایگاه داده می‌بندد (یا <em>تخصیص‌زدایی می‌کند</em>).</p></li>
 </ol>
 
-<p>نحو پارامتر جایگزین بسته به پایگاه داده شما متفاوت است. MySQL، SQL Server و SQLite از نشانه‌گذاری <code>?</code> استفاده می‌کنند، اما PostgreSQL از نشانه‌گذاری <code>$N</code> استفاده می‌کند. به عنوان مثال، اگر به جای آن از PostgreSQL استفاده می‌کردید، می‌نوشتید:</p>
+<p>نحو پارامتر placeholder بسته به پایگاه داده شما متفاوت است. MySQL، SQL Server و SQLite از نماد <code>?</code> استفاده می‌کنند، اما PostgreSQL از نماد <code>$N</code> استفاده می‌کند. به عنوان مثال، اگر به جای آن از PostgreSQL استفاده می‌کردید، می‌نوشتید:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <pre><span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">m</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nf">Exec</span><span class="p">(</span><span class="s">&#34;INSERT INTO ... VALUES ($1, $2, $3)&#34;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>دستورات SQL</td>
-        <td>SQL Statements</td>
-        <td>دستورالعمل‌های استاندارد برای تعامل با پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>رکورد جدید</td>
-        <td>New Record</td>
-        <td>یک ردیف جدید از داده‌ها در پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>کوئری SQL</td>
-        <td>SQL Query</td>
-        <td>دستوری برای بازیابی یا تغییر داده‌ها در پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>پارامترهای جایگزین</td>
-        <td>Placeholder Parameters</td>
-        <td>نشانه‌هایی در کوئری SQL که بعداً با مقادیر واقعی جایگزین می‌شوند</td>
-    </tr>
-    <tr>
-        <td>ورودی غیرقابل اعتماد کاربر</td>
-        <td>Untrusted User Input</td>
-        <td>داده‌های ورودی از کاربر که باید قبل از استفاده اعتبارسنجی شوند</td>
-    </tr>
-    <tr>
-        <td>حملات تزریق SQL</td>
-        <td>SQL Injection Attacks</td>
-        <td>تلاش برای وارد کردن کد مخرب از طریق ورودی‌های کاربر به پایگاه داده</td>
-    </tr>
-    <tr>
-        <td>دستور آماده</td>
-        <td>Prepared Statement</td>
-        <td>یک کوئری SQL از پیش کامپایل شده که با پارامترها اجرا می‌شود</td>
-    </tr>
-    <tr>
-        <td>مقادیر پارامتر</td>
-        <td>Parameter Values</td>
-        <td>داده‌های واقعی که جایگزین پارامترهای جایگزین می‌شوند</td>
-    </tr>
-    <tr>
-        <td>آزادسازی</td>
-        <td>Deallocation</td>
-        <td>فرآیند آزاد کردن منابع سیستم که توسط یک دستور آماده استفاده شده‌اند</td>
-    </tr>
-</table>
 		</main>
 		<footer>
 			<div class="wrapper">
@@ -275,12 +223,16 @@ Display a specific snippet with ID 4...</samp></pre>
 			document.onkeydown = function(evt) {
 				evt = evt || window.event;
 				switch (evt.keyCode) {
+					
 					case 37:
 						window.location.href = "04.05-designing-a-database-model.html";
 						break;
+						
+					
 					case 39:
 						window.location.href = "04.07-single-record-sql-queries.html";
 						break;
+						
 				}
 			};
 		</script>

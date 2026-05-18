@@ -1,22 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>مسیریابی مبتنی بر متد &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<style>
-			body {
-				direction: rtl;
-				text-align: right;
-			}
-			.code, .bash {
-				direction: ltr;
-				text-align: left;
-			}
-		</style>
 	</head>
 	<body>
 		<header>
@@ -24,7 +15,7 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">پایه‌ها</a> &rsaquo; مسیریابی مبتنی بر روش</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="02.00-foundations.html">مبانی</a> &rsaquo; مسیریابی مبتنی بر متد</span>
 						
 					
 				</div>
@@ -36,16 +27,16 @@
 			</div>
 		</header>
 		<main class="wrapper text">
-			<div class="chapter">فصل 2.5.</div>
-			<h2 id="method-based-routing">مسیریابی مبتنی بر روش (Method-based Routing)</h2>
+			<div class="chapter">فصل ۲.۵.</div>
+			<h2 id="method-based-routing">مسیریابی مبتنی بر متد</h2>
 
-<p>در ادامه، بیایید با رعایت اصول خوب HTTP، برنامه خود را محدود کنیم تا فقط به درخواست‌هایی با <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">روش HTTP (HTTP Method)</a> مناسب پاسخ دهد.</p>
+<p>بعد، بیایید از تمرین خوب HTTP پیروی کنیم و برنامه خود را محدود کنیم تا فقط به درخواست‌هایی با یک <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">متد HTTP</a> مناسب پاسخ دهد.</p>
 
-<p>همانطور که در ساخت برنامه خود پیش می‌رویم، هندلرهای <code>home</code>، <code>snippetView</code> و <code>snippetCreate</code> فقط اطلاعات را بازیابی کرده و صفحات را به کاربر نمایش می‌دهند، بنابراین منطقی است که این هندلرها را به درخواست‌های <code>GET</code> محدود کنیم.</p>
+<p>همانطور که در ساخت برنامه پیش می‌رویم، handlerهای <code>home</code>، <code>snippetView</code> و <code>snippetCreate</code> ما فقط اطلاعات را بازیابی می‌کنند و صفحات را به کاربر نمایش می‌دهند، پس منطقی است که این handlerها به عمل کردن روی درخواست‌های <code>GET</code> محدود شوند.</p>
 
-<p>برای محدود کردن یک مسیر به یک روش HTTP خاص، می‌توانید الگوی مسیر را با روش HTTP مورد نیاز هنگام اعلام آن پیشوند کنید، به این صورت:</p>
+<p>برای محدود کردن یک مسیر به یک متد HTTP خاص، می‌توانید الگوی مسیر را با متد HTTP لازم هنگام اعلام آن پیشوند کنید، مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -67,14 +58,14 @@
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> روش‌های HTTP در الگوهای مسیر حساس به حروف بزرگ و کوچک هستند و باید همیشه با حروف بزرگ نوشته شوند، به دنبال آن حداقل یک کاراکتر فاصله (هم فاصله‌ها و هم تب‌ها مناسب هستند) قرار گیرد. شما فقط می‌توانید یک روش HTTP را در هر الگوی مسیر قرار دهید.
+<strong>نکته:</strong> متدهای HTTP در الگوهای مسیر به حروف حساس هستند و باید همیشه با حروف بزرگ نوشته شوند، به دنبال حداقل یک کاراکتر فاصله (هم فاصله و هم tab خوب هستند). فقط می‌توانید یک متد HTTP در هر الگوی مسیر قرار دهید.
 </p></aside>
 
-<p>همچنین شایان ذکر است که وقتی یک الگوی مسیر را که از روش <code>GET</code> استفاده می‌کند ثبت می‌کنید، هم <code>GET</code> و هم <code>HEAD</code> را مطابقت می‌دهد. همه روش‌های دیگر (مانند <code>POST</code>، <code>PUT</code> و <code>DELETE</code>) نیاز به مطابقت دقیق دارند.</p>
+<p>همچنین ارزش ذکر دارد که وقتی یک الگوی مسیر که از متد <code>GET</code> استفاده می‌کند را ثبت می‌کنید، هم درخواست‌های <code>GET</code> و هم <code>HEAD</code> را تطبیق می‌دهد. همه متدهای دیگر (مانند <code>POST</code>، <code>PUT</code> و <code>DELETE</code>) نیاز به تطبیق دقیق دارند.</p>
 
-<p>بیایید این تغییر را با استفاده از curl برای ارسال چند درخواست به برنامه خود آزمایش کنیم. اگر شما هم در حال دنبال کردن هستید، با ارسال یک درخواست <code>GET</code> معمولی به <code>http://localhost:4000/</code> شروع کنید، به این صورت:</p>
+<p>بیایید این تغییر را با استفاده از curl برای ارسال برخی درخواست‌ها به برنامه خود تست کنیم. اگر همراه هستید، با ارسال یک درخواست <code>GET</code> معمولی به <code>http://localhost:4000/</code> شروع کنید، مانند این:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i localhost:4000/
 <samp>HTTP/1.1 200 OK
 Date: Wed, 18 Mar 2024 11:29:23 GMT
@@ -84,11 +75,11 @@ Content-Type: text/plain; charset=utf-8
 Hello from Snippetbox</samp></pre>
 </figure>
 
-<p>پاسخ اینجا خوب به نظر می‌رسد. می‌توانیم ببینیم که مسیر ما هنوز کار می‌کند و یک وضعیت <code>200 OK</code> و یک بدنه پاسخ <code>Hello from Snippetbox</code> دریافت می‌کنیم، درست مثل قبل.</p>
+<p>پاسخ اینجا خوب به نظر می‌رسد. می‌بینیم که مسیر ما هنوز کار می‌کند، و یک وضعیت <code>200 OK</code> و یک بدنه پاسخ <code>Hello from Snippetbox</code> دریافت می‌کنیم، دقیقاً مانند قبل.</p>
 
-<p>همچنین می‌توانید یک درخواست <code>HEAD</code> برای همان URL ارسال کنید. باید ببینید که این نیز به درستی کار می‌کند و فقط هدرهای پاسخ HTTP را برمی‌گرداند و هیچ بدنه پاسخی ندارد.</p>
+<p>همچنین می‌توانید بروید و سعی کنید یک درخواست <code>HEAD</code> برای همان URL ارسال کنید. باید ببینید که این نیز به درستی کار می‌کند، فقط <em>هدرهای پاسخ HTTP</em> را برمی‌گرداند، و هیچ بدنه پاسخی ندارد.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl --head localhost:4000/
 <samp>HTTP/1.1 200 OK
 Date: Wed, 18 Mar 2024 11:29:23 GMT
@@ -96,9 +87,9 @@ Content-Length: 21
 Content-Type: text/plain; charset=utf-8</samp></pre>
 </figure>
 
-<p>در مقابل، بیایید یک درخواست <code>POST</code> به <code>http://localhost:4000/</code> ارسال کنیم. روش <code>POST</code> برای این مسیر پشتیبانی نمی‌شود، بنابراین باید یک پاسخ خطا مشابه این دریافت کنید:</p>
+<p>در مقابل، بیایید سعی کنیم یک درخواست <code>POST</code> به <code>http://localhost:4000/</code> ارسال کنیم. متد <code>POST</code> برای این مسیر پشتیبانی نمی‌شود، پس باید یک پاسخ خطا شبیه به این دریافت کنید:</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i -d &#34;&#34; localhost:4000/
 <samp>HTTP/1.1 405 Method Not Allowed
 Allow: GET, HEAD
@@ -111,23 +102,23 @@ Method Not Allowed</samp>*</pre>
 </figure>
 
 <aside class="note"><p>
-<strong>توجه:</strong> پرچم <code>-d</code> در curl برای اعلام هر داده <code>POST</code> HTTP که می‌خواهید در بدنه درخواست قرار دهید استفاده می‌شود. در فرمان بالا از <code>-d &quot;&quot;</code> استفاده می‌کنیم، که به این معنی است که بدنه درخواست خالی خواهد بود، اما درخواست همچنان با روش HTTP <code>POST</code> (به جای روش پیش‌فرض <code>GET</code>) ارسال خواهد شد.
+<strong>نکته:</strong> پرچم <code>-d</code> در curl برای اعلام هر داده HTTP <code>POST</code> که می‌خواهید در بدنه درخواست قرار دهید استفاده می‌شود. در دستور بالا از <code>-d &quot;&quot;</code> استفاده می‌کنیم، که به این معنی است که بدنه درخواست خالی خواهد بود، اما درخواست هنوز با متد HTTP <code>POST</code> ارسال می‌شود (به جای متد پیش‌فرض <code>GET</code>).
 </p></aside>
 
-<p>بنابراین این خیلی خوب به نظر می‌رسد. می‌توانیم ببینیم که servemux گو به طور خودکار یک پاسخ <code>405 Method Not Allowed</code> برای ما ارسال کرده است، شامل یک هدر <code>Allow</code> که روش‌های HTTP را که برای URL درخواست پشتیبانی می‌شوند، فهرست می‌کند.</p>
+<p>پس این واقعاً خوب به نظر می‌رسد. می‌بینیم که servemux در Go به طور خودکار یک پاسخ <code>405 Method Not Allowed</code> برای ما ارسال کرده است، شامل یک هدر <code>Allow</code> که متدهای HTTP که <em>پشتیبانی می‌شوند</em> برای URL درخواست را فهرست می‌کند.</p>
 
-<h3 id="adding-a-post-only-route-and-handler">افزودن یک مسیر و هندلر فقط برای POST (Adding a POST-only Route and Handler)</h3>
+<h3 id="adding-a-post-only-route-and-handler">افزودن یک مسیر و handler فقط POST</h3>
 
-<p>بیایید همچنین یک هندلر جدید <code>snippetCreatePost</code> به کد خود اضافه کنیم، که بعداً برای ایجاد و ذخیره یک قطعه جدید در یک پایگاه داده استفاده خواهیم کرد. از آنجا که ایجاد و ذخیره یک قطعه یک عمل غیرقابل تکرار است که وضعیت سرور ما را تغییر می‌دهد، می‌خواهیم مطمئن شویم که این هندلر فقط به درخواست‌های <code>POST</code> عمل می‌کند.</p>
+<p>بیایید همچنین یک handler جدید <code>snippetCreatePost</code> به کدبیس خود اضافه کنیم، که بعداً از آن برای ایجاد و ذخیره یک تکه متن جدید در پایگاه داده استفاده خواهیم کرد. چون ایجاد و ذخیره یک تکه متن یک عمل غیر idempotent است که وضعیت سرور ما را تغییر می‌دهد، می‌خواهیم مطمئن شویم که این handler فقط روی درخواست‌های <code>POST</code> عمل می‌کند.</p>
 
-<p>در مجموع، می‌خواهیم هندلر و مسیر چهارم ما به این صورت باشد:</p>
+<p>در مجموع، می‌خواهیم handler و مسیر چهارم ما شبیه به این باشد:</p>
 
-<table>
+<table dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>هندلر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -141,25 +132,25 @@ Method Not Allowed</samp>*</pre>
 <tr>
 <td>GET /snippet/view/{id}</td>
 <td>snippetView</td>
-<td>نمایش یک قطعه خاص</td>
+<td>نمایش یک تکه متن خاص</td>
 </tr>
 
 <tr>
 <td>GET /snippet/create</td>
 <td>snippetCreate</td>
-<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+<td>نمایش فرم برای ایجاد یک تکه متن جدید</td>
 </tr>
 
 <tr>
 <td><strong>POST /snippet/create</strong></td>
 <td><strong>snippetCreatePost</strong></td>
-<td><strong>ذخیره یک قطعه جدید</strong></td>
+<td><strong>ذخیره یک تکه متن جدید</strong></td>
 </tr>
 </tbody>
 </table>
-<p>بیایید کد لازم را به فایل <code>main.go</code> خود اضافه کنیم، به این صورت:</p>
+<p>بیایید برویم و کد لازم را به فایل <code>main.go</code> خود اضافه کنیم، مانند این:</p>
 
-<figure class="code go">
+<figure class="code go" dir="ltr">
 <figcaption>File: main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
@@ -181,15 +172,15 @@ Method Not Allowed</samp>*</pre>
     <span class="nx">log</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;starting server on :4000&#34;</span><span class="p">)</span>
 
     <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:4000&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
-    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="nx">err</span><span class="p">)</span>
 <span class="p">}</span></pre>
 </figure>
 
-<p>توجه داشته باشید که اعلام دو (یا بیشتر) مسیر جداگانه که روش‌های HTTP متفاوتی دارند اما الگوی یکسانی دارند، کاملاً مجاز است، مانند آنچه که در اینجا با <code>&quot;GET /snippet/create&quot;</code> و <code>&quot;POST /snippet/create&quot;</code> انجام می‌دهیم.</p>
+<p>توجه کنید که کاملاً خوب است که دو (یا بیشتر) مسیر جداگانه که متدهای HTTP متفاوت دارند اما در غیر این صورت الگوی یکسانی دارند را اعلام کنید، مانند کاری که اینجا با <code>&quot;GET /snippet/create&quot;</code> و <code>&quot;POST /snippet/create&quot;</code> انجام می‌دهیم.</p>
 
-<p>اگر برنامه را مجدداً راه‌اندازی کنید و سعی کنید با استفاده از مسیر URL <code>/snippet/create</code> درخواست‌هایی ارسال کنید، باید اکنون پاسخ‌های متفاوتی بسته به روش درخواست که استفاده می‌کنید، ببینید.</p>
+<p>اگر برنامه را دوباره راه‌اندازی کنید و سعی کنید برخی درخواست‌ها با مسیر URL <code>/snippet/create</code> ارسال کنید، اکنون باید پاسخ‌های متفاوتی بسته به متد درخواستی که استفاده می‌کنید ببینید.</p>
 
-<figure class="code bash">
+<figure class="code bash" dir="ltr">
 <pre>$ curl -i localhost:4000/snippet/create
 <samp>HTTP/1.1 200 OK
 Date: Wed, 18 Mar 2024 11:29:23 GMT
@@ -221,24 +212,24 @@ Method Not Allowed</samp></pre>
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="method-precedence">اولویت روش (Method Precedence)</h4>
+<h4 id="method-precedence">اولویت متد</h4>
 
-<p>قانون <em>الگوی خاص‌تر برنده می‌شود (More Specific Pattern Wins)</em> نیز در صورتی که الگوهای مسیر به دلیل یک روش HTTP همپوشانی داشته باشند، اعمال می‌شود.</p>
+<p>قانون <em>الگوی خاص‌تر برنده می‌شود</em> نیز اعمال می‌شود اگر الگوهای مسیری دارید که به دلیل یک متد HTTP همپوشانی دارند.</p>
 
-<p>مهم است که بدانید یک الگوی مسیری که شامل یک روش نیست &mdash; مانند <code>&quot;/article/{id}&quot;</code> &mdash; با درخواست‌های HTTP با <em>هر روشی</em> مطابقت خواهد داشت. در مقابل، مسیری مانند <code>&quot;POST /article/{id}&quot;</code> فقط با درخواست‌هایی که روش <code>POST</code> دارند مطابقت خواهد داشت. بنابراین اگر مسیرهای همپوشانی <code>&quot;/article/{id}&quot;</code> و <code>&quot;POST /article/{id}&quot;</code> را در برنامه خود اعلام کنید، مسیر <code>&quot;POST /article/{id}&quot;</code> اولویت خواهد داشت.</p>
+<p>مهم است آگاه باشید که یک الگوی مسیر که شامل یک متد نمی‌شود — مانند <code>&quot;/article/{id}&quot;</code> — درخواست‌های HTTP ورودی با <em>هر متدی</em> را تطبیق می‌دهد. در مقابل، یک مسیر مانند <code>&quot;POST /article/{id}&quot;</code> فقط درخواست‌هایی که متد <code>POST</code> دارند را تطبیق می‌دهد. پس اگر مسیرهای همپوشانی <code>&quot;/article/{id}&quot;</code> و <code>&quot;POST /article/{id}&quot;</code> را در برنامه خود اعلام کنید، سپس مسیر <code>&quot;POST /article/{id}&quot;</code> اولویت خواهد داشت.</p>
 
-<h4 id="handler-naming">نام‌گذاری هندلر (Handler Naming)</h4>
+<h4 id="handler-naming">نام‌گذاری handler</h4>
 
-<p>همچنین می‌خواهم تأکید کنم که هیچ راه درست یا غلطی برای نام‌گذاری هندلرهای خود در Go وجود ندارد.</p>
+<p>همچنین می‌خواهم تأکید کنم که هیچ راه درست یا غلطی برای نام‌گذاری handlerهای خود در Go وجود ندارد.</p>
 
-<p>در این پروژه، ما از یک قرارداد پیروی می‌کنیم که نام هندلرهایی که با درخواست‌های <code>POST</code> سروکار دارند را با کلمه &lsquo;Post&rsquo; پسوند می‌دهیم. به این صورت:</p>
+<p>در این پروژه، از یک قرارداد استفاده می‌کنیم که نام هر handler که با درخواست‌های <code>POST</code> سروکار دارد را با کلمه &lsquo;Post&rsquo; پسوند می‌کنیم. مانند این:</p>
 
-<table>
+<table dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>هندلر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -246,24 +237,24 @@ Method Not Allowed</samp></pre>
 <tr>
 <td>GET /snippet/create</td>
 <td>snippetCreate</td>
-<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+<td>نمایش فرم برای ایجاد یک تکه متن جدید</td>
 </tr>
 
 <tr>
 <td>POST /snippet/create</td>
 <td>snippetCreate<strong>Post</strong></td>
-<td>ایجاد یک قطعه جدید</td>
+<td>ایجاد یک تکه متن جدید</td>
 </tr>
 </tbody>
 </table>
-<p>اما در کار خودتان لازم نیست که از این الگو پیروی کنید. به عنوان مثال، می‌توانید نام هندلرها را با کلمات &lsquo;get&rsquo; و &lsquo;post&rsquo; پیشوند کنید، به این صورت:</p>
+<p>اما در کار خودتان لازم نیست این الگو را دنبال کنید. برای مثال، می‌توانید نام handlerها را با کلمات &lsquo;get&rsquo; و &lsquo;post&rsquo; پیشوند کنید، مانند این:</p>
 
-<table>
+<table dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>هندلر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -271,24 +262,24 @@ Method Not Allowed</samp></pre>
 <tr>
 <td>GET /snippet/create</td>
 <td>getSnippetCreate</td>
-<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+<td>نمایش فرم برای ایجاد یک تکه متن جدید</td>
 </tr>
 
 <tr>
 <td>POST /snippet/create</td>
 <td>postSnippetCreate</td>
-<td>ایجاد یک قطعه جدید</td>
+<td>ایجاد یک تکه متن جدید</td>
 </tr>
 </tbody>
 </table>
-<p>یا حتی به هندلرها نام‌های کاملاً متفاوتی بدهید. به عنوان مثال:</p>
+<p>یا حتی نام‌های کاملاً متفاوتی به handlerها بدهید. برای مثال:</p>
 
-<table>
+<table dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>هندلر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -296,93 +287,33 @@ Method Not Allowed</samp></pre>
 <tr>
 <td>GET /snippet/create</td>
 <td>newSnippetForm</td>
-<td>نمایش فرم برای ایجاد یک قطعه جدید</td>
+<td>نمایش فرم برای ایجاد یک تکه متن جدید</td>
 </tr>
 
 <tr>
 <td>POST /snippet/create</td>
 <td>createSnippet</td>
-<td>ایجاد یک قطعه جدید</td>
+<td>ایجاد یک تکه متن جدید</td>
 </tr>
 </tbody>
 </table>
-<p>به طور کلی، شما در Go آزادی دارید که یک الگوی نام‌گذاری برای هندلرهای خود انتخاب کنید که برای شما کار کند و با ذهن شما سازگار باشد.</p>
+<p>اساساً، در Go آزادی دارید که یک قرارداد نام‌گذاری برای handlerهای خود انتخاب کنید که برای شما کار می‌کند و با ذهن شما سازگار است.</p>
 
-<h4 id="third-party-routers">روترهای شخص ثالث</h4>
+<h4 id="third-party-routers">Routerهای شخص ثالث</h4>
 
-<p>عملکرد مسیریابی مبتنی بر کاراکترهای جایگزین و روش که در دو فصل گذشته استفاده کرده‌ایم نسبتاً جدید در Go است &mdash; این ویژگی تنها در نسخه 1.22 به کتابخانه استاندارد اضافه شد. در حالی که این یک افزودنی بسیار خوشایند به زبان و یک بهبود بزرگ است، ممکن است متوجه شوید که هنوز هم مواقعی وجود دارد که عملکرد مسیریابی کتابخانه استاندارد همه چیزهایی که نیاز دارید را فراهم نمی‌کند.</p>
+<p>قابلیت مسیریابی wildcard و مبتنی بر متد که در دو فصل گذشته استفاده کرده‌ایم نسبتاً جدید در Go است — فقط در Go 1.22 بخشی از کتابخانه استاندارد شد. در حالی که این یک افزودنی بسیار خوش‌آمد به زبان و یک بهبود بزرگ است، ممکن است ببینید که هنوز زمان‌هایی وجود دارد که قابلیت مسیریابی کتابخانه استاندارد همه چیزهایی که نیاز دارید را فراهم نمی‌کند.</p>
 
-<p>به عنوان مثال، موارد زیر در حال حاضر پشتیبانی نمی‌شوند:</p>
+<p>برای مثال، چیزهای زیر در حال حاضر پشتیبانی نمی‌شوند:</p>
 
 <ul>
-<li>ارسال پاسخ‌های سفارشی <code>404 Not Found</code> و <code>405 Method Not Allowed</code> به کاربر (اگرچه یک <a href="https://github.com/golang/go/issues/65648">پیشنهاد باز</a> در این باره وجود دارد).</li>
-<li>استفاده از عبارات منظم در الگوهای مسیر یا کاراکترهای جایگزین.</li>
-<li>مطابقت با چندین روش HTTP در یک اعلامیه مسیر.</li>
-<li>پشتیبانی خودکار از درخواست‌های <code>OPTIONS</code>.</li>
-<li>مسیریابی درخواست‌ها به هندلرها بر اساس چیزهای غیرمعمول، مانند هدرهای درخواست HTTP.</li>
+<li>ارسال پاسخ‌های سفارشی <code>404 Not Found</code> و <code>405 Method Not Allowed</code> به کاربر (اگرچه یک <a href="https://github.com/golang/go/issues/65648">پیشنهاد باز</a> در مورد این وجود دارد).</li>
+<li>استفاده از عبارات منظم (regular expressions) در الگوهای مسیر یا wildcard‌ها.</li>
+<li>تطبیق چندین متد HTTP در یک اعلام مسیر واحد.</li>
+<li>پشتیبانی خودکار برای درخواست‌های <code>OPTIONS</code>.</li>
+<li>مسیریابی درخواست‌ها به handlerها بر اساس چیزهای غیرمعمول، مانند هدرهای درخواست HTTP.</li>
 </ul>
 
-<p>اگر به این ویژگی‌ها در برنامه خود نیاز دارید، باید از یک بسته روتر شخص ثالث استفاده کنید. آنهایی که من توصیه می‌کنم <a href="https://github.com/julienschmidt/httprouter">httprouter</a>، <a href="https://github.com/go-chi/chi">chi</a>، <a href="https://github.com/letsgofa/flow">flow</a> و <a href="https://github.com/gorilla/mux">gorilla/mux</a> هستند، و می‌توانید مقایسه‌ای از آنها و راهنمایی درباره اینکه کدام یک را استفاده کنید در <a href="https://www.letsgofa.net/blog/which-go-router-should-i-use">این پست وبلاگ</a> پیدا کنید.</p>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>مسیریابی مبتنی بر روش</td>
-        <td>Method-based Routing</td>
-        <td>تکنیکی برای محدود کردن مسیرها به روش‌های HTTP خاص</td>
-    </tr>
-    <tr>
-        <td>روش HTTP</td>
-        <td>HTTP Method</td>
-        <td>نوع عملیاتی که یک درخواست HTTP می‌خواهد انجام دهد (مانند GET، POST، PUT، DELETE)</td>
-    </tr>
-    <tr>
-        <td>هندلر</td>
-        <td>Handler</td>
-        <td>تابعی که درخواست‌های HTTP را پردازش می‌کند</td>
-    </tr>
-    <tr>
-        <td>الگوی مسیر</td>
-        <td>Route Pattern</td>
-        <td>الگویی که برای تطبیق با URL‌های درخواست استفاده می‌شود</td>
-    </tr>
-    <tr>
-        <td>وضعیت پاسخ</td>
-        <td>Response Status</td>
-        <td>کد عددی که نتیجه پردازش درخواست HTTP را نشان می‌دهد (مانند 200 OK، 405 Method Not Allowed)</td>
-    </tr>
-    <tr>
-        <td>هدر پاسخ</td>
-        <td>Response Header</td>
-        <td>متادیتای اضافی که همراه با پاسخ HTTP ارسال می‌شود</td>
-    </tr>
-    <tr>
-        <td>بدنه پاسخ</td>
-        <td>Response Body</td>
-        <td>محتوای اصلی که در پاسخ HTTP برگردانده می‌شود</td>
-    </tr>
-    <tr>
-        <td>درخواست غیرقابل تکرار</td>
-        <td>Non-idempotent Request</td>
-        <td>درخواستی که هر بار اجرا می‌تواند نتایج متفاوتی داشته باشد و وضعیت سرور را تغییر می‌دهد</td>
-    </tr>
-    <tr>
-        <td>همپوشانی مسیرها</td>
-        <td>Route Overlap</td>
-        <td>وضعیتی که در آن چندین الگوی مسیر می‌توانند با یک URL یکسان مطابقت داشته باشند</td>
-    </tr>
-    <tr>
-        <td>اولویت روش</td>
-        <td>Method Precedence</td>
-        <td>قوانینی که تعیین می‌کنند کدام مسیر در صورت همپوشانی باید استفاده شود</td>
-    </tr>
-</table>
+<p>اگر به این ویژگی‌ها در برنامه خود نیاز دارید، باید از یک بسته router شخص ثالث استفاده کنید. مواردی که توصیه می‌کنم <a href="https://github.com/julienschmidt/httprouter">httprouter</a>، <a href="https://github.com/go-chi/chi">chi</a>، <a href="https://github.com/alexedwards/flow">flow</a> و <a href="https://github.com/gorilla/mux">gorilla/mux</a> هستند، و می‌توانید یک مقایسه از آن‌ها و راهنمایی در مورد اینکه کدام یک را استفاده کنید در <a href="https://www.alexedwards.net/blog/which-go-router-should-i-use">این پست وبلاگ</a> پیدا کنید.</p>
 
 		</main>
 		<footer>
@@ -417,4 +348,3 @@ Method Not Allowed</samp></pre>
 		</script>
 	</body>
 </html>
-

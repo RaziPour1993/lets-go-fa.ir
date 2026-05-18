@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>پیکربندی تنظیمات HTTPS &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; تنظیمات HTTPS</span>
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="09.00-server-and-security-improvements.html">بهبودهای سرور و امنیت</a> &rsaquo; پیکربندی تنظیمات HTTPS</span>
 						
 					
 				</div>
@@ -24,24 +26,20 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 9.5.</div>
-			<h2 id="configuring-https-settings">پیکربندی تنظیمات HTTPS (Configuring HTTPS Settings)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۹.۵.</div>
+			<h2 id="configuring-https-settings">پیکربندی تنظیمات HTTPS</h2>
 
-<p>در این بخش، نحوه <dfn>پیکربندی تنظیمات HTTPS (HTTPS Settings Configuration)</dfn> را بررسی می‌کنیم. این شامل <dfn>تنظیمات امنیتی (Security Settings)</dfn> و <dfn>بهینه‌سازی عملکرد (Performance Optimization)</dfn> می‌شود.</p>
+<p>Go تنظیمات پیش‌فرض خوبی برای سرور HTTPS خود دارد، اما امکان بهینه‌سازی و سفارشی‌سازی نحوه رفتار سرور وجود دارد.</p>
 
-<p>برای شروع، بیایید <dfn>پیکربندی TLS (TLS Configuration)</dfn> را در <dfn>کد برنامه (Application Code)</dfn> خود اضافه کنیم:</p>
+<p>یک تغییر که تقریباً همیشه ایده خوبی است، محدود کردن <em>منحنی‌های بیضوی</em> است که ممکن است در طول handshake TLS استفاده شوند. Go از چند منحنی بیضوی پشتیبانی می‌کند، اما از Go 1.23 فقط <code>tls.CurveP256</code> و <code>tls.X25519</code> پیاده‌سازی assembly دارند. سایرین بسیار CPU-intensive هستند، بنابراین حذف آن‌ها کمک می‌کند تا سرور ما تحت بارهای سنگین عملکردی باقی بماند.</p>
 
-<p>Go تنظیمات پیش‌فرض خوبی برای سرور HTTPS خود دارد، اما می‌توان نحوه عملکرد سرور را بهینه و سفارشی کرد.</p>
+<p>برای انجام این تنظیم، می‌توانیم یک ساختار <a href="https://pkg.go.dev/crypto/tls#Config"><code>tls.Config</code></a> حاوی تنظیمات TLS غیرپیش‌فرض خود ایجاد کنیم و آن را به ساختار <code>http.Server</code> خود قبل از راه‌اندازی سرور اضافه کنیم.</p>
 
-<p>یکی از تغییراتی که تقریباً همیشه ایده خوبی است، محدود کردن <em>منحنی‌های بیضوی</em> است که می‌توانند در طول دست دادن TLS استفاده شوند. Go از چند منحنی بیضوی پشتیبانی می‌کند، اما از نسخه Go 1.23 تنها <code>tls.CurveP256</code> و <code>tls.X25519</code> پیاده‌سازی‌های اسمبلی دارند. بقیه بسیار پردازش‌بر هستند، بنابراین حذف آنها کمک می‌کند تا سرور ما تحت بارهای سنگین عملکرد خوبی داشته باشد.</p>
-
-<p>برای انجام این تغییر، می‌توانیم یک ساختار <a href="https://pkg.go.dev/crypto/tls#Config"><code>tls.Config</code></a> حاوی تنظیمات TLS غیرپیش‌فرض خود ایجاد کنیم و آن را به ساختار <code>http.Server</code> خود اضافه کنیم قبل از اینکه سرور را شروع کنیم.</p>
-
-<p>من نشان خواهم داد:</p>
+<p>نشان می‌دهم:</p>
 
 <figure class="code go" dir="ltr">
-<figcaption>File:  cmd/web/main.go</figcaption>
+<figcaption>File: cmd/web/main.go</figcaption>
 <pre><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
@@ -104,13 +102,13 @@
 
 <hr />
 
-<h3 id="additional-information">اطلاعات اضافی</h3>
+<h3 id="additional-information">اطلاعات تکمیلی</h3>
 
 <h4 id="tls-versions">نسخه‌های TLS</h4>
 
-<p>به طور پیش‌فرض، سرور HTTPS Go برای پشتیبانی از TLS 1.2 و 1.3 پیکربندی شده است. می‌توانید این را سفارشی کنید و حداقل و حداکثر نسخه‌های TLS را با استفاده از فیلدهای <code>tls.Config.MinVersion</code> و <code>MaxVersion</code> و <a href="https://pkg.go.dev/crypto/tls/#pkg-constants">ثابت‌های نسخه‌های TLS</a> در بسته <code>crypto/tls</code> تغییر دهید.</p>
+<p>به طور پیش‌فرض، سرور HTTPS در Go برای پشتیبانی از TLS 1.2 و 1.3 پیکربندی شده است. می‌توانید این را سفارشی کنید و نسخه‌های حداقل و حداکثر TLS را با استفاده از فیلدهای <code>tls.Config.MinVersion</code> و <code>MaxVersion</code> و <a href="https://pkg.go.dev/crypto/tls/#pkg-constants">ثابت‌های نسخه‌های TLS</a> در بسته <code>crypto/tls</code> تغییر دهید.</p>
 
-<p>برای مثال، اگر می‌خواهید سرور فقط از نسخه‌های TLS 1.0 تا 1.2 پشتیبانی کند، می‌توانید از پیکربندی زیر استفاده کنید:</p>
+<p>به عنوان مثال، اگر می‌خواهید سرور فقط از نسخه‌های TLS 1.0 تا 1.2 پشتیبانی کند، می‌توانید از یک پیکربندی مانند این استفاده کنید:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
@@ -119,11 +117,11 @@
 <span class="p">}</span></pre>
 </figure>
 
-<h4 id="cipher-suites">مجموعه‌های رمزنگاری</h4>
+<h4 id="cipher-suites">Cipher suiteها</h4>
 
-<p>مجموعه‌های رمزنگاری که Go پشتیبانی می‌کند نیز در <a href="https://pkg.go.dev/crypto/tls/#pkg-constants">ثابت‌های بسته</a> <code>crypto/tls</code> تعریف شده‌اند.</p>
+<p>cipher suiteهایی که Go پشتیبانی می‌کند نیز در <a href="https://pkg.go.dev/crypto/tls/#pkg-constants">ثابت‌های بسته</a> <code>crypto/tls</code> تعریف شده‌اند.</p>
 
-<p>با این حال، برخی از این مجموعه‌های رمزنگاری (به طور خاص، مجموعه‌های رمزنگاری که از Perfect Forward Secrecy پشتیبانی نمی‌کنند، یا از RC4، 3DES یا CBC_SHA256 استفاده می‌کنند) ضعیف در نظر گرفته می‌شوند و به طور پیش‌فرض توسط سرور HTTPS Go استفاده نمی‌شوند. از نسخه Go 1.23، مجموعه‌های رمزنگاری که به طور پیش‌فرض توسط سرور HTTPS Go استفاده می‌شوند عبارتند از:</p>
+<p>با این حال، برخی از این cipher suiteها (به طور خاص، cipher suiteهایی که از Perfect Forward Secrecy پشتیبانی نمی‌کنند، یا از RC4، 3DES یا CBC_SHA256 استفاده می‌کنند) ضعیف در نظر گرفته می‌شوند و به طور پیش‌فرض توسط سرور HTTPS در Go استفاده نمی‌شوند. از Go 1.23، cipher suiteهایی که سرور HTTPS در Go به طور پیش‌فرض استفاده می‌کند عبارتند از:</p>
 
 <figure class="code plain" dir="ltr">
 <pre>TLS_AES_128_GCM_SHA256                          // TLS 1.3 connections only
@@ -144,12 +142,12 @@ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA              // TLS 1.0, 1.1 and 1.2 connecti
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> <a href="https://github.com/golang/go/issues/13385">به دلایل سازگاری با مشتری</a>، این لیست پیش‌فرض شامل برخی از رمزهای CBC است که به <a href="https://en.wikipedia.org/wiki/Lucky_Thirteen_attack">حملات زمانی Lucky Thirteen</a> آسیب‌پذیر هستند. پیاده‌سازی Go از این <a href="https://go-review.googlesource.com/c/go/+/18130">پچ شده است</a> تا برخی &mdash; اما نه کامل &mdash; کاهش در برابر حملات احتمالی را فراهم کند .
+<strong>مهم:</strong> <a href="https://github.com/golang/go/issues/13385">به دلایل سازگاری کلاینت</a>، این لیست پیش‌فرض شامل برخی cipherهای CBC است که در برابر حملات timing <a href="https://en.wikipedia.org/wiki/Lucky_Thirteen_attack">Lucky Thirteen</a> آسیب‌پذیر هستند. پیاده‌سازی Go از این‌ها <a href="https://go-review.googlesource.com/c/go/+/18130">پچ شده است</a> تا برخی — اما نه کامل — کاهش خطر در برابر حملات بالقوه را ارائه دهد.
 </p></aside>
 
-<p>اگر می‌خواهید مجموعه‌های رمزنگاری استفاده شده توسط سرور HTTPS Go را تغییر دهید &mdash; یا با اضافه کردن مجموعه‌های رمزنگاری ضعیفی که به طور پیش‌فرض استفاده نمی‌شوند، یا حذف برخی از رمزهایی که به طور پیش‌فرض استفاده می‌شوند &mdash; می‌توانید این کار را از طریق فیلد <code>tls.Config.CipherSuites</code> انجام دهید.</p>
+<p>اگر می‌خواهید cipher suiteهای استفاده شده توسط سرور HTTPS در Go را تغییر دهید — یا با شامل کردن cipher suiteهای ضعیفی که به طور پیش‌فرض استفاده نمی‌شوند، یا حذف cipherهای خاصی که به طور پیش‌فرض استفاده می‌شوند — می‌توانید این کار را از طریق فیلد <code>tls.Config.CipherSuites</code> انجام دهید.</p>
 
-<p>برای مثال، اگر می‌خواهید از لیست پیش‌فرض رمزها استفاده کنید اما <em>با حذف رمزهای CBC</em>، می‌توانید <code>tls.Config</code> خود را به این صورت پیکربندی کنید:</p>
+<p>به عنوان مثال، اگر می‌خواهید از لیست cipher پیش‌فرض استفاده کنید اما <em>با حذف cipherهای CBC</em>، می‌توانید <code>tls.Config</code> خود را به این صورت پیکربندی کنید:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
@@ -167,11 +165,11 @@ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA              // TLS 1.0, 1.1 and 1.2 connecti
 <span class="p">}</span></pre>
 </figure>
 
-<p>Go به طور خودکار انتخاب می‌کند <em>کدام</em> از این مجموعه‌های رمزنگاری در زمان اجرا استفاده شود بر اساس امنیت رمز، عملکرد و پشتیبانی سخت‌افزار مشتری/سرور.</p>
+<p>Go به طور خودکار انتخاب می‌کند که <em>کدام</em> از این cipher suiteها در واقع در زمان اجرا بر اساس امنیت cipher، عملکرد و پشتیبانی سخت‌افزار کلاینت/سرور استفاده شود.</p>
 
-<p>همچنین مهم (و جالب) است که توجه داشته باشید که اگر یک اتصال TLS 1.3 مذاکره شود، <code>tls.Config.CipherSuites</code> نادیده گرفته می‌شود. دلیل این امر این است که همه مجموعه‌های رمزنگاری که Go برای اتصالات TLS 1.3 پشتیبانی می‌کند به عنوان <em>ایمن</em> در نظر گرفته می‌شوند، بنابراین ارائه مکانیزمی برای پیکربندی آنها چندان منطقی نیست.</p>
+<p>همچنین مهم (و جالب) است که توجه داشته باشید اگر یک اتصال TLS 1.3 مذاکره شود، <code>tls.Config.CipherSuites</code> نادیده گرفته خواهد شد. دلیل این است که همه cipher suiteهایی که Go برای اتصال‌های TLS 1.3 پشتیبانی می‌کند <em>ایمن</em> در نظر گرفته می‌شوند، بنابراین ارائه مکانیزمی برای پیکربندی آن‌ها چندان منطقی نیست.</p>
 
-<p>به طور اساسی، استفاده از <code>tls.Config.CipherSuites</code> برای تنظیم یک لیست سفارشی از مجموعه‌های رمزنگاری پشتیبانی شده فقط بر اتصالات TLS 1.0-1.2 تأثیر می‌گذارد. بنابراین، در مثال بالا، در واقع نیازی به شامل کردن رمزهای خاص TLS 1.3 نیست و می‌توان آن را به این صورت ساده کرد:</p>
+<p>اساساً، استفاده از <code>tls.Config.CipherSuites</code> برای تنظیم یک لیست سفارشی از cipher suiteهای پشتیبانی شده فقط اتصال‌های TLS 1.0-1.2 را تحت تأثیر قرار می‌دهد. بنابراین، در مثال بالا، در واقع لازم نیست cipherهای خاص TLS 1.3 را شامل کنیم و می‌توان آن را به این صورت ساده کرد:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="nx">tlsConfig</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span>
@@ -187,70 +185,11 @@ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA              // TLS 1.0, 1.1 and 1.2 connecti
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> محدود کردن مجموعه‌های رمزنگاری پشتیبانی شده می‌تواند به این معنا باشد که کاربران با برخی مرورگرهای قدیمی‌تر نمی‌توانند از وب‌سایت شما استفاده کنند. تعادلی بین امنیت و سازگاری با گذشته وجود دارد و تصمیم درست برای شما به فناوری‌هایی که معمولاً توسط کاربران شما استفاده می‌شود بستگی دارد. <a href="https://wiki.mozilla.org/Security/Server_Side_TLS">پیکربندی‌های پیشنهادی</a> موزیلا برای مرورگرهای مدرن، متوسط و قدیمی ممکن است به شما در تصمیم‌گیری کمک کند.
+<strong>مهم:</strong> محدود کردن cipher suiteهای پشتیبانی شده می‌تواند به این معنی باشد که کاربران با مرورگرهای قدیمی‌تر خاص قادر به استفاده از وب‌سایت شما نخواهند بود. باید تعادلی بین امنیت و سازگاری معکوس برقرار شود، و تصمیم درست برای شما به فناوری معمولاً استفاده شده توسط پایگاه کاربری شما بستگی دارد. <a href="https://wiki.mozilla.org/Security/Server_Side_TLS">پیکربندی‌های توصیه شده</a> Mozilla برای مرورگرهای مدرن، متوسط و قدیمی ممکن است در تصمیم‌گیری به شما کمک کند.
 </p></aside>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>پیکربندی تنظیمات HTTPS</td>
-        <td>HTTPS Settings Configuration</td>
-        <td>تنظیم پارامترهای ارتباط امن</td>
-    </tr>
-    <tr>
-        <td>تنظیمات امنیتی</td>
-        <td>Security Settings</td>
-        <td>پارامترهای مربوط به امنیت</td>
-    </tr>
-    <tr>
-        <td>بهینه‌سازی عملکرد</td>
-        <td>Performance Optimization</td>
-        <td>بهبود کارایی سیستم</td>
-    </tr>
-    <tr>
-        <td>پیکربندی TLS</td>
-        <td>TLS Configuration</td>
-        <td>تنظیمات پروتکل امنیتی</td>
-    </tr>
-    <tr>
-        <td>کد برنامه</td>
-        <td>Application Code</td>
-        <td>کد منبع برنامه</td>
-    </tr>
-    <tr>
-        <td>نسخه TLS</td>
-        <td>TLS Version</td>
-        <td>نسخه پروتکل امنیتی</td>
-    </tr>
-    <tr>
-        <td>رمزنگاری</td>
-        <td>Encryption</td>
-        <td>کدگذاری اطلاعات</td>
-    </tr>
-    <tr>
-        <td>امنیت اتصال</td>
-        <td>Connection Security</td>
-        <td>حفاظت از ارتباطات</td>
-    </tr>
-    <tr>
-        <td>بهینه‌سازی منابع</td>
-        <td>Resource Optimization</td>
-        <td>استفاده بهینه از منابع</td>
-    </tr>
-    <tr>
-        <td>پروتکل‌های امن</td>
-        <td>Secure Protocols</td>
-        <td>پروتکل‌های ارتباطی امن</td>
-    </tr>
-</table>
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="09.04-running-a-https-server.html">قبلی</a>

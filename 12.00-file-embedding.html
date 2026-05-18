@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>جاسازی فایل &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; جاسازی فایل</span>
 						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; جاسازی فایل</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">قبلی</a>
@@ -23,26 +26,25 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۱۲.</div>
 			<h1 id="file-embedding">جاسازی فایل</h1>
 
-<p>کتابخانه استاندارد Go شامل یک بسته <a href="https://pkg.go.dev/embed/"><code>embed</code></a> است که امکان <em>جاسازی فایل‌های خارجی در برنامه Go شما</em> را فراهم می‌کند.</p>
+<p>کتابخانه استاندارد Go شامل یک بسته <a href="https://pkg.go.dev/embed/"><code>embed</code></a> است که امکان <em>جاسازی فایل‌های خارجی در خود برنامه Go شما</em> را فراهم می‌کند.</p>
 
-<p>استفاده از بسته <code>embed</code> این فرصت را فراهم می‌کند تا برنامه‌های Go ایجاد کنید که خودکفا هستند و همه چیزهایی که برای اجرا نیاز دارند <em>به عنوان بخشی از فایل اجرایی کامپایل شده</em> دارند. این امر باعث می‌شود که استقرار یا توزیع برنامه وب شما آسان‌تر شود.</p>
+<p>استفاده از بسته <code>embed</code> فرصتی برای ایجاد برنامه‌های Go که خودکفا هستند و همه چیز مورد نیاز برای اجرا را <em>به عنوان بخشی از فایل اجرایی باینری کامپایل شده</em> دارند، باز می‌کند. به نوبه خود، این کار استقرار یا توزیع برنامه وب شما را آسان‌تر می‌کند.</p>
 
-<p>در این بخش از کتاب، برنامه خود را به‌روزرسانی خواهیم کرد تا فایل‌های موجود در دایرکتوری <code>ui</code> را جاسازی کند &mdash; با فایل‌های استاتیک CSS، JavaScript و تصویر شروع می‌کنیم و سپس به قالب‌های HTML می‌پردازیم.</p>
+<p>در این بخش از کتاب، برنامه خود را به‌روزرسانی می‌کنیم تا فایل‌های دایرکتوری <code>ui</code> ما را جاسازی کند &mdash; از فایل‌های استاتیک CSS، JavaScript و تصویر شروع می‌کنیم، و سپس به templateهای HTML می‌رویم.</p>
 
-<p>بیایید مستقیماً وارد شویم و توضیح دهیم که چگونه از آن استفاده کنیم.</p>
+<p>یاد خواهید گرفت:</p>
 
-<h2 id="file-embedding">جاسازی فایل (File Embedding)</h2>
-
-<p>در این فصل، نحوه <dfn>جاسازی فایل‌ها (File Embedding)</dfn> در برنامه را بررسی می‌کنیم. این شامل <dfn>فایل‌های استاتیک (Static Files)</dfn> و <dfn>قالب‌های HTML (HTML Templates)</dfn> می‌شود.</p>
-
-<p>با استفاده از <dfn>جاسازی فایل (File Embedding)</dfn>، می‌توانیم <dfn>فایل‌های منبع (Source Files)</dfn> را مستقیماً در <dfn>باینری برنامه (Program Binary)</dfn> قرار دهیم.</p>
+<ul>
+<li><a href="12.01-embedding-static-files.html">جاسازی فایل‌های استاتیک</a> با <code>embed.FS</code>.</li>
+<li><a href="12.02-embedding-html-templates.html">جاسازی قالب‌های HTML</a> و parse کردن آن‌ها در زمان build.</li>
+</ul>
 
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="11.02-request-context-for-authentication-authorization.html">قبلی</a>
@@ -72,66 +74,6 @@
 				}
 			};
 		</script>
-
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>جاسازی فایل</td>
-        <td>File Embedding</td>
-        <td>قرار دادن فایل در برنامه</td>
-    </tr>
-    <tr>
-        <td>فایل‌های استاتیک</td>
-        <td>Static Files</td>
-        <td>فایل‌های ثابت مانند CSS و JS</td>
-    </tr>
-    <tr>
-        <td>قالب‌های HTML</td>
-        <td>HTML Templates</td>
-        <td>الگوهای صفحات وب</td>
-    </tr>
-    <tr>
-        <td>فایل‌های منبع</td>
-        <td>Source Files</td>
-        <td>فایل‌های اصلی برنامه</td>
-    </tr>
-    <tr>
-        <td>باینری برنامه</td>
-        <td>Program Binary</td>
-        <td>فایل اجرایی برنامه</td>
-    </tr>
-    <tr>
-        <td>بسته‌بندی</td>
-        <td>Packaging</td>
-        <td>آماده‌سازی برنامه</td>
-    </tr>
-    <tr>
-        <td>توزیع</td>
-        <td>Distribution</td>
-        <td>انتشار برنامه</td>
-    </tr>
-    <tr>
-        <td>مسیر نسبی</td>
-        <td>Relative Path</td>
-        <td>آدرس نسبی فایل</td>
-    </tr>
-    <tr>
-        <td>مسیر مطلق</td>
-        <td>Absolute Path</td>
-        <td>آدرس کامل فایل</td>
-    </tr>
-    <tr>
-        <td>دایرکتوری کاری</td>
-        <td>Working Directory</td>
-        <td>پوشه اجرای برنامه</td>
-    </tr>
-</table>
 	</body>
 </html>
 

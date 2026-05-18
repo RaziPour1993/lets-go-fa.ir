@@ -3,10 +3,11 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>فهرست &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
 	</head>
 	<body>
 		<header>
@@ -14,12 +15,12 @@
 				<div>
 					
 						
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; فهرست</span>
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; فهرست</span>
 						
 					
 				</div>
 				<div>
-					&lsaquo; <a href="index.html">قبلی</a>
+					&lsaquo; <a href="00.00-front-matter.html">قبلی</a>
 					&middot; <a href="00.01-contents.html">فهرست</a> &middot;
 					<a href="01.00-introduction.html">بعدی</a> &rsaquo;
 				</div>
@@ -32,105 +33,580 @@
 <nav epub:type="toc">
 <ol>
 <li><a href="01.00-introduction.html">۱. مقدمه</a></li>
-<li class="indent"><a href="01.01-prerequisites.html">۱.۱. پیش‌نیازها (Prerequisites)</a></li>
+<li class="indent"><a href="01.01-prerequisites.html">۱.۱. پیش‌نیازها</a></li>
 <li><a href="02.00-foundations.html">۲. مبانی</a></li>
-<li class="indent"><a href="02.01-project-setup-and-creating-a-module.html">۲.۱. راه‌اندازی پروژه و ایجاد ماژول (Project Setup and Module Creation)</a></li>
-<li class="indent"><a href="02.02-web-application-basics.html">۲.۲. مبانی برنامه‌های وب (Web Application Basics)</a></li>
-<li class="indent"><a href="02.03-routing-requests.html">۲.۳. مسیریابی درخواست‌ها (Request Routing)</a></li>
-<li class="indent"><a href="02.04-wildcard-route-patterns.html">۲.۴. الگوهای مسیریابی wildcard (Wildcard Route Patterns)</a></li>
-<li class="indent"><a href="02.05-method-based-routing.html">۲.۵. مسیریابی مبتنی بر متد (Method-Based Routing)</a></li>
-<li class="indent"><a href="02.06-customizing-responses.html">۲.۶. سفارشی‌سازی پاسخ‌ها (Customizing Responses)</a></li>
-<li class="indent"><a href="02.07-project-structure-and-organization.html">۲.۷. ساختار و سازماندهی پروژه (Project Structure)</a></li>
-<li class="indent"><a href="02.08-html-templating-and-inheritance.html">۲.۸. قالب‌بندی HTML و وراثت (HTML Templating and Inheritance)</a></li>
-<li class="indent"><a href="02.09-serving-static-files.html">۲.۹. ارائه فایل‌های استاتیک (Serving Static Files)</a></li>
-<li class="indent"><a href="02.10-the-http-handler-interface.html">۲.۱۰. رابط http.Handler (HTTP Handler Interface)</a></li>
-<li><a href="03.00-configuration-and-error-handling.html">۳. پیکربندی و مدیریت خطا (Configuration and Error Handling)</a></li>
-<li class="indent"><a href="03.01-managing-configuration-settings.html">۳.۱. مدیریت تنظیمات پیکربندی (Configuration Settings)</a></li>
-<li class="indent"><a href="03.02-structured-logging.html">۳.۲. ثبت ساختاریافته (Structured Logging)</a></li>
-<li class="indent"><a href="03.03-dependency-injection.html">۳.۳. تزریق وابستگی (Dependency Injection)</a></li>
-<li class="indent"><a href="03.04-centralized-error-handling.html">۳.۴. مدیریت متمرکز خطا (Centralized Error Handling)</a></li>
-<li class="indent"><a href="03.05-isolating-the-application-routes.html">۳.۵. جداسازی مسیرهای برنامه (Application Routes)</a></li>
-<li><a href="04.00-database-driven-responses.html">۴. پاسخ‌های مبتنی بر پایگاه داده (Database-Driven Responses)</a></li>
+<li class="indent"><a href="02.01-project-setup-and-creating-a-module.html">۲.۱. راه‌اندازی پروژه و ایجاد ماژول</a></li>
+<li class="indent"><a href="02.02-web-application-basics.html">۲.۲. مبانی برنامه‌های وب</a></li>
+<li class="indent"><a href="02.03-routing-requests.html">۲.۳. مسیریابی درخواست‌ها</a></li>
+<li class="indent"><a href="02.04-wildcard-route-patterns.html">۲.۴. الگوهای مسیر با کاراکترهای جایگزین</a></li>
+<li class="indent"><a href="02.05-method-based-routing.html">۲.۵. مسیریابی مبتنی بر متد</a></li>
+<li class="indent"><a href="02.06-customizing-responses.html">۲.۶. سفارشی‌سازی پاسخ‌ها</a></li>
+<li class="indent"><a href="02.07-project-structure-and-organization.html">۲.۷. ساختار و سازماندهی پروژه</a></li>
+<li class="indent"><a href="02.08-html-templating-and-inheritance.html">۲.۸. قالب‌بندی HTML و ارث‌بری</a></li>
+<li class="indent"><a href="02.09-serving-static-files.html">۲.۹. سرو کردن فایل‌های استاتیک</a></li>
+<li class="indent"><a href="02.10-the-http-handler-interface.html">۲.۱۰. رابط http.Handler</a></li>
+<li><a href="03.00-configuration-and-error-handling.html">۳. پیکربندی و مدیریت خطا</a></li>
+<li class="indent"><a href="03.01-managing-configuration-settings.html">۳.۱. مدیریت تنظیمات پیکربندی</a></li>
+<li class="indent"><a href="03.02-structured-logging.html">۳.۲. لاگ‌گیری ساختاریافته</a></li>
+<li class="indent"><a href="03.03-dependency-injection.html">۳.۳. تزریق وابستگی</a></li>
+<li class="indent"><a href="03.04-centralized-error-handling.html">۳.۴. مدیریت متمرکز خطا</a></li>
+<li class="indent"><a href="03.05-isolating-the-application-routes.html">۳.۵. جداسازی مسیرهای برنامه</a></li>
+<li><a href="04.00-database-driven-responses.html">۴. پاسخ‌های مبتنی بر پایگاه داده</a></li>
 <li class="indent"><a href="04.01-setting-up-mysql.html">۴.۱. راه‌اندازی MySQL</a></li>
-<li class="indent"><a href="04.02-installing-a-database-driver.html">۴.۲. نصب درایور پایگاه داده (Database Driver)</a></li>
-<li class="indent"><a href="04.03-modules-and-reproducible-builds.html">۴.۳. ماژول‌ها و ساخت‌های قابل تکرار (Modules and Reproducible Builds)</a></li>
-<li class="indent"><a href="04.04-creating-a-database-connection-pool.html">۴.۴. ایجاد استخر اتصال پایگاه داده (Database Connection Pool)</a></li>
-<li class="indent"><a href="04.05-designing-a-database-model.html">۴.۵. طراحی مدل پایگاه داده (Database Model)</a></li>
-<li class="indent"><a href="04.06-executing-sql-statements.html">۴.۶. اجرای دستورات SQL (SQL Statements)</a></li>
-<li class="indent"><a href="04.07-single-record-sql-queries.html">۴.۷. پرس‌وجوهای SQL تک رکوردی (Single Record SQL Queries)</a></li>
-<li class="indent"><a href="04.08-multiple-record-sql-queries.html">۴.۸. پرس‌وجوهای SQL چند رکوردی (Multiple Record SQL Queries)</a></li>
-<li class="indent"><a href="04.09-transactions-and-other-details.html">۴.۹. تراکنش‌ها و جزئیات دیگر (Transactions)</a></li>
-<li><a href="05.00-dynamic-html-templates.html">۵. قالب‌های HTML پویا (Dynamic HTML Templates)</a></li>
-<li class="indent"><a href="05.01-displaying-dynamic-data.html">۵.۱. نمایش داده‌های پویا (Dynamic Data)</a></li>
-<li class="indent"><a href="05.02-template-actions-and-functions.html">۵.۲. عملیات و توابع قالب (Template Actions and Functions)</a></li>
-<li class="indent"><a href="05.03-caching-templates.html">۵.۳. ذخیره‌سازی قالب‌ها (Template Caching)</a></li>
-<li class="indent"><a href="05.04-catching-runtime-errors.html">۵.۴. مدیریت خطاهای زمان اجرا (Runtime Errors)</a></li>
-<li class="indent"><a href="05.05-common-dynamic-data.html">۵.۵. داده‌های پویای مشترک (Common Dynamic Data)</a></li>
-<li class="indent"><a href="05.06-custom-template-functions.html">۵.۶. توابع سفارشی قالب (Custom Template Functions)</a></li>
-<li><a href="06.00-middleware.html">۶. میان‌افزار (Middleware)</a></li>
-<li class="indent"><a href="06.01-how-middleware-works.html">۶.۱. نحوه عملکرد میان‌افزار (Middleware Operation)</a></li>
-<li class="indent"><a href="06.02-setting-common-headers.html">۶.۲. تنظیم هدرهای مشترک (Common Headers)</a></li>
-<li class="indent"><a href="06.03-request-logging.html">۶.۳. ثبت درخواست‌ها (Request Logging)</a></li>
-<li class="indent"><a href="06.04-panic-recovery.html">۶.۴. بازیابی از panic (Panic Recovery)</a></li>
-<li class="indent"><a href="06.05-composable-middleware-chains.html">۶.۵. زنجیره‌های میان‌افزاری ترکیبی (Middleware Chains)</a></li>
-<li><a href="07.00-processing-forms.html">۷. پردازش فرم‌ها (Form Processing)</a></li>
-<li class="indent"><a href="07.01-setting-up-an-html-form.html">۷.۱. راه‌اندازی فرم HTML (HTML Form Setup)</a></li>
-<li class="indent"><a href="07.02-parsing-form-data.html">۷.۲. تجزیه داده‌های فرم (Form Data Parsing)</a></li>
-<li class="indent"><a href="07.03-validating-form-data.html">۷.۳. اعتبارسنجی داده‌های فرم (Form Validation)</a></li>
-<li class="indent"><a href="07.04-displaying-errors-and-repopulating-fields.html">۷.۴. نمایش خطاها و پر کردن مجدد فیلدها (Error Display and Field Repopulation)</a></li>
-<li class="indent"><a href="07.05-creating-validation-helpers.html">۷.۵. ایجاد کمک‌کننده‌های اعتبارسنجی (Validation Helpers)</a></li>
-<li class="indent"><a href="07.06-automatic-form-parsing.html">۷.۶. تجزیه خودکار فرم (Automatic Form Parsing)</a></li>
-<li><a href="08.00-stateful-http.html">۸. HTTP حالت دار (Stateful HTTP)</a></li>
-<li class="indent"><a href="08.01-choosing-a-session-manager.html">۸.۱. انتخاب مدیر جلسه (Session Manager)</a></li>
-<li class="indent"><a href="08.02-setting-up-the-session-manager.html">۸.۲. راه‌اندازی مدیر جلسه (Session Manager Setup)</a></li>
-<li class="indent"><a href="08.03-working-with-session-data.html">۸.۳. کار با داده‌های جلسه (Session Data)</a></li>
-<li><a href="09.00-server-and-security-improvements.html">۹. بهبودهای سرور و امنیت (Server and Security)</a></li>
-<li class="indent"><a href="09.01-the-http-server-struct.html">۹.۱. ساختار http.Server (HTTP Server Struct)</a></li>
-<li class="indent"><a href="09.02-the-server-error-log.html">۹.۲. ثبت خطای سرور (Server Error Log)</a></li>
-<li class="indent"><a href="09.03-generating-a-self-signed-tls-certificate.html">۹.۳. تولید گواهینامه TLS خودامضا (Self-Signed TLS Certificate)</a></li>
-<li class="indent"><a href="09.04-running-a-https-server.html">۹.۴. اجرای سرور HTTPS (HTTPS Server)</a></li>
-<li class="indent"><a href="09.05-configuring-https-settings.html">۹.۵. پیکربندی تنظیمات HTTPS (HTTPS Settings)</a></li>
-<li class="indent"><a href="09.06-connection-timeouts.html">۹.۶. زمان‌سنج‌های اتصال (Connection Timeouts)</a></li>
-<li><a href="10.00-user-authentication.html">۱۰. احراز هویت کاربر (User Authentication)</a></li>
-<li class="indent"><a href="10.01-routes-setup.html">۱۰.۱. راه‌اندازی مسیرها (Routes Setup)</a></li>
-<li class="indent"><a href="10.02-creating-a-users-model.html">۱۰.۲. ایجاد مدل کاربران (Users Model)</a></li>
-<li class="indent"><a href="10.03-user-signup-and-password-encryption.html">۱۰.۳. ثبت‌نام کاربر و رمزنگاری رمز عبور (User Signup and Password Encryption)</a></li>
-<li class="indent"><a href="10.04-user-login.html">۱۰.۴. ورود کاربر (User Login)</a></li>
-<li class="indent"><a href="10.05-user-logout.html">۱۰.۵. خروج کاربر (User Logout)</a></li>
-<li class="indent"><a href="10.06-user-authorization.html">۱۰.۶. مجوزدهی کاربر (User Authorization)</a></li>
-<li class="indent"><a href="10.07-csrf-protection.html">۱۰.۷. محافظت در برابر CSRF (CSRF Protection)</a></li>
-<li><a href="11.00-using-request-context.html">۱۱. استفاده از زمینه درخواست (Request Context)</a></li>
-<li class="indent"><a href="11.01-how-request-context-works.html">۱۱.۱. نحوه عملکرد زمینه درخواست (Request Context Operation)</a></li>
-<li class="indent"><a href="11.02-request-context-for-authentication-authorization.html">۱۱.۲. زمینه درخواست برای احراز هویت/مجوزدهی (Request Context for Auth)</a></li>
-<li><a href="12.00-file-embedding.html">۱۲. جاسازی فایل (File Embedding)</a></li>
-<li class="indent"><a href="12.01-embedding-static-files.html">۱۲.۱. جاسازی فایل‌های استاتیک (Static File Embedding)</a></li>
-<li class="indent"><a href="12.02-embedding-html-templates.html">۱۲.۲. جاسازی قالب‌های HTML (HTML Template Embedding)</a></li>
-<li><a href="13.00-testing.html">۱۳. تست (Testing)</a></li>
-<li class="indent"><a href="13.01-unit-testing-and-sub-tests.html">۱۳.۱. تست واحد و تست‌های فرعی (Unit Testing and Subtests)</a></li>
-<li class="indent"><a href="13.02-testing-http-handlers-and-middleware.html">۱۳.۲. تست پردازنده‌های HTTP و میان‌افزار (Testing HTTP Handlers)</a></li>
-<li class="indent"><a href="13.03-end-to-end-testing.html">۱۳.۳. تست end-to-end (End-to-End Testing)</a></li>
-<li class="indent"><a href="13.04-customizing-how-tests-run.html">۱۳.۴. سفارشی‌سازی نحوه اجرای تست‌ها (Test Customization)</a></li>
-<li class="indent"><a href="13.05-mocking-dependencies.html">۱۳.۵. شبیه‌سازی وابستگی‌ها (Mocking Dependencies)</a></li>
-<li class="indent"><a href="13.06-testing-html-forms.html">۱۳.۶. تست فرم‌های HTML (Testing HTML Forms)</a></li>
-<li class="indent"><a href="13.07-integration-testing.html">۱۳.۷. تست یکپارچگی (Integration Testing)</a></li>
-<li class="indent"><a href="13.08-profiling-test-coverage.html">۱۳.۸. پروفایل‌برداری پوشش تست (Test Coverage Profiling)</a></li>
+<li class="indent"><a href="04.02-installing-a-database-driver.html">۴.۲. نصب درایور پایگاه داده</a></li>
+<li class="indent"><a href="04.03-modules-and-reproducible-builds.html">۴.۳. ماژول‌ها و ساخت‌های قابل تکرار</a></li>
+<li class="indent"><a href="04.04-creating-a-database-connection-pool.html">۴.۴. ایجاد استخر اتصال پایگاه داده</a></li>
+<li class="indent"><a href="04.05-designing-a-database-model.html">۴.۵. طراحی مدل پایگاه داده</a></li>
+<li class="indent"><a href="04.06-executing-sql-statements.html">۴.۶. اجرای دستورات SQL</a></li>
+<li class="indent"><a href="04.07-single-record-sql-queries.html">۴.۷. کوئری‌های SQL تک رکوردی</a></li>
+<li class="indent"><a href="04.08-multiple-record-sql-queries.html">۴.۸. کوئری‌های SQL چند رکوردی</a></li>
+<li class="indent"><a href="04.09-transactions-and-other-details.html">۴.۹. تراکنش‌ها و جزئیات دیگر</a></li>
+<li><a href="05.00-dynamic-html-templates.html">۵. قالب‌های HTML پویا</a></li>
+<li class="indent"><a href="05.01-displaying-dynamic-data.html">۵.۱. نمایش داده‌های پویا</a></li>
+<li class="indent"><a href="05.02-template-actions-and-functions.html">۵.۲. عملیات و توابع قالب</a></li>
+<li class="indent"><a href="05.03-caching-templates.html">۵.۳. کش کردن قالب‌ها</a></li>
+<li class="indent"><a href="05.04-catching-runtime-errors.html">۵.۴. ردیابی خطاهای زمان اجرا</a></li>
+<li class="indent"><a href="05.05-common-dynamic-data.html">۵.۵. داده‌های پویای مشترک</a></li>
+<li class="indent"><a href="05.06-custom-template-functions.html">۵.۶. توابع قالب سفارشی</a></li>
+<li><a href="06.00-middleware.html">۶. میدل‌ور</a></li>
+<li class="indent"><a href="06.01-how-middleware-works.html">۶.۱. میدل‌ور چگونه کار می‌کند</a></li>
+<li class="indent"><a href="06.02-setting-common-headers.html">۶.۲. تنظیم هدرهای مشترک</a></li>
+<li class="indent"><a href="06.03-request-logging.html">۶.۳. لاگ‌گیری درخواست‌ها</a></li>
+<li class="indent"><a href="06.04-panic-recovery.html">۶.۴. بازیابی از panic</a></li>
+<li class="indent"><a href="06.05-composable-middleware-chains.html">۶.۵. زنجیره‌های میدل‌ور ترکیبی</a></li>
+<li><a href="07.00-processing-forms.html">۷. پردازش فرم‌ها</a></li>
+<li class="indent"><a href="07.01-setting-up-an-html-form.html">۷.۱. راه‌اندازی یک فرم HTML</a></li>
+<li class="indent"><a href="07.02-parsing-form-data.html">۷.۲. تجزیه داده‌های فرم</a></li>
+<li class="indent"><a href="07.03-validating-form-data.html">۷.۳. اعتبارسنجی داده‌های فرم</a></li>
+<li class="indent"><a href="07.04-displaying-errors-and-repopulating-fields.html">۷.۴. نمایش خطاها و پر کردن مجدد فیلدها</a></li>
+<li class="indent"><a href="07.05-creating-validation-helpers.html">۷.۵. ایجاد توابع کمکی اعتبارسنجی</a></li>
+<li class="indent"><a href="07.06-automatic-form-parsing.html">۷.۶. تجزیه خودکار فرم</a></li>
+<li><a href="08.00-stateful-http.html">۸. HTTP با حالت</a></li>
+<li class="indent"><a href="08.01-choosing-a-session-manager.html">۸.۱. انتخاب مدیر نشست</a></li>
+<li class="indent"><a href="08.02-setting-up-the-session-manager.html">۸.۲. راه‌اندازی مدیر نشست</a></li>
+<li class="indent"><a href="08.03-working-with-session-data.html">۸.۳. کار با داده‌های نشست</a></li>
+<li><a href="09.00-server-and-security-improvements.html">۹. بهبودهای سرور و امنیت</a></li>
+<li class="indent"><a href="09.01-the-http-server-struct.html">۹.۱. ساختار http.Server</a></li>
+<li class="indent"><a href="09.02-the-server-error-log.html">۹.۲. لاگ خطای سرور</a></li>
+<li class="indent"><a href="09.03-generating-a-self-signed-tls-certificate.html">۹.۳. تولید گواهینامه TLS خودامضا</a></li>
+<li class="indent"><a href="09.04-running-a-https-server.html">۹.۴. اجرای سرور HTTPS</a></li>
+<li class="indent"><a href="09.05-configuring-https-settings.html">۹.۵. پیکربندی تنظیمات HTTPS</a></li>
+<li class="indent"><a href="09.06-connection-timeouts.html">۹.۶. تایم‌اوت اتصال</a></li>
+<li><a href="10.00-user-authentication.html">۱۰. احراز هویت کاربر</a></li>
+<li class="indent"><a href="10.01-routes-setup.html">۱۰.۱. راه‌اندازی مسیرها</a></li>
+<li class="indent"><a href="10.02-creating-a-users-model.html">۱۰.۲. ایجاد مدل کاربران</a></li>
+<li class="indent"><a href="10.03-user-signup-and-password-encryption.html">۱۰.۳. ثبت‌نام کاربر و رمزنگاری رمز عبور</a></li>
+<li class="indent"><a href="10.04-user-login.html">۱۰.۴. ورود کاربر</a></li>
+<li class="indent"><a href="10.05-user-logout.html">۱۰.۵. خروج کاربر</a></li>
+<li class="indent"><a href="10.06-user-authorization.html">۱۰.۶. مجوزدهی کاربر</a></li>
+<li class="indent"><a href="10.07-csrf-protection.html">۱۰.۷. محافظت در برابر CSRF</a></li>
+<li><a href="11.00-using-request-context.html">۱۱. استفاده از context درخواست</a></li>
+<li class="indent"><a href="11.01-how-request-context-works.html">۱۱.۱. context درخواست چگونه کار می‌کند</a></li>
+<li class="indent"><a href="11.02-request-context-for-authentication-authorization.html">۱۱.۲. context درخواست برای احراز هویت/مجوزدهی</a></li>
+<li><a href="12.00-file-embedding.html">۱۲. جاسازی فایل</a></li>
+<li class="indent"><a href="12.01-embedding-static-files.html">۱۲.۱. جاسازی فایل‌های استاتیک</a></li>
+<li class="indent"><a href="12.02-embedding-html-templates.html">۱۲.۲. جاسازی قالب‌های HTML</a></li>
+<li><a href="13.00-testing.html">۱۳. تست</a></li>
+<li class="indent"><a href="13.01-unit-testing-and-sub-tests.html">۱۳.۱. تست واحد و زیرتست‌ها</a></li>
+<li class="indent"><a href="13.02-testing-http-handlers-and-middleware.html">۱۳.۲. تست handlerها و میدل‌ورهای HTTP</a></li>
+<li class="indent"><a href="13.03-end-to-end-testing.html">۱۳.۳. تست end-to-end</a></li>
+<li class="indent"><a href="13.04-customizing-how-tests-run.html">۱۳.۴. سفارشی‌سازی نحوه اجرای تست‌ها</a></li>
+<li class="indent"><a href="13.05-mocking-dependencies.html">۱۳.۵. Mock کردن وابستگی‌ها</a></li>
+<li class="indent"><a href="13.06-testing-html-forms.html">۱۳.۶. تست فرم‌های HTML</a></li>
+<li class="indent"><a href="13.07-integration-testing.html">۱۳.۷. تست یکپارچگی</a></li>
+<li class="indent"><a href="13.08-profiling-test-coverage.html">۱۳.۸. پروفایلینگ پوشش تست</a></li>
 <li><a href="14.00-conclusion.html">۱۴. نتیجه‌گیری</a></li>
-<li><a href="15.00-further-reading-and-useful-links.html">۱۵. مطالعه بیشتر و پیوندهای مفید (Further Reading and Links)</a></li>
-<li><a href="16.00-guided-exercises.html">۱۶. تمرینات هدایت شده (Guided Exercises)</a></li>
-<li class="indent"><a href="16.01-add-an-about-page-to-the-application.html">۱۶.۱. افزودن صفحه 'درباره ما' به برنامه (Adding About Page)</a></li>
-<li class="indent"><a href="16.02-add-a-debug-mode.html">۱۶.۲. افزودن حالت اشکال‌زدایی (Debug Mode)</a></li>
-<li class="indent"><a href="16.03-test-the-snippetcreate-method.html">۱۶.۳. تست متد snippetCreate (Testing snippetCreate)</a></li>
-<li class="indent"><a href="16.04-add-an-account-page-to-the-application.html">۱۶.۴. افزودن صفحه 'حساب کاربری' به برنامه (Adding Account Page)</a></li>
-<li class="indent"><a href="16.05-redirect-user-appropriately-after-login.html">۱۶.۵. هدایت مناسب کاربر پس از ورود (Post-Login Redirect)</a></li>
-<li class="indent"><a href="16.06-implement-a-change-password-feature.html">۱۶.۶. پیاده‌سازی قابلیت 'تغییر رمز عبور' (Change Password Feature)</a></li>
+<li><a href="15.00-further-reading-and-useful-links.html">۱۵. مطالعه بیشتر و لینک‌های مفید</a></li>
+<li><a href="16.00-guided-exercises.html">۱۶. تمرین‌های راهنما</a></li>
+<li class="indent"><a href="16.01-add-an-about-page-to-the-application.html">۱۶.۱. افزودن صفحه 'درباره' به برنامه</a></li>
+<li class="indent"><a href="16.02-add-a-debug-mode.html">۱۶.۲. افزودن حالت دیباگ</a></li>
+<li class="indent"><a href="16.03-test-the-snippetcreate-method.html">۱۶.۳. تست handler snippetCreate</a></li>
+<li class="indent"><a href="16.04-add-an-account-page-to-the-application.html">۱۶.۴. افزودن صفحه 'حساب کاربری' به برنامه</a></li>
+<li class="indent"><a href="16.05-redirect-user-appropriately-after-login.html">۱۶.۵. هدایت مناسب کاربر پس از ورود</a></li>
+<li class="indent"><a href="16.06-implement-a-change-password-feature.html">۱۶.۶. پیاده‌سازی قابلیت 'تغییر رمز عبور'</a></li>
 </ol>
 </nav>
+
+<h2 id="glossary">واژه‌نامه اصطلاحات تخصصی</h2>
+
+<p>در این جدول ابتدا توضیح فارسی هر مفهوم آمده است؛ معادل انگلیسی آن در ستون کناری برای مراجعه هنگام خواندن کد و مستندات درج شده است.</p>
+
+<table class="glossary">
+<thead>
+<tr>
+<th>توضیح</th>
+<th>اصطلاح</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>تأیید هویت کاربر؛ معمولاً با نام کاربری و رمز عبور یا نشست (session).</td>
+<td><strong>authentication</strong></td>
+</tr>
+<tr>
+<td>تعیین اینکه کاربر احراز هویت‌شده به چه منابعی دسترسی دارد (مثلاً فقط صاحب snippet بتواند آن را حذف کند).</td>
+<td><strong>authorization</strong></td>
+</tr>
+<tr>
+<td>الگوریتم درهم‌سازی (hash) رمز عبور با salt؛ برای ذخیره امن رمزها در پایگاه داده به‌کار می‌رود.</td>
+<td><strong>bcrypt</strong></td>
+</tr>
+<tr>
+<td>مجموعهٔ تمام کد منبع یک پروژه، شامل بسته‌ها، قالب‌ها و فایل‌های پیکربندی.</td>
+<td><strong>codebase</strong></td>
+</tr>
+<tr>
+<td>حمله‌ای که سایت دیگری کاربر لاگین‌شده را وادار می‌کند درخواست ناخواسته به برنامهٔ شما بفرستد.</td>
+<td><strong>CSRF</strong></td>
+</tr>
+<tr>
+<td>حالت توسعه که جزئیات خطا (مثل stack trace) را در پاسخ HTTP نشان می‌دهد؛ در production معمولاً خاموش است.</td>
+<td><strong>debug</strong></td>
+</tr>
+<tr>
+<td>تستی که کل جریان کاربر را از درخواست HTTP تا پاسخ (و گاهی پایگاه داده) پوشش می‌دهد.</td>
+<td><strong>end-to-end</strong></td>
+</tr>
+<tr>
+<td>چارچوبی که ساختار، ابزارها و قراردادهای زیادی را از پیش فراهم می‌کند؛ این کتاب عمداً بدون framework پیش می‌رود.</td>
+<td><strong>framework</strong></td>
+</tr>
+<tr>
+<td>خاموش کردن سرور به‌گونه‌ای که اتصال‌های باز تمام شوند و درخواست‌های در حال پردازش فرصت اتمام داشته باشند.</td>
+<td><strong>graceful shutdown</strong></td>
+</tr>
+<tr>
+<td>کدی که یک درخواست HTTP را می‌گیرد و پاسخ می‌سازد؛ در Go معمولاً رابط <code>http.Handler</code> را برآورده می‌کند.</td>
+<td><strong>handler</strong></td>
+</tr>
+<tr>
+<td>پروتکل استاندارد ارتباط مرورگر و سرور؛ متد، مسیر، هدر و بدنهٔ پیام را تعریف می‌کند.</td>
+<td><strong>HTTP</strong></td>
+</tr>
+<tr>
+<td>HTTP رمزنگاری‌شده با TLS؛ آدرس‌ها معمولاً با <code>https://</code> شروع می‌شوند.</td>
+<td><strong>HTTPS</strong></td>
+</tr>
+<tr>
+<td>در Go، مجموعه‌ای از متدها که یک نوع باید پیاده‌سازی کند؛ پلی بین انواع مختلف بدون وابستگی مستقیم.</td>
+<td><strong>interface</strong></td>
+</tr>
+<tr>
+<td>لایه‌ای از کد که قبل یا بعد از handler اصلی اجرا می‌شود (مثلاً لاگ، احراز هویت، بازیابی از panic).</td>
+<td><strong>middleware</strong></td>
+</tr>
+<tr>
+<td>پیاده‌سازی ساختگی از وابستگی (مثلاً پایگاه داده) برای تست بدون سرویس واقعی.</td>
+<td><strong>mock</strong></td>
+</tr>
+<tr>
+<td>الگوی URL ثبت‌شده در مسیریاب که به یک handler مشخص وصل می‌شود.</td>
+<td><strong>route</strong></td>
+</tr>
+<tr>
+<td>انتخاب handler مناسب بر اساس متد HTTP و مسیر (و گاهی host) هر درخواست.</td>
+<td><strong>routing</strong></td>
+</tr>
+<tr>
+<td>ذخیرهٔ وضعیت کاربر بین درخواست‌های جداگانه HTTP (که خودش بی‌حالت است).</td>
+<td><strong>session</strong></td>
+</tr>
+<tr>
+<td>زبان پرس‌وجوی ساختاریافته برای خواندن و نوشتن داده در پایگاه‌های رابطه‌ای.</td>
+<td><strong>SQL</strong></td>
+</tr>
+<tr>
+<td>نوع مرکب در Go؛ فیلدهای مرتبط را در یک واحد نام‌گذاری‌شده گروه می‌کند.</td>
+<td><strong>struct</strong></td>
+</tr>
+<tr>
+<td>فایل متنی با جای‌نگهدارها که با دادهٔ پویا به HTML (یا خروجی دیگر) تبدیل می‌شود.</td>
+<td><strong>template / templating</strong></td>
+</tr>
+<tr>
+<td>لایهٔ امنیتی که ارتباط HTTP را رمزنگاری می‌کند؛ پایهٔ HTTPS.</td>
+<td><strong>TLS</strong></td>
+</tr>
+<tr>
+<td>تست یک تابع، متد یا بخش کوچک به‌تنهایی، با وابستگی‌های کنترل‌شده.</td>
+<td><strong>unit test</strong></td>
+</tr>
+<tr>
+<td>تست هم‌زمانی چند لایه (مثلاً handler + مدل + پایگاه داده واقعی یا تست).</td>
+<td><strong>integration test</strong></td>
+</tr>
+<tr>
+<td>درصد خطوط یا شاخه‌های کدی که حداقل یک بار در اجرای تست‌ها دیده شده‌اند.</td>
+<td><strong>test coverage</strong></td>
+</tr>
+<tr>
+<td>پیام یک‌بارمصرف (مثلاً «با موفقیت ذخیره شد») که بعد از redirect در صفحهٔ بعد نشان داده می‌شود.</td>
+<td><strong>flash message</strong></td>
+</tr>
+<tr>
+<td>مقدار تصادفی مخفی در فرم که سرور آن را با مقدار session مقایسه می‌کند تا CSRF سخت‌تر شود.</td>
+<td><strong>CSRF token</strong></td>
+</tr>
+<tr>
+<td>دستور SQL از پیش آماده که مقادیر را جدا bind می‌کند؛ خط دفاع در برابر SQL injection.</td>
+<td><strong>prepared statement</strong></td>
+</tr>
+<tr>
+<td>چند عملیات پایگاه داده که یا همه با هم commit می‌شوند یا هیچ‌کدام (rollback).</td>
+<td><strong>transaction</strong></td>
+</tr>
+<tr>
+<td>وارد کردن وابستگی‌ها (logger، DB و …) از بیرون به‌جای ساختن مستقیم داخل کامپوننت.</td>
+<td><strong>dependency injection</strong></td>
+</tr>
+<tr>
+<td>تزریق اسکریپت مخرب به صفحهٔ وب تا در مرورگر قربانی اجرا شود.</td>
+<td><strong>XSS</strong></td>
+</tr>
+<tr>
+<td>لایهٔ تبدیل بین دو نوع؛ مثلاً <code>http.HandlerFunc</code> تابع معمولی را به <code>http.Handler</code> تبدیل می‌کند.</td>
+<td><strong>adapter</strong></td>
+</tr>
+<tr>
+<td>کاربری که هویتش تأیید شده و معمولاً نشست فعال دارد.</td>
+<td><strong>authenticated</strong></td>
+</tr>
+<tr>
+<td>کلید session که شناسهٔ کاربر لاگین‌شده را نگه می‌دارد؛ در این پروژه برای مجوزدهی استفاده می‌شود.</td>
+<td><strong>authenticatedUserID</strong></td>
+</tr>
+<tr>
+<td>فایل اجرایی کامپایل‌شدهٔ Go؛ معمولاً وابستگی runtime را در خود ندارد (با CGO متفاوت است).</td>
+<td><strong>binary</strong></td>
+</tr>
+<tr>
+<td>ستون یا نوع داده برای ذخیرهٔ دادهٔ باینری حجیم (مثلاً تصویر) در پایگاه داده.</td>
+<td><strong>BLOB</strong></td>
+</tr>
+<tr>
+<td>فرآیند کامپایل و بسته‌بندی برنامه برای اجرا یا استقرار.</td>
+<td><strong>build</strong></td>
+</tr>
+<tr>
+<td>نگه‌داشتن نسخهٔ آمادهٔ داده یا خروجی در حافظه برای پاسخ سریع‌تر به درخواست‌های بعدی.</td>
+<td><strong>cache</strong></td>
+</tr>
+<tr>
+<td>مجموعهٔ الگوریتم‌های TLS که سرور و کلاینت برای یک اتصال امن توافق می‌کنند.</td>
+<td><strong>cipher suite</strong></td>
+</tr>
+<tr>
+<td>رابط متنی ترمینال برای اجرای دستورات و برنامه‌ها.</td>
+<td><strong>CLI</strong></td>
+</tr>
+<tr>
+<td>تابعی که به متغیرهای محدودهٔ بیرونی خود دسترسی دارد، حتی بعد از خروج از آن محدوده.</td>
+<td><strong>closure</strong></td>
+</tr>
+<tr>
+<td>پارامتر اختیاری هنگام اجرای برنامه از خط فرمان (مثلاً <code>-addr=:4000</code>).</td>
+<td><strong>command-line flag</strong></td>
+</tr>
+<tr>
+<td>تبدیل کد Go به دستورالعمل قابل اجرا توسط ماشین.</td>
+<td><strong>compile</strong></td>
+</tr>
+<tr>
+<td>نوعی در Go که می‌توان با <code>==</code> و <code>!=</code> مقایسه‌اش کرد (برخلاف slice و map).</td>
+<td><strong>comparable</strong></td>
+</tr>
+<tr>
+<td>مجموعهٔ اتصال‌های باز و قابل استفادهٔ مجدد به پایگاه داده؛ از باز و بستن مکرر جلوگیری می‌کند.</td>
+<td><strong>connection pool</strong></td>
+</tr>
+<tr>
+<td>هدر HTTP که نوع بدنهٔ پاسخ را اعلام می‌کند (مثلاً <code>text/html</code>).</td>
+<td><strong>Content-Type</strong></td>
+</tr>
+<tr>
+<td>کلید سفارشی برای ذخیرهٔ امن داده در <code>context.Context</code> هر درخواست، بدون تداخل با کلیدهای دیگر.</td>
+<td><strong>context key</strong></td>
+</tr>
+<tr>
+<td>دادهٔ کوچک که سرور در مرورگر ذخیره می‌کند و در درخواست‌های بعدی برمی‌گرداند.</td>
+<td><strong>cookie</strong></td>
+</tr>
+<tr>
+<td>کتابخانه‌ای که برنامهٔ Go را به یک سامانهٔ پایگاه داده (مثلاً MySQL) وصل می‌کند.</td>
+<td><strong>database driver</strong></td>
+</tr>
+<tr>
+<td>نصب و راه‌اندازی نسخهٔ برنامه روی سرور واقعی برای کاربران نهایی.</td>
+<td><strong>deployment</strong></td>
+</tr>
+<tr>
+<td>کتابخانه، ماژول یا سرویسی که کد شما برای کار به آن نیاز دارد.</td>
+<td><strong>dependency</strong></td>
+</tr>
+<tr>
+<td>محیطی برای نوشتن و آزمایش کد با تنظیمات شل‌تر (مثلاً نمایش خطای کامل).</td>
+<td><strong>development</strong></td>
+</tr>
+<tr>
+<td>رشتهٔ اتصال به پایگاه داده (آدرس، نام DB، کاربر و …) که درایور از آن استفاده می‌کند.</td>
+<td><strong>DSN</strong></td>
+</tr>
+<tr>
+<td>قرار دادن فایل‌های استاتیک یا قالب داخل باینری با <code>//go:embed</code> تا بدون کپی جدا روی دیسک سرو شوند.</td>
+<td><strong>embed</strong></td>
+</tr>
+<tr>
+<td>قرار دادن یک نوع داخل نوع دیگر در Go تا متدها و فیلدها به‌ارث بروند.</td>
+<td><strong>embedding</strong></td>
+</tr>
+<tr>
+<td>مقدار پیکربندی در سطح سیستم‌عامل که برنامه هنگام اجرا می‌خواند.</td>
+<td><strong>environment variable</strong></td>
+</tr>
+<tr>
+<td>برخورد با خطاها به‌صورت صریح (برگرداندن <code>error</code>، لاگ، پاسخ HTTP مناسب) به‌جای نادیده گرفتن.</td>
+<td><strong>error handling</strong></td>
+</tr>
+<tr>
+<td>تبدیل کاراکترهای ویژه به شکل امن برای HTML یا SQL تا تزریق محتوا سخت شود.</td>
+<td><strong>escaping</strong></td>
+</tr>
+<tr>
+<td>سرو کردن فایل‌های ثابت (CSS، JS، تصویر) از دیسک یا embed؛ در Go معمولاً <code>http.FileServer</code>.</td>
+<td><strong>file server</strong></td>
+</tr>
+<tr>
+<td>همان مفهوم flash message؛ دادهٔ موقت نشست که فقط یک بار خوانده می‌شود.</td>
+<td><strong>flash</strong></td>
+</tr>
+<tr>
+<td>خواندن فیلدهای ارسال‌شده از فرم HTML (<code>application/x-www-form-urlencoded</code> یا <code>multipart</code>).</td>
+<td><strong>form parsing</strong></td>
+</tr>
+<tr>
+<td>بررسی صحت و کفایت دادهٔ ورودی فرم قبل از ذخیره یا پردازش.</td>
+<td><strong>form validation</strong></td>
+</tr>
+<tr>
+<td>نوشتن توابع و انواعی که با چند نوع داده کار می‌کنند (مثلاً <code>Equal[T]</code>).</td>
+<td><strong>generics</strong></td>
+</tr>
+<tr>
+<td>سریال‌سازی دادهٔ Go با فرمت باینری داخلی؛ در session manager این کتاب استفاده می‌شود.</td>
+<td><strong>gob-encoded</strong></td>
+</tr>
+<tr>
+<td>واحد اجرای سبک‌وزن Go؛ سرور HTTP هر درخواست را معمولاً در goroutine جدا پردازش می‌کند.</td>
+<td><strong>goroutine</strong></td>
+</tr>
+<tr>
+<td>تابع کوچک مشترک برای کار تکراری (مثلاً رندر قالب یا ارسال خطای HTTP).</td>
+<td><strong>helper</strong></td>
+</tr>
+<tr>
+<td>حداکثر مدت بیکاری یک اتصال قبل از بسته شدن توسط سرور.</td>
+<td><strong>IdleTimeout</strong></td>
+</tr>
+<tr>
+<td>عملی که اجرای چندبارهٔ آن نتیجهٔ اضافه نمی‌دهد؛ مثلاً <code>GET</code> معمولاً idempotent است، <code>POST</code> اغلب نیست.</td>
+<td><strong>idempotent</strong></td>
+</tr>
+<tr>
+<td>ابزاری برای ثبت رویدادها و خطاها (متنی یا ساختاریافته).</td>
+<td><strong>logger</strong></td>
+</tr>
+<tr>
+<td>سقف اندازهٔ هدرهای HTTP یک درخواست؛ محدودیت در برابر حملات مصرف حافظه.</td>
+<td><strong>MaxHeaderBytes</strong></td>
+</tr>
+<tr>
+<td>تغییر کنترل‌شدهٔ طرح جداول پایگاه داده (افزودن ستون، ایندکس و …) همراه با نسخه‌بندی.</td>
+<td><strong>migration</strong></td>
+</tr>
+<tr>
+<td>واحد وابستگی و نسخه‌بندی در Go؛ با <code>go.mod</code> تعریف می‌شود.</td>
+<td><strong>module</strong></td>
+</tr>
+<tr>
+<td>مقدار «نامشخص» یا خالی در SQL؛ در Go اغلب با <code>sql.Null*</code> نمایش داده می‌شود.</td>
+<td><strong>NULL</strong></td>
+</tr>
+<tr>
+<td>دایرکتوری کد Go با یک نام import مشترک؛ واحد سازماندهی در سطح زبان.</td>
+<td><strong>package</strong></td>
+</tr>
+<tr>
+<td>خطای غیرقابل بازیابی در Go که اگر handle نشود برنامه را متوقف می‌کند.</td>
+<td><strong>panic</strong></td>
+</tr>
+<tr>
+<td>تبدیل دادهٔ خام (رشته، بایت، فرم) به ساختار قابل استفاده در برنامه.</td>
+<td><strong>parse</strong></td>
+</tr>
+<tr>
+<td>جای‌نگهدار <code>?</code> در SQL که مقدار واقعی بعداً به‌صورت امن bind می‌شود.</td>
+<td><strong>placeholder parameter</strong></td>
+</tr>
+<tr>
+<td>بعد از ارسال موفق فرم با POST، redirect به GET تا refresh دوباره فرم را ارسال نکند.</td>
+<td><strong>Post-Redirect-Get</strong></td>
+</tr>
+<tr>
+<td>محیط زنده‌ای که کاربران واقعی از برنامه استفاده می‌کنند؛ تنظیمات امن‌تر و خطای کمتر.</td>
+<td><strong>production</strong></td>
+</tr>
+<tr>
+<td>ابزار Go برای یافتن دسترسی هم‌زمان ناامن به داده از چند goroutine.</td>
+<td><strong>race detector</strong></td>
+</tr>
+<tr>
+<td>حداکثر زمان خواندن هدر HTTP قبل از قطع اتصال.</td>
+<td><strong>ReadHeaderTimeout</strong></td>
+</tr>
+<tr>
+<td>حداکثر زمان خواندن کل درخواست (هدر و بدنه).</td>
+<td><strong>ReadTimeout</strong></td>
+</tr>
+<tr>
+<td>پاسخ HTTP که مرورگر را به URL دیگری می‌برد (کدهای 3xx).</td>
+<td><strong>redirect</strong></td>
+</tr>
+<tr>
+<td>متغیر session برای ذخیرهٔ مسیر بازگشت کاربر بعد از ورود موفق.</td>
+<td><strong>redirectPathAfterLogin</strong></td>
+</tr>
+<tr>
+<td>اجرای قالب با داده و تولید HTML (یا خروجی نهایی) برای ارسال به کاربر.</td>
+<td><strong>render</strong></td>
+</tr>
+<tr>
+<td>فضای مخصوص هر درخواست HTTP برای ذخیرهٔ داده (مثلاً وضعیت احراز هویت) در طول پردازش.</td>
+<td><strong>request context</strong></td>
+</tr>
+<tr>
+<td>فیلدهای متاداده در پاسخ HTTP (نوع محتوا، کوکی تنظیم‌شده، کد وضعیت و …).</td>
+<td><strong>response header</strong></td>
+</tr>
+<tr>
+<td>سبک API که منابع را با URL و متدهای HTTP (<code>GET</code>, <code>POST</code>, …) مدل می‌کند.</td>
+<td><strong>RESTful</strong></td>
+</tr>
+<tr>
+<td>هنگامی که برنامه در حال اجراست (برخلاف زمان کامپایل).</td>
+<td><strong>runtime</strong></td>
+</tr>
+<tr>
+<td>ویژگی کوکی که ارسال آن در درخواست cross-site را محدود می‌کند؛ کمک به دفاع CSRF.</td>
+<td><strong>SameSite</strong></td>
+</tr>
+<tr>
+<td>مسیریاب HTTP در Go؛ درخواست را بر اساس متد و مسیر به handler مناسب می‌فرستد.</td>
+<td><strong>servemux</strong></td>
+</tr>
+<tr>
+<td>کوکی حاوی شناسهٔ نشست که سرور کاربر را بین درخواست‌ها می‌شناسد.</td>
+<td><strong>session cookie</strong></td>
+</tr>
+<tr>
+<td>شناسهٔ یکتای هر نشست در سمت سرور یا کوکی.</td>
+<td><strong>session ID</strong></td>
+</tr>
+<tr>
+<td>لایهٔ مدیریت ایجاد، خواندن، به‌روزرسانی و حذف نشست‌ها (در این کتاب با scs).</td>
+<td><strong>session manager</strong></td>
+</tr>
+<tr>
+<td>مقدار تصادفی غیرقابل حدس برای شناسایی امن نشست.</td>
+<td><strong>session token</strong></td>
+</tr>
+<tr>
+<td>حملهٔ DoS که اتصال را با ارسال آهستهٔ هدر باز نگه می‌دارد تا منابع سرور تمام شود.</td>
+<td><strong>Slowloris</strong></td>
+</tr>
+<tr>
+<td>تزریق دستور SQL مخرب از طریق ورودی کاربر؛ با prepared statement و escaping کاهش می‌یابد.</td>
+<td><strong>SQL injection</strong></td>
+</tr>
+<tr>
+<td>فهرست توابع فراخوانی‌شده تا محل خطا؛ در حالت debug به کاربر نشان داده می‌شود.</td>
+<td><strong>stack trace</strong></td>
+</tr>
+<tr>
+<td>بررسی کد بدون اجرا (مثلاً <code>go vet</code>) برای یافتن اشکال‌های رایج.</td>
+<td><strong>static analysis</strong></td>
+</tr>
+<tr>
+<td>فایل‌هایی که برای هر کاربر یکسان‌اند: CSS، JavaScript، تصویر و فونت.</td>
+<td><strong>static files</strong></td>
+</tr>
+<tr>
+<td>عدد سه‌رقمی در پاسخ HTTP (مثلاً 200 موفق، 404 پیدا نشد، 500 خطای سرور).</td>
+<td><strong>status code</strong></td>
+</tr>
+<tr>
+<td>لاگ با فیلدهای مشخص (سطح، زمان، پیام) که برای جستجو و تحلیل مناسب‌تر است.</td>
+<td><strong>structured logging</strong></td>
+</tr>
+<tr>
+<td>تست تو در تو داخل یک تابع تست با <code>t.Run</code>؛ خروجی و شکست جداگانه دارند.</td>
+<td><strong>sub-test</strong></td>
+</tr>
+<tr>
+<td>نوشتن تست به‌صورت جدول ورودی/خروجی مورد انتظار و حلقه روی سطرها.</td>
+<td><strong>table-driven tests</strong></td>
+</tr>
+<tr>
+<td>نوشتن تست قبل از پیاده‌سازی ویژگی و سپس کدنویسی تا تست سبز شود.</td>
+<td><strong>TDD</strong></td>
+</tr>
+<tr>
+<td>نگه‌داشتن قالب‌های کامپایل‌شده در حافظه به‌جای parse کردن از دیسک در هر درخواست.</td>
+<td><strong>template cache</strong></td>
+</tr>
+<tr>
+<td>بررسی در تست که نتیجه با انتظار مطابقت دارد (مثلاً <code>Equal()</code>).</td>
+<td><strong>test assertions</strong></td>
+</tr>
+<tr>
+<td>اجرای کد برای اطمینان از رفتار صحیح؛ در Go با بستهٔ <code>testing</code>.</td>
+<td><strong>testing</strong></td>
+</tr>
+<tr>
+<td>قطع عملیات اگر در مدت مشخصی تمام نشود؛ برای جلوگیری از اتصال‌های معلق.</td>
+<td><strong>timeout</strong></td>
+</tr>
+<tr>
+<td>استخراج نوع مشخص از مقدار interface در Go (مثلاً <code>v.(string)</code>).</td>
+<td><strong>type assertion</strong></td>
+</tr>
+<tr>
+<td>کاربری که هنوز لاگین نکرده یا نشست معتبر ندارد.</td>
+<td><strong>unauthenticated</strong></td>
+</tr>
+<tr>
+<td>کامپوننت یا تابعی که قوانین اعتبارسنجی ورودی را اعمال می‌کند.</td>
+<td><strong>validator</strong></td>
+</tr>
+<tr>
+<td>بخش متغیر مسیر URL (مثلاً <code>{id}</code>) که مقدارش در handler خوانده می‌شود.</td>
+<td><strong>wildcard</strong></td>
+</tr>
+<tr>
+<td>حداکثر زمان نوشتن پاسخ HTTP به کلاینت.</td>
+<td><strong>WriteTimeout</strong></td>
+</tr>
+<tr>
+<td>تابعی که تابع دیگر را می‌پوشاند تا رفتار اضافه (لاگ، احراز هویت و …) داشته باشد.</td>
+<td><strong>wrapper</strong></td>
+</tr>
+</tbody>
+</table>
 
 		</main>
 		<footer>
 			<div class="wrapper">
 				<div>
-					&lsaquo; <a href="index.html">قبلی</a>
+					&lsaquo; <a href="00.00-front-matter.html">قبلی</a>
 				</div>
 				<div>
 					<a href="00.01-contents.html">فهرست</a>
@@ -146,7 +622,7 @@
 				switch (evt.keyCode) {
 					
 					case 37:
-						window.location.href = "index.html";
+						window.location.href = "00.00-front-matter.html";
 						break;
 						
 					

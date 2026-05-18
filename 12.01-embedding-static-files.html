@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>جاسازی فایل‌های استاتیک &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
 					
-						<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="12.00-file-embedding.html">جاسازی فایل</a> &rsaquo; جاسازی فایل‌های استاتیک</span>
 						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="12.00-file-embedding.html">جاسازی فایل</a> &rsaquo; جاسازی فایل‌های استاتیک</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="12.00-file-embedding.html">قبلی</a>
@@ -23,15 +26,11 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
+		<main class="wrapper text">
 			<div class="chapter">فصل ۱۲.۱.</div>
-			<h2 id="embedding-static-files">جاسازی فایل‌های استاتیک (Embedding Static Files)</h2>
+			<h2 id="embedding-static-files">جاسازی فایل‌های استاتیک</h2>
 
-<p>در این بخش، نحوه <dfn>جاسازی فایل‌های استاتیک (Embedding Static Files)</dfn> را بررسی می‌کنیم. این شامل <dfn>فایل‌های CSS (CSS Files)</dfn>، <dfn>فایل‌های JavaScript (JavaScript Files)</dfn> و <dfn>تصاویر (Images)</dfn> می‌شود.</p>
-
-<p>با استفاده از <dfn>دستور جاسازی (Embed Directive)</dfn>، می‌توانیم این فایل‌ها را در <dfn>باینری برنامه (Program Binary)</dfn> قرار دهیم.</p>
-
-<p>اگر در حال دنبال کردن هستید، اولین کاری که باید انجام دهید ایجاد یک فایل جدید <code>ui/efs.go</code> است:</p>
+<p>اگر همراه ما هستید، اولین کاری که باید انجام دهید ایجاد یک فایل جدید <code>ui/efs.go</code> است:</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ touch ui/efs.go</pre>
@@ -53,27 +52,27 @@
 
 <p>خط مهم در اینجا <code>//go:embed &quot;static&quot;</code> است.</p>
 
-<p>این به نظر یک نظر می‌آید، اما در واقع یک <em>دستورالعمل نظر خاص</em> است. هنگامی که برنامه ما کامپایل می‌شود (به عنوان بخشی از <code>go build</code> یا <code>go run</code>، این دستورالعمل نظر به Go دستور می‌دهد تا فایل‌های موجود در پوشه <code>ui/static</code> ما را در یک <em>سیستم فایل جاسازی شده</em> که توسط متغیر جهانی <code>Files</code> ارجاع داده می‌شود، ذخیره کند.</p>
+<p>این شبیه یک کامنت به نظر می‌رسد، اما در واقع یک <em>دستورالعمل کامنت</em> خاص است. وقتی برنامه ما کامپایل می‌شود (به عنوان بخشی از <code>go build</code> یا <code>go run</code>)، این دستورالعمل کامنت به Go دستور می‌دهد که فایل‌های پوشه <code>ui/static</code> ما را در یک <em>سیستم فایل جاسازی شده</em> که توسط متغیر سراسری <code>Files</code> ارجاع داده می‌شود ذخیره کند.</p>
 
-<p>چند جزئیات مهم در مورد این وجود دارد که باید توضیح دهیم.</p>
+<p>چند نکته مهم در مورد این موضوع وجود دارد که باید توضیح دهیم:</p>
 
 <ul>
-<li><p>دستورالعمل نظر باید <em>بلافاصله بالای</em> متغیری که می‌خواهید فایل‌های جاسازی شده را در آن ذخیره کنید، قرار گیرد.</p></li>
+<li><p>دستورالعمل کامنت باید <em>بلافاصله بالای</em> متغیری که می‌خواهید فایل‌های جاسازی شده را در آن ذخیره کنید قرار گیرد.</p></li>
 
-<li><p>دستورالعمل دارای فرمت <code>go:embed &quot;&lt;path&gt;&quot;</code> است. مسیر نسبت به فایل <code>.go</code> حاوی دستورالعمل است، بنابراین &mdash; در مورد ما &mdash; <code>go:embed &quot;static&quot;</code> دایرکتوری <code>ui/static</code> را از پروژه ما جاسازی می‌کند.</p></li>
+<li><p>دستورالعمل فرمت <code>go:embed &quot;&lt;path&gt;&quot;</code> دارد. مسیر نسبت به فایل <code>.go</code> حاوی دستورالعمل است، بنابراین &mdash; در مورد ما &mdash; <code>go:embed &quot;static&quot;</code> دایرکتوری <code>ui/static</code> را از پروژه ما جاسازی می‌کند.</p></li>
 
-<li><p>شما فقط می‌توانید از دستورالعمل <code>go:embed</code> بر روی متغیرهای جهانی در سطح بسته استفاده کنید، نه در داخل توابع یا متدها. اگر سعی کنید از آن در داخل یک تابع یا متد استفاده کنید، در زمان کامپایل خطای <code>&quot;go:embed cannot apply to var inside func&quot;</code> را دریافت خواهید کرد.</p></li>
+<li><p>شما فقط می‌توانید دستورالعمل <code>go:embed</code> را روی متغیرهای سراسری در سطح package استفاده کنید، نه در داخل توابع یا متدها. اگر سعی کنید آن را در داخل یک تابع یا متد استفاده کنید، در زمان کامپایل خطای <code>&quot;go:embed cannot apply to var inside func&quot;</code> دریافت خواهید کرد.</p></li>
 
-<li><p>مسیرها نمی‌توانند شامل <code>.</code> یا <code>..</code> باشند، و نمی‌توانند با <code>/</code> شروع یا پایان یابند. این اساساً شما را به جاسازی فایل‌ها یا دایرکتوری‌هایی که در همان دایرکتوری فایل <code>.go</code> حاوی دستورالعمل <code>go:embed</code> هستند، محدود می‌کند.</p></li>
+<li><p>مسیرها نمی‌توانند شامل عناصر <code>.</code> یا <code>..</code> باشند، و همچنین نمی‌توانند با <code>/</code> شروع یا پایان یابند. این اساساً شما را محدود می‌کند به جاسازی فقط فایل‌ها یا دایرکتوری‌هایی که در همان دایرکتوری فایل <code>.go</code> حاوی دستورالعمل <code>go:embed</code> هستند.</p></li>
 
-<li><p>سیستم فایل جاسازی شده <em>همیشه</em> در دایرکتوری که حاوی دستورالعمل <code>go:embed</code> است، ریشه دارد. بنابراین، در مثال بالا، متغیر <code>Files</code> ما حاوی یک سیستم فایل جاسازی شده <a href="https://pkg.go.dev/embed/#FS"><code>embed.FS</code></a> است و ریشه آن سیستم فایل دایرکتوری <code>ui</code> ما است.</p></li>
+<li><p>سیستم فایل جاسازی شده <em>همیشه</em> در دایرکتوری حاوی دستورالعمل <code>go:embed</code> ریشه دارد. بنابراین، در مثال بالا، متغیر <code>Files</code> ما شامل یک سیستم فایل جاسازی شده <a href="https://pkg.go.dev/embed/#FS"><code>embed.FS</code></a> است و ریشه آن سیستم فایل دایرکتوری <code>ui</code> ما است.</p></li>
 </ul>
 
 <h3 id="using-the-embedded-static-files">استفاده از فایل‌های استاتیک جاسازی شده</h3>
 
-<p>حالا بیایید برنامه خود را تغییر دهیم تا فایل‌های استاتیک CSS، JavaScript و تصویر ما را از سیستم فایل جاسازی شده ارائه دهد &mdash; به جای خواندن آنها از دیسک در زمان اجرا.</p>
+<p>حالا بیایید برنامه خود را تغییر دهیم تا فایل‌های استاتیک CSS، JavaScript و تصویر را از سیستم فایل جاسازی شده سرو کند &mdash; به جای خواندن آن‌ها از دیسک در زمان اجرا.</p>
 
-<p>فایل <code>cmd/web/routes.go</code> خود را باز کنید و آن را به صورت زیر به‌روزرسانی کنید:</p>
+<p>فایل <code>cmd/web/routes.go</code> خود را باز کنید و آن را به این صورت به‌روزرسانی کنید:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
@@ -120,13 +119,13 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>اگر این تغییرات را ذخیره کنید و سپس برنامه را مجدداً راه‌اندازی کنید، باید متوجه شوید که همه چیز به درستی کامپایل و اجرا می‌شود. هنگامی که به <a href="https://localhost:4000/"><code>https://localhost:4000</code></a> در مرورگر خود مراجعه می‌کنید، فایل‌های استاتیک باید از سیستم فایل جاسازی شده ارائه شوند و همه چیز باید به صورت عادی نمایش داده شود.</p>
+<p>اگر این تغییرات را ذخیره کنید و سپس برنامه را دوباره راه‌اندازی کنید، باید ببینید که همه چیز به درستی کامپایل و اجرا می‌شود. وقتی در مرورگر خود به <a href="https://localhost:4000/"><code>https://localhost:4000</code></a> مراجعه می‌کنید، فایل‌های استاتیک باید از سیستم فایل جاسازی شده سرو شوند و همه چیز باید عادی به نظر برسد.</p>
 
 <figure class="img">
 <img src="assets/img/12.01-01.png" alt="12.01-01.png" />
 </figure>
 
-<p>اگر می‌خواهید، می‌توانید مستقیماً به فایل‌های استاتیک بروید تا بررسی کنید که هنوز در دسترس هستند. به عنوان مثال، مراجعه به <a href="https://localhost:4000/static/css/main.css"><code>https://localhost:4000/static/css/main.css</code></a> باید استایل شیت CSS برای صفحه وب را از سیستم فایل جاسازی شده نمایش دهد.</p>
+<p>اگر می‌خواهید، همچنین می‌توانید مستقیماً به فایل‌های استاتیک بروید تا بررسی کنید که هنوز در دسترس هستند. به عنوان مثال، مراجعه به <a href="https://localhost:4000/static/css/main.css"><code>https://localhost:4000/static/css/main.css</code></a> باید stylesheet CSS صفحه وب را از سیستم فایل جاسازی شده نمایش دهد.</p>
 
 <figure class="img">
 <img src="assets/img/12.01-02.png" alt="12.01-02.png" />
@@ -136,9 +135,9 @@
 
 <h3 id="additional-information">اطلاعات اضافی</h3>
 
-<h4 id="multiple-paths">مسیرهای متعدد</h4>
+<h4 id="multiple-paths">مسیرهای چندگانه</h4>
 
-<p>کاملاً درست است که مسیرهای متعددی را در یک دستورالعمل جاسازی مشخص کنید. به عنوان مثال، می‌توانیم به صورت جداگانه دایرکتوری‌های <code>ui/static/css</code>، <code>ui/static/img</code> و <code>ui/static/js</code> را به صورت زیر جاسازی کنیم:</p>
+<p>کاملاً درست است که چندین مسیر را در یک دستورالعمل embed مشخص کنید. به عنوان مثال، می‌توانیم دایرکتوری‌های <code>ui/static/css</code>، <code>ui/static/img</code> و <code>ui/static/js</code> را به صورت جداگانه جاسازی کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">//go:embed &#34;static/css&#34; &#34;static/img&#34; &#34;static/js&#34; 
@@ -146,109 +145,49 @@
 </figure>
 
 <aside class="important"><p>
-<strong>مهم:</strong> جداکننده مسیر در الگوهای مسیر جاسازی باید همیشه یک اسلش <code>/</code> باشد، حتی در ماشین‌های ویندوزی.
+<strong>مهم:</strong> جداکننده مسیر در الگوهای مسیر embed باید همیشه یک اسلش رو به جلو <code>/</code> باشد، حتی در ماشین‌های Windows.
 </p></aside>
 
 <h4 id="embedding-specific-files">جاسازی فایل‌های خاص</h4>
 
-<p>در ابتدای فصل به این موضوع اشاره کردم، اما ممکن است که یک مسیر جاسازی به یک <em>فایل خاص</em> اشاره کند. جاسازی فقط به دایرکتوری‌ها محدود نمی‌شود.</p>
+<p>در ابتدای فصل به این اشاره کردم، اما ممکن است یک مسیر embed به یک <em>فایل خاص</em> اشاره کند. جاسازی فقط به دایرکتوری‌ها محدود نیست.</p>
 
-<p>به عنوان مثال، فرض کنیم که دایرکتوری <code>ui/static/css</code> ما شامل برخی از دارایی‌های اضافی است که نمی‌خواهیم جاسازی کنیم، مانند فایل‌های <a href="https://www.keycdn.com/blog/sass-vs-less">Sass یا Less</a>. در این صورت، می‌توانیم فقط فایل <code>ui/static/css/main.css</code> را به صورت زیر جاسازی کنیم:</p>
+<p>به عنوان مثال، بیایید فرض کنیم که دایرکتوری <code>ui/static/css</code> ما شامل برخی دارایی‌های اضافی است که نمی‌خواهیم جاسازی کنیم، مانند فایل‌های <a href="https://www.keycdn.com/blog/sass-vs-less">Sass یا Less</a>. در آن صورت، می‌توانیم فقط فایل <code>ui/static/css/main.css</code> را جاسازی کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">//go:embed &#34;static/css/main.css&#34; &#34;static/img&#34; &#34;static/js&#34; 
 </span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
 </figure>
 
-<h4 id="wildcard-paths">مسیرهای وایلدکارد</h4>
+<h4 id="wildcard-paths">مسیرهای wildcard</h4>
 
-<p>کاراکتر <code>*</code> می‌تواند به عنوان یک &lsquo;وایلدکارد&rsquo; در یک مسیر جاسازی استفاده شود. با ادامه مثال بالا، می‌توانیم دستورالعمل جاسازی را به گونه‌ای بازنویسی کنیم که فقط فایل‌های <code>.css</code> زیر <code>ui/static/css</code> جاسازی شوند:</p>
+<p>کاراکتر <code>*</code> می‌تواند به عنوان یک &lsquo;wildcard&rsquo; در یک مسیر embed استفاده شود. با ادامه مثال بالا، می‌توانیم دستورالعمل embed را بازنویسی کنیم تا فقط فایل‌های <code>.css</code> زیر <code>ui/static/css</code> جاسازی شوند:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">//go:embed &#34;static/css/*.css&#34; &#34;static/img&#34; &#34;static/js&#34; 
 </span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
 </figure>
 
-<p>مرتبط با آن، اگر از مسیر وایلدکارد <code>&quot;*&quot;</code> بدون هیچ گونه مشخصه‌ای استفاده کنید، مانند این:</p>
+<p>مربوط به آن، اگر از مسیر wildcard <code>&quot;*&quot;</code> بدون هیچ واجد شرایطی استفاده کنید، مانند این:</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">//go:embed &#34;*&#34;
 </span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
 </figure>
 
-<p>&hellip; سپس همه چیز در دایرکتوری فعلی جاسازی می‌شود، از جمله فایل <code>.go</code> که خود دستورالعمل جاسازی را دارد! بیشتر اوقات نمی‌خواهید این کار را انجام دهید، بنابراین معمولاً به صورت صریح زیر دایرکتوری‌ها یا فایل‌های خاص را جاسازی می‌کنید.</p>
+<p>&hellip; سپس همه چیز در دایرکتوری فعلی را جاسازی می‌کند، از جمله فایل <code>.go</code> که خود دستورالعمل embed را شامل می‌شود! بیشتر اوقات شما این را نمی‌خواهید، بنابراین معمول‌تر است که به صراحت زیردایرکتوری‌ها یا فایل‌های خاص را جاسازی کنید.</p>
 
 <h4 id="the-all-prefix">پیشوند all</h4>
 
-<p>در نهایت، اگر مسیری به یک دایرکتوری باشد، همه فایل‌های آن دایرکتوری به صورت بازگشتی جاسازی می‌شوند &mdash; <em>به جز</em> فایل‌هایی که نام آنها با کاراکترهای <code>.</code> یا <code>_</code> شروع می‌شود. اگر می‌خواهید آن فایل‌ها را نیز شامل کنید، باید از پیشوند <code>all:</code> در ابتدای مسیر استفاده کنید.</p>
+<p>در نهایت، اگر یک مسیر به یک دایرکتوری باشد، همه فایل‌های آن دایرکتوری به صورت بازگشتی جاسازی می‌شوند &mdash; <em>به جز</em> فایل‌هایی با نام‌هایی که با کاراکترهای <code>.</code> یا <code>_</code> شروع می‌شوند. اگر می‌خواهید آن فایل‌ها را نیز شامل کنید، باید از پیشوند <code>all:</code> در ابتدای مسیر استفاده کنید.</p>
 
 <figure class="code go" dir="ltr">
 <pre><span class="c1">//go:embed &#34;all:static&#34;
 </span><span class="c1"></span><span class="kd">var</span> <span class="nx">Files</span> <span class="nx">embed</span><span class="p">.</span><span class="nx">FS</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
-
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>جاسازی فایل‌های استاتیک</td>
-        <td>Embedding Static Files</td>
-        <td>قرار دادن فایل‌های ثابت در برنامه</td>
-    </tr>
-    <tr>
-        <td>فایل‌های CSS</td>
-        <td>CSS Files</td>
-        <td>فایل‌های سبک ظاهری</td>
-    </tr>
-    <tr>
-        <td>فایل‌های JavaScript</td>
-        <td>JavaScript Files</td>
-        <td>فایل‌های اسکریپت</td>
-    </tr>
-    <tr>
-        <td>تصاویر</td>
-        <td>Images</td>
-        <td>فایل‌های گرافیکی</td>
-    </tr>
-    <tr>
-        <td>دستور جاسازی</td>
-        <td>Embed Directive</td>
-        <td>دستور برای جاسازی فایل</td>
-    </tr>
-    <tr>
-        <td>باینری برنامه</td>
-        <td>Program Binary</td>
-        <td>فایل اجرایی برنامه</td>
-    </tr>
-    <tr>
-        <td>سرور فایل استاتیک</td>
-        <td>Static File Server</td>
-        <td>سرویس‌دهنده فایل‌های ثابت</td>
-    </tr>
-    <tr>
-        <td>مسیر فایل</td>
-        <td>File Path</td>
-        <td>آدرس فایل در سیستم</td>
-    </tr>
-    <tr>
-        <td>نوع محتوا</td>
-        <td>Content Type</td>
-        <td>نوع داده فایل</td>
-    </tr>
-    <tr>
-        <td>فشرده‌سازی</td>
-        <td>Compression</td>
-        <td>کاهش حجم فایل</td>
-    </tr>
-</table>
-
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="12.00-file-embedding.html">قبلی</a>

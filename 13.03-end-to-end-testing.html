@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
-		<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
-		<title>Let's Go</title>
+		<meta name="author" content="Alex Edwards">
+		
+		<title>تست end-to-end &mdash; Let's Go</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link rel="stylesheet" type="text/css" href="assets/css/main.css">
 	</head>
 	<body>
-		<header dir="rtl">
+		<header>
 			<div class="wrapper">
 				<div>
-					<a href="index.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست انتها به انتها</span>
+					
+						
+						<a href="00.00-front-matter.html">Let's Go</a> <span class="crumbs">&rsaquo; <a href="13.00-testing.html">تست</a> &rsaquo; تست end-to-end</span>
+						
+					
 				</div>
 				<div>
 					&lsaquo; <a href="13.02-testing-http-handlers-and-middleware.html">قبلی</a>
@@ -21,28 +26,24 @@
 				</div>
 			</div>
 		</header>
-		<main class="wrapper text" dir="rtl">
-			<div class="chapter">فصل 13.3.</div>
-			<h2 id="end-to-end-testing">تست انتها به انتها (End-to-End Testing)</h2>
+		<main class="wrapper text">
+			<div class="chapter">فصل ۱۳.۳.</div>
+			<h2 id="end-to-end-testing">تست end-to-end</h2>
 
-<p>در این بخش، نحوه <dfn>تست انتها به انتها (End-to-End Testing)</dfn> را بررسی می‌کنیم. این شامل <dfn>تست یکپارچه (Integration Testing)</dfn> و <dfn>تست سیستم (System Testing)</dfn> می‌شود.</p>
+<p>در فصل قبل، الگوی کلی تست واحد برای handlerهای HTTP به صورت جداگانه را بررسی کردیم.</p>
 
-<p>همچنین با <dfn>سرور تست (Test Server)</dfn> و <dfn>پایگاه داده تست (Test Database)</dfn> آشنا خواهیم شد.</p>
+<p>اما &mdash; در بیشتر مواقع &mdash; handlerهای HTTP شما <em>در واقع</em> به صورت جداگانه استفاده نمی‌شوند. بنابراین در این فصل نحوه اجرای <dfn>تست‌های end-to-end</dfn> روی برنامه وب را توضیح می‌دهیم که routing، middleware و handlerها را شامل می‌شود. در بیشتر موارد، تست end-to-end اطمینان بیشتری نسبت به تست واحد به صورت جداگانه می‌دهد که برنامه شما به درستی کار می‌کند.</p>
 
-<p>در فصل گذشته الگوی کلی برای نحوه تست واحد هندلرهای HTTP شما به صورت مجزا را بررسی کردیم.</p>
+<p>برای نشان دادن این موضوع، تابع <code>TestPing</code> را طوری تغییر می‌دهیم که یک تست end-to-end روی کد ما اجرا کند. به طور خاص، می‌خواهیم تست اطمینان حاصل کند که یک درخواست <code>GET /ping</code> به برنامه ما، تابع handler <code>ping</code> را فراخوانی می‌کند و نتیجه آن کد وضعیت <code>200 OK</code> و بدنه پاسخ <code>&quot;OK&quot;</code> است.</p>
 
-<p>اما &mdash; بیشتر اوقات &mdash; هندلرهای HTTP شما <em>در واقع به صورت مجزا استفاده نمی‌شوند</em>. بنابراین در این فصل قصد داریم توضیح دهیم که چگونه می‌توان تست‌های <dfn>انتها به انتها</dfn> را بر روی برنامه وب خود اجرا کرد که شامل مسیریابی، میان‌افزار و هندلرهای شما باشد. در بیشتر موارد، تست انتها به انتها باید به شما اطمینان بیشتری بدهد که برنامه شما به درستی کار می‌کند نسبت به تست واحد به صورت مجزا.</p>
+<p>در اصل، می‌خواهیم تست کنیم که برنامه ما یک route مانند این دارد:</p>
 
-<p>برای نشان دادن این موضوع، ما تابع <code>TestPing</code> خود را به گونه‌ای تطبیق خواهیم داد که یک تست انتها به انتها بر روی کد ما اجرا کند. به طور خاص، ما می‌خواهیم تست اطمینان حاصل کند که یک درخواست <code>GET /ping</code> به برنامه ما تابع هندلر <code>ping</code> را فراخوانی می‌کند و منجر به یک کد وضعیت <code>200 OK</code> و بدنه پاسخ <code>&quot;OK&quot;</code> می‌شود.</p>
-
-<p>اساساً، ما می‌خواهیم اطمینان حاصل کنیم که برنامه ما یک مسیر مانند این دارد:</p>
-
-<table>
+<table class="desc-table" dir="ltr">
 <thead>
 <tr>
-<th>الگوی مسیر</th>
-<th>هندلر</th>
-<th>عمل</th>
+<th>Route pattern</th>
+<th>Handler</th>
+<th>Action</th>
 </tr>
 </thead>
 
@@ -56,18 +57,18 @@
 <tr>
 <td>GET /ping</td>
 <td>ping</td>
-<td>بازگشت یک پاسخ 200 OK</td>
+<td>بازگرداندن پاسخ 200 OK</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="using-httptest-server">استفاده از httptest.Server</h3>
 
-<p>کلید تست انتها به انتها برنامه ما تابع <a href="https://pkg.go.dev/net/http/httptest/#NewTLSServer"><code>httptest.NewTLSServer()</code></a> است که یک نمونه <a href="https://pkg.go.dev/net/http/httptest/#Server"><code>httptest.Server</code></a> را راه‌اندازی می‌کند که می‌توانیم درخواست‌های HTTPS به آن ارسال کنیم.</p>
+<p>کلید تست end-to-end برنامه ما، تابع <a href="https://pkg.go.dev/net/http/httptest/#NewTLSServer"><code>httptest.NewTLSServer()</code></a> است که یک نمونه از <a href="https://pkg.go.dev/net/http/httptest/#Server"><code>httptest.Server</code></a> ایجاد می‌کند که می‌توانیم درخواست‌های HTTPS به آن ارسال کنیم.</p>
 
-<p>الگوی کلی کمی پیچیده است که به صورت مقدماتی توضیح داده شود، بنابراین احتمالاً بهتر است ابتدا با نوشتن کد نشان دهیم و سپس جزئیات را توضیح دهیم.</p>
+<p>الگوی کلی کمی پیچیده است که از ابتدا توضیح داده شود، بنابراین بهتر است ابتدا با نوشتن کد نشان دهیم و سپس جزئیات را بررسی کنیم.</p>
 
-<p>با این ذهنیت، به فایل <code>handlers_test.go</code> خود برگردید و تست <code>TestPing</code> را به گونه‌ای به‌روزرسانی کنید که به این شکل باشد:</p>
+<p>با این در نظر، به فایل <code>handlers_test.go</code> برگردید و تست <code>TestPing</code> را طوری به‌روزرسانی کنید که به این شکل باشد:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/handlers_test.go</figcaption>
@@ -124,18 +125,18 @@
 <span class="p">}</span></pre>
 </figure>
 
-<p>چند نکته در مورد این کد وجود دارد که باید به آن‌ها اشاره کرد و بحث کرد.</p>
+<p>چند نکته درباره این کد وجود دارد که باید به آن اشاره کنیم و بررسی کنیم.</p>
 
 <ul>
-<li><p>هنگامی که <code>httptest.NewTLSServer()</code> را برای راه‌اندازی سرور تست فراخوانی می‌کنیم، باید یک <code>http.Handler</code> به عنوان پارامتر ارسال کنیم &mdash; و این هندلر هر بار که سرور تست یک درخواست HTTPS دریافت می‌کند، فراخوانی می‌شود. در مورد ما، ما مقدار بازگشتی از متد <code>app.routes()</code> خود را ارسال کرده‌ایم، به این معنی که یک درخواست به سرور تست از <em>تمام مسیرها، میان‌افزارها و هندلرهای واقعی برنامه ما</em> استفاده خواهد کرد.</p>
+<li><p>وقتی <code>httptest.NewTLSServer()</code> را برای مقداردهی اولیه سرور تست فراخوانی می‌کنیم، باید یک <code>http.Handler</code> به عنوان پارامتر ارسال کنیم &mdash; و این handler هر بار که سرور تست یک درخواست HTTPS دریافت می‌کند، فراخوانی می‌شود. در مورد ما، مقدار بازگشتی از متد <code>app.routes()</code> را ارسال کرده‌ایم، یعنی یک درخواست به سرور تست از <em>همه routeها، middleware و handlerهای واقعی برنامه</em> استفاده می‌کند.</p>
 
-<p>این یک مزیت بزرگ از کاری است که ما <a href="03.05-isolating-the-application-routes.html">قبلاً در کتاب</a> انجام دادیم تا تمام مسیریابی برنامه خود را در متد <code>app.routes()</code> جدا کنیم.</p></li>
+<p>این مزیت بزرگی از کاری است که <a href="03.05-isolating-the-application-routes.html">قبلاً در کتاب</a> انجام دادیم تا همه routing برنامه را در متد <code>app.routes()</code> جدا کنیم.</p></li>
 
-<li><p>اگر در حال تست یک سرور HTTP (نه HTTPS) هستید، باید از تابع <a href="https://pkg.go.dev/net/http/httptest/#NewServer"><code>httptest.NewServer()</code></a> برای ایجاد سرور تست استفاده کنید.</p></li>
+<li><p>اگر یک سرور HTTP (نه HTTPS) را تست می‌کنید، باید به جای آن از تابع <a href="https://pkg.go.dev/net/http/httptest/#NewServer"><code>httptest.NewServer()</code></a> برای ایجاد سرور تست استفاده کنید.</p></li>
 
-<li><p>متد <a href="https://pkg.go.dev/net/http/httptest/#Server.Client"><code>ts.Client()</code></a> <em>کلاینت سرور تست</em> را برمی‌گرداند &mdash; که نوع <a href="https://pkg.go.dev/net/http/#Client"><code>http.Client</code></a> دارد &mdash; و ما باید همیشه از این کلاینت برای ارسال درخواست‌ها به سرور تست استفاده کنیم. امکان پیکربندی کلاینت برای تنظیم رفتار آن وجود دارد، و ما در پایان این فصل توضیح خواهیم داد که چگونه این کار را انجام دهیم.</p></li>
+<li><p>متد <a href="https://pkg.go.dev/net/http/httptest/#Server.Client"><code>ts.Client()</code></a> <em>کلاینت سرور تست</em> را برمی‌گرداند &mdash; که نوع آن <a href="https://pkg.go.dev/net/http/#Client"><code>http.Client</code></a> است &mdash; و باید همیشه از این کلاینت برای ارسال درخواست‌ها به سرور تست استفاده کنیم. می‌توان کلاینت را برای تنظیم رفتار آن پیکربندی کرد و در پایان این فصل نحوه انجام آن را توضیح می‌دهیم.</p></li>
 
-<li><p>ممکن است بپرسید چرا ما فیلد <code>logger</code> ساختار <code>application</code> خود را تنظیم کرده‌ایم، اما هیچ‌یک از فیلدهای دیگر را نه. دلیل این است که logger توسط میان‌افزارهای <code>logRequest</code> و <code>recoverPanic</code> که در هر مسیر برنامه ما استفاده می‌شوند، نیاز است. تلاش برای اجرای این تست بدون تنظیم این دو وابستگی منجر به یک panic خواهد شد.</p></li>
+<li><p>ممکن است تعجب کنید که چرا فیلد <code>logger</code> از struct <code>application</code> را تنظیم کرده‌ایم، اما هیچ یک از فیلدهای دیگر را نه. دلیل این است که logger توسط middlewareهای <code>logRequest</code> و <code>recoverPanic</code> مورد نیاز است که توسط برنامه ما در هر route استفاده می‌شوند. تلاش برای اجرای این تست بدون تنظیم این دو dependency منجر به panic می‌شود.</p></li>
 </ul>
 
 <p>به هر حال، بیایید تست جدید را امتحان کنیم:</p>
@@ -150,11 +151,11 @@ FAIL    snippetbox.alexedwards.net/cmd/web      0.007s
 FAIL</samp></pre>
 </figure>
 
-<p>اگر شما هم دنبال می‌کنید، باید در این نقطه یک شکست دریافت کنید.</p>
+<p>اگر همراه با ما پیش می‌روید، باید در این مرحله یک خطا دریافت کنید.</p>
 
-<p>ما می‌توانیم از خروجی تست ببینیم که پاسخ از درخواست <code>GET /ping</code> ما یک کد وضعیت <code>404</code> دارد، نه <code>200</code> که انتظار داشتیم. و این به این دلیل است که ما هنوز یک مسیر <code>GET /ping</code> را با روتر خود ثبت نکرده‌ایم.</p>
+<p>از خروجی تست می‌بینیم که پاسخ درخواست <code>GET /ping</code> ما کد وضعیت <code>404</code> دارد، نه <code>200</code> که انتظار داشتیم. و این به این دلیل است که هنوز یک route <code>GET /ping</code> را با router خود ثبت نکرده‌ایم.</p>
 
-<p>بیایید اکنون این را درست کنیم:</p>
+<p>بیایید آن را اصلاح کنیم:</p>
 
 <figure class="code go" dir="ltr">
 <figcaption>File: cmd/web/routes.go</figcaption>
@@ -197,15 +198,15 @@ FAIL</samp></pre>
 <samp>ok      snippetbox.alexedwards.net/cmd/web    0.008s</samp></pre>
 </figure>
 
-<h3 id="using-test-helpers">استفاده از کمک‌کننده‌های تست</h3>
+<h3 id="using-test-helpers">استفاده از helperهای تست</h3>
 
-<p>تست <code>TestPing</code> ما اکنون به خوبی کار می‌کند. اما فرصت خوبی وجود دارد که بخشی از این کد را به توابع کمکی تقسیم کنیم، که می‌توانیم به عنوان تست‌های انتها به انتهای بیشتری به پروژه خود اضافه کنیم، از آن‌ها استفاده کنیم.</p>
+<p>تست <code>TestPing</code> ما اکنون به خوبی کار می‌کند. اما فرصت خوبی وجود دارد که بخشی از این کد را به توابع helper تبدیل کنیم که می‌توانیم هنگام افزودن تست‌های end-to-end بیشتر به پروژه خود، دوباره استفاده کنیم.</p>
 
-<p>هیچ قانون سخت و سریعی در مورد جایی که باید متدهای کمکی برای تست‌ها قرار داده شود وجود ندارد. اگر یک کمک‌کننده فقط در یک فایل خاص <code>*_test.go</code> استفاده می‌شود، احتمالاً منطقی است که آن را به صورت درون‌خطی در آن فایل در کنار تست‌های خود قرار دهید. در انتهای دیگر طیف، اگر قصد دارید یک کمک‌کننده را در تست‌های چندین بسته استفاده کنید، ممکن است بخواهید آن را در یک بسته قابل استفاده مجدد به نام <code>internal/testutils</code> (یا مشابه) قرار دهید که می‌تواند توسط فایل‌های تست شما وارد شود.</p>
+<p>قوانین سخت و سریعی درباره محل قرار دادن متدهای helper برای تست‌ها وجود ندارد. اگر یک helper فقط در یک فایل <code>*_test.go</code> خاص استفاده می‌شود، احتمالاً منطقی است که آن را به صورت inline در همان فایل در کنار تست‌های خود قرار دهید. در طرف دیگر، اگر می‌خواهید از یک helper در تست‌های چندین package استفاده کنید، ممکن است بخواهید آن را در یک package قابل استفاده مجدد به نام <code>internal/testutils</code> (یا مشابه) قرار دهید که می‌تواند توسط فایل‌های تست شما import شود.</p>
 
-<p>در مورد ما، کمک‌کننده‌ها برای تست کد در سراسر بسته <code>cmd/web</code> ما استفاده خواهند شد اما در جای دیگری نه، بنابراین به نظر می‌رسد منطقی است که آن‌ها را در یک بسته قابل استفاده مجدد به نام <code>internal/testutils</code> قرار دهیم.</p>
+<p>در مورد ما، helperها برای تست کد در سراسر package <code>cmd/web</code> استفاده می‌شوند اما در جای دیگری نه، بنابراین منطقی به نظر می‌رسد که آن‌ها را در یک فایل جدید <code>cmd/web/testutils_test.go</code> قرار دهیم.</p>
 
-<p>اگر شما هم دنبال می‌کنید، لطفاً اکنون این را ایجاد کنید&hellip;</p>
+<p>اگر همراه با ما پیش می‌روید، لطفاً همین حالا این را ایجاد کنید&hellip;</p>
 
 <figure class="code bash" dir="ltr">
 <pre>$ touch cmd/web/testutils_test.go</pre>
@@ -222,8 +223,7 @@ FAIL</samp></pre>
     <span class="s">&#34;io&#34;</span>
     <span class="s">&#34;log/slog&#34;</span>
     <span class="s">&#34;net/http&#34;</span>
-    <span class="s">&#34;net/http/cookiejar&#34;</span> <span class="c1">// New import
-</span><span class="c1"></span>    <span class="s">&#34;net/http/httptest&#34;</span>
+    <span class="s">&#34;net/http/httptest&#34;</span>
     <span class="s">&#34;testing&#34;</span>
 <span class="p">)</span>
 
@@ -244,26 +244,6 @@ FAIL</samp></pre>
 </span><span class="c1"></span><span class="c1">// of our custom testServer type.
 </span><span class="c1"></span><span class="kd">func</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">h</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="o">*</span><span class="nx">testServer</span> <span class="p">{</span>
     <span class="nx">ts</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewTLSServer</span><span class="p">(</span><span class="nx">h</span><span class="p">)</span>
-
-    <span class="c1">// Initialize a new cookie jar.
-</span><span class="c1"></span>    <span class="nx">jar</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cookiejar</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="kc">nil</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-    <span class="p">}</span>
-
-    <span class="c1">// Add the cookie jar to the test server client. Any response cookies will
-</span><span class="c1"></span>    <span class="c1">// now be stored and sent with subsequent requests when using this client.
-</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nx">Jar</span> <span class="p">=</span> <span class="nx">jar</span>
-
-    <span class="c1">// Disable redirect-following for the test server client by setting a custom
-</span><span class="c1"></span>    <span class="c1">// CheckRedirect function. This function will be called whenever a 3xx
-</span><span class="c1"></span>    <span class="c1">// response is received by the client, and by always returning a
-</span><span class="c1"></span>    <span class="c1">// http.ErrUseLastResponse error it forces the client to immediately return
-</span><span class="c1"></span>    <span class="c1">// the received response.
-</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nx">CheckRedirect</span> <span class="p">=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">via</span> <span class="p">[</span><span class="p">]</span><span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ErrUseLastResponse</span>
-    <span class="p">}</span>
-
     <span class="k">return</span> <span class="o">&amp;</span><span class="nx">testServer</span><span class="p">{</span><span class="nx">ts</span><span class="p">}</span>
 <span class="p">}</span>
 
@@ -287,68 +267,102 @@ FAIL</samp></pre>
 <span class="p">}</span></pre>
 </figure>
 
-<h3 id="technical-glossary">واژه‌نامه اصطلاحات فنی</h3>
+<p>در اصل، این فقط یک تعمیم از کدی است که در این فصل برای راه‌اندازی یک سرور تست و ارسال یک درخواست <code>GET</code> به آن نوشته‌ایم.</p>
 
-<table class="glossary">
-    <tr>
-        <th>اصطلاح فارسی</th>
-        <th>معادل انگلیسی</th>
-        <th>توضیح</th>
-    </tr>
-    <tr>
-        <td>تست انتها به انتها</td>
-        <td>End-to-End Testing</td>
-        <td>آزمایش کامل سیستم</td>
-    </tr>
-    <tr>
-        <td>تست یکپارچه</td>
-        <td>Integration Testing</td>
-        <td>آزمایش تعامل اجزا</td>
-    </tr>
-    <tr>
-        <td>تست سیستم</td>
-        <td>System Testing</td>
-        <td>آزمایش کل سیستم</td>
-    </tr>
-    <tr>
-        <td>سرور تست</td>
-        <td>Test Server</td>
-        <td>سرور برای آزمایش</td>
-    </tr>
-    <tr>
-        <td>پایگاه داده تست</td>
-        <td>Test Database</td>
-        <td>پایگاه داده آزمایشی</td>
-    </tr>
-    <tr>
-        <td>محیط تست</td>
-        <td>Test Environment</td>
-        <td>محیط اجرای آزمایش</td>
-    </tr>
-    <tr>
-        <td>داده‌های تست</td>
-        <td>Test Data</td>
-        <td>داده‌های آزمایشی</td>
-    </tr>
-    <tr>
-        <td>سناریوی تست</td>
-        <td>Test Scenario</td>
-        <td>مراحل اجرای آزمایش</td>
-    </tr>
-    <tr>
-        <td>گزارش تست</td>
-        <td>Test Report</td>
-        <td>نتایج آزمایش</td>
-    </tr>
-    <tr>
-        <td>خطای تست</td>
-        <td>Test Error</td>
-        <td>مشکلات در آزمایش</td>
-    </tr>
-</table>
+<p>بیایید به handler <code>TestPing</code> برگردیم و این helperهای جدید را به کار ببریم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/handlers_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;testing&#34;</span>
+
+    <span class="s">&#34;snippetbox.alexedwards.net/internal/assert&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">TestPing</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">app</span> <span class="o">:=</span> <span class="nf">newTestApplication</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+
+    <span class="nx">ts</span> <span class="o">:=</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">app</span><span class="p">.</span><span class="nf">routes</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <span class="k">defer</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">Close</span><span class="p">(</span><span class="p">)</span>
+
+    <span class="nx">code</span><span class="p">,</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">body</span> <span class="o">:=</span> <span class="nx">ts</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="s">&#34;/ping&#34;</span><span class="p">)</span>
+
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusOK</span><span class="p">)</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">body</span><span class="p">,</span> <span class="s">&#34;OK&#34;</span><span class="p">)</span>
+<span class="p">}</span></pre>
+</figure>
+
+<p>و دوباره، اگر تست‌ها را دوباره اجرا کنید، همه چیز باید همچنان پاس شود.</p>
+
+<figure class="code bash" dir="ltr">
+<pre>$ go test ./cmd/web/
+<samp>ok      snippetbox.alexedwards.net/cmd/web    0.013s</samp></pre>
+</figure>
+
+<p>این اکنون به خوبی شکل گرفته است. یک الگوی مرتب برای راه‌اندازی یک سرور تست و ارسال درخواست به آن داریم که routing، middleware و handlerهای ما را در یک تست end-to-end شامل می‌شود. همچنین بخشی از کد را به helperها تقسیم کرده‌ایم که نوشتن تست‌های آینده را سریع‌تر و آسان‌تر می‌کند.</p>
+
+<h3 id="cookies-and-redirections">کوکی‌ها و redirectها</h3>
+
+<p>تا اینجا در این فصل از تنظیمات پیش‌فرض <em>کلاینت سرور تست</em> استفاده کرده‌ایم. اما چند تغییر وجود دارد که می‌خواهم انجام دهم تا برای تست برنامه وب ما مناسب‌تر باشد. به طور خاص:</p>
+
+<ul>
+<li><p>می‌خواهیم کلاینت به طور خودکار هر کوکی ارسال شده در یک پاسخ HTTPS را ذخیره کند، تا بتوانیم آن‌ها را (در صورت مناسب بودن) در هر درخواست بعدی به سرور تست شامل کنیم. این بعداً در کتاب زمانی که نیاز داریم کوکی‌ها در چندین درخواست پشتیبانی شوند تا اقدامات ضد CSRF خود را تست کنیم، مفید خواهد بود.</p></li>
+
+<li><p>نمی‌خواهیم کلاینت به طور خودکار redirectها را دنبال کند. در عوض می‌خواهیم اولین پاسخ HTTPS ارسال شده توسط سرور ما را برگرداند تا بتوانیم پاسخ <em>برای آن درخواست خاص</em> را تست کنیم.</p></li>
+</ul>
+
+<p>برای انجام این تغییرات، بیایید به فایل <code>testutils_test.go</code> که تازه ایجاد کردیم برگردیم و تابع <code>newTestServer()</code> را به این شکل به‌روزرسانی کنیم:</p>
+
+<figure class="code go" dir="ltr">
+<figcaption>File: cmd/web/testutils_test.go</figcaption>
+<pre><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&#34;bytes&#34;</span>
+    <span class="s">&#34;io&#34;</span>
+    <span class="s">&#34;log/slog&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
+    <span class="s">&#34;net/http/cookiejar&#34;</span> <span class="c1">// New import
+</span><span class="c1"></span>    <span class="s">&#34;net/http/httptest&#34;</span>
+    <span class="s">&#34;testing&#34;</span>
+<span class="p">)</span>
+
+<span class="o">...</span>
+
+<span class="kd">func</span> <span class="nf">newTestServer</span><span class="p">(</span><span class="nx">t</span> <span class="o">*</span><span class="nx">testing</span><span class="p">.</span><span class="nx">T</span><span class="p">,</span> <span class="nx">h</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="o">*</span><span class="nx">testServer</span> <span class="p">{</span>
+    <span class="c1">// Initialize the test server as normal.
+</span><span class="c1"></span>    <span class="nx">ts</span> <span class="o">:=</span> <span class="nx">httptest</span><span class="p">.</span><span class="nf">NewTLSServer</span><span class="p">(</span><span class="nx">h</span><span class="p">)</span>
+
+    <span class="c1">// Initialize a new cookie jar.
+</span><span class="c1"></span>    <span class="nx">jar</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">cookiejar</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="kc">nil</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+        <span class="nx">t</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Add the cookie jar to the test server client. Any response cookies will
+</span><span class="c1"></span>    <span class="c1">// now be stored and sent with subsequent requests when using this client.
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nx">Jar</span> <span class="p">=</span> <span class="nx">jar</span>
+
+    <span class="c1">// Disable redirect-following for the test server client by setting a custom
+</span><span class="c1"></span>    <span class="c1">// CheckRedirect function. This function will be called whenever a 3xx
+</span><span class="c1"></span>    <span class="c1">// response is received by the client, and by always returning a
+</span><span class="c1"></span>    <span class="c1">// http.ErrUseLastResponse error it forces the client to immediately return
+</span><span class="c1"></span>    <span class="c1">// the received response.
+</span><span class="c1"></span>    <span class="nx">ts</span><span class="p">.</span><span class="nf">Client</span><span class="p">(</span><span class="p">)</span><span class="p">.</span><span class="nx">CheckRedirect</span> <span class="p">=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">,</span> <span class="nx">via</span> <span class="p">[</span><span class="p">]</span><span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="kt">error</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ErrUseLastResponse</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="o">&amp;</span><span class="nx">testServer</span><span class="p">{</span><span class="nx">ts</span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="o">...</span></pre>
+</figure>
 
 		</main>
-		<footer dir="rtl">
+		<footer>
 			<div class="wrapper">
 				<div>
 					&lsaquo; <a href="13.02-testing-http-handlers-and-middleware.html">قبلی</a>
